@@ -1,0 +1,3 @@
+[submodule "jnafilechooser"]
+	path = jnafilechooser
+	url = https://github.com/steos/jnafilechooser.git

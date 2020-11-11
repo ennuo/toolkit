@@ -1,0 +1,77 @@
+DDSImage-Class - Bug with compressed mipmaps
+
+Hello everybody!
+
+I've been working on some DirectDraw-Surface tools. For now, mostly simple stuff like texture loading, preview and MipMap generating, resaving. I used the DDSImage-class from JOGL as base for the File-Handling and using JSquish for DXT-(De)Compression. 
+
+When I implemented automatic generated MipMaps I stumbled upon a possible bug in the DDSImage class. I hope this is the right place to address this, the bugtracker seemed kinda dead.
+
+Here is my scenario: 
+I generate an array of ByteBuffers, which contain the pixel data. Each ByteBuffer is then compressed using a DXTn-method. This data-array is then given to the DDSImage class to create a new DDSImage-Object, which then can be written to disc.
+
+DDSImage.createFromData(pixelformat, width, height, mipmapBufferArray);
+
+This gave me an IllegalArgumentException in the initFromData()-method saying, that the remaining data size for the lowest mipmaps exceeded the expected size. In fact the compressed buffer could never be smaller than 16kbyte (8kbyte DXT1).
+
+I did some research and found, that DXT-compressors always use the usual 8x8 pixel block for compression, even if the actual texture is smaller. So the resulting compressed block is always of this size.
+This is even hinted at the official DDS-Specification at MSDN
+
+So now what is the problem. The current implementation of the expected mipmap data size:
+
+
+// Now check the mipmaps against this size
+int curSize = topmostMipmapSize;
+int totalSize = 0;
+for (int i = 0; i < mipmapData.length; i++) {
+  if (mipmapData[i].remaining() != curSize) {
+    throw new IllegalArgumentException("Mipmap level " + i +
+                                       " didn't match expected data size (expected " + curSize + ", got " +
+                                       mipmapData[i].remaining() + ")");
+  }
+  curSize /= 4;
+  totalSize += mipmapData[i].remaining();
+}
+
+This always expects the datasize is 1/4 the size of the mipmap before. Works as far as MipMaps are bigger or equal 8x8 pixels. In that case it throughs my mentioned exception, as it expects the size to be smaller than it actually is.
+
+I did some patch job to fix this.
+
+// Now check the mipmaps against this size
+int curSize = topmostMipmapSize;
+int mipmapWidth = width;
+int mipmapHeight = height;
+int totalSize = 0;
+for (int i = 0; i < mipmapData.length; i++) {
+  if (mipmapData[i].remaining() != curSize) {
+    throw new IllegalArgumentException("Mipmap level " + i +
+                                       " didn't match expected data size (expected " + curSize + ", got " +
+                                       mipmapData[i].remaining() + ")");
+  }
+  /* Change Daniel Senff 
+   * I got the problem, that MipMaps below the dimension of 8x8 blocks with DXT5 
+   * where assume smaller than they are created. 
+   * Assumed: < 16byte where 16byte where used by the compression. */
+  if(isCompressed) {
+	  // size calculation for compressed mipmaps 
+	  mipmapHeight /= 2;
+	  mipmapWidth /= 2;
+	  curSize = computeCompressedBlockSize(mipmapWidth, mipmapHeight, 1, d3dFormat);
+  } else {
+	  curSize /= 4;
+  }
+  /* changes end */
+  totalSize += mipmapData[i].remaining();
+}
+
+
+
+This patchjob is tested for saving DXT1-5 compressed files.
+I bet it could be done a bit nicer, but it does the job.
+
+I don't know if this can be classified as a bug, but I certainly thing, the original behavour was not desired and could be fixed in future versions.
+
+So much from my part, I'd like to get some feedback on how to patch this a bit nicer. :)
+
+
+best regards,
+Dahie
