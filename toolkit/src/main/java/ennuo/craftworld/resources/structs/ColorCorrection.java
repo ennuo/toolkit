@@ -6,10 +6,12 @@ import ennuo.craftworld.memory.Output;
 public class ColorCorrection {
     public static int MAX_SIZE = 0x18;
     
-    public float saturation, hueShift,
-    brightness, contrast, tintHue,
-    tintAmount;
-    
+    public float saturation = 1;
+    public float hueShift = 0;
+    public float brightness = 0.5f;
+    public float contrast = 0.5f;
+    public float tintHue = 0;
+    public float tintAmount = 0;
     
     public ColorCorrection() {}
     public ColorCorrection(Data data) {

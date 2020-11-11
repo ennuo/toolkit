@@ -17,6 +17,7 @@ import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.Copyright;
+import ennuo.craftworld.resources.structs.EyetoyData;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
@@ -718,7 +719,7 @@ public class MetadataEditor extends javax.swing.JFrame {
 
         jPanel9.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel13.setText("Slot ID");
+        jLabel13.setText("Unlock Slot ID");
 
         unlockSlotID.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         unlockSlotID.setText("0");
@@ -755,16 +756,17 @@ public class MetadataEditor extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(highlightSound))
                     .addGroup(jPanel9Layout.createSequentialGroup()
+                        .addComponent(R, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(G, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(B, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel9Layout.createSequentialGroup()
                         .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel13)
                             .addComponent(jLabel15)
-                            .addComponent(jLabel17)
-                            .addGroup(jPanel9Layout.createSequentialGroup()
-                                .addComponent(R, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(G, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(B, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel17))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
@@ -1382,7 +1384,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.metadata.toolType = (ToolType) toolType.getSelectedItem();
         
         if (userCreatedDetails.isSelected()) {
-            if (item.metadata.userCreatedDetails == null) item.metadata.userCreatedDetails = new UserCreatedDetails();
+            item.metadata.userCreatedDetails = new UserCreatedDetails();
             item.metadata.userCreatedDetails.title = userCreatedTitle.getText();
             item.metadata.userCreatedDetails.description = userCreatedDescription.getText();
         } else item.metadata.userCreatedDetails = null;
@@ -1393,6 +1395,13 @@ public class MetadataEditor extends javax.swing.JFrame {
                 creators[i] = (String) creatorModel.get(i);
             item.metadata.creationHistory = creators;
         } else item.metadata.creationHistory = null;
+        
+        if (eyetoyData.isSelected()) {
+            EyetoyData eyetoy = new EyetoyData();
+            eyetoy.alphaMask = getResource(alphaMask.getText(), RType.TEXTURE);
+            eyetoy.frame = getResource(frame.getText(), RType.TEXTURE);
+            eyetoy.outline = getResource(outline.getText(), RType.TEXTURE);
+        } else item.metadata.eyetoyData = null;
         
         
         item.metadata.titleKey = Long.valueOf(parseInteger(titleKey.getText()));
@@ -1428,22 +1437,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.flags = flags;
         
         
-        String root = itemRef.getText();
-        if (root == null || root.equals("")) {
-            item.resource = null;
-        } else if (root.startsWith("g")) {
-            item.resource = new ResourcePtr(parseInteger(root), RType.PLAN);
-        } else {
-            item.resource = new ResourcePtr(Bytes.toBytes(root), RType.PLAN);
-        }
-        String icon = iconRef.getText();
-        if (icon == null || icon.equals("")) {
-            item.metadata.icon = null;
-        } else if (icon.startsWith("g")) {
-            item.metadata.icon = new ResourcePtr(parseInteger(icon), RType.TEXTURE);
-        } else {
-            item.metadata.icon = new ResourcePtr(Bytes.toBytes(icon), RType.TEXTURE);
-        }
+        item.resource = getResource(itemRef.getText(), RType.PLAN);
+        item.metadata.icon = getResource(iconRef.getText(), RType.TEXTURE);
         
         item.metadata.creator.PSID = theCreator.getText();
         
@@ -1461,6 +1456,16 @@ public class MetadataEditor extends javax.swing.JFrame {
         colour[3] = ((Integer)B.getValue()).byteValue();
         
         metadata.colour = ByteBuffer.wrap(colour).order(ByteOrder.BIG_ENDIAN).getInt() & 0xFFFFFFFFL;
+    }
+    
+    private ResourcePtr getResource(String root, RType type) {
+        if (root == null || root.equals("")) {
+            return null;
+        } else if (root.startsWith("g")) {
+            return new ResourcePtr(parseInteger(root), type);
+        } else {
+            return new ResourcePtr(Bytes.toBytes(root), type);
+        }
     }
     
     

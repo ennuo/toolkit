@@ -12,11 +12,12 @@ public class EyetoyData {
     public ResourcePtr frame = new ResourcePtr(null, RType.TEXTURE);
     public ResourcePtr alphaMask = new ResourcePtr(null, RType.TEXTURE);
     
-    public float[] colorCorrection;
+    public float[] colorCorrection = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };;
     ColorCorrection colorCorrectionSrc = new ColorCorrection();
     
     public ResourcePtr outline = new ResourcePtr(null, RType.TEXTURE);
     
+    public EyetoyData() {}
     public EyetoyData(Data data) {
         frame = data.resource(RType.TEXTURE);
         alphaMask = data.resource(RType.TEXTURE);
