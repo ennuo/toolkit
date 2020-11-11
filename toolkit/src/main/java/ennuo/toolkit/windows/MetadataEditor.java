@@ -21,6 +21,8 @@ import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.things.InventoryMetadata;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Date;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
@@ -137,9 +139,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         byte[] color = Bytes.toBytes(item.metadata.colour);
         
-        R.setValue(color[1]);
-        G.setValue(color[2]);
-        B.setValue(color[3]);
+        R.setValue((int) color[1]);
+        G.setValue((int) color[2]);
+        B.setValue((int) color[3]);
         
         Date date = new Date(item.metadata.dateAdded);
         timestamp.setValue(date);
@@ -730,11 +732,11 @@ public class MetadataEditor extends javax.swing.JFrame {
 
         jLabel17.setText("Color");
 
-        R.setModel(new javax.swing.SpinnerNumberModel(105, 0, 255, 1));
+        R.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
 
-        G.setModel(new javax.swing.SpinnerNumberModel(64, 0, 255, 1));
+        G.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
 
-        B.setModel(new javax.swing.SpinnerNumberModel(50, 0, 255, 1));
+        B.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
 
         timestamp.setModel(new javax.swing.SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.HOUR));
 
@@ -1445,13 +1447,24 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         item.metadata.creator.PSID = theCreator.getText();
         
-        
-        
-        
-        
+        writeColour(item.metadata);
+
         loadItemAt(this.combo.getSelectedIndex());
     }//GEN-LAST:event_saveItemActionPerformed
-
+    
+    private void writeColour(InventoryMetadata metadata) {
+        byte[] colour = new byte[4];
+        
+        colour[0] = 0;
+        colour[1] = ((Integer)R.getValue()).byteValue();
+        colour[2] = ((Integer)G.getValue()).byteValue();
+        colour[3] = ((Integer)B.getValue()).byteValue();
+        
+        metadata.colour = ByteBuffer.wrap(colour).order(ByteOrder.BIG_ENDIAN).getInt() & 0xFFFFFFFFL;
+    }
+    
+    
+    
     private void addCreatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorActionPerformed
         String creator = JOptionPane.showInputDialog(this, "Add new creator", "User");  
         if (creator == null) return;
@@ -1461,7 +1474,7 @@ public class MetadataEditor extends javax.swing.JFrame {
     private void removeCreatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCreatorActionPerformed
         int index = creators.getSelectedIndex();
         if (index == -1) return;
-        creators.remove(index);
+        creatorModel.remove(index);
     }//GEN-LAST:event_removeCreatorActionPerformed
     
     
