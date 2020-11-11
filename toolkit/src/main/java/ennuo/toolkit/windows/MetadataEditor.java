@@ -20,6 +20,7 @@ import ennuo.craftworld.resources.structs.Copyright;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
+import ennuo.craftworld.things.InventoryMetadata;
 import java.util.Date;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
@@ -52,8 +53,12 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         
         itemInstances = profile.inventoryCollection;
-        for (int i = 0; i < profile.inventoryCollection.size(); ++i) 
-            this.items.add(profile.inventoryCollection.get(i).metadata.userCreatedDetails.title + " | " + i);
+        for (int i = 0; i < profile.inventoryCollection.size(); ++i)  {
+            InventoryMetadata metadata = profile.inventoryCollection.get(i).metadata;
+            if (metadata.userCreatedDetails != null)
+                this.items.add(metadata.userCreatedDetails.title + " | " + i);
+            else this.items.add("An Item | " + i);
+        }
         
         combo.setEnabled(false);
         deleteItem.setEnabled(false);
@@ -108,7 +113,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             creationHistory.setSelected(true);
             for (int i = 0; i < item.metadata.creationHistory.length; ++i)
                 creatorModel.addElement(item.metadata.creationHistory[i]);
-        }
+        } else creationHistory.setSelected(false);
         
         
         titleKey.setText("" + item.metadata.titleKey);
@@ -145,6 +150,10 @@ public class MetadataEditor extends javax.swing.JFrame {
             userCreatedDetails.setSelected(true);
             userCreatedTitle.setText(item.metadata.userCreatedDetails.title);
             userCreatedDescription.setText(item.metadata.userCreatedDetails.description);
+        } else {
+            userCreatedDetails.setSelected(false);
+            userCreatedTitle.setText("");
+            userCreatedDescription.setText("");
         }
         
         if (item.metadata.photoData != null) {
@@ -163,6 +172,16 @@ public class MetadataEditor extends javax.swing.JFrame {
             
             levelName.setText(item.metadata.photoData.photoMetadata.levelName);
             
+        } else {
+            photoMetadata.setSelected(false);
+            photoIcon.setText("");
+            sticker.setText("");
+            painting.setText("");
+            photo.setText("");
+            levelSHA1.setText("");
+            photoSlotType.setSelectedIndex(0);
+            photoSlotID.setText("0");
+            levelName.setText("");
         }
         
         
@@ -1272,13 +1291,14 @@ public class MetadataEditor extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addItem)
-                    .addComponent(deleteItem)
-                    .addComponent(saveItem)
-                    .addComponent(jLabel30)
-                    .addComponent(theCreator, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(theCreator, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addItem)
+                        .addComponent(deleteItem)
+                        .addComponent(saveItem)
+                        .addComponent(jLabel30)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()

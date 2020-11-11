@@ -115,11 +115,9 @@ public class Serializer {
         
         output.resource(metadata.icon, true);
         
-        if (metadata.titleKey == 0 || metadata.descriptionKey == 0) {
-            if (metadata.userCreatedDetails.title != null || metadata.userCreatedDetails.description != null) {
+        if (metadata.userCreatedDetails != null) {
                 currentComponent++; output.varint(currentComponent);
                 metadata.userCreatedDetails.serialize(output);
-            } else output.int32(0);
         } else output.int32(0);
         
         if (metadata.photoData  != null) {
@@ -181,7 +179,9 @@ public class Serializer {
         output.varint(metadata.titleKey);
         output.varint(metadata.descriptionKey);
         
-        metadata.userCreatedDetails.serialize(output);
+        if (metadata.userCreatedDetails != null)
+            metadata.userCreatedDetails.serialize(output);
+        else output.int16((short) 0);
         
         if (metadata.creationHistory != null) {
             output.int8(metadata.creationHistory.length);
@@ -241,17 +241,24 @@ public class Serializer {
         } else
             metadata.translationKey = input.str8();
         
-        metadata.userCreatedDetails.title = input.str16();
-        metadata.userCreatedDetails.description = input.str16();
-        
-        if (metadata.userCreatedDetails.title.equals("") && metadata.userCreatedDetails.description.equals(""))
+        String title = input.str16();
+        String description = input.str16();
+        if (title.equals("") && description.equals(""))
+            metadata.userCreatedDetails = null;
+        else {
             metadata.userCreatedDetails = new UserCreatedDetails();
+            metadata.userCreatedDetails.title = title;
+            metadata.userCreatedDetails.description = description;
+        }
         
         int creatorCount = input.int32();
         
-        metadata.creationHistory = new String[creatorCount];
-        for (int i = 0; i < creatorCount; ++i)
-            metadata.creationHistory[i] = input.str16();
+        if (creatorCount == 0) metadata.creationHistory = null;
+        else {
+            metadata.creationHistory = new String[creatorCount];
+            for (int i = 0; i < creatorCount; ++i)
+                metadata.creationHistory[i] = input.str16();
+        }
         
         metadata.icon = input.resource(RType.TEXTURE, true);
         
@@ -353,7 +360,7 @@ public class Serializer {
                     metadata.creationHistory[i] = input.str(0x14);
                 System.out.println("InventoryItem has " + historyCount + " creators = " + metadata.creationHistory[0]);
             }
-        }
+        } else metadata.creationHistory = null;
         
         metadata.icon = input.resource(RType.TEXTURE, true);
         
@@ -370,7 +377,7 @@ public class Serializer {
             System.out.println("InventoryItem has user generated metadata");
             metadata.userCreatedDetails = new UserCreatedDetails(input);
             System.out.println(String.format("title = %s, description = %s", metadata.userCreatedDetails.title, metadata.userCreatedDetails.description));
-        }
+        } else metadata.userCreatedDetails = null;
         
         
         if (checkIfSerialized())
@@ -403,14 +410,18 @@ public class Serializer {
         if (LAMS != null) {
             if (metadata.location != 0) {
                 String translated = LAMS.Translate(metadata.location);
-                if (translated != null)
+                if (translated != null) {
                     System.out.println(String.format("InventoryItem has theme = %s", translated));
+                    metadata.translatedLocation = translated;
+                }
                 else System.err.println("== COULD NOT TRANSLATE LOCATION KEY, DOES IT EXIST? ==");
             }
             if (metadata.category != 0) {
                 String translated = LAMS.Translate(metadata.category);
-                if (translated != null)
+                if (translated != null) {
                     System.out.println(String.format("InventoryItem has category = %s", translated));
+                    metadata.translatedCategory = translated;
+                }
                 else System.err.println("== COULD NOT TRANSLATE CATEGORY KEY, DOES IT EXIST? ==");
             }
         }

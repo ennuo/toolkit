@@ -8,9 +8,7 @@ import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.RType;
@@ -526,15 +524,6 @@ public class BigProfile extends FileData {
   }
   
   private void addItemNode(ProfileItem item) {
-      
-    if (item.metadata.userCreatedDetails.title == null) {
-        if (item.metadata.type == ItemType.USER_PHOTOS) item.metadata.userCreatedDetails.title = "A Photo";
-        else if (item.metadata.type == ItemType.POD) item.metadata.userCreatedDetails.title = "A Pod";
-        else if (item.metadata.type == ItemType.COSTUMES || item.metadata.type == ItemType.USER_COSTUMES) item.metadata.userCreatedDetails.title = "A Costume";
-        else item.metadata.userCreatedDetails.title = "Some kind of object";
-    }
-    if (item.metadata.userCreatedDetails.description == null) item.metadata.userCreatedDetails.description = "No description provided.";
-    
     if (item.resource == null) return;
       
     FileEntry entry = find(item.resource.hash);
@@ -546,7 +535,18 @@ public class BigProfile extends FileData {
       if (item.metadata.subType.equals(ItemType.ALL)) entry.path += "outfits/";
       else entry.path += item.metadata.subType.name().toLowerCase() + "/";
     }
-    entry.path += item.metadata.userCreatedDetails.title + ".plan";
+    
+    String title;
+    if (item.metadata.userCreatedDetails != null && item.metadata.userCreatedDetails.title != null)
+        title = item.metadata.userCreatedDetails.title;
+    else {
+        if (item.metadata.type == ItemType.USER_PHOTOS) title = "A Photo";
+        else if (item.metadata.type == ItemType.POD) title = "A Pod";
+        else if (item.metadata.type == ItemType.COSTUMES || item.metadata.type == ItemType.USER_COSTUMES) title = "A Costume";
+        else title = "Some kind of object";
+    }
+    
+    entry.path += title + ".plan";
     
     StringEntry location = findString(item.metadata.locationIndex);
     StringEntry category = findString(item.metadata.categoryIndex);
