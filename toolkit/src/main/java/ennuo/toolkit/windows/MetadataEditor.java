@@ -134,7 +134,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         G.setValue((int) color[2]);
         B.setValue((int) color[3]);
         
-        Date date = new Date(item.metadata.dateAdded);
+        Date date = new Date((item.metadata.dateAdded / 2) * 1000);
+        
         timestamp.setValue(date);
         
         if (item.metadata.userCreatedDetails != null) {
@@ -154,6 +155,8 @@ public class MetadataEditor extends javax.swing.JFrame {
             if (item.metadata.photoData.painting != null)
                 painting.setText(item.metadata.photoData.painting.toString());
             else painting.setText("");
+            
+            photoTimestamp.setValue(new Date((item.metadata.photoData.photoMetadata.timestamp / 2 * 1000)));
             
             photo.setText(item.metadata.photoData.photoMetadata.photo.toString());
             levelSHA1.setText("h" + Bytes.toHex(item.metadata.photoData.photoMetadata.levelHash));
@@ -1448,6 +1451,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.metadata.creator.PSID = theCreator.getText();
         
         writeColour(item.metadata);
+        
+        item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
 
         loadItemAt(this.combo.getSelectedIndex());
     }//GEN-LAST:event_saveItemActionPerformed
