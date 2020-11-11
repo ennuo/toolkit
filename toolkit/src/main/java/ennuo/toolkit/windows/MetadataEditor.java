@@ -83,15 +83,10 @@ public class MetadataEditor extends javax.swing.JFrame {
         this.itemRef.setText("");
         iconRef.setText("");
         
-        if (item.resource != null) {
-            if (item.resource.hash != null) 
-                this.itemRef.setText(Bytes.toHex(item.resource.hash));
-            else if (item.resource.GUID != -1) 
-                this.itemRef.setText("g" + item.resource.GUID);
-        } else this.itemRef.setText("");
+        if (item.resource != null) itemRef.setText(item.resource.toString());
+        else this.itemRef.setText("");
         
         if (item.metadata.icon != null) {
-            
             byte[] data = null;
             if (item.metadata.icon.GUID != -1)
                 data = toolkit.extractFile(item.metadata.icon.GUID);
@@ -102,12 +97,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                 if (texture != null) 
                     icon.setIcon(texture.getImageIcon(128, 128));
             }
-            
-            if (item.metadata.icon.hash != null) 
-                iconRef.setText(Bytes.toHex(item.metadata.icon.hash));
-            else if (item.metadata.icon.GUID != -1)
-                iconRef.setText("g" + item.metadata.icon.GUID);
-            
+            iconRef.setText(item.metadata.icon.toString());
         } else iconRef.setText("");
         
         creatorModel.removeAllElements();
@@ -146,8 +136,6 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         Date date = new Date(item.metadata.dateAdded);
         timestamp.setValue(date);
-        if (item.metadata.photoData == null)
-            photoTimestamp.setValue(date);
         
         if (item.metadata.userCreatedDetails != null) {
             userCreatedDetails.setSelected(true);
@@ -185,6 +173,23 @@ public class MetadataEditor extends javax.swing.JFrame {
             photoSlotType.setSelectedIndex(0);
             photoSlotID.setText("0");
             levelName.setText("");
+            photoTimestamp.setValue(date);
+        }
+        
+        if (item.metadata.eyetoyData != null) {
+            eyetoyData.setSelected(true);
+            EyetoyData data = item.metadata.eyetoyData;
+            if (data.frame != null) frame.setText(data.frame.toString());
+            else frame.setText("");
+            if (data.outline != null) outline.setText(data.outline.toString());
+            else outline.setText("");
+            if (data.alphaMask != null) alphaMask.setText(data.alphaMask.toString());
+            else alphaMask.setText("");
+        } else {
+            eyetoyData.setSelected(false);
+            frame.setText("");
+            outline.setText("");
+            alphaMask.setText("");
         }
         
         
@@ -1459,16 +1464,14 @@ public class MetadataEditor extends javax.swing.JFrame {
     }
     
     private ResourcePtr getResource(String root, RType type) {
-        if (root == null || root.equals("")) {
-            return null;
-        } else if (root.startsWith("g")) {
+        if (root == null || root.equals("")) return null;
+        else if (root.startsWith("g"))
             return new ResourcePtr(parseInteger(root), type);
-        } else {
+        else if (root.startsWith("h"))
+            return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
+        else
             return new ResourcePtr(Bytes.toBytes(root), type);
-        }
     }
-    
-    
     
     private void addCreatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorActionPerformed
         String creator = JOptionPane.showInputDialog(this, "Add new creator", "User");  
