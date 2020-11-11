@@ -10,6 +10,7 @@ import ennuo.craftworld.resources.structs.EyetoyData;
 import ennuo.craftworld.resources.structs.PhotoData;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
+import java.util.Date;
 
 public class InventoryMetadata {
     public static int MAX_SIZE = 0x800;
@@ -21,7 +22,7 @@ public class InventoryMetadata {
     public String legacyCategoryKey;
     public String legacyLocationKey;
     
-    public long dateAdded = 0;
+    public long dateAdded = new Date().getTime() * 2 / 1000;
     public SlotID levelUnlockSlotID = new SlotID();
     public long highlightSound = 0;
     public long colour = 0;
