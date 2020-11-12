@@ -14,6 +14,7 @@ public class PhotoData {
     public PhotoMetadata photoMetadata = new PhotoMetadata();
     public ResourcePtr painting;
     
+    public PhotoData() {}
     public PhotoData(Data data) {
         icon = data.resource(RType.TEXTURE, true);
         sticker = data.resource(RType.TEXTURE, true);
