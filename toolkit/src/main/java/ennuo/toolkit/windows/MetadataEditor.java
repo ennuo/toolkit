@@ -89,13 +89,14 @@ public class MetadataEditor extends javax.swing.JFrame {
         photoUsers.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (photoUsers.getSelectedIndex() == -1) return;
-                if (lastUser != null)
-                    lastUser.bounds = new Vector4f((float) X.getValue(), (float) Y.getValue(), (float) Z.getValue(), (float) W.getValue());
+                if (photoUsers.getSelectedIndex() == -1) {
+                    X.setValue(0f); Y.setValue(0f);
+                    Z.setValue(0f); W.setValue(0f);
+                }
                 PhotoUser user = users.get(photoUsers.getSelectedIndex());
+                lastUser = user;
                 X.setValue(user.bounds.x); Y.setValue(user.bounds.y);
                 Z.setValue(user.bounds.z); W.setValue(user.bounds.w);
-                lastUser = user;
             }
             
         });
@@ -157,9 +158,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         byte[] color = Bytes.toBytes(item.metadata.colour);
         
-        R.setValue((int) color[1]);
-        G.setValue((int) color[2]);
-        B.setValue((int) color[3]);
+        R.setValue(color[1] & 0xFF);
+        G.setValue(color[2] & 0xFF);
+        B.setValue(color[3] & 0xFF);
         
         Date date = new Date((item.metadata.dateAdded / 2) * 1000);
         
@@ -176,7 +177,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         }
         
         photoModel.removeAllElements();
-        users.clear();
+        users.clear(); lastUser = null;
         if (item.metadata.photoData != null) {
             photoMetadata.setSelected(true);
             if (item.metadata.photoData.icon != null)
@@ -205,6 +206,8 @@ public class MetadataEditor extends javax.swing.JFrame {
                     photoModel.addElement(user.user);
                     this.users.add(user);
                 }
+                if (users.length != 0)
+                    photoUsers.setSelectedIndex(0);
             }
             
         } else {
@@ -1078,12 +1081,32 @@ public class MetadataEditor extends javax.swing.JFrame {
         jLabel25.setText("Bounds");
 
         X.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        X.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                XStateChanged(evt);
+            }
+        });
 
         Y.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        Y.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                YStateChanged(evt);
+            }
+        });
 
         Z.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        Z.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                ZStateChanged(evt);
+            }
+        });
 
         W.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        W.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                WStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
         jPanel19.setLayout(jPanel19Layout);
@@ -1588,6 +1611,22 @@ public class MetadataEditor extends javax.swing.JFrame {
         user.bounds = new Vector4f(0, 0, 0, 0);
         users.add(user);
     }//GEN-LAST:event_addPhotoUserActionPerformed
+
+    private void XStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_XStateChanged
+        lastUser.bounds.x = (float) X.getValue();
+    }//GEN-LAST:event_XStateChanged
+
+    private void YStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_YStateChanged
+        lastUser.bounds.y = (float) Y.getValue();
+    }//GEN-LAST:event_YStateChanged
+
+    private void ZStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ZStateChanged
+        lastUser.bounds.z = (float) Z.getValue();
+    }//GEN-LAST:event_ZStateChanged
+
+    private void WStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_WStateChanged
+        lastUser.bounds.w = (float) W.getValue();
+    }//GEN-LAST:event_WStateChanged
     
     
     private int internalCount = 0;
