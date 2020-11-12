@@ -380,6 +380,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="closeTab">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+W"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Close Tab"/>
               </Properties>
               <Events>
@@ -388,6 +391,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="reboot">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+R"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Reboot"/>
               </Properties>
               <Events>
@@ -403,6 +409,9 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="addFile">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+A"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Add..."/>
               </Properties>
               <Events>

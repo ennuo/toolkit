@@ -1112,6 +1112,7 @@ public class Toolkit extends javax.swing.JFrame {
         fileMenu.add(saveMenu);
         fileMenu.add(jSeparator4);
 
+        closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeTab.setText("Close Tab");
         closeTab.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1120,6 +1121,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         fileMenu.add(closeTab);
 
+        reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         reboot.setText("Reboot");
         reboot.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1132,6 +1134,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         FARMenu.setText("Archive");
 
+        addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addFile.setText("Add...");
         addFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
