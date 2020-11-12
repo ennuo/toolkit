@@ -172,6 +172,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             userCreatedDescription.setText("");
         }
         
+        photoModel.removeAllElements();
         if (item.metadata.photoData != null) {
             photoMetadata.setSelected(true);
             photoIcon.setText(item.metadata.photoData.icon.toString());
