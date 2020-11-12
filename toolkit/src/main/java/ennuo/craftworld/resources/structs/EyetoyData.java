@@ -9,13 +9,13 @@ import java.util.Arrays;
 public class EyetoyData {
     public static int MAX_SIZE = 0x8B + ColorCorrection.MAX_SIZE;
     
-    public ResourcePtr frame = new ResourcePtr(null, RType.TEXTURE);
-    public ResourcePtr alphaMask = new ResourcePtr(null, RType.TEXTURE);
+    public ResourcePtr frame;
+    public ResourcePtr alphaMask;
     
     public float[] colorCorrection = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };;
     ColorCorrection colorCorrectionSrc = new ColorCorrection();
     
-    public ResourcePtr outline = new ResourcePtr(null, RType.TEXTURE);
+    public ResourcePtr outline;
     
     public EyetoyData() {}
     public EyetoyData(Data data) {

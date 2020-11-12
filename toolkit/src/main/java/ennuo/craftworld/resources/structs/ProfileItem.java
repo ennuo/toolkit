@@ -6,7 +6,7 @@ import ennuo.craftworld.things.InventoryMetadata;
 
 public class ProfileItem {
     public int GUID = 0;
-    public ResourcePtr resource = new ResourcePtr(null, RType.PLAN);
+    public ResourcePtr resource;
     public InventoryMetadata metadata = new InventoryMetadata();
-    public int flags;
+    public int flags = 0;
 }

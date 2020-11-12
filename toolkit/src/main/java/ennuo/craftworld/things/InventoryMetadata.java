@@ -15,7 +15,7 @@ import java.util.Date;
 public class InventoryMetadata {
     public static int MAX_SIZE = 0x800;
     
-    public ResourcePtr resource = new ResourcePtr(null, RType.PLAN);
+    public ResourcePtr resource;
     
     public String translationKey;
     
@@ -34,8 +34,8 @@ public class InventoryMetadata {
     
     public UserCreatedDetails userCreatedDetails = new UserCreatedDetails();
     
-    public String[] creationHistory = {};
-    public ResourcePtr icon = new ResourcePtr(null, RType.TEXTURE);
+    public String[] creationHistory;
+    public ResourcePtr icon;
     
     public PhotoData photoData = null;
     public EyetoyData eyetoyData = null;
@@ -43,7 +43,7 @@ public class InventoryMetadata {
     public short locationIndex = -1, categoryIndex = -1;
     public short primaryIndex = 0; 
     
-    public Copyright creator = new Copyright("", "");
+    public Copyright creator = new Copyright("LittleBigPlanet", "");
     
     public ToolType toolType = ToolType.NONE;
     public byte flags = 0;

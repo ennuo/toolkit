@@ -9,10 +9,10 @@ import java.util.Arrays;
 public class PhotoData {
     public static int MAX_SIZE = 0x69 + PhotoMetadata.MAX_SIZE + (PhotoUser.MAX_SIZE * 4);
     
-    public ResourcePtr icon = new ResourcePtr(null, RType.TEXTURE);
-    public ResourcePtr sticker = new ResourcePtr(null, RType.TEXTURE);
+    public ResourcePtr icon;
+    public ResourcePtr sticker;
     public PhotoMetadata photoMetadata = new PhotoMetadata();
-    public ResourcePtr painting = new ResourcePtr(null, RType.PAINTING);
+    public ResourcePtr painting;
     
     public PhotoData(Data data) {
         icon = data.resource(RType.TEXTURE, true);

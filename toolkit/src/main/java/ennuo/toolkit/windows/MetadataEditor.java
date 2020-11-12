@@ -3,6 +3,7 @@ package ennuo.toolkit.windows;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.RType;
@@ -18,6 +19,7 @@ import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.Copyright;
 import ennuo.craftworld.resources.structs.EyetoyData;
+import ennuo.craftworld.resources.structs.PhotoUser;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
@@ -27,6 +29,8 @@ import java.nio.ByteOrder;
 import java.util.Date;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class MetadataEditor extends javax.swing.JFrame {
     
@@ -36,6 +40,12 @@ public class MetadataEditor extends javax.swing.JFrame {
     final DefaultComboBoxModel model = new DefaultComboBoxModel(items);
     
     DefaultListModel creatorModel = new DefaultListModel();
+    
+    DefaultListModel photoModel = new DefaultListModel();
+    ArrayList<PhotoUser> users = new ArrayList<PhotoUser>();
+    
+    PhotoUser lastUser;
+    
     
     BigProfile profile;
     Toolkit toolkit;
@@ -72,6 +82,20 @@ public class MetadataEditor extends javax.swing.JFrame {
                 deleteItem.setEnabled(true);
             loadItemAt(0);
         }
+        
+        photoUsers.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (photoUsers.getSelectedIndex() == -1) return;
+                if (lastUser != null)
+                    lastUser.bounds = new Vector4f((float) X.getValue(), (float) Y.getValue(), (float) Z.getValue(), (float) W.getValue());
+                PhotoUser user = users.get(photoUsers.getSelectedIndex());
+                X.setValue(user.bounds.x); Y.setValue(user.bounds.y);
+                Z.setValue(user.bounds.z); W.setValue(user.bounds.w);
+                lastUser = user;
+            }
+            
+        });
         
     }
     
@@ -165,6 +189,14 @@ public class MetadataEditor extends javax.swing.JFrame {
             photoSlotID.setText("" + item.metadata.photoData.photoMetadata.level.ID);
             
             levelName.setText(item.metadata.photoData.photoMetadata.levelName);
+            
+            if (item.metadata.photoData.photoMetadata.users != null) {
+                PhotoUser[] users = item.metadata.photoData.photoMetadata.users;
+                for (PhotoUser user : users) {
+                    photoModel.addElement(user.user);
+                    this.users.add(user);
+                }
+            }
             
         } else {
             photoMetadata.setSelected(false);
@@ -301,15 +333,15 @@ public class MetadataEditor extends javax.swing.JFrame {
         photoTimestamp = new javax.swing.JSpinner();
         jPanel19 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        photoUsers = new javax.swing.JList<>();
+        addPhotoUser = new javax.swing.JButton();
+        removePhotoUser = new javax.swing.JButton();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
-        jSpinner2 = new javax.swing.JSpinner();
-        jSpinner3 = new javax.swing.JSpinner();
-        jSpinner4 = new javax.swing.JSpinner();
+        X = new javax.swing.JSpinner();
+        Y = new javax.swing.JSpinner();
+        Z = new javax.swing.JSpinner();
+        W = new javax.swing.JSpinner();
         jPanel20 = new javax.swing.JPanel();
         jLabel26 = new javax.swing.JLabel();
         levelSHA1 = new javax.swing.JTextField();
@@ -766,7 +798,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(R, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(G, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                        .addComponent(G)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(B, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel9Layout.createSequentialGroup()
@@ -801,7 +833,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                     .addComponent(R, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(G, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(B, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1011,25 +1043,36 @@ public class MetadataEditor extends javax.swing.JFrame {
 
         jPanel19.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jList1.setBorder(null);
-        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane2.setViewportView(jList1);
+        photoUsers.setModel(photoModel);
+        photoUsers.setBorder(null);
+        photoUsers.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane2.setViewportView(photoUsers);
 
-        jButton1.setText("Add");
+        addPhotoUser.setText("Add");
+        addPhotoUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPhotoUserActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Remove");
+        removePhotoUser.setText("Remove");
+        removePhotoUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removePhotoUserActionPerformed(evt);
+            }
+        });
 
         jLabel24.setText("Photo Users");
 
         jLabel25.setText("Bounds");
 
-        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        X.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
 
-        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        Y.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
 
-        jSpinner3.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        Z.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
 
-        jSpinner4.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
+        W.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.01f)));
 
         javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
         jPanel19.setLayout(jPanel19Layout);
@@ -1040,15 +1083,15 @@ public class MetadataEditor extends javax.swing.JFrame {
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(removePhotoUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(addPhotoUser, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel24))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSpinner1)
-                    .addComponent(jSpinner2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                    .addComponent(jSpinner3, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSpinner4, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(X)
+                    .addComponent(Y, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addComponent(Z, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(W, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addComponent(jLabel25)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -1060,11 +1103,11 @@ public class MetadataEditor extends javax.swing.JFrame {
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addGap(35, 35, 35)
-                        .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(X, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Y, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(Z, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1074,9 +1117,9 @@ public class MetadataEditor extends javax.swing.JFrame {
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(addPhotoUser)
+                    .addComponent(removePhotoUser)
+                    .addComponent(W, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1284,7 +1327,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel30)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(theCreator)))
+                                .addComponent(theCreator, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1324,8 +1367,8 @@ public class MetadataEditor extends javax.swing.JFrame {
                                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1335,7 +1378,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                         .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(9, 9, 9)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(6, 6, 6)
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1353,6 +1396,7 @@ public class MetadataEditor extends javax.swing.JFrame {
 
     private void addItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemActionPerformed
         this.profile.shouldSave = true;
+        toolkit.updateWorkspace();
         this.combo.setEnabled(true);
         this.deleteItem.setEnabled(true);
         ProfileItem item = new ProfileItem();
@@ -1366,6 +1410,7 @@ public class MetadataEditor extends javax.swing.JFrame {
 
     private void deleteItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteItemActionPerformed
         this.profile.shouldSave = true;
+        toolkit.updateWorkspace();
         int index = this.combo.getSelectedIndex();
         this.items.remove(index);
         this.itemInstances.remove(index);
@@ -1454,6 +1499,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
 
+        profile.shouldSave = true;
+        toolkit.updateWorkspace();
+        
         loadItemAt(this.combo.getSelectedIndex());
     }//GEN-LAST:event_saveItemActionPerformed
     
@@ -1489,6 +1537,23 @@ public class MetadataEditor extends javax.swing.JFrame {
         if (index == -1) return;
         creatorModel.remove(index);
     }//GEN-LAST:event_removeCreatorActionPerformed
+
+    private void removePhotoUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePhotoUserActionPerformed
+        int index = photoUsers.getSelectedIndex();
+        if (index == -1) return;
+        photoModel.remove(index);
+        users.remove(index);
+    }//GEN-LAST:event_removePhotoUserActionPerformed
+
+    private void addPhotoUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPhotoUserActionPerformed
+        String creator = JOptionPane.showInputDialog(this, "Add new user", "User");  
+        if (creator == null) return;
+        photoModel.addElement(creator);
+        PhotoUser user = new PhotoUser();
+        user.PSID = creator; user.user = creator;
+        user.bounds = new Vector4f(0, 0, 0, 0);
+        users.add(user);
+    }//GEN-LAST:event_addPhotoUserActionPerformed
     
     
     private int internalCount = 0;
@@ -1508,8 +1573,13 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JSpinner B;
     private javax.swing.JSpinner G;
     private javax.swing.JSpinner R;
+    private javax.swing.JSpinner W;
+    private javax.swing.JSpinner X;
+    private javax.swing.JSpinner Y;
+    private javax.swing.JSpinner Z;
     private javax.swing.JButton addCreator;
     private javax.swing.JButton addItem;
+    private javax.swing.JButton addPhotoUser;
     private javax.swing.JCheckBox allowEmit;
     private javax.swing.JTextField alphaMask;
     private javax.swing.JCheckBox autosaved;
@@ -1531,8 +1601,6 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JTextField iconRef;
     private ennuo.craftworld.things.InventoryMetadata inventoryMetadata1;
     private javax.swing.JTextField itemRef;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1563,7 +1631,6 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
@@ -1591,10 +1658,6 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JSpinner jSpinner2;
-    private javax.swing.JSpinner jSpinner3;
-    private javax.swing.JSpinner jSpinner4;
     private javax.swing.JTextField levelName;
     private javax.swing.JTextField levelSHA1;
     private javax.swing.JTextField locationKey;
@@ -1607,7 +1670,9 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JTextField photoSlotID;
     private javax.swing.JComboBox<String> photoSlotType;
     private javax.swing.JSpinner photoTimestamp;
+    private javax.swing.JList<String> photoUsers;
     private javax.swing.JButton removeCreator;
+    private javax.swing.JButton removePhotoUser;
     private javax.swing.JCheckBox restricted;
     private javax.swing.JButton saveItem;
     private javax.swing.JTextField sticker;

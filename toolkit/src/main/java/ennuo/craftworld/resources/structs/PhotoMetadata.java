@@ -4,16 +4,17 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
+import java.util.Date;
 
 public class PhotoMetadata {
     public static int MAX_SIZE = 0x22c + SlotID.MAX_SIZE + (4 * PhotoUser.MAX_SIZE);
     
-    public ResourcePtr photo = new ResourcePtr(null, RType.TEXTURE);
+    public ResourcePtr photo = new ResourcePtr(0, RType.TEXTURE);
     public SlotID level = new SlotID();
     public String levelName;
-    public byte[] levelHash = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;
-    public PhotoUser[] users = new PhotoUser[0];
-    public long timestamp = 0xBF130186L;
+    public byte[] levelHash = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    public PhotoUser[] users;
+    public long timestamp = new Date().getTime() * 2 / 1000;
     
     public PhotoMetadata() {}
     public PhotoMetadata(Data data) {
@@ -36,9 +37,11 @@ public class PhotoMetadata {
         output.str16(levelName);
         output.bytes(levelHash);
         output.varint(timestamp);
-        output.int8(users.length);
-        for (PhotoUser user : users)
-            user.serialize(output);
+        if (users != null) {
+            output.int32(users.length);
+            for (PhotoUser user : users)
+                user.serialize(output);
+        } else output.int8(0);
     }
     
     @Override

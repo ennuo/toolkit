@@ -251,6 +251,17 @@ public class Toolkit extends javax.swing.JFrame {
         int archiveCount = archives.size();
         FileData db = getCurrentDB();
         
+        if (db != null) {
+            if (db.shouldSave) {
+                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name + " *");
+                saveMenu.setEnabled(true);
+            }
+            else  {
+                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name);
+                saveMenu.setEnabled(false);
+            }
+        }
+        
         fileExists = false;
         if (lastSelected != null && lastSelected.entry != null) {
             if (lastSelected.entry.data != null)
@@ -1569,6 +1580,7 @@ public class Toolkit extends javax.swing.JFrame {
                 archive.save();   
             } else System.out.println("FileArchive has no pending changes, skipping save."); 
         }
+        updateWorkspace();
     }//GEN-LAST:event_saveMenuActionPerformed
 
     private void addFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFileActionPerformed
@@ -1587,6 +1599,8 @@ public class Toolkit extends javax.swing.JFrame {
             else addFile(data);
         }
         
+        updateWorkspace();
+        
         
         if (isBigProfile) {
             JTree tree  = getCurrentTree();
@@ -1601,6 +1615,7 @@ public class Toolkit extends javax.swing.JFrame {
     public void addFile(byte[] data) {
         if (isBigProfile) {
             ((BigProfile)getCurrentDB()).add(data);
+            updateWorkspace();
             return;
         }
         
@@ -1614,6 +1629,7 @@ public class Toolkit extends javax.swing.JFrame {
     public void addFile(byte[] data, FileArchive[] archives) {
         for (FileArchive archive : archives)
             archive.add(data);
+        updateWorkspace();
         System.out.println("Added file to queue, make sure to save your workspace!");
     }
     
@@ -1624,6 +1640,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         
         getCurrentDB().replace(entry, data);
+        updateWorkspace();
         
         JTree tree  = getCurrentTree();
         TreePath selectionPath = tree.getSelectionPath();
@@ -2040,6 +2057,7 @@ public class Toolkit extends javax.swing.JFrame {
             if (old == db.entries.size()) patched++;
             else added++;
         }
+        updateWorkspace();
         System.out.println(String.format("Succesfully updated FileDB (added = %d, patched = %d)", added, patched));
         ((FileModel) getCurrentTree().getModel()).reload();
     }//GEN-LAST:event_patchMAPActionPerformed
@@ -2151,6 +2169,8 @@ public class Toolkit extends javax.swing.JFrame {
         }
 
         ((FileModel) tree.getModel()).reload();
+        
+        updateWorkspace();
 
         tree.setSelectionPaths(paths);
         tree.setSelectionRows(rows);
@@ -2166,6 +2186,7 @@ public class Toolkit extends javax.swing.JFrame {
                 zero++;
             }
         }
+        updateWorkspace();
         System.out.println("Successfuly zeroed " + zero + " entries.");
     }//GEN-LAST:event_zeroContextActionPerformed
 
@@ -2353,6 +2374,9 @@ public class Toolkit extends javax.swing.JFrame {
         BigProfile profile = (BigProfile) getCurrentDB();
         profile.addString(str, hash);
         
+        profile.shouldSave = true;
+        updateWorkspace();
+        
         System.out.println("Done!");
         
     }//GEN-LAST:event_addKeyActionPerformed
@@ -2392,6 +2416,8 @@ public class Toolkit extends javax.swing.JFrame {
         tree.setSelectionPath(treePath);
         tree.scrollPathToVisible(treePath);
         
+        updateWorkspace();
+        
         System.out.println("Duplicated entry!");
         System.out.println(entry.path + " -> " + duplicate.path);
     }//GEN-LAST:event_duplicateContextActionPerformed
@@ -2422,6 +2448,8 @@ public class Toolkit extends javax.swing.JFrame {
         
         tree.setSelectionPath(treePath);
         tree.scrollPathToVisible(treePath);
+        
+        updateWorkspace();
         
         System.out.println("Added entry! -> " + entry.path);
         
