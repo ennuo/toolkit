@@ -573,7 +573,7 @@ public class Serializer {
         input.seek(metadataOffset);
         
         try {
-            if (gameRevision >= 0x397) {
+            if (gameRevision > 0x34a) {
                 Serializer serializer = new Serializer(input, LAMS);
                 item.metadata = serializer.ParseMetadata();
             } else if (gameRevision <= 0x1fa) {
