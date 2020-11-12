@@ -177,12 +177,21 @@ public class Toolkit extends javax.swing.JFrame {
         progressBar.setVisible(false);
         fileDataTabs.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                FileData data = databases.get(fileDataTabs.getSelectedIndex()); 
-                search.setText(data.query);
-                if (search.getText().equals("Search...")) search.setForeground(Color.GRAY);
-                else search.setForeground(Color.WHITE);
-                isBigProfile = data.type.equals("Big Profile");
-                isMod = data.type.equals("Mod");
+                int index = fileDataTabs.getSelectedIndex();
+                if (index == -1) {
+                    search.setEnabled(false);
+                    isMod = false; isBigProfile = false;
+                    search.setForeground(Color.GRAY);
+                    search.setText("Search is currently disabled.");
+                } else {
+                    search.setEnabled(true);
+                    FileData data = databases.get(fileDataTabs.getSelectedIndex()); 
+                    search.setText(data.query);
+                    if (search.getText().equals("Search...")) search.setForeground(Color.GRAY);
+                    else search.setForeground(Color.WHITE);
+                    isBigProfile = data.type.equals("Big Profile");
+                    isMod = data.type.equals("Mod");
+                }
                 updateWorkspace();
             }
         });
@@ -247,6 +256,7 @@ public class Toolkit extends javax.swing.JFrame {
     }
     
     public void updateWorkspace() {
+        closeTab.setVisible(fileDataTabs.getTabCount() != 0);
         installProfileMod.setVisible(false);
         int archiveCount = archives.size();
         FileData db = getCurrentDB();
@@ -496,6 +506,7 @@ public class Toolkit extends javax.swing.JFrame {
         saveAs = new javax.swing.JMenuItem();
         saveMenu = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        closeTab = new javax.swing.JMenuItem();
         reboot = new javax.swing.JMenuItem();
         FARMenu = new javax.swing.JMenu();
         addFile = new javax.swing.JMenuItem();
@@ -1100,6 +1111,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         fileMenu.add(saveMenu);
         fileMenu.add(jSeparator4);
+
+        closeTab.setText("Close Tab");
+        closeTab.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeTabActionPerformed(evt);
+            }
+        });
+        fileMenu.add(closeTab);
 
         reboot.setText("Reboot");
         reboot.addActionListener(new java.awt.event.ActionListener() {
@@ -2711,6 +2730,20 @@ public class Toolkit extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_convertAllToGUIDActionPerformed
 
+    private void closeTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeTabActionPerformed
+        int index = fileDataTabs.getSelectedIndex();
+        
+        FileData data = getCurrentDB();
+        if (data.shouldSave) {
+            int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) data.save(data.path);
+        }
+        
+        databases.remove(index);
+        trees.remove(index);
+        fileDataTabs.removeTabAt(index);
+    }//GEN-LAST:event_closeTabActionPerformed
+
     
     private void newDB(int header) {
         Output output = new Output(0x8);
@@ -3139,6 +3172,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JMenuItem clear;
+    private javax.swing.JMenuItem closeTab;
     private javax.swing.JTextArea console;
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
