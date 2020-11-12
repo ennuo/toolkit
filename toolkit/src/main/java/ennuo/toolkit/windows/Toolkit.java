@@ -2537,6 +2537,10 @@ public class Toolkit extends javax.swing.JFrame {
         if (entry.item != null) {
             resource.setData(compressed); resource.decompress(true);
             InventoryMetadata metadata = new Serializer(resource).DeserializeItem().metadata;
+            if (LAMS != null) {
+                metadata.translatedLocation = LAMS.Translate(metadata.location);
+                metadata.translatedCategory = LAMS.Translate(metadata.category);
+            }
             if (metadata == null) {
                 metadata = new InventoryMetadata();
                 metadata.userCreatedDetails = new UserCreatedDetails();
@@ -3030,14 +3034,17 @@ public class Toolkit extends javax.swing.JFrame {
             StringMetadata.setSelected(true);
             
             titleField.setText(LAMS.Translate(metadata.titleKey));
+            
             descriptionField.setText(LAMS.Translate(metadata.descriptionKey));
             
-            locationField.setText(LAMS.Translate(metadata.location));
-            categoryField.setText(LAMS.Translate(metadata.category));
+            metadata.translatedLocation = LAMS.Translate(metadata.location);
+            metadata.translatedCategory = LAMS.Translate(metadata.category);
+            locationField.setText(metadata.translatedLocation);
+            categoryField.setText(metadata.translatedCategory);
         } else { LAMSMetadata.setSelected(true); LAMSMetadata.setEnabled(true); StringMetadata.setEnabled(false); }
         
         
-        if (metadata.userCreatedDetails.title != null || metadata.userCreatedDetails.description != null) {
+        if (metadata.userCreatedDetails != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             if (metadata.userCreatedDetails.title != null)
