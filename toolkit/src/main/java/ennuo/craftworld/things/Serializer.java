@@ -271,11 +271,11 @@ public class Serializer {
         if (!isItem) return metadata;
         
         if (input.revision >= 0x272) {
-            metadata.category = input.uint32();
             metadata.location = input.uint32();
+            metadata.category = input.uint32();
         } else {
-            metadata.legacyCategoryKey = input.str8();
             metadata.legacyLocationKey = input.str8();
+            metadata.legacyCategoryKey = input.str8();
         }
         
 
