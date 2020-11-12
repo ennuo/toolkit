@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Random;
 
 public class BigProfile extends FileData {
@@ -497,6 +498,8 @@ public class BigProfile extends FileData {
     ProfileItem item = new ProfileItem();
     item.resource = resource;
     item.metadata = metadata;
+    if (metadata.dateAdded == 0)
+        metadata.dateAdded = new Date().getTime() * 2 / 1000;
     item.flags = 0;
     inventoryCollection.add(item);
     addItemNode(item);
