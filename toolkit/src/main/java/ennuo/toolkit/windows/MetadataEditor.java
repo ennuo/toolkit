@@ -18,10 +18,8 @@ import javax.swing.JFrame;
 import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
-import ennuo.craftworld.resources.structs.Copyright;
 import ennuo.craftworld.resources.structs.EyetoyData;
 import ennuo.craftworld.resources.structs.PhotoData;
-import ennuo.craftworld.resources.structs.PhotoMetadata;
 import ennuo.craftworld.resources.structs.PhotoUser;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
@@ -92,6 +90,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                 if (photoUsers.getSelectedIndex() == -1) {
                     X.setValue(0f); Y.setValue(0f);
                     Z.setValue(0f); W.setValue(0f);
+                    return;
                 }
                 PhotoUser user = users.get(photoUsers.getSelectedIndex());
                 lastUser = user;
@@ -1605,11 +1604,12 @@ public class MetadataEditor extends javax.swing.JFrame {
     private void addPhotoUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPhotoUserActionPerformed
         String creator = JOptionPane.showInputDialog(this, "Add new user", "User");  
         if (creator == null) return;
-        photoModel.addElement(creator);
         PhotoUser user = new PhotoUser();
         user.PSID = creator; user.user = creator;
         user.bounds = new Vector4f(0, 0, 0, 0);
         users.add(user);
+        photoModel.addElement(creator);
+        photoUsers.setSelectedIndex(users.size() - 1);
     }//GEN-LAST:event_addPhotoUserActionPerformed
 
     private void XStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_XStateChanged
