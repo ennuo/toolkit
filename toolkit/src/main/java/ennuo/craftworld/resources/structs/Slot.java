@@ -58,6 +58,8 @@ public class Slot {
     public int minPlayers = 1;
     public int maxPlayers = 4;
     
+    public boolean enforceMinMaxPlayers = false;
+    
     public boolean moveRecommended = false;
     public boolean crossCompatible = false;
     
@@ -184,6 +186,9 @@ public class Slot {
         minPlayers = data.int8();
         maxPlayers = data.int8();
         
+        if (data.revision >= 0x021803F9)
+            enforceMinMaxPlayers = data.bool();
+        
         System.out.println(String.format("Slot has minPlayers = %d, maxPlayers = %d", minPlayers, maxPlayers));
         
         if (data.revision >= 0x3b7)
@@ -286,6 +291,9 @@ public class Slot {
         
         output.int8(minPlayers);
         output.int8(maxPlayers);
+        
+        if (output.revision >= 0x021803F9)
+            output.bool(enforceMinMaxPlayers);
         
         if (output.revision >= 0x3b7)
             output.bool(moveRecommended);
