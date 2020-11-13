@@ -2372,8 +2372,10 @@ public class Toolkit extends javax.swing.JFrame {
                 }
                 
             }
-            
         }
+        
+        getCurrentDB().shouldSave = true;
+        updateWorkspace();
         
         JTree tree = getCurrentTree();
         TreePath[] treePath = tree.getSelectionPaths();
