@@ -45,10 +45,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -2878,8 +2876,8 @@ public class Toolkit extends javax.swing.JFrame {
        resourceService.submit(() -> {
                 if (archives.size() != 0 || isBigProfile || isMod) {
                     byte[] entryBuffer = null;
-                entryBuffer = extractFile(selected.entry.hash);
-                selected.entry.data = entryBuffer; updateWorkspace();
+                entryBuffer = extractFile(entry.hash);
+                entry.data = entryBuffer; updateWorkspace();
                 if (entryBuffer == null) { setHexEditor(null); return; }
                 setHexEditor(entryBuffer);
                 if (entry.dependencyModel == null || entry.dependencies == null || entry.missingDependencies) {
@@ -2894,20 +2892,20 @@ public class Toolkit extends javax.swing.JFrame {
                 
                 if (lastSelected == selected && entry.dependencyModel != null && tree == currentTree)
                     dependencyTree.setModel(entry.dependencyModel);
-                String path = selected.entry.path.toLowerCase();
+                String path = entry.path.toLowerCase();
             
                 String ext = path.substring(path.lastIndexOf(".") + 1);
             
                 preview.setDividerLocation(325);
                 switch (ext) {
                     case "pck": 
-                        if (selected.entry.pack == null) {
+                        if (entry.pack == null) {
                             Resource res = new Resource(entryBuffer);
                             res.decompress(true);
-                            selected.entry.revision = res.revision;
+                            entry.revision = res.revision;
                             try {
                                 Pack pack = new Pack(res);
-                                selected.entry.pack = pack;
+                                entry.pack = pack;
                             } catch (Exception e) {
                                 System.err.println("There was an error processing the RPack file! -> ");
                                 System.err.println(e);
@@ -2915,35 +2913,43 @@ public class Toolkit extends javax.swing.JFrame {
                         }
                         break;
                     case "slt":
-                            if (selected.entry.slots == null) {
+                            if (entry.slots == null) {
                                 Resource res = new Resource(entryBuffer);
                                 if (res.magic.equals("SLTt")) return;
                                 res.decompress(true);
-                                selected.entry.revision = res.revision;
+                                entry.revision = res.revision;
                                 
                                 int count = res.int32();
-                                selected.entry.slots = new ArrayList<Slot>(count);
-                                for (int i = 0; i < count; ++i) 
-                                    selected.entry.slots.add(new Slot(res, true, false));
+                                entry.slots = new ArrayList<Slot>(count);
+                                for (int i = 0; i < count; ++i) {
+                                    Slot slot = new Slot(res, true, false);
+                                    entry.slots.add(slot);
+                                    if (slot.root != null) {
+                                        FileEntry e = findEntry(slot.root);
+                                        e.revision = res.revision;
+                                        if (e != null)
+                                            e.slot = slot;
+                                    }
+                                }
                             }
                             break;
                     case "bin":
-                        if (selected.entry.slot == null) break;
-                        if (selected.entry.slot.renderedIcon == null) {
-                            setImage(null); break;
+                        if (entry.slot != null) {
+                            if (entry.slot.renderedIcon == null)
+                                entry.slot.renderIcon(entry, this);
+                            setImage(entry.slot.renderedIcon);
                         }
-                        setImage(selected.entry.slot.renderedIcon);
                         break;
                     case "tex": case "gtf": case "dds": case "jpg": case "jpeg": case "png": case "jfif":
-                        if (selected.entry.texture == null)
-                            selected.entry.texture = new Texture(entryBuffer);
-                        ImageIcon icon = selected.entry.texture.getImageIcon(320, 320);
+                        if (entry.texture == null)
+                            entry.texture = new Texture(entryBuffer);
+                        ImageIcon icon = entry.texture.getImageIcon(320, 320);
                         if (icon != null) setImage(icon);
                         else System.out.println("Failed to set icon, it's null?");
                         break;
                     case "mol": 
-                        if (selected.entry.mesh == null)
-                            selected.entry.mesh = new Mesh(entryBuffer);
+                        if (entry.mesh == null)
+                            entry.mesh = new Mesh(entryBuffer);
                         System.out.println("Failed to set Mesh preview, does functionality even exist?");
                         break;
                     case "anim":
@@ -2956,18 +2962,18 @@ public class Toolkit extends javax.swing.JFrame {
                                 selected.entry.item = new Serializer(resource, LAMS).DeserializeItem();   
                             } catch (Exception e) { System.err.println("There was an error parsing the InventoryItem!"); return; }
                         }
-                        if (lastSelected.entry == selected.entry) {
-                            if (selected.entry.item != null && tree == currentTree) {
-                                if (selected.entry.item.metadata != null)
-                                    populateMetadata(selected.entry.item);
+                        if (lastSelected.entry == entry) {
+                            if (entry.item != null && tree == currentTree) {
+                                if (entry.item.metadata != null)
+                                    populateMetadata(entry.item);
                                 else {
                                     System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
                                     try {
-                                        for (FileEntry e : selected.entry.dependencies) {
+                                        for (FileEntry e : entry.dependencies) {
                                             if (e.path.contains(".tex")) {
                                                 ResourcePtr ptr = new ResourcePtr();
                                                 ptr.hash = e.hash;
-                                                loadImage(ptr, selected.entry.item);
+                                                loadImage(ptr, entry.item);
                                                 return;
                                             }
                                         }

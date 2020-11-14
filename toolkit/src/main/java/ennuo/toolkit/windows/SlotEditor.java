@@ -191,25 +191,7 @@ public class SlotEditor extends javax.swing.JFrame {
         setResource(adventure, slot.adventure);
         
         if (slot.icon != null) {
-            byte[] data = toolkit.extractFile(slot.icon);
-            BufferedImage image = null;
-            if (data != null) {
-                Texture texture = new Texture(data);
-                if (texture != null) image = texture.getImage();
-            }
-            
-            int revision = entry.revision;
-            if (slot.root != null) {
-                byte[] root = toolkit.extractFile(slot.root);
-                if (root != null)
-                    revision = new Resource(root).revision;
-            }
-            
-            
-            if (slot.slot.type.equals(SlotType.DEVELOPER_GROUP) || slot.slot.type.equals(SlotType.DLC_PACK))
-                slot.renderedIcon = Images.getGroupIcon(image);
-            else slot.renderedIcon = Images.getSlotIcon(image, revision);
-            
+            slot.renderIcon(entry, toolkit);
             iconPtr.setText(slot.icon.toString());
         } else iconPtr.setText("");
         

@@ -2,15 +2,22 @@ package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.resources.structs.Collectable;
 import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector4f;
+import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Label;
 import ennuo.craftworld.resources.structs.SlotID;
+import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.windows.Toolkit;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 public class Slot {
@@ -84,6 +91,26 @@ public class Slot {
     }
     public Slot(Data data, boolean parseSlot, boolean parseGroup) {
         process(data, parseSlot, parseGroup);
+    }
+    
+    public void renderIcon(FileEntry entry, Toolkit toolkit) {
+        byte[] data = toolkit.extractFile(icon);
+        BufferedImage image = null;
+        if (data != null) {
+            Texture texture = new Texture(data);
+            if (texture != null) image = texture.getImage();
+        }
+            
+        int revision = entry.revision;
+        if (root != null) {
+            byte[] root = toolkit.extractFile(this.root);
+            if (root != null)
+                revision = new Resource(root).revision;
+        }    
+            
+        if (slot.type.equals(SlotType.DEVELOPER_GROUP) || slot.type.equals(SlotType.DLC_PACK))
+            renderedIcon = Images.getGroupIcon(image);
+        else renderedIcon = Images.getSlotIcon(image, revision);
     }
     
     
