@@ -2927,23 +2927,13 @@ public class Toolkit extends javax.swing.JFrame {
                         }
                         setImage(selected.entry.slot.renderedIcon);
                         break;
-                    case "tex": case "gtf": 
+                    case "tex": case "gtf": case "dds": case "jpg": case "jpeg": case "png": case "jfif":
                         if (selected.entry.texture == null)
                             selected.entry.texture = new Texture(entryBuffer);
                         ImageIcon icon = selected.entry.texture.getImageIcon(320, 320);
                         if (icon != null) setImage(icon);
                         else System.out.println("Failed to set icon, it's null?");
                         break;
-                    case "dds":
-                        BufferedImage DDS = Images.fromDDS(entryBuffer);
-                        if (DDS != null) {
-                            ImageIcon ddsIcon = Images.getImageIcon(DDS, 320, 320);
-                            if (ddsIcon != null) setImage(ddsIcon);
-                            else System.out.println("Failed to set icon, it's null?");
-                        }
-                        break;
-                    case "png": case "jpg": case "jpeg": case "jfif":
-                        loadImage(entryBuffer); break;
                     case "mol": 
                         if (selected.entry.mesh == null)
                             selected.entry.mesh = new Mesh(entryBuffer);
@@ -3088,19 +3078,6 @@ public class Toolkit extends javax.swing.JFrame {
                     if (lastSelected.entry.item == item)
                         setImage(texture.getImageIcon(320, 320));
             }
-    }
-    
-    private void loadImage(byte[] buffer) {
-        InputStream stream = new ByteArrayInputStream(buffer);
-        BufferedImage image = null;
-        try { image = ImageIO.read(stream); stream.close(); }
-        catch (IOException ex) {
-            Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, (String)null, ex);
-            return;
-        }
-        if (image != null)
-             setImage(Images.getImageIcon(image, 320, 320));
-        else System.out.println("Failed to set icon, it's null?");
     }
     
     private void setImage(ImageIcon image) {

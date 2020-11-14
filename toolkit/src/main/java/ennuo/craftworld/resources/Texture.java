@@ -7,9 +7,11 @@ import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Morton2D;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
@@ -59,9 +61,24 @@ public class Texture extends Resource {
   
   public Texture(byte[] data) {
     super(data);
-    if (this.data == null) {
+    if (data == null || data.length < 4) {
         System.out.println("No data provided to Texture constructor");
         return;
+    }
+    
+    
+    String magic = str(3); seek(0);
+    switch (magic) {
+        case "ÿØÿ":
+	case "‰PN":
+            InputStream stream = new ByteArrayInputStream(data);
+            try {
+                cached = ImageIO.read(stream); stream.close(); parsed = true;
+            } catch (IOException ex) { System.err.println("An error occured reading BufferedImage"); parsed = false; }
+            return;
+        case "DDS":
+            cached = Images.fromDDS(data);
+            parsed = true; return;
     }
     
     if (null == this.type) parsed = false; 
