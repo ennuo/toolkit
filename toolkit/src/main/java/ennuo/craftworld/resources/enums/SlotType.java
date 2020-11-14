@@ -30,7 +30,7 @@ public enum SlotType {
             if (type.value == value) 
                 return type;
         }
-        return null;
+        return SlotType.DEVELOPER;
     }
     
 }

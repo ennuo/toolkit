@@ -20,6 +20,6 @@ public enum LevelType {
             if (type.value == value) 
                 return type;
         }
-        return null;
+        return LevelType.COOPERATIVE;
     }
 }

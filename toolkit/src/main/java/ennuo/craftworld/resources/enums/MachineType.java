@@ -24,6 +24,6 @@ public enum MachineType {
             if (type.value == value) 
                 return type;
         }
-        return null;
+        return MachineType.VOID;
     }
 }

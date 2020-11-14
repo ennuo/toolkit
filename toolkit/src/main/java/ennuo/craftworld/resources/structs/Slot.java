@@ -20,12 +20,11 @@ public class Slot {
     public SlotID slot = new SlotID();
     public SlotID group = new SlotID();
     
-    public ResourcePtr root = new ResourcePtr(null, RType.LEVEL);
-    public ResourcePtr adventure = new ResourcePtr(null, RType.ADVENTURE_CREATE_PROFILE);
+    public ResourcePtr root;
+    public ResourcePtr adventure;
     public ResourcePtr icon = new ResourcePtr(10682, RType.TEXTURE);
     
     public ImageIcon renderedIcon;
-    
     
     public Vector4f location = new Vector4f(0.75f, 0.67f, 0.06f, 0);
     public int revision = 1;
@@ -75,8 +74,6 @@ public class Slot {
     public SlotID originalSlotID = new SlotID();
     
     public int customBadgeSize = 1;
-    
-    public ResourcePtr trailer = new ResourcePtr(null, RType.UNKNOWN);
     
     public int gameProgressionState = 3;
     
@@ -225,7 +222,9 @@ public class Slot {
         
         System.out.println("Slot has customBadgeSize = " + customBadgeSize);
         
-        data.str8(); data.str8();
+        data.str8(); 
+        if (data.revision > 0x01ae03f9)
+            data.str8();
     }
     
     public void serialize(Output output) { serialize(output, false, false); }
@@ -321,6 +320,8 @@ public class Slot {
         
         output.int8(customBadgeSize);
         
-        output.str8(""); output.str8("");
+        output.str8("");
+        if (output.revision > 0x01ae03f9)
+            output.str8("");
     }
 }

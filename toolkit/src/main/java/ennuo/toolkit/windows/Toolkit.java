@@ -34,7 +34,6 @@ import ennuo.craftworld.things.Serializer;
 import ennuo.toolkit.streams.CustomPrintStream;
 import ennuo.toolkit.streams.TextAreaOutputStream;
 import ennuo.toolkit.utilities.FileChooser;
-import gr.zdimensions.jsquish.Squish;
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -58,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +66,6 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -79,11 +76,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import jnafilechooser.api.JnaFileChooser;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
-import net.npe.dds.ddsutil.DDSUtil;
-import net.npe.dds.jogl.DDSImage;
 
 public class Toolkit extends javax.swing.JFrame {
     ExecutorService databaseService = Executors.newSingleThreadExecutor();
@@ -152,11 +146,11 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (username.equals("veryc")) {
             debugMenu.setVisible(true);
-            setTitle("VeryCoolMe's Modding Emporium | Debug");
+            setTitle("VeryCoolMe's Modding Emporium");
         }
         
         if (username.equals("shan") || username.equals("aidan")) {
-            setTitle("Weeabo's Playhouse");
+            setTitle("BAZINGA!");
             debugMenu.setVisible(true);
         }
         
@@ -1789,7 +1783,7 @@ public class Toolkit extends javax.swing.JFrame {
         else
         {
             boolean isSlotsFile = lastSelected.entry.pack == null;
-            new SlotEditor(this, lastSelected.entry, isSlotsFile).setVisible(true);
+            new SlotEditor(this, lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
         }
             
     }//GEN-LAST:event_editSlotContextActionPerformed
@@ -2301,7 +2295,7 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
         getCurrentDB().shouldSave = true;
-        new SlotEditor(this, ((BigProfile)getCurrentDB()).profile, false, ((BigProfile)getCurrentDB()).revision).setVisible(true);
+        new SlotEditor(this, ((BigProfile)getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile)getCurrentDB()).revision).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
@@ -2900,17 +2894,19 @@ public class Toolkit extends javax.swing.JFrame {
                 preview.setDividerLocation(325);
                 switch (ext) {
                     case "pck": 
-                        if (selected.entry.slots == null) {
+                        if (selected.entry.pack == null) {
                             Resource res = new Resource(entryBuffer);
                             res.decompress(true);
                             selected.entry.revision = res.revision;
-                            
-                            Pack pack = new Pack(res);
-                            selected.entry.pack = pack;
-                            selected.entry.slots = new ArrayList<Slot>(pack.packs.size());
-                            for (int i = 0; i < pack.packs.size(); ++i)
-                                selected.entry.slots.add(pack.packs.get(i).slot);  
+                            try {
+                                Pack pack = new Pack(res);
+                                selected.entry.pack = pack;
+                            } catch (Exception e) {
+                                System.err.println("There was an error processing the RPack file! -> ");
+                                System.err.println(e);
+                            }
                         }
+                        break;
                     case "slt":
                             if (selected.entry.slots == null) {
                                 Resource res = new Resource(entryBuffer);
@@ -2923,6 +2919,7 @@ public class Toolkit extends javax.swing.JFrame {
                                 for (int i = 0; i < count; ++i) 
                                     selected.entry.slots.add(new Slot(res, true, false));
                             }
+                            break;
                     case "bin":
                         if (selected.entry.slot == null) break;
                         if (selected.entry.slot.renderedIcon == null) {
@@ -2987,7 +2984,6 @@ public class Toolkit extends javax.swing.JFrame {
                 preview.setDividerLocation(325);
             }
         });
-        
     }
     
     private void populateMetadata(InventoryItem item) {

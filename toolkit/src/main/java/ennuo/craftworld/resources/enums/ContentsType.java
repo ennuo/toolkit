@@ -1,11 +1,11 @@
 package ennuo.craftworld.resources.enums;
 
 public enum ContentsType {
-    UNKNOWN(-1),
     THEME(0),
     PACK(1),
     LEVEL(2),
-    COSTUME(3);
+    COSTUME(3),
+    ADVENTURE(5);
     
     public final int value;
     
@@ -16,7 +16,7 @@ public enum ContentsType {
             if (type.value == value) 
                 return type;
         }
-        return ContentsType.UNKNOWN;
+        return ContentsType.THEME;
     }
     
 }

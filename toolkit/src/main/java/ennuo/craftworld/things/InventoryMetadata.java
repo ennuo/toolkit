@@ -43,7 +43,7 @@ public class InventoryMetadata {
     public short locationIndex = -1, categoryIndex = -1;
     public short primaryIndex = 0; 
     
-    public Copyright creator = new Copyright("LittleBigPlanet", "");
+    public Copyright creator = new Copyright("", "");
     
     public ToolType toolType = ToolType.NONE;
     public byte flags = 0;
