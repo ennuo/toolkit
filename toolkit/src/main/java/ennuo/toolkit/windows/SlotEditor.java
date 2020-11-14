@@ -31,7 +31,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.structs.PackItem;
+import java.awt.image.BufferedImage;
 import java.util.Date;
+import javax.swing.JTextField;
 
 public class SlotEditor extends javax.swing.JFrame {
     
@@ -184,51 +186,31 @@ public class SlotEditor extends javax.swing.JFrame {
         
         backgroundGUID.setValue(slot.backgroundGUID);
         
-        if (slot.planetDecorations != null) {
-            if (slot.planetDecorations.hash != null) 
-                planetDecoration.setText(Bytes.toHex(slot.planetDecorations.hash));
-            else if (slot.planetDecorations.GUID != -1) 
-                planetDecoration.setText("g" + slot.planetDecorations.GUID);
-        }
-        
-        if (slot.root != null) {
-            if (slot.root.hash != null) 
-                rootLevel.setText(Bytes.toHex(slot.root.hash));
-            else if (slot.root.GUID != -1) 
-                rootLevel.setText("g" + slot.root.GUID);
-        } else rootLevel.setText("");
-        
-        if (slot.adventure != null) {
-            if (slot.adventure.hash != null) {
-                adventure.setText(Bytes.toHex(slot.adventure.hash));
-            } else if (slot.adventure.GUID != -1) {
-                adventure.setText("g" + slot.adventure.GUID);
-            }
-        } else adventure.setText("");
+        setResource(planetDecoration, slot.planetDecorations);
+        setResource(rootLevel, slot.root);
+        setResource(adventure, slot.adventure);
         
         if (slot.icon != null) {
-            
-            byte[] data = null;
-            if (slot.icon.GUID != -1)
-                data = toolkit.extractFile(slot.icon.GUID);
-            else if (slot.icon.hash != null)
-                data = toolkit.extractFile(slot.icon.hash);
+            byte[] data = toolkit.extractFile(slot.icon);
+            BufferedImage image = null;
             if (data != null) {
                 Texture texture = new Texture(data);
-                if (texture != null) {
-                    if (slot.slot.type.equals(SlotType.DEVELOPER_GROUP) || slot.slot.type.equals(SlotType.DLC_PACK))
-                        slot.renderedIcon = Images.getGroupIcon(texture.getImage());
-                    else slot.renderedIcon = Images.getSlotIcon(texture.getImage(), entry.revision);
-                }
+                if (texture != null) image = texture.getImage();
+            }
+            
+            int revision = entry.revision;
+            if (slot.root != null) {
+                byte[] root = toolkit.extractFile(slot.root);
+                if (root != null)
+                    revision = new Resource(root).revision;
             }
             
             
+            if (slot.slot.type.equals(SlotType.DEVELOPER_GROUP) || slot.slot.type.equals(SlotType.DLC_PACK))
+                slot.renderedIcon = Images.getGroupIcon(image);
+            else slot.renderedIcon = Images.getSlotIcon(image, revision);
             
-            if (slot.icon.hash != null) 
-                iconPtr.setText(Bytes.toHex(slot.icon.hash));
-            else if (slot.icon.GUID != -1)
-                iconPtr.setText("g" + slot.icon.GUID);
-            
+            iconPtr.setText(slot.icon.toString());
         } else iconPtr.setText("");
         
         levelType.setSelectedItem(slot.developerLevelType);
@@ -1241,6 +1223,11 @@ public class SlotEditor extends javax.swing.JFrame {
             return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
         else
             return new ResourcePtr(Bytes.toBytes(root), type);
+    }
+    
+    private void setResource(JTextField field, ResourcePtr res) {
+        if (res != null) field.setText(res.toString());
+        else field.setText("");
     }
     
     private long parseInteger(String str) {

@@ -1490,6 +1490,13 @@ public class Toolkit extends javax.swing.JFrame {
         return null;
     }
     
+    public byte[] extractFile(ResourcePtr ptr) {
+        if (ptr == null) return null;
+        if (ptr.hash != null) return extractFile(ptr.hash);
+        else if (ptr.GUID != -1) return extractFile(ptr.GUID);
+        return null;
+    }
+    
     public byte[] extractFile(long GUID) {
         FileData db = getCurrentDB();
         

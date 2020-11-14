@@ -30,6 +30,7 @@ import java.nio.ByteOrder;
 import java.util.Date;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -110,15 +111,10 @@ public class MetadataEditor extends javax.swing.JFrame {
         this.itemRef.setText("");
         iconRef.setText("");
         
-        if (item.resource != null) itemRef.setText(item.resource.toString());
-        else this.itemRef.setText("");
+        setResource(itemRef, item.resource);
         
         if (item.metadata.icon != null) {
-            byte[] data = null;
-            if (item.metadata.icon.GUID != -1)
-                data = toolkit.extractFile(item.metadata.icon.GUID);
-            else if (item.metadata.icon.hash != null)
-                data = toolkit.extractFile(item.metadata.icon.hash);
+            byte[] data = toolkit.extractFile(item.metadata.icon);
             if (data != null) {
                 Texture texture = new Texture(data);
                 if (texture != null) 
@@ -179,19 +175,15 @@ public class MetadataEditor extends javax.swing.JFrame {
         users.clear(); lastUser = null;
         if (item.metadata.photoData != null) {
             photoMetadata.setSelected(true);
-            if (item.metadata.photoData.icon != null)
-                photoIcon.setText(item.metadata.photoData.icon.toString());
-            else photoIcon.setText("");
-            if (item.metadata.photoData.sticker != null)
-                sticker.setText(item.metadata.photoData.sticker.toString());
-            else sticker.setText("");
-            if (item.metadata.photoData.painting != null)
-                painting.setText(item.metadata.photoData.painting.toString());
-            else painting.setText("");
+            
+            setResource(photoIcon, item.metadata.photoData.icon);
+            setResource(sticker, item.metadata.photoData.sticker);
+            setResource(painting, item.metadata.photoData.painting);
             
             photoTimestamp.setValue(new Date((item.metadata.photoData.photoMetadata.timestamp / 2 * 1000)));
             
-            photo.setText(item.metadata.photoData.photoMetadata.photo.toString());
+            setResource(photo, item.metadata.photoData.photoMetadata.photo);
+            
             levelSHA1.setText("h" + Bytes.toHex(item.metadata.photoData.photoMetadata.levelHash));
             
             photoSlotType.setSelectedItem(item.metadata.photoData.photoMetadata.level.type);
@@ -227,12 +219,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         if (item.metadata.eyetoyData != null) {
             eyetoyData.setSelected(true);
             EyetoyData data = item.metadata.eyetoyData;
-            if (data.frame != null) frame.setText(data.frame.toString());
-            else frame.setText("");
-            if (data.outline != null) outline.setText(data.outline.toString());
-            else outline.setText("");
-            if (data.alphaMask != null) alphaMask.setText(data.alphaMask.toString());
-            else alphaMask.setText("");
+            setResource(frame, data.frame);
+            setResource(outline, data.outline);
+            setResource(alphaMask, data.alphaMask);
         } else {
             eyetoyData.setSelected(false);
             frame.setText("");
@@ -1523,8 +1512,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         SlotID id = new SlotID();
         id.type = (SlotType) unlockSlotType.getSelectedItem();
-        id.ID = parseInteger(unlockSlotID.getText());
-        
+        id.ID = parseInteger(unlockSlotID.getText()); 
         
         int flags = 0;
         
@@ -1580,6 +1568,11 @@ public class MetadataEditor extends javax.swing.JFrame {
             return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
         else
             return new ResourcePtr(Bytes.toBytes(root), type);
+    }
+    
+    private void setResource(JTextField field, ResourcePtr res) {
+        if (res != null) field.setText(res.toString());
+        else field.setText("");
     }
     
     private void addCreatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorActionPerformed
