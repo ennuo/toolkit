@@ -147,6 +147,16 @@ public class Toolkit extends javax.swing.JFrame {
             setTitle("VeryCoolMe's Modding Emporium");
         }
         
+        if (username.equals("elija")) {
+            setTitle("Shitting in HD");
+            debugMenu.setVisible(true);
+        }
+        
+        if (username.equals("dominick")) {
+            setTitle("Undertale Piracy Tool");
+            debugMenu.setVisible(true);
+        }
+        
         if (username.equals("shan") || username.equals("aidan")) {
             setTitle("BAZINGA!");
             debugMenu.setVisible(true);
