@@ -121,10 +121,11 @@ public class BigProfile extends FileData {
       if (resource.magic.equals("BPRb")) { profile = entry; } 
       else { entries.add(entry); if (!isStreamingChunk) addNode(entry); }
     }
-    if (!isStreamingChunk)
+    if (!isStreamingChunk) {
         parseProfile();
-    if (data.offset % 4 != 0) data.forward(4 - (data.offset % 4));
-    integrity = data.bytes(tableOffset - data.offset);
+        if (data.offset % 4 != 0) data.forward(4 - (data.offset % 4));
+        integrity = data.bytes(tableOffset - data.offset);
+    }
     isParsed = true;
   }
   

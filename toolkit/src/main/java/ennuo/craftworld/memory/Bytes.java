@@ -230,11 +230,17 @@ public class Bytes {
       return null;
   }
   
+  public static int occurences(byte[] data, byte[] pattern) {
+      int offset = 0, occurrences = 0;
+      while (offset != -1) {
+          offset = KMPMatchUtilities.indexOf(data, pattern, offset);
+          if (offset != -1) occurrences++;
+      }
+      return occurrences;
+  }
+  
   public static void ReplaceAll(Data data, byte[] original, byte[] replacement) {
       if (Arrays.equals(original, replacement)) return;
-      
-      
-      System.out.println(Bytes.toHex(original) + " -> " + Bytes.toHex(replacement));
       
       data.seek(0);
       
@@ -256,8 +262,6 @@ public class Bytes {
           
           offset = KMPMatchUtilities.indexOf(data.data, original);
       }
-      
-      System.out.println("Replaced " + found + " instances of resource.");
   }
   
   public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, Toolkit toolkit, FileEntry entry) {
@@ -272,11 +276,11 @@ public class Bytes {
             ResourcePtr res = plan.resources[i];
             plan.seek(0x12);
             if (res == null) continue;
-            if (plan.dependencies[i] != null)
+            if (plan.dependencies[i] == null)
                 continue;
             if (res.type == RType.SCRIPT) continue;
             byte[] data;
-            if (res.hash != null) data = toolkit.extractFile(res.hash);
+            if (res.hash != null && res.GUID == -1) data = toolkit.extractFile(res.hash);
             else data = toolkit.extractFile(res.GUID);
             if (data == null) continue;
             Resource dependency = new Resource(data);
@@ -310,7 +314,6 @@ public class Bytes {
       if (resource.resources != null && resource.resources.length != 0) {
         resource.decompress(true);
         for (int i = 0; i < resource.resources.length; ++i) {
-            System.out.println("Resource with magic: " + resource.magic + " has " + resource.resources.length + " dependencies");
             ResourcePtr res = resource.resources[i];
             if (res == null) continue;
             if (res.type == RType.SCRIPT) continue;

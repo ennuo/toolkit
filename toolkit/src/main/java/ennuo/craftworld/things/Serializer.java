@@ -148,7 +148,8 @@ public class Serializer {
         output.varint(metadata.category);
     }
     
-    public void serializeLegacyMetadata(InventoryMetadata metadata) {
+    public void serializeLegacyMetadata(InventoryMetadata metadata) { serializeLegacyMetadata(metadata, false); }
+    public void serializeLegacyMetadata(InventoryMetadata metadata, boolean item) {
         output.pad(0xC);
         
         output.int32f(metadata.locationIndex);
@@ -200,6 +201,16 @@ public class Serializer {
             currentComponent++; output.int32(currentComponent);
             metadata.eyetoyData.serialize(output);
         } else output.int32(0);
+        
+        if (!item) return;
+        
+        if (output.revision >= 0x272) {
+            output.uint32(metadata.location);
+            output.uint32(metadata.category);
+        } else {
+            output.str8(metadata.legacyLocationKey);
+            output.str8(metadata.legacyCategoryKey);
+        }
     }
     
     public InventoryMetadata ParseLBP1BPRMetadata() { return ParseLBP1BPRMetadata(false); }

@@ -1,15 +1,9 @@
 package ennuo.craftworld.memory;
 
 import ennuo.craftworld.resources.enums.RType;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class Data {
     
   public static int ENCODED_REVISION = 0x271;

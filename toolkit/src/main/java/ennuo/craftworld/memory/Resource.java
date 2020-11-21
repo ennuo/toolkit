@@ -6,6 +6,8 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.things.Serializer;
 import ennuo.toolkit.utilities.KMPMatchUtilities;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +38,35 @@ public class Resource extends Data {
         seek(0);
     }
   }
+  
+  
+  public void replaceMetadata(InventoryMetadata data, boolean compressed) {
+      if (!magic.equals("PLNb")) return;
+      
+      if (compressed)
+        decompress(true);
+      
+      if (revision < 0x272) {
+          System.out.println("lol fuck off");
+          return;
+      }
+      
+      InventoryMetadata oldData = new Serializer(this).DeserializeItem().metadata;
+      
+      Output output = new Output(InventoryMetadata.MAX_SIZE);
+      Serializer serializer = new Serializer(output);
+      
+      if (revision <= 0x272) serializer.serializeLegacyMetadata(data, true);
+      else serializer.serializeMetadata(data, true);
+      
+      output.shrinkToFit();
+      
+      
+      
+      
+  }
+  
+  
   
   public void removePlanDescriptors(long GUID, boolean compressed) {
       if (!magic.equals("PLNb")) return;
@@ -81,7 +112,6 @@ public class Resource extends Data {
   
   
   public void replaceDependency(int index, ResourcePtr replacement, boolean compressed) {
-      System.out.println("Replacing Dependency from magic: " + magic + " at index " + index);
       ResourcePtr dependency = resources[index];
       if (dependency == null || (dependency.GUID == -1 && dependency.hash == null) || dependencies.length == 0) return;
       
@@ -229,7 +259,6 @@ public class Resource extends Data {
     } 
     
     short chunks = int16();
-    System.out.println("Stream Count -> " + chunks);
     
     if (chunks == 0) {
         int old = offset; seek(8);
@@ -247,7 +276,6 @@ public class Resource extends Data {
       compressed[i] = int16LE();
       decompressed[i] = int16LE();
       decompressedSize += decompressed[i];
-      System.out.println("Stream[" + i + "] -> Decompressed=" + decompressed[i] + ", Compressed=" + compressed[i]);
     } 
     ByteArrayOutputStream stream = new ByteArrayOutputStream(decompressedSize);
     try {

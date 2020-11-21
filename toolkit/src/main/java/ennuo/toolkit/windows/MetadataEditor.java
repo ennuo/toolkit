@@ -2,6 +2,7 @@ package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Strings;
 import ennuo.craftworld.memory.Vector4f;
@@ -25,6 +26,7 @@ import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.types.FileEntry;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
@@ -1542,6 +1544,26 @@ public class MetadataEditor extends javax.swing.JFrame {
         writeColour(item.metadata);
         
         item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
+
+        
+        
+        if (item.resource != null) {
+            FileEntry entry = profile.find(item.resource.hash);
+            if (entry != null) {
+                byte[] data = toolkit.extractFile(item.resource);
+                if (data != null) {
+                    Resource resource = new Resource(data);
+                    //resource.replaceMetadata(item.metadata);
+                    toolkit.replaceEntry(entry, resource.data);
+                    item.metadata.resource = new ResourcePtr(Bytes.SHA1(resource.data), RType.PLAN);
+                }
+                
+            }
+        }
+        
+        
+        
+        
 
         profile.shouldSave = true;
         toolkit.updateWorkspace();

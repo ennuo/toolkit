@@ -22,7 +22,6 @@ public class Compressor {
             return stream.toByteArray();
             
         } catch (IOException ex) {
-            System.err.println("Failed to compress block, returning NULL.");
             return null;
         }
     }
@@ -30,8 +29,6 @@ public class Compressor {
     public static byte[] CompressRaw(byte[] data) {
         if (data == null) return new byte[] {};
         byte[][] chunks = Bytes.Split(data, 0x8000);
-        
-        System.out.println(String.format("Compressing %d chunks...", chunks.length));
         
         short[] compressedSize = new short[chunks.length];
         short[] uncompressedSize = new short[chunks.length];
@@ -46,10 +43,7 @@ public class Compressor {
             compressedSize[i] = (short) compressed.length;
             uncompressedSize[i] = (short) chunks[i].length;
             zlibDataSize += compressed.length;
-            System.out.println(String.format("Compressing chunk[%d] with size %d to %d", i, chunks[i].length, compressed.length));
         }
-        
-        System.out.println(String.format("Compressed file of size %d to %d", data.length, zlibDataSize));
         
         Output output = new Output(2 +(chunks.length * 4), 0);
         output.int16((short) zlibStreams.length);
@@ -76,11 +70,9 @@ public class Compressor {
     
     public static byte[] Compress(byte[] data, String magic, int revision, ResourcePtr[] dependencies) {
         if (magic.equals("SMHb")) return CompressStaticMesh(data, revision, dependencies);
-        System.out.println(String.format("Attempting to compress data with size %d, magic %s, revision %d, and with dependency count %d", data.length, magic, revision, dependencies.length));
         byte[] compressed = CompressRaw(data);
         
         boolean legacy = revision < 0x272;
-        if (legacy) System.out.println(String.format("Revision of %d is considered legacy, reverting to old headers", revision));
         int size = 40;
         byte[] flags = (legacy) ? new byte[] { 1, 0, 1 } : new byte[] { 0, 0, 0, 0, 7, 1, 0, 1 };
         if (revision <= 0x188) 
@@ -96,7 +88,6 @@ public class Compressor {
     }
     
     private static byte[] Dependinate(ResourcePtr[] resources) {
-        System.out.println(String.format("Dependinating %d resource(s)...", resources.length));
         Output output = new Output(0x1C * resources.length + 4);
         
         output.int32(resources.length);
