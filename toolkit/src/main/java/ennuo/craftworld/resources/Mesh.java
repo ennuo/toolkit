@@ -4,11 +4,9 @@ import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector2f;
-import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.mesh.CullBone;
@@ -375,45 +373,6 @@ public class Mesh extends Resource {
         output.shrinkToFit();
         
         return output.buffer;
-    }
-    
-    public void export (String path) { export(path, 0); }
-    public void export(String path, int channel) {
-        StringBuilder builder = new StringBuilder((streams[0].length * 41) + (uvCount * 42) + (faces.length * 40));
-        for (int j = 0; j < streams[0].length; ++j)
-             builder.append("v " + streams[0][j].x + " " + streams[0][j].y + " " + streams[0][j].z + '\n');
-        for (int i = 0; i < uvCount; ++i)
-            builder.append("vt " + attributes[i][channel].x + " " + (1.0f - attributes[i][channel].y) + '\n');
-        for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
-            if (i == -1 || faces[i] == -1) {
-                String str = "f ";
-                str += (faces[i + 1] + 1) + "/" + (faces[i + 1] + 1) + " ";
-                str += (faces[i + 2] + 1) + "/" + (faces[i + 2] + 1) + " ";
-                str += (faces[i + 3] + 1) + "/" + (faces[i + 3] + 1) + '\n';
-                
-                builder.append(str);
-                i += 3; j = 0;
-            } else {
-                if ((j & 1) == 1) {
-                    String str = "f ";
-                    str += (faces[i - 2] + 1) + "/" + (faces[i - 2] + 1) + " ";
-                    str += (faces[i] + 1) + "/" + (faces[i] + 1) + " ";
-                    str += (faces[i - 1] + 1) + "/" + (faces[i - 1] + 1) + '\n';
-                    builder.append(str);
-                }
-                else {
-                    String str = "f ";
-                    str += (faces[i - 2] + 1) + "/" + (faces[i - 2] + 1) + " ";
-                    str += (faces[i - 1] + 1) + "/" + (faces[i - 1] + 1) + " ";
-                    str += (faces[i] + 1) + "/" + (faces[i] + 1) + '\n';
-                    builder.append(str);
-                }
-            }
-        }
-        
-        FileIO.write(builder.toString().getBytes(), path);
-        
-        
     }
 
     private String getMirrorType(byte type) {

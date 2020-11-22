@@ -22,6 +22,7 @@ import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.Magic;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
+import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.swing.FileData;
@@ -1576,7 +1577,7 @@ public class Toolkit extends javax.swing.JFrame {
     public void exportMesh(int channel) {
         File file = fileChooser.openFile(lastSelected.header.substring(0, lastSelected.header.length() - 4) + ".obj", "obj", "Wavefront Object (.OBJ)", true);
         if (file != null)
-            lastSelected.entry.mesh.export(file.getAbsolutePath(), channel);
+            MeshIO.export(file.getAbsolutePath(), lastSelected.entry.mesh, channel);
     }
     
     private void openCompressinatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCompressinatorActionPerformed
