@@ -132,16 +132,15 @@ public class Output {
     
     public void resource(ResourcePtr res) { resource(res, false); }
     public void resource(ResourcePtr res, boolean bit) {
+        byte HASH = 1, GUID = 2;
+        if (revision <= 0x180) {
+            HASH = 2;
+            GUID = 1;
+        }
         
-      byte HASH = 1, GUID = 2;
-      if (revision <= 0x180) {
-          HASH = 2;
-          GUID = 1;
-      }
         
-        
-        if (revision < 0x23b) bit = true;
-        if (revision >= 0x23b && revision <= 0x25b && !bit) int8(0);
+        if (revision < 0x230) bit = true;
+        if (revision >= 0x230 && revision <= 0x26e && !bit) int8(0);
         if (bit) {
             if (res == null) int8(0);
             else if (res.hash != null) int8(HASH);
@@ -168,6 +167,13 @@ public class Output {
     
     public void float32(float value) {
         bytes(Bytes.toBytes(Float.floatToIntBits(value)));
+    }
+    
+    public void float32arr(float[] value) {
+        if (value == null) { int32(0); return; }
+        int32(value.length);
+        for (float f : value)
+            float32(f);
     }
     
     public void v2(Vector2f value) {

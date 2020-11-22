@@ -3,6 +3,7 @@ package ennuo.craftworld.resources.structs;
 import ennuo.craftworld.resources.structs.ShapeInfo;
 import ennuo.craftworld.resources.structs.ShapeVert;
 import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Vector4f;
 
 public class Bone {
@@ -45,7 +46,41 @@ public class Bone {
         
         boundBoxMin = data.v4(); boundBoxMax = data.v4();
         boundSphere = data.v4();
+    }
+    
+    public static Bone[] array(Data data) {
+        int count = data.int32();
+        Bone[] out = new Bone[count];
+        for (int i = 0; i < count; ++i)
+            out[i] = new Bone(data);
+        return out;
+    }
+    
+    public void serialize(Output output) {
+        output.string(name, 0x20);
+        output.int32(flags);
+        output.uint32(animHash);
+        output.int32(parent);
+        output.int32(firstChild);
+        output.int32(nextSibling);
+        output.matrix(skinPoseMatrix);
+        output.matrix(invSkinPoseMatrix);
+        output.v4(OBBMin); output.v4(OBBMax);
         
+        if (shapeVerts != null) {
+            output.int32(shapeVerts.length);
+            for (ShapeVert vert : shapeVerts)
+                vert.serialize(output);
+        }
         
+        if (shapeInfos != null) {
+            output.int32(shapeInfos.length);
+            for (ShapeInfo info : shapeInfos)
+                info.serialize(output);
+        }
+        
+        output.float32(shapeMinZ); output.float32(shapeMaxZ);
+        output.v4(boundBoxMin); output.v4(boundBoxMax);
+        output.v4(boundSphere);
     }
 }

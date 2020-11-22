@@ -118,6 +118,13 @@ public class Data {
       return Float.intBitsToFloat(int32f());
   }
   
+  public float[] float32arr() {
+      float[] floats = new float[int32()];
+      for (int i = 0; i < floats.length; ++i)
+          floats[i] = float32();
+      return floats;
+  }
+  
   public Vector2f v2() {
       return new Vector2f(float32(), float32());
   }
@@ -151,7 +158,7 @@ public class Data {
       byte type;
       
       if (revision < 0x230) bit = true;
-      if (revision >= 0x230 && revision <= 0x25b && !bit) this.int8();
+      if (revision >= 0x230 && revision <= 0x26e && !bit) this.int8();
       
       if (bit) type = int8();
       else if (revision > ENCODED_REVISION) type = (byte) int16();

@@ -541,6 +541,7 @@ public class Toolkit extends javax.swing.JFrame {
         addAllPlansToInventory = new javax.swing.JMenuItem();
         convertAllToGUID = new javax.swing.JMenuItem();
         dumpBPRToMod = new javax.swing.JMenuItem();
+        testSerializeCurrentMesh = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -1314,6 +1315,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         debugMenu.add(dumpBPRToMod);
+
+        testSerializeCurrentMesh.setText("test serialize current mesh");
+        testSerializeCurrentMesh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testSerializeCurrentMeshActionPerformed(evt);
+            }
+        });
+        debugMenu.add(testSerializeCurrentMesh);
 
         toolkitMenu.add(debugMenu);
 
@@ -2762,6 +2771,21 @@ public class Toolkit extends javax.swing.JFrame {
         fileDataTabs.removeTabAt(index);
     }//GEN-LAST:event_closeTabActionPerformed
 
+    private void testSerializeCurrentMeshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testSerializeCurrentMeshActionPerformed
+        String path = Paths.get(System.getProperty("user.home"), "/Desktop/", "test.mol").toAbsolutePath().toString();
+       
+        if (lastSelected == null || lastSelected.entry == null) return;
+        
+        Mesh mesh = lastSelected.entry.mesh;
+        if (mesh == null) return;
+        
+        byte[] data = mesh.serialize(mesh.revision);
+        
+        FileIO.write(data, path);
+        
+        System.out.println("serialized.");
+    }//GEN-LAST:event_testSerializeCurrentMeshActionPerformed
+
     
     private void newDB(int header) {
         Output output = new Output(0x8);
@@ -3279,6 +3303,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField search;
     private javax.swing.JComboBox<String> subCombo;
     private javax.swing.JScrollPane tableContainer;
+    private javax.swing.JMenuItem testSerializeCurrentMesh;
     private javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;

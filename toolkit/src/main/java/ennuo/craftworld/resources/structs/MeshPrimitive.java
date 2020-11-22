@@ -27,9 +27,18 @@ public class MeshPrimitive {
         region = data.int32();
     }
     
+    public static MeshPrimitive[] array(Data data) {
+        int count = data.int32();
+        MeshPrimitive[] out = new MeshPrimitive[count];
+        for (int i = 0; i < count; ++i)
+            out[i] = new MeshPrimitive(data);
+        return out;
+    }
+    
     public void serialize(Output output) {
-        output.resource(material, false);
-        output.resource(textureAlternatives, false);
+        boolean isBit = output.revision < 0x230;
+        output.resource(material, isBit);
+        output.resource(textureAlternatives, isBit);
         output.int32(minVert); output.int32(maxVert);
         output.int32(firstIndex); output.int32(numIndices);
         output.int32(region);
