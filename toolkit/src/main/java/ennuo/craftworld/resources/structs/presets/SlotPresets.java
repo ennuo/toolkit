@@ -6,16 +6,11 @@ import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 
-
-
-
-
 public class SlotPresets {
     
     public static Slot Crater(ResourcePtr level, int ID) {
         Slot slot = new Slot();
-        
-        
+
         SlotID slotID = new SlotID();
         slotID.type = SlotType.USER_CREATED_STORED_LOCAL;
         slotID.ID = ID;
@@ -28,8 +23,5 @@ public class SlotPresets {
         slot.root = level;
         
         return slot;
-        
     }
-    
-    
 }

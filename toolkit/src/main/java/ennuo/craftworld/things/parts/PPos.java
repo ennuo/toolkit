@@ -1,8 +1,5 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Vector3f;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.things.Part;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.things.ThingPtr;

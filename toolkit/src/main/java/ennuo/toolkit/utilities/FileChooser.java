@@ -10,11 +10,8 @@ import jnafilechooser.api.JnaFileChooser;
 import jnafilechooser.api.JnaFileChooser.Mode;
 
 public class FileChooser {
-    //public JFileChooser fileDialogue;
-
     public JnaFileChooser fileDialogue;
-
-
+    
     private FileFilter filter;
 
     private Window frame;

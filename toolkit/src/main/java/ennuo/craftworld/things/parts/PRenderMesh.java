@@ -1,6 +1,5 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;

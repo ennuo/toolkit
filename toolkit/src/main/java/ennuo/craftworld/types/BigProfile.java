@@ -117,7 +117,6 @@ public class BigProfile extends FileData {
       FileEntry entry = new FileEntry(resource.data, sha1); entry.timestamp = 0;
       entry.offset = offset;
       entry.size = size;
-      //if (resource.magic.equals("TEX ") || resource.magic.equals("GTF ")) entry.texture = new Texture(resource.data);
       if (resource.magic.equals("BPRb")) { profile = entry; } 
       else { entries.add(entry); if (!isStreamingChunk) addNode(entry); }
     }

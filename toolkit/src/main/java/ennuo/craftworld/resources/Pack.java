@@ -9,20 +9,20 @@ import java.util.ArrayList;
 
 public class Pack {
     public ArrayList<PackItem> packs;
-    
+
     public Pack(Data data) {
         int count = data.int32();
         packs = new ArrayList<PackItem>(count);
         for (int i = 0; i < count; ++i)
             packs.add(new PackItem(data));
-            
+
     }
-    
-    public byte[] serialize(int revision, boolean compressed) { 
+
+    public byte[] serialize(int revision, boolean compressed) {
         int count = packs.size();
         Output output = new Output(0x5 + (PackItem.MAX_SIZE * count), revision);
         output.int32(packs.size());
-        for (PackItem item : packs)
+        for (PackItem item: packs)
             item.serialize(output);
         output.shrinkToFit();
         if (compressed) {

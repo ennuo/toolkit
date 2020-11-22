@@ -1,4 +1,3 @@
-
 package ennuo.craftworld.things;
 
 public class Thing {

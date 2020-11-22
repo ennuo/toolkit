@@ -42,6 +42,5 @@ public class PackPresets {
         item.slot.authorName = author;
         
         return item;
-        
     }
 }

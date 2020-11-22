@@ -1,7 +1,6 @@
 package ennuo.craftworld.swing;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.memory.Data;
 
 public class FileData {
   public String path;

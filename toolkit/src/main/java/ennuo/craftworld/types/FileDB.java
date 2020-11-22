@@ -10,7 +10,6 @@ import ennuo.craftworld.swing.FileNode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import javax.swing.JProgressBar;
 
 public class FileDB extends FileData {

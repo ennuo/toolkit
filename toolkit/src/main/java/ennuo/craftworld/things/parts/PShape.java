@@ -72,10 +72,7 @@ public class PShape implements Part {
     
     public int fireDensity = 128;
     public int fireLifetime = 128;
-    
-    
-    
-    
+
     @Override
     public void Serialize(Serializer serializer) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

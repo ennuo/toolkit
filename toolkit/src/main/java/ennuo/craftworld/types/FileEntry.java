@@ -8,7 +8,6 @@ import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.things.InventoryItem;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class FileEntry {
   public static byte[] EMPTY_HASH = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
