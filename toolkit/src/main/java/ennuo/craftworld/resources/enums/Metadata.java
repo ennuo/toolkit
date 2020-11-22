@@ -16,7 +16,7 @@ public class Metadata {
   public static Map<String, CompressionType> magic;
   static {
       magic = new HashMap<String, CompressionType>();
-      magic.put("ADCb", CompressionType.CUSTOM_COMPRESSION);
+      magic.put("ADCb", CompressionType.CUSTOM_COMPRESSION); magic.put("ADSb", CompressionType.CUSTOM_COMPRESSION); magic.put("QSTb", CompressionType.CUSTOM_COMPRESSION); 
       magic.put("TEX ", CompressionType.LEGACY_TEXTURE); magic.put("GTF ", CompressionType.GTF_TEXTURE); magic.put("GTFs", CompressionType.GXT_SIMPLE_TEXTURE); magic.put("GTFS", CompressionType.GXT_EXTENDED_TEXTURE); 
       magic.put("JNTb", CompressionType.CUSTOM_COMPRESSION); magic.put("PLNb", CompressionType.CUSTOM_COMPRESSION); magic.put("BEVb", CompressionType.CUSTOM_COMPRESSION); magic.put("ANMb", CompressionType.CUSTOM_COMPRESSION); magic.put("LVLb", CompressionType.CUSTOM_COMPRESSION); 
       magic.put("CLDb", CompressionType.CUSTOM_COMPRESSION); magic.put("FSHb", CompressionType.CUSTOM_COMPRESSION); magic.put("GMTb", CompressionType.CUSTOM_COMPRESSION); magic.put("MATb", CompressionType.CUSTOM_COMPRESSION); 
