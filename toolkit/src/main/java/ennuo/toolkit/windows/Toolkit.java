@@ -2928,7 +2928,7 @@ public class Toolkit extends javax.swing.JFrame {
                 if (entry.dependencyModel == null || entry.dependencies == null || entry.missingDependencies) {
                     FileModel model = new FileModel(new FileNode("x", null, null));
                     Resource resource = new Resource(entryBuffer);
-                    boolean recursive = !(resource.magic.equals("PCKb") || resource.magic.equals("SLTb") || resource.magic.equals("LVLb"));
+                    boolean recursive = !(resource.magic.equals("PCKb") || resource.magic.equals("SLTb") || resource.magic.equals("LVLb") || resource.magic.equals("ADCb") || resource.magic.equals("PALb"));
                     entry.missingDependencies = resource.getDependencies(entry, this, recursive) != 0;
                     entry.dependencies = resource.dependencies;
                     generateDependencyTree(entry, model);
