@@ -12,7 +12,6 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.resources.Animation;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.memory.Resource;
