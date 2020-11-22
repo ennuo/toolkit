@@ -256,7 +256,7 @@ public class Images {
             Logger.getLogger(Images.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return new ImageIcon(res);
+        return new ImageIcon(getBufferedImageScaled(res, 220, 220));
     }
 
     public static void applyQualityRenderingHints(Graphics2D g2d) {

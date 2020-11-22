@@ -67,7 +67,6 @@ import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 
 public class Toolkit extends javax.swing.JFrame {
-
     public static Toolkit instance;
 
     public ExecutorService databaseService = Executors.newSingleThreadExecutor();
