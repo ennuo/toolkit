@@ -2998,9 +2998,6 @@ public class Toolkit extends javax.swing.JFrame {
                             entry.mesh = new Mesh(entryBuffer);
                         System.out.println("Failed to set Mesh preview, does functionality even exist?");
                         break;
-                    case "anim":
-                        Animation animation = new Animation(entryBuffer);
-                        break; 
                     case "plan":
                         if (selected.entry.item == null) {
                             try {
