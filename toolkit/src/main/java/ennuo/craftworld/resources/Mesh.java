@@ -1,8 +1,8 @@
 package ennuo.craftworld.resources;
 
 import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.resources.structs.Bone;
-import ennuo.craftworld.resources.structs.MeshPrimitive;
+import ennuo.craftworld.resources.structs.mesh.Bone;
+import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Output;
@@ -11,12 +11,12 @@ import ennuo.craftworld.memory.Vector2f;
 import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.resources.structs.CullBone;
-import ennuo.craftworld.resources.structs.ImplicitEllipsoid;
-import ennuo.craftworld.resources.structs.ImplicitPlane;
-import ennuo.craftworld.resources.structs.SoftbodyCluster;
-import ennuo.craftworld.resources.structs.SoftbodySpring;
-import ennuo.craftworld.resources.structs.SoftbodyVertEquivalence;
+import ennuo.craftworld.resources.structs.mesh.CullBone;
+import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
+import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
+import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
+import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
+import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
 
 public class Mesh extends Resource {
     

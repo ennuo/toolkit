@@ -1,4 +1,4 @@
-package ennuo.craftworld.resources.structs;
+package ennuo.craftworld.resources.structs.mesh;
 
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
