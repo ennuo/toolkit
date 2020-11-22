@@ -16,6 +16,7 @@ import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Label;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
@@ -93,8 +94,8 @@ public class Slot {
         process(data, parseSlot, parseGroup);
     }
     
-    public void renderIcon(FileEntry entry, Toolkit toolkit) {
-        byte[] data = toolkit.extractFile(icon);
+    public void renderIcon(FileEntry entry) {
+        byte[] data = Globals.extractFile(icon);
         BufferedImage image = null;
         if (data != null) {
             Texture texture = new Texture(data);
@@ -103,7 +104,7 @@ public class Slot {
             
         int revision = entry.revision;
         if (root != null) {
-            byte[] root = toolkit.extractFile(this.root);
+            byte[] root = Globals.extractFile(this.root);
             if (root != null)
                 revision = new Resource(root).revision;
         }    

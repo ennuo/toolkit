@@ -8,6 +8,7 @@ import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.things.Serializer;
+import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.utilities.KMPMatchUtilities;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.ByteArrayOutputStream;
@@ -171,14 +172,14 @@ public class Resource extends Data {
         setData(Compressor.Compress(data.data, magic, revision, resources)); 
   }
   
-  public Mod hashinate(FileEntry entry, Toolkit toolkit) {
+  public Mod hashinate(FileEntry entry) {
       Mod mod = new Mod();
-      Bytes.hashinate(mod, this, toolkit, entry);
+      Bytes.hashinate(mod, this, entry);
       return mod;
   }
   
-  public int getDependencies(FileEntry entry, Toolkit toolkit) { return getDependencies(entry, toolkit, true); }
-  public int getDependencies(FileEntry entry, Toolkit toolkit, boolean recursive) {
+  public int getDependencies(FileEntry entry) { return getDependencies(entry, true); }
+  public int getDependencies(FileEntry entry, boolean recursive) {
     if (type != CompressionType.CUSTOM_COMPRESSION && type != CompressionType.CUSTOM_COMPRESSION_LEGACY && type != CompressionType.STATIC_MESH)
       return 0;
     
@@ -201,22 +202,22 @@ public class Resource extends Data {
         case 1:
           byte[] hash = bytes(20);
           resources[i].hash = hash;
-          dependencies[i] = toolkit.findEntry(hash);
+          dependencies[i] = Globals.findEntry(hash);
           break;
         case 2:
           long GUID = uint32f();
           resources[i].GUID = GUID;
-          dependencies[i] = toolkit.findEntry(GUID);
+          dependencies[i] = Globals.findEntry(GUID);
           break;
       } 
       if (dependencies[i] == null) missingDependencies++;
       resources[i].type = RType.getValue(int32f());
       if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
-          byte[] data = toolkit.extractFile(dependencies[i].hash);
+          byte[] data = Globals.extractFile(dependencies[i].hash);
           if (data != null) {
               Resource resource = new Resource(data);
               if (resource.magic.equals("FSHb")) continue;
-              resource.getDependencies(dependencies[i], toolkit);
+              resource.getDependencies(dependencies[i]);
               dependencies[i].dependencies = resource.dependencies;
           }
       }

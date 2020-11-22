@@ -3,37 +3,37 @@ package ennuo.toolkit.windows;
 import com.bulenkov.darcula.DarculaLaf;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
-import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
-import ennuo.craftworld.memory.Images;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.resources.Mesh;
-import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
-import ennuo.craftworld.resources.enums.Magic;
-import ennuo.craftworld.resources.enums.Metadata.CompressionType;
-import ennuo.craftworld.resources.io.MeshIO;
-import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
-import ennuo.craftworld.things.Serializer;
+import ennuo.toolkit.functions.ArchiveCallbacks;
+import ennuo.toolkit.functions.DatabaseCallbacks;
+import ennuo.toolkit.functions.DebugCallbacks;
+import ennuo.toolkit.functions.DependencyCallbacks;
+import ennuo.toolkit.utilities.EasterEgg;
+import ennuo.toolkit.functions.ExportCallbacks;
+import ennuo.toolkit.functions.FileCallbacks;
+import ennuo.toolkit.functions.ModCallbacks;
+import ennuo.toolkit.functions.ProfileCallbacks;
+import ennuo.toolkit.functions.ReplacementCallbacks;
+import ennuo.toolkit.functions.ScanCallback;
+import ennuo.toolkit.functions.UtilityCallbacks;
 import ennuo.toolkit.streams.CustomPrintStream;
 import ennuo.toolkit.streams.TextAreaOutputStream;
 import ennuo.toolkit.utilities.FileChooser;
+import ennuo.toolkit.utilities.Globals;
+import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import ennuo.toolkit.utilities.TreeSelectionListener;
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -44,24 +44,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -73,34 +63,25 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 
 public class Toolkit extends javax.swing.JFrame {
-    ExecutorService databaseService = Executors.newSingleThreadExecutor();
-    ExecutorService resourceService = Executors.newSingleThreadExecutor();
+
+    public static Toolkit instance;
+
+    public ExecutorService databaseService = Executors.newSingleThreadExecutor();
+    public ExecutorService resourceService = Executors.newSingleThreadExecutor();
     public final FileChooser fileChooser = new FileChooser(this);
-   
-    public ArrayList<FileNode> entries = new ArrayList<FileNode>();
-    
-    private FileNode lastSelected;
-    
-    ArrayList<FileData> databases = new ArrayList<FileData>();
-    ArrayList<JTree> trees = new ArrayList<JTree>();
-    
-    ArrayList<FileArchive> archives = new ArrayList<FileArchive>();
-    private TranslationTable LAMS;
-    
-    private boolean isBigProfile = false;
-    private boolean isMod = false;
-    private boolean fileExists = false;
-    
-    private boolean useContext = false;
-        
-    MouseListener ml = new MouseAdapter() {
-        public void mousePressed(MouseEvent e) { 
-           if (SwingUtilities.isRightMouseButton(e)) {
+
+    public static ArrayList <JTree> trees = new ArrayList <JTree>();
+
+    public boolean fileExists = false;
+    public boolean useContext = false;
+
+    MouseListener showContextMenu = new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)) {
                 JTree tree = (JTree) e.getComponent();
                 int selRow = tree.getRowForLocation(e.getX(), e.getY());
                 TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
@@ -110,7 +91,7 @@ public class Toolkit extends javax.swing.JFrame {
                 } else {
                     useContext = false;
                     tree.setSelectionPath(null);
-                    lastSelected = null;
+                    Globals.lastSelected = null;
                 }
                 if (selRow > -1) {
                     tree.setSelectionRow(selRow);
@@ -121,166 +102,129 @@ public class Toolkit extends javax.swing.JFrame {
             }
         }
     };
-    
+
     public Toolkit() {
         initComponents();
-        
+        setResizable(false);
+        EasterEgg.initialize(this);
+        instance = this;
+
         entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-               String copied = "";
-               for (int i = 0; i < entryTable.getSelectedRowCount(); ++i) {
+                String copied = "";
+                for (int i = 0; i < entryTable.getSelectedRowCount(); ++i) {
                     copied += String.valueOf(entryTable.getModel().getValueAt(entryTable.getSelectedRows()[i], 1));
                     if (i + 1 != entryTable.getSelectedRowCount()) copied += '\n';
-               }
-               StringSelection selection = new StringSelection(copied);
-               java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+                }
+                StringSelection selection = new StringSelection(copied);
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
             }
-                
+
         });
         
-        debugMenu.setVisible(false);
-        
-        String username = System.getProperty("user.name").toLowerCase();
-        
-        if (username.equals("veryc")) {
-            debugMenu.setVisible(true);
-            setTitle("VeryCoolMe's Modding Emporium");
-        }
-        
-        if (username.equals("elija")) {
-            setTitle("Shitting in HD");
-            debugMenu.setVisible(true);
-        }
-        
-        if (username.equals("dominick")) {
-            setTitle("Undertale Piracy Tool");
-            debugMenu.setVisible(true);
-        }
-        
-        if (username.equals("shan") || username.equals("aidan")) {
-            setTitle("BAZINGA!");
-            debugMenu.setVisible(true);
-        }
-        
-        if (username.equals("joele")) {
-            setTitle("Acrosnus Toolkit");
-            debugMenu.setVisible(true);
-        }
-        
-        if (username.equals("etleg") || username.equals("eddie")) {
-            setTitle("GregTool");
-            debugMenu.setVisible(true);
-        }
-        
-        if (debugMenu.isVisible())
-            setTitle(getTitle() + " | Debug");
-           
-        setResizable(false);
         progressBar.setVisible(false);
         fileDataTabs.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int index = fileDataTabs.getSelectedIndex();
                 if (index == -1) {
                     search.setEnabled(false);
-                    isMod = false; isBigProfile = false;
+                    Globals.currentWorkspace = WorkspaceType.NONE;
                     search.setForeground(Color.GRAY);
                     search.setText("Search is currently disabled.");
                 } else {
                     search.setEnabled(true);
-                    FileData data = databases.get(fileDataTabs.getSelectedIndex()); 
+                    FileData data = Globals.databases.get(fileDataTabs.getSelectedIndex());
                     search.setText(data.query);
                     if (search.getText().equals("Search...")) search.setForeground(Color.GRAY);
                     else search.setForeground(Color.WHITE);
-                    isBigProfile = data.type.equals("Big Profile");
-                    isMod = data.type.equals("Mod");
+                    if (data.type.equals("Big Profile")) Globals.currentWorkspace = WorkspaceType.PROFILE;
+                    else if (data.type.equals("Mod")) Globals.currentWorkspace = WorkspaceType.MOD;
+                    else Globals.currentWorkspace = WorkspaceType.MAP;
                 }
                 updateWorkspace();
             }
         });
-        
+
         entryModifiers.setEnabledAt(1, false);
         StringMetadata.setEnabled(false);
         updateWorkspace();
-        
+
         setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         search.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
                 if (search.getText().equals("Search...")) {
-                        search.setText("");
-                        search.setForeground(Color.WHITE);
+                    search.setText("");
+                    search.setForeground(Color.WHITE);
                 }
             }
-                    
+
             public void focusLost(FocusEvent e) {
                 if (search.getText().isEmpty()) {
                     search.setText("Search...");
                     search.setForeground(Color.GRAY);
                 }
             }
-                    
+
         });
-        
-        dependencyTree.addMouseListener(ml);
-        dependencyTree.addTreeSelectionListener(e -> treeSelectionListener(dependencyTree));
-        
+
+        dependencyTree.addMouseListener(showContextMenu);
+        dependencyTree.addTreeSelectionListener(e -> TreeSelectionListener.listener(dependencyTree));
+
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 checkForChanges();
             }
         });
     }
-    
-    
+
     private void checkForChanges() {
-       for (FileData data : databases) {
-                    if (data.shouldSave) {
-                        int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
-                        if (result == JOptionPane.YES_OPTION) data.save(data.path);
-                    }
-                }
-                
-                for (FileArchive archive : archives) {
-                    if (archive.shouldSave) {
-                        int result = JOptionPane.showConfirmDialog(null, String.format("Your FileArchive (%s) has pending changes, do you want to save?", archive.file.getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
-                        if (result == JOptionPane.YES_OPTION) archive.save();
-                    }
-                }
+        for (FileData data: Globals.databases) {
+            if (data.shouldSave) {
+                int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION) data.save(data.path);
+            }
+        }
+
+        for (FileArchive archive: Globals.archives) {
+            if (archive.shouldSave) {
+                int result = JOptionPane.showConfirmDialog(null, String.format("Your FileArchive (%s) has pending changes, do you want to save?", archive.file.getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION) archive.save();
+            }
+        }
     }
-    
-    private FileData getCurrentDB() {
-        if (databases.size() == 0) return null;
-        return databases.get(fileDataTabs.getSelectedIndex());
+
+    public FileData getCurrentDB() {
+        if (Globals.databases.size() == 0) return null;
+        return Globals.databases.get(fileDataTabs.getSelectedIndex());
     }
-    
-    private JTree getCurrentTree() {
+
+    public JTree getCurrentTree() {
         if (trees.size() == 0) return null;
         return trees.get(fileDataTabs.getSelectedIndex());
     }
-    
+
     public void updateWorkspace() {
         closeTab.setVisible(fileDataTabs.getTabCount() != 0);
         installProfileMod.setVisible(false);
-        int archiveCount = archives.size();
+        int archiveCount = Globals.archives.size();
         FileData db = getCurrentDB();
-        
+
         if (db != null) {
             if (db.shouldSave) {
                 fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name + " *");
                 saveMenu.setEnabled(true);
-            }
-            else  {
+            } else {
                 fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name);
                 saveMenu.setEnabled(false);
             }
         }
-        
+
         fileExists = false;
-        if (lastSelected != null && lastSelected.entry != null) {
-            if (lastSelected.entry.data != null)
+        if (Globals.lastSelected != null && Globals.lastSelected.entry != null) {
+            if (Globals.lastSelected.entry.data != null)
                 fileExists = true;
-        } else if (entries.size() > 1) fileExists = true;
-       
-        
+        } else if (Globals.entries.size() > 1) fileExists = true;
+
         if (archiveCount != 0 || db != null) {
             saveDivider.setVisible(true);
             saveMenu.setVisible(true);
@@ -288,31 +232,28 @@ public class Toolkit extends javax.swing.JFrame {
             saveDivider.setVisible(false);
             saveMenu.setVisible(false);
         }
-        
-        if (archiveCount != 0 || isBigProfile || isMod)
+
+        if (Globals.canExtract())
             FARMenu.setVisible(true);
         else FARMenu.setVisible(false);
-         
-        
-        if (isBigProfile || isMod || db != null) {
+
+        if (Globals.currentWorkspace != WorkspaceType.NONE) {
             saveDivider.setVisible(true);
             saveAs.setVisible(true);
         } else {
             saveDivider.setVisible(false);
             saveAs.setVisible(false);
         }
-        
-        
+
         if (db == null) {
             saveDivider.setVisible(false);
             dumpHashes.setVisible(false);
             MAPMenu.setVisible(false);
-        }
-        else {
+        } else {
             saveDivider.setVisible(true);
             dumpHashes.setVisible(true);
             dumpRLST.setVisible(false);
-            if (!isBigProfile && !isMod) {
+            if (Globals.currentWorkspace == WorkspaceType.MAP) {
                 if (archiveCount != 0)
                     installProfileMod.setVisible(true);
                 MAPMenu.setVisible(true);
@@ -320,15 +261,17 @@ public class Toolkit extends javax.swing.JFrame {
                 dumpRLST.setVisible(true);
             }
         }
-        
-        if (isBigProfile) { ProfileMenu.setVisible(true); installProfileMod.setVisible(true); }
-        else ProfileMenu.setVisible(false);
-        
-        if (isMod) modMenu.setVisible(true);
+
+        if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
+            ProfileMenu.setVisible(true);
+            installProfileMod.setVisible(true);
+        } else ProfileMenu.setVisible(false);
+
+        if (Globals.currentWorkspace == WorkspaceType.MOD) modMenu.setVisible(true);
         else modMenu.setVisible(false);
-        
+
     }
-    
+
     private void generateEntryContext(JTree tree, int x, int y) {
         exportOBJ.setVisible(false);
         exportTextureGroupContext.setVisible(false);
@@ -351,74 +294,73 @@ public class Toolkit extends javax.swing.JFrame {
         exportOBJTEXCOORD1.setVisible(false);
         exportOBJTEXCOORD2.setVisible(false);
         replaceImage.setVisible(false);
-        
-       
-        if (isBigProfile && useContext) deleteContext.setVisible(true);
-        
-        if (!isBigProfile && databases.size() != 0) {
-            if ((useContext && lastSelected.entry == null)) {
-                 newItemContext.setVisible(true);
-                 newFolderContext.setVisible(true);
+
+        if (Globals.currentWorkspace == WorkspaceType.PROFILE && useContext) deleteContext.setVisible(true);
+
+        if (!(Globals.currentWorkspace == WorkspaceType.PROFILE) && Globals.databases.size() != 0) {
+            if ((useContext && Globals.lastSelected.entry == null)) {
+                newItemContext.setVisible(true);
+                newFolderContext.setVisible(true);
             } else if (!useContext) newFolderContext.setVisible(true);
             if (useContext) {
                 zeroContext.setVisible(true);
                 deleteContext.setVisible(true);
-                if (lastSelected.entry != null)
+                if (Globals.lastSelected.entry != null)
                     duplicateContext.setVisible(true);
             }
         }
-        
-        if ((archives.size() != 0 || isBigProfile || isMod) && lastSelected != null && lastSelected.entry != null)  {
+
+        if (Globals.canExtract() && Globals.lastSelected != null && Globals.lastSelected.entry != null) {
             replaceContext.setVisible(true);
-            if (lastSelected.header.endsWith(".tex"))
+            if (Globals.lastSelected.header.endsWith(".tex"))
                 replaceImage.setVisible(true);
         }
-        
-        if ((archives.size() != 0 || isBigProfile || isMod) && fileExists && useContext) {
-            
+
+        if (Globals.canExtract() && fileExists && useContext) {
+
             extractContextMenu.setVisible(true);
-            
-            if (lastSelected.entry != null) {
-                if ((isBigProfile || databases.size() != 0) && lastSelected.entry.canReplaceDecompressed)  {
+
+            if (Globals.lastSelected.entry != null) {
+                if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed) {
                     replaceDecompressed.setVisible(true);
-                    if (lastSelected.entry.dependencies != null && lastSelected.entry.dependencies.length != 0) {
-                        if (!isMod) exportAsMod.setVisible(true);
+                    if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.length != 0) {
+                        exportAsMod.setVisible(true);
                         removeDependencies.setVisible(true);
                         replaceDependencies.setVisible(true);
                         removeMissingDependencies.setVisible(true);
                     }
                 }
-                
-                if (lastSelected.header.endsWith(".mol")) {
-                    if (lastSelected.entry.mesh != null) {
-                    exportOBJ.setVisible(true);
-                    int count = lastSelected.entry.mesh.attributeCount;
-                    if (count > 0)
-                        exportOBJTEXCOORD0.setVisible(true);
-                    if (count > 1)
-                        exportOBJTEXCOORD1.setVisible(true);
-                    if (count > 2)
-                        exportOBJTEXCOORD2.setVisible(true);
+
+                if (Globals.lastSelected.header.endsWith(".mol")) {
+                    if (Globals.lastSelected.entry.mesh != null) {
+                        exportOBJ.setVisible(true);
+                        int count = Globals.lastSelected.entry.mesh.attributeCount;
+                        if (count > 0)
+                            exportOBJTEXCOORD0.setVisible(true);
+                        if (count > 1)
+                            exportOBJTEXCOORD1.setVisible(true);
+                        if (count > 2)
+                            exportOBJTEXCOORD2.setVisible(true);
                     }
                 }
-                if (lastSelected.header.endsWith(".tex")) {
+                if (Globals.lastSelected.header.endsWith(".tex")) {
                     exportTextureGroupContext.setVisible(true);
                     replaceImage.setVisible(true);
                 }
-        
-                if ( (lastSelected.header.endsWith(".bin") && isBigProfile) || (lastSelected.header.endsWith(".slt")) || (lastSelected.header.endsWith(".pck"))) 
+
+                if ((Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE) || (Globals.lastSelected.header.endsWith(".slt")) || (Globals.lastSelected.header.endsWith(".pck")))
                     editSlotContext.setVisible(true);
-        
-                if (lastSelected.header.endsWith(".trans")) {
+
+                if (Globals.lastSelected.header.endsWith(".trans")) {
                     loadLAMSContext.setVisible(true);
                     exportLAMSContext.setVisible(true);
                 }
             }
         }
-        
+
         entryContext.show(tree, x, y);
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -1354,343 +1296,83 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void loadDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadDBActionPerformed
         File file = fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
-        if (file != null) loadFileDB(file);
+        if (file != null) DatabaseCallbacks.loadFileDB(file);
     }//GEN-LAST:event_loadDBActionPerformed
 
-    
-    private void loadFileDB(File file) {
-        databaseService.submit(() -> {
-            
-                savedataMenu.setEnabled(false);
-                newFileDBGroup.setEnabled(false);
-                loadDB.setEnabled(false);
-                
-                FileDB db = new FileDB(file, progressBar);
-                
-                if (db.isParsed) {
-                    
-                    int dbIndex = isDatabaseLoaded(file);
-                    if (isDatabaseLoaded(file) != -1) {
-                        
-                        databases.set(dbIndex, db);
-                        
-                        JTree tree = trees.get(dbIndex);
-                        tree.setModel(databases.get(dbIndex).model);
-                        ((FileModel)tree.getModel()).reload();
-                        
-                        fileDataTabs.setSelectedIndex(dbIndex);
-                        
-                        search.setEditable(true);
-                        search.setFocusable(true);
-                        search.setText("Search...");
-                        search.setForeground(Color.GRAY);
-                    } else addTab(db);
-                    
-                    updateWorkspace();
-                }
-                
-                savedataMenu.setEnabled(true);
-                newFileDBGroup.setEnabled(true);
-                loadDB.setEnabled(true);
-                
-        });
-    }
-    
-    
-    private void addTab(FileData data) {
-        databases.add(data);
-        
+    public void addTab(FileData data) {
+        Globals.databases.add(data);
+
         JTree tree = new JTree();
-        
+
         trees.add(tree);
-        
+
         tree.setRootVisible(false);
         tree.setModel(data.model);
         tree.getSelectionModel().setSelectionMode(4);
-        
-        tree.addTreeSelectionListener(e -> treeSelectionListener(tree));
-        tree.addMouseListener(ml);
-        
+
+        tree.addTreeSelectionListener(e -> TreeSelectionListener.listener(tree));
+        tree.addMouseListener(showContextMenu);
+
         JScrollPane panel = new JScrollPane();
         panel.setViewportView(tree);
-        
+
         fileDataTabs.addTab(data.name, panel);
-        
+
         search.setEditable(true);
         search.setFocusable(true);
         search.setText("Search...");
         search.setForeground(Color.GRAY);
-        
+
         fileDataTabs.setSelectedIndex(fileDataTabs.getTabCount() - 1);
     }
-    
-    
-    private int isDatabaseLoaded(File file) {
+
+    public int isDatabaseLoaded(File file) {
         String path = file.getAbsolutePath();
-        for (int i = 0; i < databases.size(); ++i) {
-            FileData data = databases.get(i);
+        for (int i = 0; i < Globals.databases.size(); ++i) {
+            FileData data = Globals.databases.get(i);
             if (data.path.equals(path))
                 return i;
         }
         return -1;
     }
-    
+
     private void loadArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadArchiveActionPerformed
         File[] files = fileChooser.openFiles("farc", "File Archive");
         if (files == null) return;
-        for (File file : files)
-            loadFileArchive(file);
+        for (File file: files)
+            ArchiveCallbacks.loadFileArchive(file);
     }//GEN-LAST:event_loadArchiveActionPerformed
 
-    private void loadFileArchive(File file) {
-        int index = isArchiveLoaded(file);
-        if (index == -1) {
-            FileArchive archive = new FileArchive(file);
-            if (archive.isParsed)
-                archives.add(archive);
-        } else archives.get(index).process();
-        updateWorkspace();
-    }
-    
-    public FileEntry findEntry(ResourcePtr res) {
-        if (res.GUID != -1) return findEntry(res.GUID);
-        else if (res.hash != null) return findEntry(res.hash);
-        return null;
-    }
-    
-    public FileEntry findEntry(long GUID) {
-        if (databases.size() == 0) return null;
-        FileData db = getCurrentDB();
-        if (!isBigProfile && !isMod) {
-           FileEntry entry =  ((FileDB)db).find(GUID);
-           if (entry != null)
-               return entry;
-        } else if (isMod) {
-            FileEntry entry = ((Mod)db).find(GUID);
-            if (entry != null)
-                return entry;
-        }
-        for (FileData data : databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB)data).find(GUID);
-                if (entry != null) 
-                    return entry;
-            }
-        }
-        return null;
-    }
-    
-    public FileEntry findEntry(byte[] sha1) {
-        if (databases.size() == 0) return null;
-        FileData db = getCurrentDB();
-        if (!isBigProfile && !isMod) {
-           FileEntry entry =  ((FileDB)db).find(sha1);
-           if (entry != null)
-               return entry;
-        } else if (isBigProfile) {
-            FileEntry entry = ((BigProfile)db).find(sha1);
-            if (entry != null)
-                return entry;
-        } else if (isMod) {
-            FileEntry entry = ((Mod)db).find(sha1);
-            if (entry != null)
-                return entry;
-        }
-        
-        for (FileData data : databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB)data).find(sha1);
-                if (entry != null) 
-                    return entry;
-            }
-        }
-        return null;
-    }
-    
-    public byte[] extractFile(ResourcePtr ptr) {
-        if (ptr == null) return null;
-        if (ptr.hash != null) return extractFile(ptr.hash);
-        else if (ptr.GUID != -1) return extractFile(ptr.GUID);
-        return null;
-    }
-    
-    public byte[] extractFile(long GUID) {
-        FileData db = getCurrentDB();
-        
-        if (!isBigProfile && !isMod) {
-           FileEntry entry =  ((FileDB)db).find(GUID);
-           if (entry != null)
-               return extractFile(entry.hash);
-        } else if (isMod) {
-            FileEntry entry = ((Mod)db).find(GUID);
-            if (entry != null)
-                return entry.data;
-        }
-        
-        for (FileData data : databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB)data).find(GUID);
-                if (entry != null) {
-                    byte[] buffer = extractFile(entry.hash);
-                    if (buffer != null) return buffer;
-                }
-                    
-            }
-        }
-        
-        System.out.println("Could not extract g" + GUID);
-        
-        return null;
-        
-        
-    }
-    
-    public byte[] extractFile(byte[] sha1) {
-        FileData db = getCurrentDB();
-        if (isBigProfile) {
-            byte[] data = ((BigProfile)db).extract(sha1);
-            if (data != null) return data;
-        } else if (isMod) {
-            byte[] data = ((Mod)db).extract(sha1);
-            if (data != null) return data;
-        }
-        for (FileArchive archive : archives) {
-            byte[] data = archive.extract(sha1);
-            if (data != null) return data;
-        }
-        System.out.println("Could not extract h" + Bytes.toHex(sha1));
-        return null;        
-    }
-    
-    private int isArchiveLoaded(File file) {
+    public int isArchiveLoaded(File file) {
         String path = file.getAbsolutePath();
-        for (int i = 0; i < archives.size(); ++i) {
-            FileArchive archive = archives.get(i);
+        for (int i = 0; i < Globals.archives.size(); ++i) {
+            FileArchive archive = Globals.archives.get(i);
             if (archive.file.getAbsolutePath().equals(path))
                 return i;
         }
         return -1;
     }
-    
-    
-    public void exportMesh(int channel) {
-        File file = fileChooser.openFile(lastSelected.header.substring(0, lastSelected.header.length() - 4) + ".obj", "obj", "Wavefront Object (.OBJ)", true);
-        if (file != null)
-            MeshIO.export(file.getAbsolutePath(), lastSelected.entry.mesh, channel);
-    }
-    
+
     private void openCompressinatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCompressinatorActionPerformed
-        new Compressinator().setVisible(true);        
+        new Compressinator().setVisible(true);
     }//GEN-LAST:event_openCompressinatorActionPerformed
 
     private void decompressResourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressResourceActionPerformed
-        File file = fileChooser.openFile("data.bin", "", "", false);
-        if (file == null) return;
-        
-        byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data == null) return;
-           
-        Resource resource = new Resource(data);
-        byte[] decompressed = resource.decompress();
-        
-        if (decompressed == null) {
-            System.err.println("Failed to decompress resource.");
-            return;
-        }
-        
-        File out = fileChooser.openFile(file.getName() + ".dec", "", "", true);
-        if (out != null)
-            FileIO.write(decompressed, out.getAbsolutePath());
+        UtilityCallbacks.decompressResource();
     }//GEN-LAST:event_decompressResourceActionPerformed
 
     private void saveMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuActionPerformed
-        FileData db = getCurrentDB();
-        if (db == null && archives.size() == 0) return;
-        System.out.println("Saving workspace...");
-        if (db != null) {
-            if (db.shouldSave) {
-                System.out.println("Saving " + db.type + " at " + db.path);
-                db.save(db.path);     
-            } else System.out.println(db.type + " has no pending changes, skipping save.");
-        }
-        
-        for (FileArchive archive : archives) {
-            if (archive.shouldSave) {
-                System.out.println("Saving FileArchive at " + archive.file.getAbsolutePath());
-                archive.save();   
-            } else System.out.println("FileArchive has no pending changes, skipping save."); 
-        }
-        updateWorkspace();
+        FileCallbacks.save();
     }//GEN-LAST:event_saveMenuActionPerformed
 
     private void addFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFileActionPerformed
-        if (archives.size() == 0 && !isBigProfile) return;
-        
-        File[] files = fileChooser.openFiles("data.bin", "");
-        if (files == null) return;
-        
-        
-        for (File file : files) {
-            byte[] data = FileIO.read(file.getAbsolutePath());
-            if (data == null) return;
-        
-            if (isBigProfile)
-                ((BigProfile)getCurrentDB()).add(data);
-            else addFile(data);
-        }
-        
-        updateWorkspace();
-        
-        
-        if (isBigProfile) {
-            JTree tree  = getCurrentTree();
-            TreePath selectionPath = tree.getSelectionPath();
-            ((FileModel) tree.getModel()).reload();
-            tree.setSelectionPath(selectionPath);
-        }
-        
-        System.out.println("Added file to queue, make sure to save your workspace!");
+        ArchiveCallbacks.addFile();
     }//GEN-LAST:event_addFileActionPerformed
 
-    public void addFile(byte[] data) {
-        if (isBigProfile) {
-            ((BigProfile)getCurrentDB()).add(data);
-            updateWorkspace();
-            return;
-        }
-        
-        FileArchive[] archives = getSelectedArchives();
-        if (archives == null) return;
-        
-        addFile(data, archives);
-        
-    }
-    
-    public void addFile(byte[] data, FileArchive[] archives) {
-        for (FileArchive archive : archives)
-            archive.add(data);
-        updateWorkspace();
-        System.out.println("Added file to queue, make sure to save your workspace!");
-    }
-    
-    public void replaceEntry(FileEntry entry, byte[] data) {
-        if (!isBigProfile) {
-            entry.resetResources();
-            addFile(data);
-        }
-        
-        getCurrentDB().replace(entry, data);
-        updateWorkspace();
-        
-        JTree tree  = getCurrentTree();
-        TreePath selectionPath = tree.getSelectionPath();
-        ((FileModel) tree.getModel()).reload();
-        tree.setSelectionPath(selectionPath);
-    }
-    
+
     private void clearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearActionPerformed
-       console.selectAll();
-       console.replaceSelection("");
+        console.selectAll();
+        console.replaceSelection("");
     }//GEN-LAST:event_clearActionPerformed
 
     private void consoleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_consoleMouseReleased
@@ -1699,20 +1381,20 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_consoleMouseReleased
 
     private void extractContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractContextActionPerformed
-        extract(false);
+        ArchiveCallbacks.extract(false);
     }//GEN-LAST:event_extractContextActionPerformed
 
     private void extractDecompressedContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractDecompressedContextActionPerformed
-        extract(true);
+        ArchiveCallbacks.extract(true);
     }//GEN-LAST:event_extractDecompressedContextActionPerformed
 
     private void exportOBJTEXCOORD0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportOBJTEXCOORD0ActionPerformed
-        exportMesh(0);
+        ExportCallbacks.exportOBJ(0);
     }//GEN-LAST:event_exportOBJTEXCOORD0ActionPerformed
 
     private void loadLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLAMSContextActionPerformed
-        LAMS = new TranslationTable(new Data(lastSelected.entry.data));
-        if (LAMS != null) StringMetadata.setEnabled(true);
+        Globals.LAMS = new TranslationTable(new Data(Globals.lastSelected.entry.data));
+        if (Globals.LAMS != null) StringMetadata.setEnabled(true);
     }//GEN-LAST:event_loadLAMSContextActionPerformed
 
     private void locationFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationFieldActionPerformed
@@ -1720,7 +1402,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryMetadata metadata = lastSelected.entry.item.metadata;
+        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
         locationField.setText("" + metadata.location);
@@ -1728,26 +1410,26 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryMetadata metadata = lastSelected.entry.item.metadata;
-        
-        if (LAMS != null) {
-            titleField.setText(LAMS.Translate(metadata.titleKey));
-            descriptionField.setText(LAMS.Translate(metadata.descriptionKey));
-            locationField.setText(LAMS.Translate(metadata.location));
-            categoryField.setText(LAMS.Translate(metadata.category));
+        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
+
+        if (Globals.LAMS != null) {
+            titleField.setText(Globals.Translate(metadata.titleKey));
+            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
+            locationField.setText(Globals.Translate(metadata.location));
+            categoryField.setText(Globals.Translate(metadata.category));
         }
-        
+
         if (metadata.userCreatedDetails.title != null)
             titleField.setText(metadata.userCreatedDetails.title);
-        
+
         if (metadata.userCreatedDetails.description != null)
             descriptionField.setText(metadata.userCreatedDetails.description);
-        
-        if (LAMS != null) return;
-        
+
+        if (Globals.LAMS != null) return;
+
         locationField.setText("");
         categoryField.setText("");
-            
+
         if (metadata.category == 1737521) categoryField.setText("My Photos");
         else if (metadata.category == 1598223) categoryField.setText("My Pods");
         else if (metadata.category == 928006) categoryField.setText("My Objects");
@@ -1755,25 +1437,21 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_StringMetadataActionPerformed
 
     private void loadBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadBigProfileActionPerformed
-        File file = fileChooser.openFile("bigfart1", "", "Big Profile", false);
-        if (file != null) {
-            BigProfile profile = new BigProfile(file);
-            if (!profile.isParsed) return;
-            addTab(profile);
-            updateWorkspace();
-        }
+        ProfileCallbacks.loadProfile();
     }//GEN-LAST:event_loadBigProfileActionPerformed
 
     public FileArchive[] getSelectedArchives() {
-        if (archives.size() == 0) return null;
-        if (archives.size() > 1) {
+        if (Globals.archives.size() == 0) return null;
+        if (Globals.archives.size() > 1) {
             FileArchive[] archives = new ArchiveSelector(this, true).getSelected();
             if (archives == null) System.out.println("User did not select any FileArchives, cancelling operation.");
             return archives;
         }
-        return new FileArchive[] { this.archives.get(0) };
+        return new FileArchive[] {
+            Globals.archives.get(0)
+        };
     }
-    
+
     private void searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchActionPerformed
         getCurrentDB().query = search.getText();
         JTree tree = getCurrentTree();
@@ -1783,558 +1461,103 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_searchActionPerformed
 
     private void dumpHashesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpHashesActionPerformed
-        File file = fileChooser.openFile("hashes.txt", "txt", "Text File", true);
-        if (file == null) return;
-        FileDB db = (FileDB) getCurrentDB();
-        StringBuilder builder = new StringBuilder(0x100 * db.entries.size());
-        for (FileEntry entry : db.entries)
-            builder.append(Bytes.toHex(entry.hash) + '\n');
-        FileIO.write(builder.toString().getBytes(), file.getAbsolutePath());
+        DatabaseCallbacks.dumpHashes();
     }//GEN-LAST:event_dumpHashesActionPerformed
 
     private void extractBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractBigProfileActionPerformed
-        File file = fileChooser.openFile("profile.bpr", "bpr", "Big Profile", true);
-        if (file == null) return;
-        BigProfile save = (BigProfile) getCurrentDB();
-        FileIO.write(save.profile.data, file.getAbsolutePath());
+        ProfileCallbacks.extractProfile();
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
-        if (isBigProfile) {
-             getCurrentDB().shouldSave = true;
-             new SlotEditor(this, lastSelected.entry).setVisible(true);
+        if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
+            getCurrentDB().shouldSave = true;
+            new SlotEditor(this, Globals.lastSelected.entry).setVisible(true);
+        } else {
+            boolean isSlotsFile = Globals.lastSelected.entry.pack == null;
+            new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
         }
-        else
-        {
-            boolean isSlotsFile = lastSelected.entry.pack == null;
-            new SlotEditor(this, lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
-        }
-            
     }//GEN-LAST:event_editSlotContextActionPerformed
 
     private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed
-        File dump = fileChooser.openFile("data.bin", "", "", false);
-        if (dump == null) return;
-
-        System.out.println("Loading Image into memory, this may take a while.");
-
-        Data data = new Data(dump.getAbsolutePath());
-
-        System.out.println("Image loaded");
-        
-        
-        File dumpMap = fileChooser.openFile("dump.map", "", "", true);
-        if (dumpMap == null) return;
-        
-        FileIO.write(new byte[] { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 , 0x00, 0x00 }, dumpMap.getAbsolutePath());
-        
-        FileDB out = new FileDB(dumpMap);
-        
-        File file = fileChooser.openFile("dump.farc", "farc", "FileArchive", true);
-        if (file == null) return;
-        FileIO.write(new byte[] {
-            0,
-            0,
-            0,
-            0,
-            0x46,
-            0x41,
-            0x52,
-            0x43
-        }, file.getAbsolutePath());
-        FileArchive farc = new FileArchive(file);
-
-        String[] headers = new String[59];
-        Byte[] chars = new Byte[59];
-        int m = 0;
-        for (Magic magic: Magic.values()) {
-            headers[m] = magic.value.substring(0, 3);
-            chars[m] = (byte) magic.value.charAt(0);
-            m++;
-        } 
-        headers[56] = "TEX"; chars[56] = (byte) "T".charAt(0);
-        headers[57] = "FSB"; chars[57] = (byte) "F".charAt(0);
-        headers[58] = "BIK"; chars[58] = (byte) "B".charAt(0);
-
-        Set <String> HEADERS = new HashSet <String> (Arrays.asList(headers));
-        Set <Byte> VALUES = new HashSet <Byte> (Arrays.asList(chars));
-
-        databaseService.submit(() -> {
-            System.out.println("Started scanning this may take a while, please wait.");
-            progressBar.setVisible(true);
-            progressBar.setMaximum(data.length);
-
-            int resourceCount = 0;
-            int GUID = 0x00150000;
-            while ((data.offset + 4) <= data.length) {
-                progressBar.setValue(data.offset + 1);
-                int begin = data.offset;
-
-                if (!VALUES.contains(data.data[data.offset])) {
-                    data.offset++;
-                    continue;
-                }
-
-                String magic = data.str(3);
-
-                if (!HEADERS.contains(magic)) {
-                    data.seek(begin + 1);
-                    continue;
-                }
-
-                String type = data.str(1);
-
-                try {
-                    byte[] buffer = null;
-
-                    switch (type) {
-                        case "i": {
-                            if (!magic.equals("BIK")) break;
-                            int size = Integer.reverseBytes(data.int32());
-                            data.offset -= 8;
-                            buffer =  data.bytes(size + 8);
-                        }
-                        case "t":
-                            {
-                                if (magic.equals("FSB") || magic.equals("TEX")) break;
-                                int end = 0;
-                                while ((data.offset + 4) <= data.length) {
-                                    String mag = data.str(3);
-                                    if (HEADERS.contains(mag)) {
-                                        String t = data.str(1);
-                                        if (t.equals(" ") || t.equals("4") || t.equals("b") || t.equals("t") || t.equals("i")) {
-                                            data.offset -= 4;
-                                            end = data.offset;
-                                            data.seek(begin);
-                                            break;
-                                        }
-                                    } else data.offset -= 2;
-                                }
-                                
-                                buffer = data.bytes(end - begin);
-                                
-                                final String converted = new String(buffer, StandardCharsets.UTF_8);
-                                final byte[] output = converted.getBytes(StandardCharsets.UTF_8);
-                                
-                                if (!Arrays.equals(buffer, output))
-                                    buffer = null;
-                                
-                                break;
-                            }
-
-
-                        case "4":
-                            {
-                                if (!magic.equals("FSB")) break;
-                                int count = Integer.reverseBytes(data.int32());
-                                data.forward(0x4);
-                                int size = Integer.reverseBytes(data.int32());
-                                data.forward(0x20);
-                                for (int i = 0; i < count; ++i)
-                                    data.forward(Short.reverseBytes(data.int16()) - 2);
-                                if (data.data[data.offset] == 0) {
-                                    while (data.int8() == 0);
-                                    data.offset -= 1;
-                                }
-                                data.forward(size);
-                                size = data.offset - begin;
-                                data.seek(begin);
-                                buffer = data.bytes(size);
-                                break;
-                            }
-
-                        case "b":
-                            {
-                                if (magic.equals("FSB") || magic.equals("TEX")) break;
-                                int revision = data.int32f();
-                                if (revision > 0x021803F9 || revision < 0) {
-                                    data.seek(begin + 1);
-                                    continue;
-                                }
-                                int dependencyOffset = data.int32f();
-                                data.forward(dependencyOffset - 12);
-                                int count = data.int32f();
-                                for (int j = 0; j < count; ++j) {
-                                    data.resource(RType.FILE_OF_BYTES, true);
-                                    data.int32f();
-                                }
-
-                                int size = data.offset - begin;
-                                data.seek(begin);
-
-                                buffer = data.bytes(size);
-                            }
-
-                        case " ":
-                            {
-                                if (!magic.equals("TEX")) break;
-                                data.forward(2);
-                                int count = data.int16();
-                                int size = 0;
-                                for (int j = 0; j < count; ++j) {
-                                    size += data.int16();
-                                    data.int16();
-                                }
-                                data.forward(size);
-
-
-                                if (data.offset < 0 || ((data.offset + 1) >= data.length)) {
-                                    data.seek(begin + 1);
-                                    continue;
-                                }
-
-                                size = data.offset - begin;
-                                data.seek(begin);
-                                buffer = data.bytes(size);
-                            }
-
-
-                    }
-
-                    data.seek(begin + 1);
-
-                    if (buffer != null) {
-                        int querySize = ((buffer.length * 10) + farc.queueSize + farc.hashTable.length + 8 + (farc.entries.size() * 0x1C)) * 2;
-                        if (querySize < 0 || querySize >= Integer.MAX_VALUE) {
-                            System.out.println("Ran out of memory, flushing current changes...");
-                            farc.save(progressBar);
-                            progressBar.setMaximum(data.length);
-                            progressBar.setValue(data.offset + 1);
-                        }
-
-                        resourceCount++;
-                        farc.add(buffer);
-
-                        byte[] sha1 = Bytes.SHA1(buffer);
-                        FileEntry entry = findEntry(sha1);
-                        if (entry != null) {
-                            System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
-                            out.add(entry);
-                        }
-                        // System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
-                        else {
-                            
-                            
-                            FileEntry e = new FileEntry(buffer, Bytes.SHA1(buffer));
-                            
-                            String name = "" + begin;
-                            
-                            switch (magic) {
-                                case "PLN": name += ".plan"; break;
-                                case "LVL": name += ".bin"; break;
-                                default: name += "." + magic.toLowerCase(); break;
-                            }
-                            
-                            if (magic.equals("MSH")) {
-                                Mesh mesh = new Mesh(buffer);
-                                name = mesh.bones[0].name + ".mol";
-                            }
-                            
-                            
-                            e.path = "resources/" + magic.toLowerCase() + "/" + name;
-                            e.GUID = GUID;
-                            
-                            GUID++;
-
-                            out.add(e);
-                            
-                            
-                            System.out.println("Found Resource : " + magic + type + " (0x" + Bytes.toHex(begin) + ")");
-                        }
-
-                    }
-
-                } catch (Exception e) {
-                    data.seek(begin + 1);
-                }
-            }
-
-
-            progressBar.setVisible(false);
-            progressBar.setMaximum(0);
-            progressBar.setValue(0);
-
-            farc.save(progressBar);
-            out.save(out.path);
-        });
+        ScanCallback.scanRawData();
     }//GEN-LAST:event_scanRawDataActionPerformed
 
     private void exportLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportLAMSContextActionPerformed
-        if (LAMS == null)
-            LAMS = new TranslationTable(new Data(lastSelected.entry.data));
-        if (LAMS != null) {
-            Output out = new Output(0xFEFF * LAMS.map.size());
-            for (Map.Entry<Long, String> entry : LAMS.map.entrySet())
-                out.string(entry.getKey() + "\n\t" + entry.getValue() + "\n");
-            File file = fileChooser.openFile(lastSelected.header.substring(0, lastSelected.header.length() - 5) + ".txt", "txt", "Text Document", true);
-            if (file == null) return;
-            out.shrinkToFit();
-            FileIO.write(out.buffer, file.getAbsolutePath());
-        }
+        ExportCallbacks.exportTranslations();
     }//GEN-LAST:event_exportLAMSContextActionPerformed
 
     private void exportDDSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDDSActionPerformed
-        File file = fileChooser.openFile(lastSelected.header.substring(0, lastSelected.header.length() - 4) + "dds", "DDS", "Image", true);
-        if (file == null) return;
-        
-        if (lastSelected.entry.texture == null || !lastSelected.entry.texture.parsed) return;
-        
-        FileIO.write(lastSelected.entry.texture.data, file.getAbsolutePath());
+        ExportCallbacks.exportDDS();
     }//GEN-LAST:event_exportDDSActionPerformed
 
     private void exportPNGActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPNGActionPerformed
-        export("png");
+        ExportCallbacks.exportTexture("png");
     }//GEN-LAST:event_exportPNGActionPerformed
 
     private void patchMAPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patchMAPActionPerformed
-        File file = fileChooser.openFile("brg_patch.map", "map", "FileDB", false);
-        FileDB newDB = new FileDB(file);
-        FileDB db = (FileDB) getCurrentDB();
-        int added = 0, patched = 0;
-        for (FileEntry entry : newDB.entries) {
-            int old = db.entries.size();
-            db.add(entry);
-            if (old == db.entries.size()) patched++;
-            else added++;
-        }
-        updateWorkspace();
-        System.out.println(String.format("Succesfully updated FileDB (added = %d, patched = %d)", added, patched));
-        ((FileModel) getCurrentTree().getModel()).reload();
+        DatabaseCallbacks.patchDatabase();
     }//GEN-LAST:event_patchMAPActionPerformed
 
     private void replaceCompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceCompressedActionPerformed
-        File file = fileChooser.openFile(lastSelected.header, "", "Resource", false);
-        if (file == null) return;
-        byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data != null) replaceEntry(lastSelected.entry, data);
+        ReplacementCallbacks.replaceCompressed();
     }//GEN-LAST:event_replaceCompressedActionPerformed
 
     private void mergeFARCsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mergeFARCsActionPerformed
-        File base = fileChooser.openFile("base.farc", "farc", "Base FileArchive", false);
-        if (base == null) return;
-        FileArchive archive;
-        int index = isArchiveLoaded(base);
-        if (index != -1) archive = archives.get(index);
-        else archive = new FileArchive(base);
-        
-        if (archive == null) {
-            System.err.println("Base FileArchive is null! Aborting!");
-            return;
-        }
-        
-        File patch = fileChooser.openFile("patch.farc", "farc", "Patch FileArchive", false);
-        if (patch == null) return;
-        FileArchive pArchive = new FileArchive(patch);
-        
-        if (pArchive == null) {
-            System.err.println("Patch FileArchive is null! Aborting!");
-            return;
-        }
-        
-        resourceService.submit(() -> { 
-            progressBar.setVisible(true);
-            progressBar.setMaximum(pArchive.entries.size());
-            progressBar.setValue(0);
-            int count = 0;
-            for (FileEntry entry : pArchive.entries) {
-                progressBar.setValue(count + 1);
-                
-                
-                byte[] data = pArchive.extract(entry);
-                
-                int querySize = ((data.length * 10) + archive.queueSize +  archive.hashTable.length + 8 + (archive.entries.size() * 0x1C)) * 2;
-                if (querySize < 0 || querySize >= Integer.MAX_VALUE) {
-                    System.out.println("Ran out of memory, flushing current changes...");
-                    archive.save(progressBar);
-                    progressBar.setMaximum(pArchive.entries.size());
-                    progressBar.setValue(count + 1);
-                }
-                
-                archive.add(pArchive.extract(entry));
-                count++;
-            }
-            
-            archive.save(progressBar); 
-            
-            progressBar.setVisible(false);
-            progressBar.setMaximum(0); progressBar.setValue(0);
-        });
-        
-        JOptionPane.showMessageDialog(this, "Please wait..");
+        UtilityCallbacks.mergeFileArchives();
     }//GEN-LAST:event_mergeFARCsActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
-        String ext = "", type = "";
-        if (isBigProfile) type = "Big Profile";
-        else if (isMod) { ext = ".mod"; type = "Mod"; }
-        else { ext = ".map"; type = "FileDB"; } 
-        
-        FileData db = getCurrentDB();
-        
-        File file = fileChooser.openFile(db.name, ext, type, true);
-        if (file == null) return;
-        db.save(file.getAbsolutePath());
+        FileCallbacks.saveAs();
     }//GEN-LAST:event_saveAsActionPerformed
 
     private void deleteContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteContextActionPerformed
-        
-        JTree tree = getCurrentTree();
-
-        TreePath[] paths = tree.getSelectionPaths();
-        TreeSelectionModel model = tree.getSelectionModel();
-        int[] rows = tree.getSelectionRows();
-
-        if (!isBigProfile) {
-            FileData db = getCurrentDB();
-            for (FileNode node : entries) {
-                FileEntry entry = node.entry;
-                node.removeFromParent();
-                if (node.entry == null) continue;
-                if (isMod) ((Mod)db).remove(entry);
-                else ((FileDB)db).remove(entry);
-            }   
-        }
-        
-        if (isBigProfile) {
-            BigProfile profile = (BigProfile) getCurrentDB();
-            for (FileNode node : entries) {
-                FileEntry entry = node.entry;
-                node.removeFromParent();
-                if (entry == null) continue;
-                if (entry.slot != null) profile.slots.remove(entry.slot);
-                if (entry.profileItem != null) profile.inventoryCollection.remove(entry.profileItem);
-                profile.entries.remove(entry);
-                profile.shouldSave = true;
-            }
-        }
-
-        ((FileModel) tree.getModel()).reload();
-        
-        updateWorkspace();
-
-        tree.setSelectionPaths(paths);
-        tree.setSelectionRows(rows);
-        tree.setSelectionModel(model);
+        DatabaseCallbacks.delete();
     }//GEN-LAST:event_deleteContextActionPerformed
 
     private void zeroContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zeroContextActionPerformed
-        FileDB db = (FileDB) getCurrentDB();
-        int zero = 0;
-        for (FileNode node : entries) {
-            if (node.entry != null) {
-                db.zero(node.entry);
-                zero++;
-            }
-        }
-        updateWorkspace();
-        System.out.println("Successfuly zeroed " + zero + " entries.");
+        DatabaseCallbacks.zero();
     }//GEN-LAST:event_zeroContextActionPerformed
 
     private void newFolderContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFolderContextActionPerformed
-        String folder = (String) JOptionPane.showInputDialog("Please input a name for the folder.");
-        if (folder == null || folder.equals("")) return;
-        
-        TreePath treePath = null;
-        if (lastSelected == null)
-            treePath = new TreePath(getCurrentDB().addNode(folder).getPath());
-        else if (lastSelected.entry == null)
-            treePath = new TreePath(getCurrentDB().addNode(lastSelected.path + lastSelected.header + "/" + folder).getPath());
-        
-        JTree tree = getCurrentTree();
-        
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-        
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
+        DatabaseCallbacks.newFolder();
     }//GEN-LAST:event_newFolderContextActionPerformed
 
     private void generateDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDiffActionPerformed
-        File base = fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
-        if (base == null) return;
-        
-        FileDB baseDB = new FileDB(base);
-        if (baseDB == null) {
-            System.err.println("Why is the FileDB null?!");
-            return;
-        }
-        
-        File update = fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
-        if (update == null) return;
-        
-        FileDB updateDB = new FileDB(update);
-        if (updateDB == null) {
-            System.err.println("Why is the FileDB null?!");
-            return;
-        }
-        
-        Output output = new Output(updateDB.entryCount * 0x100);
-        for (FileEntry entry : updateDB.entries) {
-            FileEntry baseEntry = baseDB.find(entry.GUID);
-            if (baseEntry == null)
-                output.string("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
-            else if (baseEntry.size != entry.size) {
-                output.string("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.hash) + " -> " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) +  '\n');
-            }
-            
-        }
-        output.shrinkToFit();
-        
-        File out = fileChooser.openFile("diff.txt", ".txt", "Text Document", true);
-        if (out == null) return;
-        
-        FileIO.write(output.buffer, out.getAbsolutePath());
+        UtilityCallbacks.generateFileDBDiff();
     }//GEN-LAST:event_generateDiffActionPerformed
 
     private void loadModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadModActionPerformed
         File file = fileChooser.openFile("example.mod", "mod", "Mod", false);
         if (file == null) return;
-        
-        Mod mod = loadMod(file);
+        Mod mod = ModCallbacks.loadMod(file);
         if (mod != null && mod.isParsed) {
             addTab(mod);
             updateWorkspace();
         }
     }//GEN-LAST:event_loadModActionPerformed
 
-    private Mod loadMod(File file) {
-        Mod mod;
-        try {
-            Data data = new Data(FileIO.read(file.getAbsolutePath()), 0xFFFFFFFF);
-            data.revision = 0xFFFF;
-            String password = null;
-            if (data.str(0x4).equals("MODe") && data.bool() == true)
-                password = JOptionPane.showInputDialog(this, "Mod is encrypted! Please input password.", "password");
-            data.seek(0);
-        
-            mod = new Mod(file, data, password);
-        } catch (Exception e) { return null; }
-        return mod;
-    }
-    
-    
     private void openModMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openModMetadataActionPerformed
         new ModEditor((Mod) getCurrentDB()).setVisible(true);
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
         getCurrentDB().shouldSave = true;
-        new SlotEditor(this, ((BigProfile)getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile)getCurrentDB()).revision).setVisible(true);
+        new SlotEditor(this, ((BigProfile) getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile) getCurrentDB()).revision).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
-        newDB(936);
+        DatabaseCallbacks.newFileDB(936);
     }//GEN-LAST:event_newVitaDBActionPerformed
 
     private void newModernDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModernDBActionPerformed
-        newDB(21496064);
+        DatabaseCallbacks.newFileDB(21496064);
     }//GEN-LAST:event_newModernDBActionPerformed
 
     private void newLegacyDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newLegacyDBActionPerformed
-        newDB(256);
+        DatabaseCallbacks.newFileDB(256);
     }//GEN-LAST:event_newLegacyDBActionPerformed
 
-    private boolean confirmOverwrite(File file) {
+    public boolean confirmOverwrite(File file) {
         if (file.exists()) {
             int result = JOptionPane.showConfirmDialog(null, "This file already exists, are you sure you want to override it?", "Confirm overwrite", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.NO_OPTION) return false;
@@ -2342,359 +1565,69 @@ public class Toolkit extends javax.swing.JFrame {
         }
         return true;
     }
-    
-    
+
     private void createFileArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createFileArchiveActionPerformed
-        File file = fileChooser.openFile("data.farc", "farc", "File Archive", true);
-        if (file == null) return;
-        if (confirmOverwrite(file)) {
-            FileIO.write(new byte[] { 0, 0, 0, 0,0x46, 0x41, 0x52, 0x43 }, file.getAbsolutePath());
-            loadFileArchive(file);
-        }
+        ArchiveCallbacks.newFileArchive();
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new MetadataEditor(this, ((BigProfile)getCurrentDB())).setVisible(true);
+        new MetadataEditor(this, ((BigProfile) getCurrentDB())).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed
-        File[] files = fileChooser.openFiles("mod", "File Mod");
-        if (files == null) return;
-        
-        for (int i = 0; i < files.length; ++i) {
-            File file = files[i];
-            
-            Mod mod = loadMod(file);
-            if (mod != null) {
-                
-                if (isBigProfile) {
-                    BigProfile profile = (BigProfile) getCurrentDB();
-                    for (FileEntry entry : mod.entries)
-                        profile.add(entry.data, false);
-                    for (InventoryMetadata item : mod.items)
-                        profile.addItem(item.resource, item);
-                    for (Slot slot : mod.slots)
-                        profile.addSlot(slot);
-                }
-                
-                else if (!isBigProfile && !isMod) {
-                    if (mod.entries.size() == 0) return;
-                    FileDB db = (FileDB) getCurrentDB();
-                    FileArchive[] archives = getSelectedArchives();
-                    if (archives == null) return;
-                    for (FileEntry entry : mod.entries) {
-                        if (db.add(entry))
-                            db.addNode(entry);
-                        addFile(entry.data, archives);
-                    }
-                }
-                
-            }
-        }
-        
-        getCurrentDB().shouldSave = true;
-        updateWorkspace();
-        
-        JTree tree = getCurrentTree();
-        TreePath[] treePath = tree.getSelectionPaths();
-        
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-        
-        tree.setSelectionPaths(treePath);
+        UtilityCallbacks.installMod();
     }//GEN-LAST:event_installProfileModActionPerformed
 
     private void addKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeyActionPerformed
-        String str = (String) JOptionPane.showInputDialog("Translated String");
-        String hStr = (String) JOptionPane.showInputDialog("Hash");
-        if (str == null || hStr == null || str.equals("") || hStr.equals(""))
-            return;
-        
-        long hash = Long.parseLong(hStr);
-        
-        
-        BigProfile profile = (BigProfile) getCurrentDB();
-        profile.addString(str, hash);
-        
-        profile.shouldSave = true;
-        updateWorkspace();
-        
-        System.out.println("Done!");
-        
+        ProfileCallbacks.addKey();
     }//GEN-LAST:event_addKeyActionPerformed
 
     private void duplicateContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateContextActionPerformed
-        FileEntry entry = lastSelected.entry;
-        String path = (String) JOptionPane.showInputDialog(this, "Duplicate", entry.path);
-        if (path == null) return;
-        
-        JTree tree = getCurrentTree();
-
-        FileDB db = (FileDB) getCurrentDB();
-        FileEntry duplicate = new FileEntry(entry);
-        duplicate.path = path;
-        duplicate.GUID = db.getNextGUID();
-        
-        db.add(duplicate);
-        TreePath treePath = new TreePath(db.addNode(duplicate).getPath());
-        
-        db.shouldSave = true;
-        
-        byte[] data = extractFile(entry.GUID);
-        if (data != null) {
-            Resource resource = new Resource(data);
-            if (resource.magic.equals("PLNb")) {
-                resource.getDependencies(entry, this);
-                resource.removePlanDescriptors(entry.GUID, true);
-                addFile(resource.data);
-                duplicate.hash = Bytes.SHA1(resource.data);
-            }
-        }
-        
-        
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-        
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
-        
-        updateWorkspace();
-        
-        System.out.println("Duplicated entry!");
-        System.out.println(entry.path + " -> " + duplicate.path);
+        DatabaseCallbacks.duplicateItem();
     }//GEN-LAST:event_duplicateContextActionPerformed
 
     private void newItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newItemContextActionPerformed
-        String file = JOptionPane.showInputDialog(this, "New Item", "");
-        if (file == null) return;
-        
-        JTree tree = getCurrentTree();
-        
-        
-        
-        FileData db = getCurrentDB();
-        
-        FileEntry entry = new FileEntry(lastSelected.path + lastSelected.header + "/" + file, db.getNextGUID());
-                
-        if (isMod)
-            ((Mod)db).add(entry);
-        else ((FileDB)db).add(entry);
-         
-        db.shouldSave = true;
-        
-        TreePath treePath = new TreePath(db.addNode(entry).getPath());
-        
-        
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-        
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
-        
-        updateWorkspace();
-        
-        System.out.println("Added entry! -> " + entry.path);
-        
+        DatabaseCallbacks.newItem();
     }//GEN-LAST:event_newItemContextActionPerformed
 
     private void replaceDecompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedActionPerformed
-        File file = fileChooser.openFile(lastSelected.header, "", "Resource", false);
-        if (file == null) return;
-        byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data != null) {
-            byte[] original = extractFile(lastSelected.entry.GUID);
-            if (original == null) original = extractFile(lastSelected.entry.hash);
-            if (original == null) { System.out.println("Couldn't find entry, can't replace."); return; }
-            Resource resource = new Resource(original); resource.getDependencies(lastSelected.entry, this);
-            byte[] out = Compressor.Compress(data, resource.magic, resource.revision, resource.resources);
-            if (out == null) { System.err.println("Error occurred when compressing data."); return; }
-            replaceEntry(lastSelected.entry, out);
-            System.out.println("Data compressed and added!");
-        }
+        ReplacementCallbacks.replaceDecompressed();
     }//GEN-LAST:event_replaceDecompressedActionPerformed
 
     private void replaceDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDependenciesActionPerformed
-        new Dependinator(this, lastSelected.entry);
+        new Dependinator(this, Globals.lastSelected.entry);
     }//GEN-LAST:event_replaceDependenciesActionPerformed
 
     private void encodeIntegerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodeIntegerActionPerformed
-        String number = JOptionPane.showInputDialog(this, "Integer", "");
-        if (number == null) return;
-        
-        long integer;
-        if (number.toLowerCase().startsWith("0x"))
-            integer = Long.parseLong(number.substring(2), 16);
-        else if (number.startsWith("g"))
-            integer = Long.parseLong(number.substring(1));
-        else 
-            integer = Long.parseLong(number);
-        
-        Output output = new Output(5, 0xFFFFFFFF);
-        output.varint(integer);
-        output.shrinkToFit();
-        
-        System.out.println("0x" + Bytes.toHex(integer) + " (" + integer + ")" + " -> " + "0x" + Bytes.toHex(output.buffer));
-        
+        UtilityCallbacks.encodeInteger();
     }//GEN-LAST:event_encodeIntegerActionPerformed
 
     private void exportAsModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModActionPerformed
-        FileEntry entry = lastSelected.entry;
-        String name = Paths.get(lastSelected.entry.path).getFileName().toString();
-        if (lastSelected.entry.item != null)
-            name = name.substring(0, name.length() - 5);
-        else name = name.substring(0, name.length() - 4);
-        
-        File file = fileChooser.openFile(name + ".mod", "mod", "Mod", true);
-        if (file == null) return;
-        
-        Resource resource = new Resource(extractFile(entry.hash));
-        Mod mod = resource.hashinate(entry, this);
-        
-        mod.title = name;
-
-        byte[] compressed = mod.entries.get(mod.entries.size() - 1).data;
-        
-        if (entry.item != null) {
-            resource.setData(compressed); resource.decompress(true);
-            InventoryMetadata metadata = new Serializer(resource).DeserializeItem().metadata;
-            if (LAMS != null) {
-                metadata.translatedLocation = LAMS.Translate(metadata.location);
-                metadata.translatedCategory = LAMS.Translate(metadata.category);
-            }
-            if (metadata == null) {
-                metadata = new InventoryMetadata();
-                metadata.userCreatedDetails = new UserCreatedDetails();
-                metadata.userCreatedDetails.title = name;
-            }
-            metadata.resource = new ResourcePtr(Bytes.SHA1(compressed), RType.PLAN);
-            mod.items.add(metadata);
-        } else if (lastSelected.entry.path.toLowerCase().endsWith(".bin")) {
-            Slot slot = new Slot();
-            slot.root = new ResourcePtr(Bytes.SHA1(compressed), RType.LEVEL);
-            slot.title = name;
-            mod.slots.add(slot);
-        }
-        
-        if (file.exists()) {
-            int result = JOptionPane.showConfirmDialog(null, "This mod already exists, do you want to merge them?", "Existing mod!", JOptionPane.YES_NO_CANCEL_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                Mod oldMod = loadMod(file);
-                if (oldMod != null) {
-                    for (FileEntry e : oldMod.entries)
-                        mod.add(e.path, e.data, e.GUID);
-                    for (InventoryMetadata m : oldMod.items)
-                        mod.items.add(m);
-                    for (Slot slot : oldMod.slots)
-                        mod.slots.add(slot);
-                }
-            }
-            else if (result != JOptionPane.NO_OPTION) return;
-        }
-        
-        mod.save(file.getAbsolutePath());
+        ExportCallbacks.exportMod();
     }//GEN-LAST:event_exportAsModActionPerformed
 
     private void dumpRLSTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpRLSTActionPerformed
-        FileDB db = (FileDB) getCurrentDB();
-        String str = db.toRLST();
-        
-        File file = fileChooser.openFile("poppet_inventory_empty.rlst", "rlst", "RLST", true);
-        if (file == null) return;
-        
-        FileIO.write(str.getBytes(), file.getAbsolutePath());
+        DatabaseCallbacks.dumpRLST();
     }//GEN-LAST:event_dumpRLSTActionPerformed
 
     private void removeDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeDependenciesActionPerformed
-        FileEntry entry = lastSelected.entry;
-        byte[] data = extractFile(entry.hash);
-        
-        if (data == null) return;
-        
-        Resource resource = new Resource(data);
-        Output output = new Output(resource.length);
-        
-        output.bytes(resource.bytes(0x8));
-        int offset = resource.int32f();
-        output.int32f(offset);
-        output.bytes(resource.bytes(offset - resource.offset));
-        output.int32f(0); output.shrinkToFit();
-        
-        replaceEntry(entry, output.buffer);
+        DependencyCallbacks.removeDependencies();
     }//GEN-LAST:event_removeDependenciesActionPerformed
 
     private void removeMissingDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMissingDependenciesActionPerformed
-        FileEntry entry = lastSelected.entry;
-        byte[] data = extractFile(entry.hash);
-        
-        if (data == null) return;
-        
-        Resource resource = new Resource(data);
-        resource.getDependencies(entry, this);
-        resource.seek(0);
-        Output output = new Output(resource.length);
-        
-        output.bytes(resource.bytes(0x8));
-        int offset = resource.int32f();
-        output.int32f(offset);
-        output.bytes(resource.bytes(offset - resource.offset));
-
-        ArrayList<ResourcePtr> dependencies = new ArrayList<ResourcePtr>(resource.dependencies.length);
-        for (int i = 0; i < resource.dependencies.length; ++i) {
-            if (resource.dependencies[i] != null) {
-                if (extractFile(resource.dependencies[i].hash) != null)
-                    dependencies.add(resource.resources[i]);
-            }
-        }
-        
-        output.int32f(dependencies.size());
-        for (ResourcePtr ptr : dependencies) {
-            output.resource(ptr, true);
-            output.int32f(ptr.type.value);
-        }
-        
-        output.shrinkToFit();
-        
-        replaceEntry(entry, output.buffer);
+        DependencyCallbacks.removeMissingDependencies();
     }//GEN-LAST:event_removeMissingDependenciesActionPerformed
 
     private void exportOBJTEXCOORD1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportOBJTEXCOORD1ActionPerformed
-        exportMesh(1);
+        ExportCallbacks.exportOBJ(1);
     }//GEN-LAST:event_exportOBJTEXCOORD1ActionPerformed
 
     private void exportOBJTEXCOORD2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportOBJTEXCOORD2ActionPerformed
-        exportMesh(2);
+        ExportCallbacks.exportOBJ(2);
     }//GEN-LAST:event_exportOBJTEXCOORD2ActionPerformed
 
     private void replaceImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceImageActionPerformed
-        FileEntry entry = lastSelected.entry;
-        
-        File file = fileChooser.openFile("image.png", "png", "Portable Network Graphics (PNG)", false);
-        if (file == null) return;
-        
-        BufferedImage image;
-        if (file.getAbsolutePath().toLowerCase().endsWith(".dds"))
-            image = Images.fromDDS(FileIO.read(file.getAbsolutePath()));
-        else image = FileIO.readBufferedImage(file.getAbsolutePath());
-        
-        if (image == null) {
-            System.err.println("Image was null, cancelling replacement operation.");
-            return;
-        }
-        
-        Resource oldImage = new Resource(extractFile(entry.hash));
-        
-        Resource newImage = null;
-        if (oldImage.type == CompressionType.GTF_TEXTURE)
-            newImage = Images.toGTF(image);
-        else if ((oldImage.type == null && oldImage.data == null) || oldImage.type == CompressionType.LEGACY_TEXTURE)
-            newImage = Images.toTEX(image);
-        
-        if (newImage != null) {
-            replaceEntry(entry, newImage.data);
-            return;
-        }
-        
-        System.out.println("Could not replace texture.");
+        ReplacementCallbacks.replaceImage();
     }//GEN-LAST:event_replaceImageActionPerformed
 
     private void dumpBPRToModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpBPRToModActionPerformed
@@ -2709,433 +1642,164 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_rebootActionPerformed
 
     private void addAllPlansToInventoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllPlansToInventoryActionPerformed
-        if (!isMod) return;
-        
-        Mod mod = (Mod) getCurrentDB();
-        for (FileEntry entry : mod.entries) {
-            if (entry.path.contains(".plan")) {
-                Resource resource = new Resource(entry.data);
-                resource.decompress(true);
-                
-                Serializer serializer = new Serializer(resource);
-                InventoryItem item = serializer.DeserializeItem();
-                        
-                if (item != null && item.metadata != null) {
-                    item.metadata.resource = new ResourcePtr(entry.hash, RType.PLAN);
-                    mod.items.add(item.metadata);
-                }
-            }
-        }
+        DebugCallbacks.addAllPlansToInventoryTable();
     }//GEN-LAST:event_addAllPlansToInventoryActionPerformed
 
     private void convertAllToGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertAllToGUIDActionPerformed
-        if (!isMod) return;
-        
-        Map<String, Long> map = new HashMap<String, Long>();
-        
-        Mod mod = (Mod) getCurrentDB();
-        
-        for (FileEntry entry : mod.entries)
-            map.put(Bytes.toHex(entry.hash), entry.GUID);
-        
-        for (FileEntry entry : mod.entries) {
-            Resource resource = new Resource(entry.data);
-            resource.getDependencies(entry, this);
-            if (resource.resources != null) {
-                resource.decompress(true);
-            
-                for (int i = 0; i < resource.resources.length; ++i) {
-                    ResourcePtr res = resource.resources[i];
-                    String SHA1 = Bytes.toHex(res.hash);
-                    if (!map.containsKey(SHA1)) continue;
-                    ResourcePtr newRes = new ResourcePtr(map.get(SHA1), res.type);
-                    resource.replaceDependency(i, newRes, false);
-                }
-                
-                mod.replace(entry, Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));
-            }
-        }
+        DebugCallbacks.convertAllToGUID();
     }//GEN-LAST:event_convertAllToGUIDActionPerformed
 
     private void closeTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeTabActionPerformed
-        int index = fileDataTabs.getSelectedIndex();
-        
-        FileData data = getCurrentDB();
-        if (data.shouldSave) {
-            int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) data.save(data.path);
-        }
-        
-        databases.remove(index);
-        trees.remove(index);
-        fileDataTabs.removeTabAt(index);
+        FileCallbacks.closeTab();
     }//GEN-LAST:event_closeTabActionPerformed
 
     private void testSerializeCurrentMeshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testSerializeCurrentMeshActionPerformed
-        String path = Paths.get(System.getProperty("user.home"), "/Desktop/", "test.mol").toAbsolutePath().toString();
-       
-        if (lastSelected == null || lastSelected.entry == null) return;
-        
-        Mesh mesh = lastSelected.entry.mesh;
-        if (mesh == null) return;
-        
-        String number = JOptionPane.showInputDialog(this, "Revision", "0x" + Bytes.toHex(mesh.revision));
-        if (number == null) return;
-        
-        long integer;
-        if (number.toLowerCase().startsWith("0x"))
-            integer = Long.parseLong(number.substring(2), 16);
-        else if (number.startsWith("g"))
-            integer = Long.parseLong(number.substring(1));
-        else 
-            integer = Long.parseLong(number);
-        
-        byte[] data = mesh.serialize((int) integer);
-        
-        FileIO.write(data, path);
-        
-        System.out.println("serialized.");
+        DebugCallbacks.reserializeCurrentMesh();
     }//GEN-LAST:event_testSerializeCurrentMeshActionPerformed
 
-    
-    private void newDB(int header) {
-        Output output = new Output(0x8);
-        output.int32(header); output.int32(0);
-        File file = fileChooser.openFile("blurayguids.map", "map", "FileDB", true);
-        if (file == null) return;
-        if (confirmOverwrite(file)) {
-            FileIO.write(output.buffer, file.getAbsolutePath());
-            loadFileDB(file);   
-        }
-    }
-    
-    private void export(String extension) {
-        File file = fileChooser.openFile(lastSelected.header.substring(0, lastSelected.header.length() - 4) + "." + extension, extension, "Image", true);
-        if (file == null) return;
-        
-        if (lastSelected.entry.texture == null || !lastSelected.entry.texture.parsed) return;
-        
-        try { ImageIO.write(lastSelected.entry.texture.getImage(), extension, file); } 
-        catch (IOException ex) { System.err.println("There was an error exporting the image."); return; }
-        
-        System.out.println("Successfully exported textures!");
-    }
-    
-    
-    private void extract(boolean decompress) {
-        if (this.entries.size() == 0) { System.out.println("You need to select files to extract."); return; }
-        if (this.entries.size() != 1) {
-            int success = 0; int total = 0;
-            String path = fileChooser.openDirectory();
-            if (path == null) return;
-            for (int i = 0; i < this.entries.size(); ++i) {
-                FileNode node = this.entries.get(i);
-                if (node.entry != null) {
-                    total++;
-                    byte[] data = extractFile(node.entry.hash);
-                    if (data != null) {
-                        Resource resource = new Resource(data);
-                        if (decompress) resource.decompress(true);
-                        String output = Paths.get(path, node.path, node.header).toString();
-                        File file = new File(output);
-                        if (file.getParentFile() != null)
-                            file.getParentFile().mkdirs();
-                        if (FileIO.write(resource.data, output))
-                            success++;
-                    }
-                }
-            }
-            System.out.println("Finished extracting " + success + "/" + total + " entries.");
-        } else {
-            FileNode node = this.entries.get(0);
-            if (node.entry != null) {
-                byte[] data = extractFile(node.entry.hash);
-                if (data != null) {
-                    Resource resource = new Resource(data);
-                    if (decompress) resource.decompress(true);
-                    File file = fileChooser.openFile(node.header, "", "", true);
-                    if (file != null)
-                        if (FileIO.write(resource.data, file.getAbsolutePath()))
-                            System.out.println("Successfully extracted entry!");
-                        else System.err.println("Failed to extract entry.");
-                } else System.err.println("Could not extract! Entry is missing data!");
-            } else System.err.println("Node is missing an entry! Can't extract!");
-        }
-        
-    }
-    
-    private void generateDependencyTree(FileEntry entry, FileModel model) {       
+    public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
             for (int i = 0; i < entry.dependencies.length; ++i) {
                 if (entry.dependencies[i] == null || entry.dependencies[i].path == null) continue;
                 Nodes.addNode(root, entry.dependencies[i]);
                 if (entry.dependencies[i].dependencies != null) // These files have way too many dependencies
-                    generateDependencyTree(entry.dependencies[i], model);   
+                    generateDependencyTree(entry.dependencies[i], model);
             }
         }
     }
-    
-    private FileNode getLastSelected(JTree tree) {
-        this.entries.clear();
+
+    public FileNode getLastSelected(JTree tree) {
+        Globals.entries.clear();
         TreePath[] treePaths = tree.getSelectionPaths();
         setImage(null);
         if (treePaths == null) {
-            lastSelected = null;
+            Globals.lastSelected = null;
             return null;
         }
         for (int i = 0; i < treePaths.length; ++i) {
-            FileNode node = (FileNode)treePaths[i].getLastPathComponent();
-            if (node == null) { lastSelected = null; return null; };
+            FileNode node = (FileNode) treePaths[i].getLastPathComponent();
+            if (node == null) {
+                Globals.lastSelected = null;
+                return null;
+            };
             if (node.getChildCount() > 0)
-                Nodes.loadChildren(entries, node, true);
-            entries.add(node);
+                Nodes.loadChildren(Globals.entries, node, true);
+            Globals.entries.add(node);
         }
-        FileNode selected = 
-            (FileNode)treePaths[treePaths.length - 1].getLastPathComponent();
-        lastSelected = selected;
+        FileNode selected = (FileNode) treePaths[treePaths.length - 1].getLastPathComponent();
+        Globals.lastSelected = selected;
         return selected;
     }
-    
-    private void treeSelectionListener(JTree tree) {
-        JTree currentTree = getCurrentTree();
-        if (tree == currentTree) {
-            entryModifiers.setEnabledAt(1, false);
-            entryModifiers.setSelectedIndex(0);   
-        }
-        if (tree == currentTree)
-            dependencyTree.setModel(null);
-        if (tree.getSelectionPath() == null)
-            return;
-        
-        
-        FileNode selected = getLastSelected(tree);
-        FileEntry entry = selected.entry;
-        
-        setEditorPanel(selected);
-        if (selected.entry == null) {
-            updateWorkspace();
-            return;
-        }
-        
-       resourceService.submit(() -> {
-                if (archives.size() != 0 || isBigProfile || isMod) {
-                    byte[] entryBuffer = null;
-                entryBuffer = extractFile(entry.hash);
-                entry.data = entryBuffer; updateWorkspace();
-                if (entryBuffer == null) { setHexEditor(null); return; }
-                setHexEditor(entryBuffer);
-                if (entry.dependencyModel == null || entry.dependencies == null || entry.missingDependencies) {
-                    FileModel model = new FileModel(new FileNode("x", null, null));
-                    Resource resource = new Resource(entryBuffer);
-                    boolean recursive = !(resource.magic.equals("PCKb") || resource.magic.equals("SLTb") || resource.magic.equals("LVLb") || resource.magic.equals("ADCb") || resource.magic.equals("PALb"));
-                    entry.missingDependencies = resource.getDependencies(entry, this, recursive) != 0;
-                    entry.dependencies = resource.dependencies;
-                    generateDependencyTree(entry, model);
-                    entry.dependencyModel = model;
-                }
-                
-                if (lastSelected == selected && entry.dependencyModel != null && tree == currentTree)
-                    dependencyTree.setModel(entry.dependencyModel);
-                String path = entry.path.toLowerCase();
-            
-                String ext = path.substring(path.lastIndexOf(".") + 1);
-            
-                preview.setDividerLocation(325);
-                switch (ext) {
-                    case "pck": 
-                        if (entry.pack == null) {
-                            Resource res = new Resource(entryBuffer);
-                            res.decompress(true);
-                            entry.revision = res.revision;
-                            try {
-                                Pack pack = new Pack(res);
-                                entry.pack = pack;
-                            } catch (Exception e) {
-                                System.err.println("There was an error processing the RPack file! -> ");
-                                System.err.println(e);
-                            }
-                        }
-                        break;
-                    case "slt":
-                            if (entry.slots == null) {
-                                Resource res = new Resource(entryBuffer);
-                                if (res.magic.equals("SLTt")) return;
-                                res.decompress(true);
-                                entry.revision = res.revision;
-                                
-                                int count = res.int32();
-                                entry.slots = new ArrayList<Slot>(count);
-                                for (int i = 0; i < count; ++i) {
-                                    Slot slot = new Slot(res, true, false);
-                                    entry.slots.add(slot);
-                                    if (slot.root != null) {
-                                        FileEntry e = findEntry(slot.root);
-                                        e.revision = res.revision;
-                                        if (e != null)
-                                            e.slot = slot;
-                                    }
-                                }
-                            }
-                            break;
-                    case "bin":
-                        if (entry.slot != null) {
-                            if (entry.slot.renderedIcon == null)
-                                entry.slot.renderIcon(entry, this);
-                            setImage(entry.slot.renderedIcon);
-                        }
-                        break;
-                    case "tex": case "gtf": case "dds": case "jpg": case "jpeg": case "png": case "jfif":
-                        if (entry.texture == null)
-                            entry.texture = new Texture(entryBuffer);
-                        ImageIcon icon = entry.texture.getImageIcon(320, 320);
-                        if (icon != null) setImage(icon);
-                        else System.out.println("Failed to set icon, it's null?");
-                        break;
-                    case "mol": 
-                        if (entry.mesh == null)
-                            entry.mesh = new Mesh(entryBuffer);
-                        System.out.println("Failed to set Mesh preview, does functionality even exist?");
-                        break;
-                    case "plan":
-                        if (selected.entry.item == null) {
-                            try {
-                                Resource resource = new Resource(entryBuffer); resource.decompress(true);
-                                selected.entry.item = new Serializer(resource, LAMS).DeserializeItem();   
-                            } catch (Exception e) { System.err.println("There was an error parsing the InventoryItem!"); return; }
-                        }
-                        if (lastSelected.entry == entry) {
-                            if (entry.item != null && tree == currentTree) {
-                                if (entry.item.metadata != null)
-                                    populateMetadata(entry.item);
-                                else {
-                                    System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
-                                    try {
-                                        for (FileEntry e : entry.dependencies) {
-                                            if (e.path.contains(".tex")) {
-                                                ResourcePtr ptr = new ResourcePtr();
-                                                ptr.hash = e.hash;
-                                                loadImage(ptr, entry.item);
-                                                return;
-                                            }
-                                        }
-                                    } catch (Exception e) { System.err.println("An error occured procesing texture."); }
-                                    System.out.println("Could not find any texture file to display as icon.");
-                                }
-                            }
-                        }
-                        break;
-                }
-                preview.setDividerLocation(325);
-            }
-        });
-    }
-    
-    private void populateMetadata(InventoryItem item) {
-        if (item == null || (archives.size() == 0 && !isBigProfile && !isMod)) return;
+
+    public void populateMetadata(InventoryItem item) {
+        if (item == null || !Globals.canExtract()) return;
         InventoryMetadata metadata = item.metadata;
         if (metadata == null) return;
-        
+
         iconField.setText("");
         if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
             loadImage(metadata.icon, item);
-        
-        if (lastSelected.entry.item != item) return;
-        
+
+        if (Globals.lastSelected.entry.item != item) return;
+
         setPlanDescriptions(metadata);
-        
+
         pageCombo.setSelectedItem(metadata.type);
         subCombo.setSelectedItem(metadata.subType);
         creatorField.setText(metadata.creator.PSID);
-        
+
         entryModifiers.setEnabledAt(1, true);
         entryModifiers.setSelectedIndex(1);
     }
-    
-    private void setPlanDescriptions(InventoryMetadata metadata) {
-        
-        if (lastSelected.entry.item.revision < 0x272) {
+
+    public void setPlanDescriptions(InventoryMetadata metadata) {
+        if (Globals.lastSelected.entry.item.revision < 0x272) {
             titleField.setText(metadata.translationKey);
             descriptionField.setText("");
             categoryField.setText(metadata.legacyCategoryKey);
             locationField.setText(metadata.legacyLocationKey);
-            
+
             LAMSMetadata.setEnabled(false);
-            LAMSMetadata.setSelected(false); StringMetadata.setEnabled(true);
+            LAMSMetadata.setSelected(false);
+            StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             return;
         }
-        
+
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
-        
+
         locationField.setText("" + metadata.location);
         categoryField.setText("" + metadata.category);
-        
-        if (LAMS != null) {
+
+        if (Globals.LAMS != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
-            
-            titleField.setText(LAMS.Translate(metadata.titleKey));
-            
-            descriptionField.setText(LAMS.Translate(metadata.descriptionKey));
-            
-            metadata.translatedLocation = LAMS.Translate(metadata.location);
-            metadata.translatedCategory = LAMS.Translate(metadata.category);
+
+            titleField.setText(Globals.Translate(metadata.titleKey));
+
+            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
+
+            metadata.translatedLocation = Globals.Translate(metadata.location);
+            metadata.translatedCategory = Globals.Translate(metadata.category);
             locationField.setText(metadata.translatedLocation);
             categoryField.setText(metadata.translatedCategory);
-        } else { LAMSMetadata.setSelected(true); LAMSMetadata.setEnabled(true); StringMetadata.setEnabled(false); }
-        
-        
+        } else {
+            LAMSMetadata.setSelected(true);
+            LAMSMetadata.setEnabled(true);
+            StringMetadata.setEnabled(false);
+        }
+
         if (metadata.userCreatedDetails != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             if (metadata.userCreatedDetails.title != null)
                 titleField.setText(metadata.userCreatedDetails.title);
-        
+
             if (metadata.userCreatedDetails.description != null)
                 descriptionField.setText(metadata.userCreatedDetails.description);
-            
+
             locationField.setText("");
             categoryField.setText("");
-            
+
             if (metadata.category == 1737521) categoryField.setText("My Photos");
             else if (metadata.category == 1598223) categoryField.setText("My Pods");
             else if (metadata.category == 928006) categoryField.setText("My Objects");
             else if (metadata.category == 578814) categoryField.setText("My Costumes");
         }
     }
-    
-    private void loadImage(ResourcePtr resource, InventoryItem item) {
+
+    public void loadImage(ResourcePtr resource, InventoryItem item) {
         FileEntry entry = null;
-            byte[] hash = null;
-            if (resource == null) return;
-            iconField.setText(resource.toString());
-            if (resource.hash != null)
-                hash = resource.hash; 
-            else {
-                entry = findEntry(resource.GUID);
-                if (entry != null)
-                    hash = entry.hash;
-            }
-            
-            if (hash == null) return;
-            if (entry == null) entry = findEntry(hash);
-            
-            if (entry != null && entry.texture != null) 
-                setImage(entry.texture.getImageIcon(320, 320));
-            else {
-                byte[] data = extractFile(hash);
-                if (data == null) return;
-                Texture texture = new Texture(data);
-                if (entry != null) entry.texture = texture;
-                if (texture.parsed == true)
-                    if (lastSelected.entry.item == item)
-                        setImage(texture.getImageIcon(320, 320));
-            }
+        byte[] hash = null;
+        if (resource == null) return;
+        iconField.setText(resource.toString());
+        if (resource.hash != null)
+            hash = resource.hash;
+        else {
+            entry = Globals.findEntry(resource.GUID);
+            if (entry != null)
+                hash = entry.hash;
+        }
+
+        if (hash == null) return;
+        if (entry == null) entry = Globals.findEntry(hash);
+
+        if (entry != null && entry.texture != null)
+            setImage(entry.texture.getImageIcon(320, 320));
+        else {
+            byte[] data = Globals.extractFile(hash);
+            if (data == null) return;
+            Texture texture = new Texture(data);
+            if (entry != null) entry.texture = texture;
+            if (texture.parsed == true)
+                if (Globals.lastSelected.entry.item == item)
+                    setImage(texture.getImageIcon(320, 320));
+        }
     }
-    
-    private void setImage(ImageIcon image) {
+
+    public void setImage(ImageIcon image) {
         preview.setDividerLocation(325);
         if (image == null) {
             texture.setText("No preview to be displayed");
@@ -3146,8 +1810,8 @@ public class Toolkit extends javax.swing.JFrame {
         }
         preview.setDividerLocation(325);
     }
-    
-    private void setEditorPanel(FileNode node) {
+
+    public void setEditorPanel(FileNode node) {
         FileEntry entry = node.entry;
         if (entry == null) {
             entryTable.setValueAt(node.path + node.header, 0, 1);
@@ -3155,12 +1819,12 @@ public class Toolkit extends javax.swing.JFrame {
                 entryTable.setValueAt("N/A", i, 1);
             return;
         }
-        
+
         entryTable.setValueAt(entry.path, 0, 1);
-        
+
         if (entry.timestamp != 0) {
             Timestamp timestamp = new Timestamp(entry.timestamp * 1000L);
-            entryTable.setValueAt(timestamp.toString(), 1, 1);   
+            entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
         entryTable.setValueAt(Bytes.toHex(entry.hash), 2, 1);
         entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
@@ -3174,8 +1838,8 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.setValueAt("N/A", 6, 1);
         }
     }
-    
-    private void setHexEditor(byte[] bytes) {
+
+    public void setHexEditor(byte[] bytes) {
         if (bytes == null) {
             hex.setData(null);
             hex.setDefinitionStatus(JHexView.DefinitionStatus.UNDEFINED);
@@ -3187,10 +1851,11 @@ public class Toolkit extends javax.swing.JFrame {
         }
         hex.repaint();
     }
-    
+
     public static void main(String args[]) {
-        try { UIManager.setLookAndFeel(new DarculaLaf()); } 
-        catch (UnsupportedLookAndFeelException ex) {
+        try {
+            UIManager.setLookAndFeel(new DarculaLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, null, ex);
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -3201,7 +1866,7 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu FARMenu;
+    public javax.swing.JMenu FARMenu;
     private javax.swing.JRadioButton LAMSMetadata;
     private javax.swing.JMenu MAPMenu;
     private javax.swing.JMenu ProfileMenu;
@@ -3220,10 +1885,10 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
-    private javax.swing.JMenu debugMenu;
+    public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
-    private javax.swing.JTree dependencyTree;
+    public javax.swing.JTree dependencyTree;
     private javax.swing.JScrollPane dependencyTreeContainer;
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
@@ -3239,8 +1904,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem encodeInteger;
     private javax.swing.JPopupMenu entryContext;
     private javax.swing.JSplitPane entryData;
-    private javax.swing.JTabbedPane entryModifiers;
-    private javax.swing.JTable entryTable;
+    public javax.swing.JTabbedPane entryModifiers;
+    public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAsMod;
     private javax.swing.JMenuItem exportDDS;
     private javax.swing.JMenuItem exportLAMSContext;
@@ -3254,8 +1919,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem extractContext;
     private javax.swing.JMenu extractContextMenu;
     private javax.swing.JMenuItem extractDecompressedContext;
-    private javax.swing.JTabbedPane fileDataTabs;
-    private javax.swing.JMenu fileMenu;
+    public javax.swing.JTabbedPane fileDataTabs;
+    public javax.swing.JMenu fileMenu;
     private javax.swing.JMenu gamedataMenu;
     private javax.swing.JMenuItem generateDiff;
     private tv.porst.jhexview.JHexView hex;
@@ -3270,8 +1935,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JMenuItem loadArchive;
-    private javax.swing.JMenuItem loadBigProfile;
-    private javax.swing.JMenuItem loadDB;
+    public javax.swing.JMenuItem loadBigProfile;
+    public javax.swing.JMenuItem loadDB;
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
     private javax.swing.JMenuItem loadMod;
@@ -3280,8 +1945,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu menuFileMenu;
     private javax.swing.JMenuItem mergeFARCs;
     private javax.swing.ButtonGroup metadataButtonGroup;
-    private javax.swing.JMenu modMenu;
-    private javax.swing.JMenu newFileDBGroup;
+    public javax.swing.JMenu modMenu;
+    public javax.swing.JMenu newFileDBGroup;
     private javax.swing.JMenuItem newFolderContext;
     private javax.swing.JMenu newGamedataGroup;
     private javax.swing.JMenuItem newItemContext;
@@ -3289,12 +1954,12 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem newModernDB;
     private javax.swing.JMenuItem newVitaDB;
     private javax.swing.JMenuItem openCompressinator;
-    private javax.swing.JMenuItem openModMetadata;
+    public javax.swing.JMenuItem openModMetadata;
     private javax.swing.JComboBox<String> pageCombo;
     private javax.swing.JMenuItem patchMAP;
-    private javax.swing.JSplitPane preview;
+    public javax.swing.JSplitPane preview;
     private javax.swing.JSplitPane previewContainer;
-    private javax.swing.JProgressBar progressBar;
+    public javax.swing.JProgressBar progressBar;
     private javax.swing.JMenuItem reboot;
     private javax.swing.JMenuItem removeDependencies;
     private javax.swing.JMenuItem removeMissingDependencies;
@@ -3303,16 +1968,16 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem replaceDecompressed;
     private javax.swing.JMenuItem replaceDependencies;
     private javax.swing.JMenuItem replaceImage;
-    private javax.swing.JMenuItem saveAs;
+    public javax.swing.JMenuItem saveAs;
     private javax.swing.JPopupMenu.Separator saveDivider;
-    private javax.swing.JMenuItem saveMenu;
-    private javax.swing.JMenu savedataMenu;
+    public javax.swing.JMenuItem saveMenu;
+    public javax.swing.JMenu savedataMenu;
     private javax.swing.JMenuItem scanRawData;
-    private javax.swing.JTextField search;
+    public javax.swing.JTextField search;
     private javax.swing.JComboBox<String> subCombo;
     private javax.swing.JScrollPane tableContainer;
     private javax.swing.JMenuItem testSerializeCurrentMesh;
-    private javax.swing.JLabel texture;
+    public javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JMenuBar toolkitMenu;

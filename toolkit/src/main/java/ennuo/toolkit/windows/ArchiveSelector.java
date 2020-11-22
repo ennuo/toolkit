@@ -1,25 +1,24 @@
 package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.FileArchive;
+import ennuo.toolkit.utilities.Globals;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 
 public class ArchiveSelector extends javax.swing.JDialog {
     
     private DefaultListModel model = new DefaultListModel();
-    private Toolkit toolkit;
     
     private FileArchive[] selectedArchives;
     
     public ArchiveSelector(Toolkit toolkit, boolean modal) {
         super(toolkit, modal);
-        this.toolkit = toolkit;
         initComponents();
         
         setTitle("Archive Selector");
         setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         
-        for (FileArchive archive : toolkit.archives)
+        for (FileArchive archive : Globals.archives)
             model.addElement(archive.file.getName());
         
         setVisible(true);
@@ -74,7 +73,7 @@ public class ArchiveSelector extends javax.swing.JDialog {
         if (selected.length == 0) return;
         selectedArchives = new FileArchive[selected.length];
         for (int i = 0; i < selected.length; ++i)
-            selectedArchives[i] = toolkit.archives.get(selected[i]);
+            selectedArchives[i] = Globals.archives.get(selected[i]);
         dispose();
     }//GEN-LAST:event_selectArchiveActionPerformed
 

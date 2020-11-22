@@ -4,6 +4,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.types.BigProfile;
+import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.utilities.KMPMatchUtilities;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -264,12 +265,12 @@ public class Bytes {
       }
   }
   
-  public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, Toolkit toolkit, FileEntry entry) {
+  public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, FileEntry entry) {
       byte[] left = resource.bytes(0x36);
       int planSize = resource.int32f();
       Resource plan = new Resource(resource.bytes(planSize)); plan.revision = 0x270;
       byte[] right = resource.bytes(resource.length - resource.offset);
-      plan.getDependencies(entry, toolkit);
+      plan.getDependencies(entry);
       plan.isStreamingChunk = true;
       if (plan.resources != null) {
           for (int i = 0; i < plan.resources.length; ++i) {
@@ -280,11 +281,11 @@ public class Bytes {
                 continue;
             if (res.type == RType.SCRIPT) continue;
             byte[] data;
-            if (res.hash != null && res.GUID == -1) data = toolkit.extractFile(res.hash);
-            else data = toolkit.extractFile(res.GUID);
+            if (res.hash != null && res.GUID == -1) data = Globals.extractFile(res.hash);
+            else data = Globals.extractFile(res.GUID);
             if (data == null) continue;
             Resource dependency = new Resource(data);
-            plan.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, toolkit, plan.dependencies[i]), res.type), false);
+            plan.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, plan.dependencies[i]), res.type), false);
           }
       }
       
@@ -307,10 +308,10 @@ public class Bytes {
   }
   
   
-  public static byte[] hashinate(Mod mod, Resource resource, Toolkit toolkit, FileEntry entry) {
+  public static byte[] hashinate(Mod mod, Resource resource, FileEntry entry) {
       boolean isBin = entry.path.toLowerCase().contains(".bin");
       if (resource.dependencies == null || resource.resources == null)
-          resource.getDependencies(entry, toolkit);
+          resource.getDependencies(entry);
       if (resource.resources != null && resource.resources.length != 0) {
         resource.decompress(true);
         for (int i = 0; i < resource.resources.length; ++i) {
@@ -321,7 +322,7 @@ public class Bytes {
             if (res.type == RType.STREAMING_CHUNK) {
                 if (res.GUID == -1) continue;
                 String name = new File(resource.dependencies[i].path).getName();
-                File file = toolkit.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
+                File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
                 if (file == null) continue;
                 byte[] data = FileIO.read(file.getAbsolutePath());
                 BigProfile profile = new BigProfile(new Data(data), true);
@@ -334,17 +335,17 @@ public class Bytes {
                         }
                     }
                     if (index != -1)
-                      resource.replaceDependency(index, new ResourcePtr(hashinateStreamingChunk(mod, new Resource(e.data), toolkit, e), RType.STREAMING_CHUNK), false);  
+                      resource.replaceDependency(index, new ResourcePtr(hashinateStreamingChunk(mod, new Resource(e.data), e), RType.STREAMING_CHUNK), false);  
                 }
                 resource.replaceDependency(i, new ResourcePtr(null, RType.STREAMING_CHUNK), false);
                 continue;
             }
             byte[] data;
-            if (res.hash != null) data = toolkit.extractFile(res.hash);
-            else data = toolkit.extractFile(res.GUID);
+            if (res.hash != null) data = Globals.extractFile(res.hash);
+            else data = Globals.extractFile(res.GUID);
             if (data == null) continue;
             Resource dependency = new Resource(data);
-            resource.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, toolkit, resource.dependencies[i]), res.type), false);
+            resource.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, resource.dependencies[i]), res.type), false);
          }
         resource.removePlanDescriptors(entry.GUID, false);
         resource.setData(Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources)); 

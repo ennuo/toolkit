@@ -27,6 +27,7 @@ import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.Globals;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
@@ -52,10 +53,9 @@ public class MetadataEditor extends javax.swing.JFrame {
     
     
     BigProfile profile;
-    Toolkit toolkit;
     
     public MetadataEditor(Toolkit toolkit, BigProfile profile) {
-        this.toolkit = toolkit; this.profile = profile;
+        this.profile = profile;
         initComponents();
         setResizable(false);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -116,7 +116,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         setResource(itemRef, item.resource);
         
         if (item.metadata.icon != null) {
-            byte[] data = toolkit.extractFile(item.metadata.icon);
+            byte[] data = Globals.extractFile(item.metadata.icon);
             if (data != null) {
                 Texture texture = new Texture(data);
                 if (texture != null) 
@@ -1419,7 +1419,7 @@ public class MetadataEditor extends javax.swing.JFrame {
 
     private void addItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemActionPerformed
         this.profile.shouldSave = true;
-        toolkit.updateWorkspace();
+        Toolkit.instance.updateWorkspace();
         this.combo.setEnabled(true);
         this.deleteItem.setEnabled(true);
         ProfileItem item = new ProfileItem();
@@ -1433,7 +1433,7 @@ public class MetadataEditor extends javax.swing.JFrame {
 
     private void deleteItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteItemActionPerformed
         this.profile.shouldSave = true;
-        toolkit.updateWorkspace();
+        Toolkit.instance.updateWorkspace();
         int index = this.combo.getSelectedIndex();
         this.items.remove(index);
         this.itemInstances.remove(index);
@@ -1550,11 +1550,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         if (item.resource != null) {
             FileEntry entry = profile.find(item.resource.hash);
             if (entry != null) {
-                byte[] data = toolkit.extractFile(item.resource);
+                byte[] data = Globals.extractFile(item.resource);
                 if (data != null) {
                     Resource resource = new Resource(data);
                     //resource.replaceMetadata(item.metadata);
-                    toolkit.replaceEntry(entry, resource.data);
+                    Globals.replaceEntry(entry, resource.data);
                     item.metadata.resource = new ResourcePtr(Bytes.SHA1(resource.data), RType.PLAN);
                 }
                 
@@ -1566,7 +1566,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         
 
         profile.shouldSave = true;
-        toolkit.updateWorkspace();
+        Toolkit.instance.updateWorkspace();
         
         loadItemAt(this.combo.getSelectedIndex());
     }//GEN-LAST:event_saveItemActionPerformed

@@ -1,37 +1,29 @@
 package ennuo.toolkit.windows;
 
-import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
-import ennuo.craftworld.memory.FileIO;
-import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector4f;
-import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.swing.FileData;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Vector;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.structs.PackItem;
-import java.awt.image.BufferedImage;
+import ennuo.toolkit.utilities.Globals;
 import java.util.Date;
 import javax.swing.JTextField;
 
@@ -50,7 +42,6 @@ public class SlotEditor extends javax.swing.JFrame {
     Vector slots = new Vector();
     final DefaultComboBoxModel model = new DefaultComboBoxModel(slots);
     
-    Toolkit toolkit;
     FileEntry entry;
     
     private EditorType editor;
@@ -67,7 +58,7 @@ public class SlotEditor extends javax.swing.JFrame {
     public SlotEditor(Toolkit toolkit, FileEntry entry) {
         editor = EditorType.BIG_PROFILE_SLOT;
         
-        this.toolkit = toolkit; this.entry = entry;
+        this.entry = entry;
         initComponents();
         setResizable(false);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -89,7 +80,7 @@ public class SlotEditor extends javax.swing.JFrame {
     }
     
     public SlotEditor(Toolkit toolkit, FileEntry entry, EditorType type) {
-        this.toolkit = toolkit; this.entry = entry; editor = type;
+        this.entry = entry; editor = type;
         initComponents();
         setResizable(false);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -112,13 +103,13 @@ public class SlotEditor extends javax.swing.JFrame {
                 
                     byte[] compressed = Compressor.Compress(output.buffer, "SLTb", entry.revision, dependencies);
                 
-                    toolkit.replaceEntry(entry, compressed);
+                    Globals.replaceEntry(entry, compressed);
                 }
                 
                 else if (type == EditorType.PACKS) {
                     byte[] data = entry.pack.serialize(entry.revision, true);
                     if (data != null)
-                        toolkit.replaceEntry(entry, data);
+                        Globals.replaceEntry(entry, data);
                 }
                 
             }
@@ -191,7 +182,7 @@ public class SlotEditor extends javax.swing.JFrame {
         setResource(adventure, slot.adventure);
         
         if (slot.icon != null) {
-            slot.renderIcon(entry, toolkit);
+            slot.renderIcon(entry);
             iconPtr.setText(slot.icon.toString());
         } else iconPtr.setText("");
         

@@ -6,6 +6,7 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.toolkit.utilities.Globals;
 import java.nio.file.Paths;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -17,7 +18,6 @@ public class Dependinator extends javax.swing.JFrame {
     private Resource resource;
     
     private FileEntry entry;
-    private Toolkit toolkit;
     
     private ResourcePtr[] modifications;
     
@@ -45,10 +45,10 @@ public class Dependinator extends javax.swing.JFrame {
         });
         
         
-        this.toolkit = toolkit; this.entry = entry;
+        this.entry = entry;
         
-        byte[] data = toolkit.extractFile(entry.GUID);
-        if (data == null) data = toolkit.extractFile(entry.hash);
+        byte[] data = Globals.extractFile(entry.GUID);
+        if (data == null) data = Globals.extractFile(entry.hash);
         
         if (data == null) {
             dispose();
@@ -56,7 +56,7 @@ public class Dependinator extends javax.swing.JFrame {
         }
         
         resource = new Resource(data);
-        resource.getDependencies(entry, toolkit, false);
+        resource.getDependencies(entry, false);
         
         modifications = new ResourcePtr[resource.resources.length];
         
@@ -152,7 +152,7 @@ public class Dependinator extends javax.swing.JFrame {
         
         System.out.println("Set " + resource.resources[index].toString() + " -> " + newRes.toString());
         
-        FileEntry entry = toolkit.findEntry(newRes);
+        FileEntry entry = Globals.findEntry(newRes);
         if (entry == null || entry.path == null)
             model.setElementAt(newRes.toString(), index);
         else model.setElementAt(Paths.get(entry.path).getFileName().toString(), index);
@@ -174,7 +174,7 @@ public class Dependinator extends javax.swing.JFrame {
         
         resource.setData(Compressor.Compress(resource.data, resource.magic, resource.revision, modifications));
         
-        toolkit.replaceEntry(entry, resource.data);
+        Globals.replaceEntry(entry, resource.data);
         
         dispose();
     }//GEN-LAST:event_replaceActionPerformed
