@@ -1545,8 +1545,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
 
-        
-        
+        /*
         if (item.resource != null) {
             FileEntry entry = profile.find(item.resource.hash);
             if (entry != null) {
@@ -1560,9 +1559,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                 
             }
         }
-        
-        
-        
+        */
         
 
         profile.shouldSave = true;
