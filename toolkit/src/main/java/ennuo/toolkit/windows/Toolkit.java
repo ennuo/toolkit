@@ -2522,7 +2522,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (number == null) return;
         
         long integer;
-        if (number.startsWith("0x"))
+        if (number.toLowerCase().startsWith("0x"))
             integer = Long.parseLong(number.substring(2), 16);
         else if (number.startsWith("g"))
             integer = Long.parseLong(number.substring(1));
@@ -2779,7 +2779,18 @@ public class Toolkit extends javax.swing.JFrame {
         Mesh mesh = lastSelected.entry.mesh;
         if (mesh == null) return;
         
-        byte[] data = mesh.serialize(mesh.revision);
+        String number = JOptionPane.showInputDialog(this, "Revision", "0x" + Bytes.toHex(mesh.revision));
+        if (number == null) return;
+        
+        long integer;
+        if (number.toLowerCase().startsWith("0x"))
+            integer = Long.parseLong(number.substring(2), 16);
+        else if (number.startsWith("g"))
+            integer = Long.parseLong(number.substring(1));
+        else 
+            integer = Long.parseLong(number);
+        
+        byte[] data = mesh.serialize((int) integer);
         
         FileIO.write(data, path);
         
