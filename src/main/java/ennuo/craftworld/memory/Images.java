@@ -15,9 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import me.nallar.jdds.JDDS;
+import me.nallar.jdds.internal.jogl.DDSImage;
 import net.npe.dds.DDSReader;
-import net.npe.dds.ddsutil.DDSUtil;
-import net.npe.dds.jogl.DDSImage;
 import org.imgscalr.Scalr;
 
 public class Images {
@@ -87,7 +87,7 @@ public class Images {
         byte[] data = null;
         try {
             File file = Paths.get(System.getProperty("java.io.tmpdir"), "tmp.dds").toFile();
-            DDSUtil.write(file, image, type, true);
+            JDDS.write(file, image, type, true);
             data = FileIO.read(file.getAbsolutePath());
             file.delete();
         } catch (IOException ex) {

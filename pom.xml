@@ -33,6 +33,10 @@
 </build>
     <repositories>
         <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+	</repository>
+        <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
             <releases>
@@ -42,7 +46,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-                <repository>
+        <repository>
             <id>bintray-ice1000-ice1000</id>
             <url>https://dl.bintray.com/ice1000/ice1000</url>
             <releases>
@@ -55,6 +59,16 @@
     </repositories>
     <dependencies>
         <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+	<dependency>
+	    <groupId>com.github.nallar</groupId>
+	    <artifactId>JDDS</artifactId>
+	    <version>ee9a2a4408</version>
+	</dependency>
+        <dependency>
             <groupId>com.arcnor</groupId>
             <artifactId>jhexview</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -64,28 +78,21 @@
             <artifactId>darcula</artifactId>
             <version>2018.2</version>
         </dependency>
+	<dependency>
+	    <groupId>com.github.acmi</groupId>
+	    <artifactId>jsqush</artifactId>
+	    <version>0705e9f4b6</version>
+	</dependency>
         <dependency>
-            <groupId>gr.zdimensions</groupId>
-            <artifactId>jsquish</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/jsquish.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.imgscalr</groupId>
-            <artifactId>imgscalr-lib</artifactId>
-            <version>4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>jnafilechooser</groupId>
-            <artifactId>jnafilechooser-win32</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>jnafilechooser</groupId>
-            <artifactId>jnafilechooser-api</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
+	    <groupId>com.github.rkalla</groupId>
+	    <artifactId>imgscalr</artifactId>
+	    <version>4.2-release</version>
+	</dependency>
+	<dependency>
+	    <groupId>com.github.steos</groupId>
+	    <artifactId>jnafilechooser</artifactId>
+	    <version>f512011</version>
+	</dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
