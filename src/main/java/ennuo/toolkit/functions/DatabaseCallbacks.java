@@ -112,12 +112,27 @@ public class DatabaseCallbacks {
     public static void newItem() {                                               
         String file = JOptionPane.showInputDialog(Toolkit.instance, "New Item", "");
         if (file == null) return;
-
+        
         JTree tree = Toolkit.instance.getCurrentTree();
 
         FileData db = Toolkit.instance.getCurrentDB();
-
-        FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, db.getNextGUID());
+        
+        long nextGUID = db.lastGUID + 1;
+        
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        if (GUID == null) return;
+        
+        long integer;
+        if (GUID.toLowerCase().startsWith("0x"))
+            integer = Long.parseLong(GUID.substring(2), 16);
+        else if (GUID.toLowerCase().startsWith("g"))
+            integer = Long.parseLong(GUID.substring(1));
+        else
+            integer = Long.parseLong(GUID);
+        
+        if (integer == nextGUID) db.lastGUID++;
+        
+        FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, integer);
 
         if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
             ((Mod) db).add(entry);
@@ -168,7 +183,23 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         FileEntry duplicate = new FileEntry(entry);
         duplicate.path = path;
-        duplicate.GUID = db.getNextGUID();
+        
+        long nextGUID = db.lastGUID + 1;
+        
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        if (GUID == null) return;
+        
+        long integer;
+        if (GUID.toLowerCase().startsWith("0x"))
+            integer = Long.parseLong(GUID.substring(2), 16);
+        else if (GUID.toLowerCase().startsWith("g"))
+            integer = Long.parseLong(GUID.substring(1));
+        else
+            integer = Long.parseLong(GUID);
+        
+        if (integer == nextGUID) db.lastGUID++;
+        
+        duplicate.GUID = integer;
 
         db.add(duplicate);
         TreePath treePath = new TreePath(db.addNode(duplicate).getPath());

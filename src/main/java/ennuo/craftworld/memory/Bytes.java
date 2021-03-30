@@ -310,7 +310,20 @@ public class Bytes {
         mod.add("streaming/" + Bytes.toHex(SHA1).toLowerCase(), result);
         return SHA1;
     }
-
+    
+    public static void recurse(Mod mod, Resource resource, FileEntry entry) {
+        if (resource.dependencies == null || resource.resources == null)
+            resource.getDependencies(entry);
+        if (resource.resources != null)
+            for (int i = 0; i < resource.resources.length; ++i) {
+                ResourcePtr res = resource.resources[i];
+                if (res == null || res.type == RType.SCRIPT) continue;
+                byte[] data = Globals.extractFile(res);
+                if (data == null) continue;
+                recurse(mod, new Resource(data), resource.dependencies[i]);
+            }
+        mod.add(entry.path, resource.data, entry.GUID);
+    }
 
     public static byte[] hashinate(Mod mod, Resource resource, FileEntry entry) {
         boolean isBin = entry.path.toLowerCase().contains(".bin");

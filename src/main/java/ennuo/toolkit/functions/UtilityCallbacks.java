@@ -14,6 +14,7 @@ import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.toolkit.utilities.Globals;
+import ennuo.toolkit.windows.ModEditor;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
 import javax.swing.JOptionPane;
@@ -21,6 +22,16 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
 public class UtilityCallbacks {
+    public static void newMod() {
+        File file = Toolkit.instance.fileChooser.openFile("template.mod", "mod", "Mod", true);
+        if (file == null) return;
+        if (Toolkit.instance.confirmOverwrite(file)) {
+            Mod mod = new Mod();
+            new ModEditor(mod, true).setVisible(true);
+            mod.save(file.getAbsolutePath());
+        }
+    }
+        
     public static void decompressResource() {                                                   
         File file = Toolkit.instance.fileChooser.openFile("data.bin", "", "", false);
         if (file == null) return;
@@ -189,7 +200,7 @@ public class UtilityCallbacks {
         else
             integer = Long.parseLong(number);
 
-        Output output = new Output(5, 0xFFFFFFFF);
+        Output output = new Output(12, 0xFFFFFFFF);
         output.varint(integer);
         output.shrinkToFit();
 

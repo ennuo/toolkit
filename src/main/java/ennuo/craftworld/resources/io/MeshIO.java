@@ -8,9 +8,9 @@ public class MeshIO {
         exportOBJ(path, mesh, 0);
     }
     public static void exportOBJ(String path, Mesh mesh, int channel) {
-        StringBuilder builder = new StringBuilder((mesh.streams[0].length * 41) + (mesh.uvCount * 42) + (mesh.faces.length * 40));
-        for (int j = 0; j < mesh.streams[0].length; ++j)
-            builder.append("v " + mesh.streams[0][j].x + " " + mesh.streams[0][j].y + " " + mesh.streams[0][j].z + '\n');
+        StringBuilder builder = new StringBuilder((mesh.vertices.length * 41) + (mesh.uvCount * 42) + (mesh.faces.length * 40));
+        for (int j = 0; j < mesh.vertices.length; ++j)
+            builder.append("v " + mesh.vertices[j].x + " " + mesh.vertices[j].y + " " + mesh.vertices[j].z + '\n');
         for (int i = 0; i < mesh.uvCount; ++i)
             builder.append("vt " + mesh.attributes[i][channel].x + " " + (1.0f - mesh.attributes[i][channel].y) + '\n');
         for (int i = -1, j = 1; i < mesh.faces.length; ++i, ++j) {

@@ -54,7 +54,7 @@ public class Mod extends FileData {
     public boolean isProtected = false;
     
     
-    public int size = 250;
+    public int size = 0xFFFF;
     
     public Mod() { model = new FileModel(new FileNode("MOD", null, null)); root = (FileNode)model.getRoot(); }
     public Mod(File file, Data data, String key) {
@@ -238,10 +238,18 @@ public class Mod extends FileData {
     public void replace(FileEntry entry, byte[] buffer) {
         entry.data = buffer;
         entry.size = buffer.length;
-        entry.hash = Bytes.SHA1(buffer);
+        byte[] oldHash = entry.hash;
+        byte[] newHash = Bytes.SHA1(buffer);
+        entry.hash = newHash;
         entry.timestamp = System.currentTimeMillis() / 1000L;
         size += buffer.length;
         shouldSave = true;
+        for (Slot slot : slots)
+            if (slot.root != null && Arrays.equals(oldHash, slot.root.hash))
+                slot.root.hash = newHash;
+        for (InventoryMetadata item : items)
+            if (item.resource != null && Arrays.equals(oldHash, item.resource.hash))
+                item.resource.hash = newHash;
     }
     
     public void remove(FileEntry entry) { entries.remove(entry); }

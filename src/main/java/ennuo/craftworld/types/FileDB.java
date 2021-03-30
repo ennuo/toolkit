@@ -24,6 +24,11 @@ public class FileDB extends FileData {
   public ArrayList<FileEntry> entries;
   
   public FileDB(File file, JProgressBar progress) {
+ 
+      File parent = file.getParentFile().getParentFile();
+      if (parent.getName().toUpperCase().equals("USRDIR"))
+        USRDIR = parent.getAbsolutePath() + "\\";
+      
       this.path = file.getAbsolutePath();
       this.name = file.getName();
       type = "FileDB";
@@ -62,6 +67,35 @@ public class FileDB extends FileData {
       int size = data.int32();
       byte[] hash = data.bytes(20);
       long guid = data.uint32();
+      if (path.startsWith(".")) {
+          String newPath = "data/";
+          switch (path.toLowerCase()) {
+              case ".slt": newPath += "slots/"; break;
+              case ".tex": newPath += "textures/"; break;
+              case ".bpr": case ".ipr":
+                  newPath += "profiles/"; break;
+              case ".mol": newPath += "models/"; break;
+              case ".gmat": newPath += "gfx/"; break;
+              case ".mat": newPath += "materials/"; break;
+              case ".ff": newPath += "scripts/"; break;
+              case ".plan": newPath += "plans/"; break;
+              case ".pal": newPath += "palettes/"; break;
+              case ".oft": newPath += "outfits/"; break;
+              case ".sph": newPath += "skeletons/"; break;
+              case ".bin": newPath += "levels/"; break;
+              case ".vpo": newPath += "shaders/vertex/"; break;
+              case ".fpo": newPath += "shaders/fragment/"; break;
+              case ".anim": newPath += "animations/"; break;
+              case ".bev": newPath += "bevels/"; break;
+              case ".smh": newPath += "static_meshes/"; break;
+              case ".mus": newPath += "audio/settings/"; break;
+              case ".fsb": newPath += "audio/music/"; break;
+              case ".txt": newPath += "text/"; break;
+          }
+          newPath += Bytes.toHex(hash).toLowerCase() + path;
+          pathSize += newPath.length();
+          path = newPath;
+      }
       if (guid > lastGUID && guid < 0x00180000)
           lastGUID = guid;
       entries.add(new FileEntry(path, timestamp, size, hash, guid));
@@ -227,9 +261,13 @@ public class FileDB extends FileData {
   }
   
   public static boolean isHidden(String entry) {
+    /*
     return (entry.contains(".farc") || entry.contains(".sdat") || entry
       .contains(".edat") || entry.contains(".bik") || entry
       .contains(".fnt") || entry.contains(".fev") || entry
       .equals("")|| entry.contains(".fsb"));
+    */
+    
+    return (entry.contains(".farc") || entry.contains(".sdat") || entry.contains(".sdat") || entry.equals("") || entry.contains("empty_video.bik"));
   }
 }

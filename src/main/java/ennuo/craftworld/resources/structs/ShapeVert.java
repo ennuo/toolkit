@@ -7,8 +7,8 @@ import ennuo.craftworld.memory.Vector4f;
 public class ShapeVert {
     public static int MAX_SIZE = 0x25;
     
-    Vector4f localPos, localNormal;
-    int boneIndex;
+    public Vector4f localPos, localNormal;
+    public int boneIndex;
     
     public ShapeVert(Data data) {
         localPos = data.v4();

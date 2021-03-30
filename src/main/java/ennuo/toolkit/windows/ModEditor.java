@@ -6,15 +6,12 @@ import ennuo.toolkit.utilities.FileChooser;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class ModEditor extends javax.swing.JFrame {
+public class ModEditor extends javax.swing.JDialog {
     
     private FileChooser chooser = new FileChooser(this);
     private Mod mod;
@@ -23,7 +20,8 @@ public class ModEditor extends javax.swing.JFrame {
     private boolean setPassword = false;
     
     
-    public ModEditor(Mod mod) {
+    public ModEditor(Mod mod, boolean modal) {
+        super(Toolkit.instance, modal);
         initComponents();
         setResizable(false);
         this.mod = mod;
@@ -69,7 +67,7 @@ public class ModEditor extends javax.swing.JFrame {
         save = new javax.swing.JButton();
         isProtected = new javax.swing.JCheckBox();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
         modIcon.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         modIcon.setText("This mod has no icon.");
@@ -194,7 +192,6 @@ public class ModEditor extends javax.swing.JFrame {
                             .addComponent(passwordPrompt)
                             .addComponent(isProtected))
                         .addGap(6, 6, 6)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(save)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );

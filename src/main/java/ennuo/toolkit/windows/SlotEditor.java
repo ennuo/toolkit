@@ -96,6 +96,8 @@ public class SlotEditor extends javax.swing.JFrame {
                     output.int32(slotInstances.size());
                     for (Slot slot : slotInstances)
                         slot.serialize(output, true, false);
+                    if (output.revision == 0x3e2)
+                        output.bool(false);
                     output.shrinkToFit();
                 
                     ResourcePtr[] dependencies = new ResourcePtr[slotInstances.size()];

@@ -39,14 +39,6 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadLAMSContextActionPerformed"/>
           </Events>
         </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="exportLAMSContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Export as Text Document"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportLAMSContextActionPerformed"/>
-          </Events>
-        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="editSlotContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit Slot"/>
@@ -55,67 +47,112 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editSlotContextActionPerformed"/>
           </Events>
         </MenuItem>
-        <Menu class="javax.swing.JMenu" name="exportOBJ">
+        <Menu class="javax.swing.JMenu" name="exportGroup">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Export as OBJ"/>
+            <Property name="text" type="java.lang.String" value="Export"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD0">
+            <Menu class="javax.swing.JMenu" name="exportTextureGroupContext">
               <Properties>
-                <Property name="text" type="java.lang.String" value="TEXCOORD0"/>
+                <Property name="text" type="java.lang.String" value="Textures"/>
+              </Properties>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="exportPNG">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="PNG"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPNGActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="exportDDS">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="DDS"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportDDSActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="exportModelGroup">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Model"/>
+              </Properties>
+              <SubComponents>
+                <Menu class="javax.swing.JMenu" name="exportOBJ">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Wavefront"/>
+                  </Properties>
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD0">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="TEXCOORD0"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD0ActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD1">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="TEXCOORD1"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD1ActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD2">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="TEXCOORD2"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD2ActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
+                <MenuItem class="javax.swing.JMenuItem" name="exportGLTF">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="glTF 2.0"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportGLTFActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <MenuItem class="javax.swing.JMenuItem" name="exportLAMSContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Text Document"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD0ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportLAMSContextActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD1">
+            <Menu class="javax.swing.JMenu" name="exportModGroup">
               <Properties>
-                <Property name="text" type="java.lang.String" value="TEXCOORD1"/>
+                <Property name="text" type="java.lang.String" value="Mod"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD1ActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD2">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="TEXCOORD2"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD2ActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
-        <MenuItem class="javax.swing.JMenuItem" name="exportAsMod">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Export as Mod"/>
-            <Property name="toolTipText" type="java.lang.String" value=""/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <Menu class="javax.swing.JMenu" name="exportTextureGroupContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Export Texture"/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="exportPNG">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="PNG"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPNGActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportDDS">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="DDS"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportDDSActionPerformed"/>
-              </Events>
-            </MenuItem>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="exportAsMod">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Hash"/>
+                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="exportAsModGUID">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="GUID"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModGUIDActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="replaceContext">
@@ -200,22 +237,29 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteContextActionPerformed"/>
           </Events>
         </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
+        <Menu class="javax.swing.JMenu" name="dependencyGroup">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
+            <Property name="text" type="java.lang.String" value="Dependencies"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependencies">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesActionPerformed"/>
-          </Events>
-        </MenuItem>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependencies">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPopupMenu" name="consolePopup">
@@ -303,6 +347,14 @@
                     </MenuItem>
                   </SubComponents>
                 </Menu>
+                <MenuItem class="javax.swing.JMenuItem" name="newMod">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Mod"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newModActionPerformed"/>
+                  </Events>
+                </MenuItem>
               </SubComponents>
             </Menu>
             <Menu class="javax.swing.JMenu" name="loadGroupMenu">
@@ -618,6 +670,14 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
           </AuxValues>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="create fake table"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="addAllPlansToInventory">
               <Properties>
                 <Property name="text" type="java.lang.String" value="add all plans to inv table"/>
@@ -648,6 +708,30 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="testSerializeCurrentMeshActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="debugJokerTest">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="joker test"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugJokerTestActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="debugAddSlots">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="add slots"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugAddSlotsActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="debugRecompressAll">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="recompress all slots"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugRecompressAllActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

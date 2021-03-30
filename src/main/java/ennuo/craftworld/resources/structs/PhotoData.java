@@ -19,7 +19,7 @@ public class PhotoData {
         icon = data.resource(RType.TEXTURE, true);
         sticker = data.resource(RType.TEXTURE, true);
         photoMetadata = new PhotoMetadata(data);
-        if (data.revision > 0x38b)
+        if (data.revision > 0x395)
             painting = data.resource(RType.PAINTING, true);
     }
     
@@ -27,7 +27,7 @@ public class PhotoData {
         output.resource(icon, true);
         output.resource(sticker, true);
         photoMetadata.serialize(output);
-        if (output.revision > 0x38b)
+        if (output.revision > 0x395)
             output.resource(painting, true);
     }
     

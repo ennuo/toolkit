@@ -4,13 +4,13 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class Box {
-    int type;
-    int[] params;
-    float x, y, z, w;
-    int subType;
+    public int type;
+    public int[] params;
+    public float x, y, z, w;
+    public int subType;
     
-    ParameterAnimation anim;
-    ParameterAnimation anim2;
+    public ParameterAnimation anim;
+    public ParameterAnimation anim2;
     
     public Box(Data data) {
        type = data.int32();

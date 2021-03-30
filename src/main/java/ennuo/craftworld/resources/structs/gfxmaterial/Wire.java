@@ -4,8 +4,8 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class Wire {
-    int boxFrom, boxTo;
-    byte portFrom, portTo;
+    public int boxFrom, boxTo;
+    public byte portFrom, portTo;
     
     public Wire(Data data) {
         boxFrom = data.int32(); boxTo = data.int32();

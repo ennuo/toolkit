@@ -5,8 +5,8 @@ import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Vector4f;
 
 public class ImplicitPlane {
-    Vector4f planeNormal, pointInPlane;
-    int parentBone;
+    public Vector4f planeNormal, pointInPlane;
+    public int parentBone;
     
     public ImplicitPlane(Data data) {
         planeNormal = data.v4();

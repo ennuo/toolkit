@@ -1,6 +1,7 @@
 package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.swing.FileData;
@@ -138,14 +139,17 @@ public class Globals {
             byte[] data = archive.extract(sha1);
             if (data != null) return data;
         }
+        
         System.out.println("Could not extract h" + Bytes.toHex(sha1));
+        
         return null;
     }
 
     public static void replaceEntry(FileEntry entry, byte[] data) {
         if (Globals.currentWorkspace != WorkspaceType.PROFILE) {
             entry.resetResources();
-            addFile(data);
+            if (Globals.currentWorkspace != WorkspaceType.MOD)
+                addFile(data);
         }
 
         Toolkit.instance.getCurrentDB().replace(entry, data);

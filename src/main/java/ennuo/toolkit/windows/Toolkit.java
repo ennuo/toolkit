@@ -7,6 +7,8 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
@@ -16,6 +18,7 @@ import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.types.FileDB;
 import ennuo.toolkit.functions.ArchiveCallbacks;
 import ennuo.toolkit.functions.DatabaseCallbacks;
 import ennuo.toolkit.functions.DebugCallbacks;
@@ -107,7 +110,7 @@ public class Toolkit extends javax.swing.JFrame {
         setResizable(false);
         EasterEgg.initialize(this);
         instance = this;
-
+       
         entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 String copied = "";
@@ -232,7 +235,7 @@ public class Toolkit extends javax.swing.JFrame {
             saveMenu.setVisible(false);
         }
 
-        if (Globals.canExtract())
+        if (Globals.canExtract() && Globals.currentWorkspace != WorkspaceType.MOD)
             FARMenu.setVisible(true);
         else FARMenu.setVisible(false);
 
@@ -272,7 +275,6 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     private void generateEntryContext(JTree tree, int x, int y) {
-        exportOBJ.setVisible(false);
         exportTextureGroupContext.setVisible(false);
         editSlotContext.setVisible(false);
         exportLAMSContext.setVisible(false);
@@ -286,12 +288,10 @@ public class Toolkit extends javax.swing.JFrame {
         newItemContext.setVisible(false);
         replaceDecompressed.setVisible(false);
         replaceDependencies.setVisible(false);
-        removeDependencies.setVisible(false);
-        removeMissingDependencies.setVisible(false);
-        exportAsMod.setVisible(false);
-        exportOBJTEXCOORD0.setVisible(false);
-        exportOBJTEXCOORD1.setVisible(false);
-        exportOBJTEXCOORD2.setVisible(false);
+        dependencyGroup.setVisible(false);
+        exportModGroup.setVisible(false);
+        exportModelGroup.setVisible(false);
+        exportGroup.setVisible(false);
         replaceImage.setVisible(false);
 
         if (Globals.currentWorkspace == WorkspaceType.PROFILE && useContext) deleteContext.setVisible(true);
@@ -323,26 +323,25 @@ public class Toolkit extends javax.swing.JFrame {
                 if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed) {
                     replaceDecompressed.setVisible(true);
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.length != 0) {
-                        exportAsMod.setVisible(true);
-                        removeDependencies.setVisible(true);
+                        exportGroup.setVisible(true);
+                        exportModGroup.setVisible(true);
                         replaceDependencies.setVisible(true);
-                        removeMissingDependencies.setVisible(true);
+                        dependencyGroup.setVisible(true);
                     }
                 }
 
                 if (Globals.lastSelected.header.endsWith(".mol")) {
                     if (Globals.lastSelected.entry.mesh != null) {
-                        exportOBJ.setVisible(true);
+                        exportGroup.setVisible(true);
+                        exportModelGroup.setVisible(true);
                         int count = Globals.lastSelected.entry.mesh.attributeCount;
-                        if (count > 0)
-                            exportOBJTEXCOORD0.setVisible(true);
-                        if (count > 1)
-                            exportOBJTEXCOORD1.setVisible(true);
-                        if (count > 2)
-                            exportOBJTEXCOORD2.setVisible(true);
+                        exportOBJTEXCOORD0.setVisible((count > 0));
+                        exportOBJTEXCOORD1.setVisible((count > 1));
+                        exportOBJTEXCOORD2.setVisible((count > 2));
                     }
                 }
                 if (Globals.lastSelected.header.endsWith(".tex")) {
+                    exportGroup.setVisible(true);
                     exportTextureGroupContext.setVisible(true);
                     replaceImage.setVisible(true);
                 }
@@ -351,6 +350,7 @@ public class Toolkit extends javax.swing.JFrame {
                     editSlotContext.setVisible(true);
 
                 if (Globals.lastSelected.header.endsWith(".trans")) {
+                    exportGroup.setVisible(true);
                     loadLAMSContext.setVisible(true);
                     exportLAMSContext.setVisible(true);
                 }
@@ -369,16 +369,21 @@ public class Toolkit extends javax.swing.JFrame {
         extractContext = new javax.swing.JMenuItem();
         extractDecompressedContext = new javax.swing.JMenuItem();
         loadLAMSContext = new javax.swing.JMenuItem();
-        exportLAMSContext = new javax.swing.JMenuItem();
         editSlotContext = new javax.swing.JMenuItem();
+        exportGroup = new javax.swing.JMenu();
+        exportTextureGroupContext = new javax.swing.JMenu();
+        exportPNG = new javax.swing.JMenuItem();
+        exportDDS = new javax.swing.JMenuItem();
+        exportModelGroup = new javax.swing.JMenu();
         exportOBJ = new javax.swing.JMenu();
         exportOBJTEXCOORD0 = new javax.swing.JMenuItem();
         exportOBJTEXCOORD1 = new javax.swing.JMenuItem();
         exportOBJTEXCOORD2 = new javax.swing.JMenuItem();
+        exportGLTF = new javax.swing.JMenuItem();
+        exportLAMSContext = new javax.swing.JMenuItem();
+        exportModGroup = new javax.swing.JMenu();
         exportAsMod = new javax.swing.JMenuItem();
-        exportTextureGroupContext = new javax.swing.JMenu();
-        exportPNG = new javax.swing.JMenuItem();
-        exportDDS = new javax.swing.JMenuItem();
+        exportAsModGUID = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -389,6 +394,7 @@ public class Toolkit extends javax.swing.JFrame {
         duplicateContext = new javax.swing.JMenuItem();
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
+        dependencyGroup = new javax.swing.JMenu();
         removeDependencies = new javax.swing.JMenuItem();
         removeMissingDependencies = new javax.swing.JMenuItem();
         consolePopup = new javax.swing.JPopupMenu();
@@ -438,6 +444,7 @@ public class Toolkit extends javax.swing.JFrame {
         newVitaDB = new javax.swing.JMenuItem();
         newModernDB = new javax.swing.JMenuItem();
         createFileArchive = new javax.swing.JMenuItem();
+        newMod = new javax.swing.JMenuItem();
         loadGroupMenu = new javax.swing.JMenu();
         gamedataMenu = new javax.swing.JMenu();
         loadDB = new javax.swing.JMenuItem();
@@ -479,10 +486,14 @@ public class Toolkit extends javax.swing.JFrame {
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         addAllPlansToInventory = new javax.swing.JMenuItem();
         convertAllToGUID = new javax.swing.JMenuItem();
         dumpBPRToMod = new javax.swing.JMenuItem();
         testSerializeCurrentMesh = new javax.swing.JMenuItem();
+        debugJokerTest = new javax.swing.JMenuItem();
+        debugAddSlots = new javax.swing.JMenuItem();
+        debugRecompressAll = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -512,14 +523,6 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(loadLAMSContext);
 
-        exportLAMSContext.setText("Export as Text Document");
-        exportLAMSContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportLAMSContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(exportLAMSContext);
-
         editSlotContext.setText("Edit Slot");
         editSlotContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -528,7 +531,31 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(editSlotContext);
 
-        exportOBJ.setText("Export as OBJ");
+        exportGroup.setText("Export");
+
+        exportTextureGroupContext.setText("Textures");
+
+        exportPNG.setText("PNG");
+        exportPNG.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPNGActionPerformed(evt);
+            }
+        });
+        exportTextureGroupContext.add(exportPNG);
+
+        exportDDS.setText("DDS");
+        exportDDS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDDSActionPerformed(evt);
+            }
+        });
+        exportTextureGroupContext.add(exportDDS);
+
+        exportGroup.add(exportTextureGroupContext);
+
+        exportModelGroup.setText("Model");
+
+        exportOBJ.setText("Wavefront");
 
         exportOBJTEXCOORD0.setText("TEXCOORD0");
         exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener() {
@@ -554,36 +581,48 @@ public class Toolkit extends javax.swing.JFrame {
         });
         exportOBJ.add(exportOBJTEXCOORD2);
 
-        entryContext.add(exportOBJ);
+        exportModelGroup.add(exportOBJ);
 
-        exportAsMod.setText("Export as Mod");
+        exportGLTF.setText("glTF 2.0");
+        exportGLTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportGLTFActionPerformed(evt);
+            }
+        });
+        exportModelGroup.add(exportGLTF);
+
+        exportGroup.add(exportModelGroup);
+
+        exportLAMSContext.setText("Text Document");
+        exportLAMSContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportLAMSContextActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportLAMSContext);
+
+        exportModGroup.setText("Mod");
+
+        exportAsMod.setText("Hash");
         exportAsMod.setToolTipText("");
         exportAsMod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModActionPerformed(evt);
             }
         });
-        entryContext.add(exportAsMod);
+        exportModGroup.add(exportAsMod);
 
-        exportTextureGroupContext.setText("Export Texture");
-
-        exportPNG.setText("PNG");
-        exportPNG.addActionListener(new java.awt.event.ActionListener() {
+        exportAsModGUID.setText("GUID");
+        exportAsModGUID.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportPNGActionPerformed(evt);
+                exportAsModGUIDActionPerformed(evt);
             }
         });
-        exportTextureGroupContext.add(exportPNG);
+        exportModGroup.add(exportAsModGUID);
 
-        exportDDS.setText("DDS");
-        exportDDS.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportDDSActionPerformed(evt);
-            }
-        });
-        exportTextureGroupContext.add(exportDDS);
+        exportGroup.add(exportModGroup);
 
-        entryContext.add(exportTextureGroupContext);
+        entryContext.add(exportGroup);
 
         replaceContext.setText("Replace");
 
@@ -662,13 +701,15 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(deleteContext);
 
+        dependencyGroup.setText("Dependencies");
+
         removeDependencies.setText("Remove Dependencies");
         removeDependencies.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeDependenciesActionPerformed(evt);
             }
         });
-        entryContext.add(removeDependencies);
+        dependencyGroup.add(removeDependencies);
 
         removeMissingDependencies.setText("Remove Missing Dependencies");
         removeMissingDependencies.addActionListener(new java.awt.event.ActionListener() {
@@ -676,7 +717,9 @@ public class Toolkit extends javax.swing.JFrame {
                 removeMissingDependenciesActionPerformed(evt);
             }
         });
-        entryContext.add(removeMissingDependencies);
+        dependencyGroup.add(removeMissingDependencies);
+
+        entryContext.add(dependencyGroup);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -990,6 +1033,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         menuFileMenu.add(newGamedataGroup);
 
+        newMod.setText("Mod");
+        newMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newModActionPerformed(evt);
+            }
+        });
+        menuFileMenu.add(newMod);
+
         fileMenu.add(menuFileMenu);
 
         loadGroupMenu.setText("Load");
@@ -1233,6 +1284,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
+        jMenuItem1.setText("create fake table");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        debugMenu.add(jMenuItem1);
+
         addAllPlansToInventory.setText("add all plans to inv table");
         addAllPlansToInventory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1264,6 +1323,30 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         debugMenu.add(testSerializeCurrentMesh);
+
+        debugJokerTest.setText("joker test");
+        debugJokerTest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugJokerTestActionPerformed(evt);
+            }
+        });
+        debugMenu.add(debugJokerTest);
+
+        debugAddSlots.setText("add slots");
+        debugAddSlots.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugAddSlotsActionPerformed(evt);
+            }
+        });
+        debugMenu.add(debugAddSlots);
+
+        debugRecompressAll.setText("recompress all slots");
+        debugRecompressAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugRecompressAllActionPerformed(evt);
+            }
+        });
+        debugMenu.add(debugRecompressAll);
 
         toolkitMenu.add(debugMenu);
 
@@ -1536,7 +1619,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_loadModActionPerformed
 
     private void openModMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openModMetadataActionPerformed
-        new ModEditor((Mod) getCurrentDB()).setVisible(true);
+        new ModEditor((Mod) getCurrentDB(), false).setVisible(true);
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
@@ -1602,7 +1685,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_encodeIntegerActionPerformed
 
     private void exportAsModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModActionPerformed
-        ExportCallbacks.exportMod();
+        ExportCallbacks.exportMod(true);
     }//GEN-LAST:event_exportAsModActionPerformed
 
     private void dumpRLSTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpRLSTActionPerformed
@@ -1655,6 +1738,44 @@ public class Toolkit extends javax.swing.JFrame {
     private void testSerializeCurrentMeshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testSerializeCurrentMeshActionPerformed
         DebugCallbacks.reserializeCurrentMesh();
     }//GEN-LAST:event_testSerializeCurrentMeshActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        FileDB mod = (FileDB) getCurrentDB();
+        
+        Output output = new Output((mod.entries.size() * 0x1C) + 0x4);
+        output.int32(mod.entries.size());
+        for (FileEntry e : mod.entries) {
+            output.int32(1);
+            output.bytes(e.hash);
+            output.int32(13);
+        }
+        
+        FileIO.write(output.buffer, "C:/Users/Shan/Desktop/table");
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void exportGLTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportGLTFActionPerformed
+        DebugCallbacks.exportGLTF(Globals.lastSelected.entry.mesh);
+    }//GEN-LAST:event_exportGLTFActionPerformed
+
+    private void debugJokerTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugJokerTestActionPerformed
+        DebugCallbacks.jokerTest();
+    }//GEN-LAST:event_debugJokerTestActionPerformed
+
+    private void debugAddSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugAddSlotsActionPerformed
+        DebugCallbacks.addSlots();
+    }//GEN-LAST:event_debugAddSlotsActionPerformed
+
+    private void debugRecompressAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugRecompressAllActionPerformed
+        DebugCallbacks.recompressAllSlots();
+    }//GEN-LAST:event_debugRecompressAllActionPerformed
+
+    private void newModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModActionPerformed
+        UtilityCallbacks.newMod();
+    }//GEN-LAST:event_newModActionPerformed
+
+    private void exportAsModGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModGUIDActionPerformed
+        ExportCallbacks.exportMod(false);
+    }//GEN-LAST:event_exportAsModGUIDActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
@@ -1884,9 +2005,13 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
+    private javax.swing.JMenuItem debugAddSlots;
+    private javax.swing.JMenuItem debugJokerTest;
     public javax.swing.JMenu debugMenu;
+    private javax.swing.JMenuItem debugRecompressAll;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
+    private javax.swing.JMenu dependencyGroup;
     public javax.swing.JTree dependencyTree;
     private javax.swing.JScrollPane dependencyTreeContainer;
     private javax.swing.JTextArea descriptionField;
@@ -1906,8 +2031,13 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAsMod;
+    private javax.swing.JMenuItem exportAsModGUID;
     private javax.swing.JMenuItem exportDDS;
+    private javax.swing.JMenuItem exportGLTF;
+    private javax.swing.JMenu exportGroup;
     private javax.swing.JMenuItem exportLAMSContext;
+    private javax.swing.JMenu exportModGroup;
+    private javax.swing.JMenu exportModelGroup;
     private javax.swing.JMenu exportOBJ;
     private javax.swing.JMenuItem exportOBJTEXCOORD0;
     private javax.swing.JMenuItem exportOBJTEXCOORD1;
@@ -1927,6 +2057,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -1950,6 +2081,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu newGamedataGroup;
     private javax.swing.JMenuItem newItemContext;
     private javax.swing.JMenuItem newLegacyDB;
+    private javax.swing.JMenuItem newMod;
     private javax.swing.JMenuItem newModernDB;
     private javax.swing.JMenuItem newVitaDB;
     private javax.swing.JMenuItem openCompressinator;

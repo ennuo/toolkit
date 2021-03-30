@@ -24,7 +24,7 @@ public class EasterEgg {
         }
 
         if (username.equals("shan") || username.equals("aidan")) {
-            toolkit.setTitle("Namae No Nai Kaibutsu");
+            toolkit.setTitle("The Fool's Toolkit");
             toolkit.debugMenu.setVisible(true);
         }
 

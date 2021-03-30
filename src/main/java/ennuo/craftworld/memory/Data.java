@@ -3,6 +3,7 @@ package ennuo.craftworld.memory;
 import ennuo.craftworld.resources.enums.RType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class Data {
@@ -63,7 +64,7 @@ public class Data {
     }
 
     public boolean bool() {
-        return int8() == 1;
+        return int8() != 0;
     }
 
     public byte int8() {
@@ -91,6 +92,14 @@ public class Data {
     public int int32() {
         if (revision > ENCODED_REVISION) return (int) varint();
         return int32f();
+    }
+    
+    public long[] u32a() {
+        int count = int32();
+        long[] output = new long[count];
+        for (int i = 0; i < count; ++i)
+            output[i] = uint32();
+        return output;
     }
 
     public long uint32() {
@@ -171,11 +180,10 @@ public class Data {
     }
 
     public long varint() {
-        long result = 0, shift = 0, i = 0;
+        long result = 0, i = 0;
         while (this.offset + i < this.length) {
-            int b = int8();
-            result |= (b & 0x7FL) << shift;
-            shift += 7L;
+            long b = (long) int8();
+            result |= (b & 0x7FL) << 7L * i;
             if ((b & 0x80L) == 0L)
                 break;
             i++;
@@ -190,8 +198,10 @@ public class Data {
 
     public String str16() {
         int size = int32();
-        if (revision < ENCODED_REVISION) size *= 2;
-        return str(size);
+        if (!(revision >= 0x3af && revision < 0x3f8))
+            if (revision < ENCODED_REVISION) size *= 2;
+        byte[] data = bytes(size);
+        return new String(data, Charset.forName("UTF-16BE"));
     }
 
     public String str8() {

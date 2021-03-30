@@ -1,5 +1,6 @@
 package ennuo.craftworld.types;
 
+import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Texture;
@@ -29,6 +30,7 @@ public class FileEntry {
   
   public Slot slot;
   public Pack pack;
+  public GfxMaterial gfxMaterial;
   public ArrayList<Slot> slots;
   public ArrayList<ProfileItem> items;
   
@@ -55,6 +57,7 @@ public class FileEntry {
       
       pack = null;
       mesh = null;
+      gfxMaterial = null;
       texture = null;
       item = null;
   }

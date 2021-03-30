@@ -93,6 +93,11 @@
 	    <artifactId>jnafilechooser</artifactId>
 	    <version>f512011</version>
 	</dependency>
+        <dependency>
+	    <groupId>com.github.javagl.JglTF</groupId>
+	    <artifactId>jgltf-model</artifactId>
+	    <version>306ff0a</version>
+	</dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

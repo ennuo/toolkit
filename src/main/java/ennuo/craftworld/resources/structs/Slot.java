@@ -85,6 +85,22 @@ public class Slot {
     
     public int gameProgressionState = 3;
     
+    public boolean acingEnabled = true;
+    
+    public long[] customRewardEnabled;
+    public String[] rewardConditionDescription;
+    public long[] customRewardCondition;
+    public long[] amountNeededCustomReward;
+    public String[] customRewardDescription;
+    
+    public boolean containsCollectabubbles = false;
+    public boolean sameScreenGame  = true;
+    public long sizeOfResources;
+    public long sizeOfSubLevels;
+    
+    public SlotID[] subLevels;
+    public ResourcePtr slotList;
+    public int vitaRevision = 0;
     
     public Slot() {};
     public Slot(Data data) {
@@ -230,6 +246,42 @@ public class Slot {
         
         livesOverride = data.int8();
         
+        if (data.revision == 0x3e2) {
+            acingEnabled = data.bool();
+            customRewardEnabled = data.u32a();
+            
+            int rrdCount = data.int32();
+            rewardConditionDescription = new String[rrdCount];
+            for (int i = 0; i < rrdCount; ++i)
+                 rewardConditionDescription[i] = data.str16();
+            
+            customRewardCondition = data.u32a();
+            
+            int ancrCount = data.int32();
+            amountNeededCustomReward = new long[ancrCount];
+            for (int i = 0; i < ancrCount; ++i)
+                amountNeededCustomReward[i] = data.uint32f();
+            
+            int crdCount = data.int32();
+            customRewardDescription = new String[crdCount];
+            for (int i = 0; i < crdCount; ++i)
+                customRewardDescription[i] = data.str16();
+            
+            containsCollectabubbles = data.bool();
+            enforceMinMaxPlayers = data.bool();
+            sameScreenGame = data.bool();
+            sizeOfResources = data.uint32();
+            sizeOfSubLevels = data.uint32();
+            
+            int subLevelCount = data.int32();
+            subLevels = new SlotID[subLevelCount];
+            for (int i = 0; i < subLevelCount; ++i)
+                subLevels[i] = new SlotID(data);
+            
+            slotList = data.resource(RType.SLOT_LIST);
+            vitaRevision = data.int32();
+        }
+        
         if (data.revision <= 0x3f8) return;
         
         gameMode = GameMode.getValue(data.int8());
@@ -314,7 +366,7 @@ public class Slot {
         
         output.bool(isSubLevel);
         
-        if (output.revision <= 0x3af) return;
+        if (output.revision <= 0x395) return;
         
         output.int8(minPlayers);
         output.int8(maxPlayers);
@@ -331,6 +383,38 @@ public class Slot {
         output.bool(showOnPlanet);
         
         output.int8(livesOverride);
+        
+        if (output.revision == 0x3e2) {
+            output.bool(acingEnabled);
+            output.u32a(customRewardEnabled);
+            
+            output.int32(rewardConditionDescription.length);
+            for (int i = 0; i < rewardConditionDescription.length; ++i)
+                 output.str16(rewardConditionDescription[i]);
+            
+            output.u32a(customRewardCondition);
+            
+            output.int32(amountNeededCustomReward.length);
+            for (int i = 0; i < amountNeededCustomReward.length; ++i)
+                 output.uint32f(amountNeededCustomReward[i]);
+           
+            output.int32(customRewardDescription.length);
+            for (int i = 0; i < customRewardDescription.length; ++i)
+                 output.str16(customRewardDescription[i]);
+            
+            output.bool(containsCollectabubbles);
+            output.bool(enforceMinMaxPlayers);
+            output.bool(sameScreenGame);
+            output.uint32(sizeOfResources);
+            output.uint32(sizeOfSubLevels);
+            
+            output.int32(subLevels.length);
+            for (int i = 0; i < subLevels.length; ++i)
+                subLevels[i].serialize(output);
+            
+            output.resource(slotList); 
+            output.int32(vitaRevision);
+        }
         
         if (output.revision <= 0x3f8) return;
         

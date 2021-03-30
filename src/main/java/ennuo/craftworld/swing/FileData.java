@@ -8,6 +8,8 @@ public class FileData {
   
   public String query;
   
+  public String USRDIR;
+  
   public String type;
     
   public FileModel model;

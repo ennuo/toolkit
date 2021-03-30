@@ -15,11 +15,21 @@ import java.util.logging.Logger;
 import javax.swing.JProgressBar;
 
 public class FileArchive {
+    
+  public enum ArchiveType {
+      FARC,
+      FAR4,
+      FAR5
+  } 
+   
   public File file;
+  
   public boolean isParsed = false;
   public boolean shouldSave = false;
+  
   public byte[] hashTable;
   public long tableOffset;
+  
   public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
   public ArrayList<FileEntry> queue = new ArrayList<FileEntry>();
   public int queueSize = 0;
@@ -39,20 +49,32 @@ public class FileArchive {
       RandomAccessFile fishArchive = new RandomAccessFile(this.file.getAbsolutePath(), "rw");
       if (fishArchive.length() < 8) {
           System.out.println("This is not a FARC file.");
+          fishArchive.close();
           isParsed = false;
           return;
       }
       fishArchive.seek(this.file.length() - 8L);
       entryCount = fishArchive.readInt();
 
-      byte[] magic = new byte[4];
-      fishArchive.readFully(magic);
+      byte[] magicBytes = new byte[4];
+      fishArchive.readFully(magicBytes);
+      String magic = new String(magicBytes, StandardCharsets.UTF_8);
       
-      if (!(new String(magic, StandardCharsets.UTF_8).equals("FARC"))) {
-          System.out.println("This is not a FARC file.");
+      ArchiveType type;
+      try { type = ArchiveType.valueOf(magic); }
+      catch (Exception e) {
+          System.out.println(magic + " is not a valid FileArchive type.");
+          fishArchive.close();
           isParsed = false;
           return;
       }
+      
+        if (type != ArchiveType.FARC) {
+          System.out.println(magic + " is not a valid FileArchive type.");
+          fishArchive.close();
+          isParsed = false;
+          return;
+        }
       
       System.out.println("Entry Count: " + entryCount);
       this.tableOffset = this.file.length() - 8L - (entryCount * 28);

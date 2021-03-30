@@ -4,8 +4,8 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class ImplicitEllipsoid {
-    float[] transform;
-    int parentBone, affectWorldOnly;
+    public float[] transform;
+    public int parentBone, affectWorldOnly;
     
     public ImplicitEllipsoid(Data data) {
         transform = data.matrix();

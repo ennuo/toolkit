@@ -96,7 +96,7 @@ public class ExportCallbacks {
         }
     }
 
-    public static void exportMod() {
+    public static void exportMod(boolean hashinate) {
         FileEntry entry = Globals.lastSelected.entry;
         String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
         if (Globals.lastSelected.entry.item != null)
@@ -107,7 +107,10 @@ public class ExportCallbacks {
         if (file == null) return;
 
         Resource resource = new Resource(Globals.extractFile(entry.hash));
-        Mod mod = resource.hashinate(entry);
+        Mod mod;
+        if (hashinate)
+            mod = resource.hashinate(entry);
+        else mod = resource.recurse(entry);
 
         mod.title = name;
 

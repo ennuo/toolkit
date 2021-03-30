@@ -5,10 +5,10 @@ import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Vector4f;
 
 public class ParameterAnimation {
-    Vector4f baseValue;
-    float[] keys;
-    byte[] name;
-    byte componentsAnimated;
+    public Vector4f baseValue;
+    public float[] keys;
+    public byte[] name;
+    public byte componentsAnimated;
     
     public ParameterAnimation(Data data) {
         baseValue = data.v4();

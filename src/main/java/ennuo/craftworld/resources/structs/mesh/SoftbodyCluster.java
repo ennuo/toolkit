@@ -5,12 +5,13 @@ import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Vector4f;
 
 public class SoftbodyCluster {
-    int clusterCount;
-    Vector4f[] restCenterOfMass;
-    float[][] restDyadicSum;
-    float[] restQuadraticDyadicSum;
-    String[] name;
+    public int clusterCount = 0;
+    public Vector4f[] restCenterOfMass = new Vector4f[0];
+    public float[][] restDyadicSum = new float[0][];
+    public float[] restQuadraticDyadicSum = new float[0];
+    public String[] name = new String[0];
     
+    public SoftbodyCluster() {};
     public SoftbodyCluster(Data data) {
         clusterCount = data.int32();
         restCenterOfMass = new Vector4f[data.int32()];

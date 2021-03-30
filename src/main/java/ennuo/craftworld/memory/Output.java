@@ -1,5 +1,7 @@
 package ennuo.craftworld.memory;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +89,12 @@ public class Output {
             varint(value);
         else int32f(value);
     }
+    
+    public void u32a(long[] values) {
+        int32(values.length);
+        for (int i = 0; i < values.length; ++i)
+            uint32(values[i]);
+    }
 
     public void uint32(long value) {
         if (revision > ENCODED_REVISION)
@@ -103,6 +111,12 @@ public class Output {
             return;
         }
         bytes(Bytes.toBytes(value));
+    }
+    
+    public void int16le(short value) {
+        if (value == 0) { int16((short) 0); return; }
+        byte[] s = Bytes.toBytes(value);
+        int8(s[1]); int8(s[0]);
     }
 
     public void int32f(int value) {
@@ -145,7 +159,7 @@ public class Output {
         while (value > 0) {
             byte b = (byte)(value & 0x7fL);
             value >>= 7L;
-            if (value > 0) b |= 128L;
+            if (value > 0L) b |= 128L;
             int8(b);
         }
     }
@@ -206,6 +220,12 @@ public class Output {
 
     public void float32(float value) {
         bytes(Bytes.toBytes(Float.floatToIntBits(value)));
+    }
+    
+    public void float32le(float value) {
+        int bits = Float.floatToRawIntBits(value);
+        byte[] bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(bits).array();
+        bytes(bb);
     }
 
     public void float32arr(float[] value) {

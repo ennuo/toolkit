@@ -4,7 +4,7 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class SoftbodyVertEquivalence {
-    short first, count;
+    public short first, count;
     
     public SoftbodyVertEquivalence(Data data) {
         first = data.int16();

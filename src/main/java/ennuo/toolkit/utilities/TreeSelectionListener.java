@@ -1,7 +1,10 @@
 package ennuo.toolkit.utilities;
 
+import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.resources.Animation;
+import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Texture;
@@ -10,6 +13,7 @@ import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.types.FileEntry;
+import static ennuo.toolkit.utilities.Globals.currentWorkspace;
 import ennuo.toolkit.windows.Toolkit;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
@@ -42,6 +46,12 @@ public class TreeSelectionListener {
 
             byte[] entryBuffer = null;
             entryBuffer = Globals.extractFile(entry.hash);
+            if (entryBuffer == null) {
+                if (Toolkit.instance.getCurrentDB().USRDIR != null && currentWorkspace == Globals.WorkspaceType.MAP) {
+                    System.out.println("Attempting to extract from disk...");
+                    entryBuffer = FileIO.read(Toolkit.instance.getCurrentDB().USRDIR + entry.path.replace("/", "\\"));
+                }
+            }
             entry.data = entryBuffer; toolkit.updateWorkspace();
             if (entryBuffer == null) {
                 toolkit.setHexEditor(null);
@@ -125,6 +135,19 @@ public class TreeSelectionListener {
                     if (entry.mesh == null)
                         entry.mesh = new Mesh(entryBuffer);
                     System.out.println("Failed to set Mesh preview, does functionality even exist?");
+                    break;
+                case "anim": {
+                    Resource resource = new Resource(entryBuffer);
+                    resource.decompress(true);
+                    new Animation(resource);
+                    break;
+                }
+                case "gmat":
+                    if (entry.gfxMaterial == null) {
+                        Resource resource = new Resource(entryBuffer);
+                        resource.decompress(true);
+                        entry.gfxMaterial = new GfxMaterial(resource);
+                    }
                     break;
                 case "plan":
                     if (selected.entry.item == null) {

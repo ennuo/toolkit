@@ -4,8 +4,8 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class SoftbodySpring {
-    short A, B;
-    float restLengthSq;
+    public short A, B;
+    public float restLengthSq;
     
     public SoftbodySpring(Data data) {
         A = data.int16();

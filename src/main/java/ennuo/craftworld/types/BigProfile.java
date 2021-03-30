@@ -42,6 +42,9 @@ public class BigProfile extends FileData {
   public ArrayList<ProfileItem> inventoryCollection = new ArrayList<ProfileItem>();
   public ArrayList<StringEntry> stringCollection = new ArrayList<StringEntry>();
   public ArrayList<Slot> slots = new ArrayList<Slot>();
+  
+  public SlotID[] downloadedSlots;
+  public ResourcePtr planets;
 
   private int nextIndex = 0;
   private int lastOffset = 0;
@@ -50,6 +53,7 @@ public class BigProfile extends FileData {
   
 
   public boolean fromProductionBuild = true;
+  private boolean isFAR5 = false;
 
   public BigProfile(File file) {
     this.path = file.getAbsolutePath();
@@ -93,12 +97,18 @@ public class BigProfile extends FileData {
   private void process(Data data, boolean isStreamingChunk) {
     data.seek(data.length - 4);
 
-    if (!data.str(4).equals("FAR4")) return;
+    String magic  = data.str(4);
+    
+    isFAR5 = magic.equals("FAR5");
+    
+    if (!magic.equals("FAR4") && !isFAR5) return;
 
     data.seek(data.length - 8);
     int count = data.int32f();
 
-    data.seek(data.length - (0x1C + (0x1C * count)));
+    if (isFAR5)
+         data.seek(data.length - (0x20 + (0x1C * count)));   
+    else data.seek(data.length - (0x1C + (0x1C * count)));
 
     int tableOffset = data.offset;
     if (!isStreamingChunk) {
@@ -163,12 +173,15 @@ public class BigProfile extends FileData {
     case "lvl":
       extension = "bin";
       break;
+    case "‰pn":
+      extension = "png";
+      break;
     }
 
     if (extension.equals("plan") || extension.equals("bin")) return null;
     entry.path = "resources/";
     if (extension.equals("mol")) entry.path += "meshes/";
-    else if (extension.equals("tex") || extension.equals("jpg")) entry.path += "textures/";
+    else if (extension.equals("tex") || extension.equals("jpg") || extension.equals("png")) entry.path += "textures/";
     else if (extension.equals("raw")) entry.path += "audio/";
     else if (extension.equals("gmt")) entry.path += "gfx_materials/";
     else if (extension.equals("anm")) entry.path += "animations/";
@@ -224,11 +237,12 @@ public class BigProfile extends FileData {
 
       output.resource(item.resource, true);
       
-      if (output.revision > 0x010503EF) output.int32(new Random().nextInt(0x00180000 - 0x00160000) + 0x00160000);
+      if (output.revision > 0x010503EF) output.int32(0);
 
       if (output.revision > 0x272) serializer.serializeMetadata(item.metadata, false);
       else serializer.serializeLegacyMetadata(item.metadata);
 
+      if (output.revision == 0x3e2) output.int8(1);
       output.int8(0x80);
       output.int32(0);
       output.int16((short)(i + 1));
@@ -257,22 +271,46 @@ public class BigProfile extends FileData {
     });
 
     output.int32(stringCount);
-    output.bool(true); // serializer sort
+    if (stringCount > 0x100) output.int8(2);
+    else if (stringCount > 0) output.int8(1);
 
     byte[] sorted = new byte[stringCount];
-    for (StringEntry entry: stringCollection)
-    sorted[entry.index] = (byte) getRawIndex(entry.index);
+    byte[] overflow = new byte[stringCount];
+    for (StringEntry entry: stringCollection) {
+        byte o = (byte) 0;
+        int index = getRawIndex(entry.index);
+        while (index > 0xFF) {
+            o++;
+            index -= 0x101;
+        }
+        overflow[entry.index] = o;
+        sorted[entry.index] = (byte) index;
+    }
     output.bytes(sorted);
+    if (stringCount > 0x100)
+        output.bytes(overflow);
 
     output.int32(stringCount);
     for (StringEntry entry: stringCollection)
     entry.serialize(output);
 
-    if (profile.revision > 0x272) output.bool(fromProductionBuild);
+    if (profile.revision > 0x395) output.bool(fromProductionBuild);
 
     output.int32(slotCount);
     for (Slot slot: slots)
-    slot.serialize(output, true, true);
+        slot.serialize(output, true, true);
+    
+    if (output.revision == 0x3e2) {
+        output.int32(0); // labels
+        output.int32(0); output.int32(0); // challenges
+        output.int32(0); // treasures
+        
+        output.int32(downloadedSlots.length);
+        for (int i = 0; i < downloadedSlots.length; ++i)
+            downloadedSlots[i].serialize(output);
+        
+        output.resource(planets, true);
+    }
 
     output.shrinkToFit();
 
@@ -321,6 +359,7 @@ public class BigProfile extends FileData {
       if (profile.revision > 0x010503EF) item.GUID = profile.int32();
       if (profile.revision > 0x272) item.metadata = serializer.ParseMetadata(false);
       else item.metadata = serializer.ParseLBP1BPRMetadata();
+      if (profile.revision == 0x3e2) profile.forward(0x1);
       profile.forward(0x7);
       item.flags = profile.int8();
       if (profile.revision > 0x272) profile.forward(0x4);
@@ -331,6 +370,8 @@ public class BigProfile extends FileData {
       inventoryCollection.add(item);
       addItemNode(item);
     }
+    
+    System.out.println("vita hashes offset = 0x" + Bytes.toHex(profile.offset));
 
     if (profile.revision >= 0x3e6) {
         int hashCount = profile.int32();
@@ -338,7 +379,9 @@ public class BigProfile extends FileData {
             profile.bytes(0x14);
     }
     
-    if (profile.revision >= 0x3f6) {
+    System.out.println("data labels offset = 0x" + Bytes.toHex(profile.offset));
+    
+    if (profile.revision >= 0x3f6 && profile.revision != 0x3e2) {
         int labelCount = profile.int32();
         for (int i = 0; i < labelCount; ++i) {
             profile.int32();
@@ -346,12 +389,23 @@ public class BigProfile extends FileData {
         }
     }
 
+    System.out.println("string table offset = 0x" + Bytes.toHex(profile.offset));
+    
     boolean unsorted = profile.bool();
     boolean sortEnabled = profile.bool();
+    
+    System.out.println("string table indices offset = 0x" + Bytes.toHex(profile.offset));
 
     /* RawIndexToSortedIndex, skipping */
     int stringCount = profile.int32();
-    if (stringCount != 0) if (profile.bool()) for (int i = 0; i < stringCount; ++i) profile.int8();
+    if (stringCount != 0) {
+       int tableCount = profile.int8();
+       for (int i = 0; i < tableCount; ++i)
+           for (int j = 0; j < stringCount; ++j)
+               profile.int8();
+    }
+    
+    System.out.println("strings offset = 0x" + Bytes.toHex(profile.offset));
 
     stringCount = profile.int32();
     stringCollection = new ArrayList<StringEntry> (itemCount);
@@ -360,7 +414,7 @@ public class BigProfile extends FileData {
       nextIndex++;
     }
 
-    if (profile.revision > 0x272) fromProductionBuild = profile.bool();
+    if (profile.revision > 0x395) fromProductionBuild = profile.bool();
 
     int slotCount = profile.int32();
     slots = new ArrayList<Slot>(slotCount);
@@ -374,6 +428,27 @@ public class BigProfile extends FileData {
       if (location != null) item.metadata.translatedLocation = location.string;
       if (category != null) item.metadata.translatedCategory = category.string;
     }
+    
+    if (profile.revision == 0x3e2) {
+        
+        // labels
+        int labelCount = profile.int32();
+        for (int i = 0; i < labelCount; ++i) {
+            profile.int32();
+            profile.str16();
+        }
+        
+        profile.int32(); profile.int32();
+        profile.int32();
+        
+        downloadedSlots = new SlotID[profile.int32()];
+        for (int i = 0; i < downloadedSlots.length; ++i)
+            downloadedSlots[i] = new SlotID(profile);
+        
+        planets = profile.resource(RType.LEVEL, true);
+    }
+    
+    
 
     this.profile.slots = slots;
     this.profile.items = inventoryCollection;
@@ -636,10 +711,15 @@ public class BigProfile extends FileData {
       offset += entry.size;
     }
 
+    if (isFAR5)
+        output.pad(0x4);
     output.pad(0x14);
 
     output.int32(entries.length);
-    output.string("FAR4");
+    if (isFAR5)
+        output.string("FAR5");
+    else 
+        output.string("FAR4");
 
     output.shrinkToFit();
 

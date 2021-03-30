@@ -702,6 +702,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         jLabel10.setText("Translation Keys");
 
         titleKey.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        titleKey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                titleKeyActionPerformed(evt);
+            }
+        });
 
         descriptionKey.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
 
@@ -1505,7 +1510,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         
         item.metadata.titleKey = Long.valueOf(parseInteger(titleKey.getText()));
-        item.metadata.descriptionKey = Long.valueOf(parseInteger(titleKey.getText()));
+        item.metadata.descriptionKey = Long.valueOf(parseInteger(descriptionKey.getText()));
         
         item.metadata.translatedLocation = locationKey.getText();
         item.metadata.translatedCategory = categoryKey.getText();
@@ -1639,6 +1644,10 @@ public class MetadataEditor extends javax.swing.JFrame {
     private void WStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_WStateChanged
         lastUser.bounds.w = (float) W.getValue();
     }//GEN-LAST:event_WStateChanged
+
+    private void titleKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleKeyActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_titleKeyActionPerformed
     
     
     private int internalCount = 0;

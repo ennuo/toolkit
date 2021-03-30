@@ -163,6 +163,12 @@ public class Resource extends Data {
         if (compressed)
             setData(Compressor.Compress(data.data, magic, revision, resources));
     }
+    
+    public Mod recurse(FileEntry entry) {
+        Mod mod = new Mod();
+        Bytes.recurse(mod, this, entry);
+        return mod;
+    }
 
     public Mod hashinate(FileEntry entry) {
         Mod mod = new Mod();
@@ -247,7 +253,8 @@ public class Resource extends Data {
                 seek(50);
                 break;
             case CUSTOM_COMPRESSION:
-                seek(20);
+                if (data[16] == 1) seek(19);
+                else seek(20);
                 break;
             case CUSTOM_COMPRESSION_LEGACY:
                 if (revision <= 0x188) seek(14);

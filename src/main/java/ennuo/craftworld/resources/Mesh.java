@@ -7,18 +7,21 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector2f;
+import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.mesh.CullBone;
 import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
 import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
+import ennuo.craftworld.resources.structs.mesh.Morph;
+import ennuo.craftworld.resources.structs.mesh.SkinWeight;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
 import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
+import ennuo.toolkit.functions.DebugCallbacks;
+import java.util.ArrayList;
 
-public class Mesh extends Resource {
-
-
+public class Mesh {
     int numTris = 0;
     int morphCount = 0;
 
@@ -30,8 +33,11 @@ public class Mesh extends Resource {
     public short[] faces;
     public short[] extraFaces;
     public short[] edges;
-    public Vector4f[][] streams;
-
+    
+    public Vector3f[] vertices;
+    public SkinWeight[] weights;
+    public Morph[] morphs;
+    
     public int attributeCount;
     public int uvCount;
 
@@ -40,84 +46,101 @@ public class Mesh extends Resource {
     public MeshPrimitive[] meshPrimitives;
     public Bone[] bones;
     public short[] mirrorMorphs;
-    byte primitiveType;
-    SoftbodyCluster softbodyCluster;
-    SoftbodySpring[] softbodySprings;
-    SoftbodyVertEquivalence[] softbodyEquivs;
-    float[] mass;
-    ImplicitEllipsoid[] implicitEllipsoids;
-    float[][] clusterImplicitEllipsoids;
-    ImplicitEllipsoid[] insideImplicitEllipsoids;
-    ImplicitPlane[] implicitPlanes;
-    ResourcePtr softPhysSettings;
-    int minSpringVert, maxSpringVert;
-    int minUnalignedSpringVert;
-    short[] springyTriIndices;
-    int springTrisStripped;
-    Vector4f softbodyContainingBoundBoxMin;
-    Vector4f softbodyContainingBoundBoxMax;
-    CullBone[] cullBones;
-    long[] regionIDsToHide;
-    int costumeCategoriesUsed;
-    int hairMorphs;
-    int bevelVertexCount;
-    boolean implicitBevelSprings;
-    byte skeletonType;
+    public byte primitiveType;
+    public SoftbodyCluster softbodyCluster;
+    public SoftbodySpring[] softbodySprings;
+    public SoftbodyVertEquivalence[] softbodyEquivs;
+    public float[] mass;
+    public ImplicitEllipsoid[] implicitEllipsoids;
+    public float[][] clusterImplicitEllipsoids;
+    public ImplicitEllipsoid[] insideImplicitEllipsoids;
+    public ImplicitPlane[] implicitPlanes;
+    public ResourcePtr softPhysSettings;
+    public int minSpringVert, maxSpringVert;
+    public int minUnalignedSpringVert;
+    public short[] springyTriIndices;
+    public int springTrisStripped;
+    public Vector4f softbodyContainingBoundBoxMin;
+    public Vector4f softbodyContainingBoundBoxMax;
+    public CullBone[] cullBones;
+    public long[] regionIDsToHide;
+    public int costumeCategoriesUsed;
+    public int hairMorphs;
+    public int bevelVertexCount;
+    public boolean implicitBevelSprings;
+    public byte skeletonType;
 
 
     public Mesh(byte[] data) {
-        super(data);
-        if (this.data == null) {
-            System.out.println("No data provided to Mesh constructor");
+        if (data == null) {
+            System.err.println("No data provided to Mesh constructor");
             return;
         }
-        process();
+        process(new Resource(data));
     }
 
-    private void process() {
-        decompress(true);
+    private void process(Resource data) {
+        data.decompress(true);
         System.out.println("Parsing Mesh...");
-        int numVerts = int32(), numIndices = int32(),
-            numEdgeIndices = int32();
-        numTris = int32();
+        int numVerts = data.int32(), numIndices = data.int32(),
+            numEdgeIndices = data.int32();
+        numTris = data.int32();
 
-        int streamCount = int32();
-        attributeCount = int32();
-        morphCount = int32();
+        int streamCount = data.int32();
+        attributeCount = data.int32();
+        morphCount = data.int32();
 
         System.out.println("Morph Count -> " + morphCount);
 
         morphNames = new String[0x20];
         for (int i = 0; i < 0x20; ++i)
-            morphNames[i] = str(0x10);
+            morphNames[i] = data.str(0x10);
         for (int i = 0; i < morphCount; ++i)
             System.out.println("Morph[" + i + "] -> " + morphNames[i]);
 
-        if (revision > 0x238) {
-            minUV = float32arr();
-            maxUV = float32arr();
-            areaScaleFactor = float32();
+        if (data.revision > 0x238) {
+            minUV = data.float32arr();
+            maxUV = data.float32arr();
+            areaScaleFactor = data.float32();
         }
 
         int[] streamOffsets = new int[streamCount + 1];
         for (int i = 0; i < streamCount + 1; ++i)
-            streamOffsets[i] = int32();
+            streamOffsets[i] = data.int32();
 
-        int streamSize = int32();
         System.out.println("Vertex Count -> " + numVerts);
         System.out.println("Stream Count -> " + streamCount);
-        streams = new Vector4f[streamCount][];
-        for (int i = 0; i < streamCount; ++i) {
-            System.out.println("Stream[" + i + "] Offset -> 0x" + Bytes.toHex(offset));
-            Vector4f[] stream = new Vector4f[numVerts];
-            for (int j = 0; j < numVerts; ++j)
-                stream[j] = v4();
-            streams[i] = stream;
+        
+        int streamSize = data.int32();
+        
+        vertices = new Vector3f[numVerts];
+        for (int i = 0; i < numVerts; ++i) {
+            vertices[i] = data.v3();
+            data.float32();
+        }
+        
+        if (streamCount > 1) {
+            weights = new SkinWeight[numVerts];
+            for (int i = 0; i < numVerts; ++i)
+                weights[i] = new SkinWeight(data);
+            if (streamCount > 2) {
+                morphs = new Morph[streamCount - 2];
+                for (int i = 0; i < streamCount - 2; ++i) {
+                    Vector3f[] vertices = new Vector3f[numVerts];
+                    for (int j = 0; j < numVerts; ++j) {
+                        vertices[j] = data.v3();
+                        data.float32();
+                    }
+                    Morph morph = new Morph(morphNames[streamCount - 2]);
+                    morph.vertices = vertices;
+                    morphs[i] = morph;
+                }
+            }
         }
 
-        System.out.println("UV Offset -> 0x" + Bytes.toHex(offset));
+        System.out.println("UV Offset -> 0x" + Bytes.toHex(data.offset));
 
-        int uvSize = int32();
+        int uvSize = data.int32();
         uvCount = uvSize / (0x8 * attributeCount);
 
         System.out.println("UV Count -> " + uvCount);
@@ -125,42 +148,43 @@ public class Mesh extends Resource {
         for (int i = 0; i < uvCount; ++i) {
             attributes[i] = new Vector2f[attributeCount];
             for (int j = 0; j < attributeCount; ++j)
-                attributes[i][j] = v2();
+                attributes[i][j] = data.v2();
         }
 
-        System.out.println("Indices Offset -> 0x" + Bytes.toHex(offset));
-        int faceSize = int32();
+        System.out.println("Indices Offset -> 0x" + Bytes.toHex(data.offset));
+        int faceSize = data.int32();
         System.out.println("Index Count -> " + numIndices);
         faces = new short[numIndices];
         for (int i = 0; i < numIndices; ++i)
-            faces[i] = int16();
-        System.out.println("Edge Indices Offset -> 0x" + Bytes.toHex(offset));
+            faces[i] = data.int16();
+        System.out.println("Edge Indices Offset -> 0x" + Bytes.toHex(data.offset));
         System.out.println("Edge Index Count -> " + numEdgeIndices);
         edges = new short[numEdgeIndices];
         for (int i = 0; i < numEdgeIndices; ++i)
-            edges[i] = int16();
+            edges[i] = data.int16();
 
-        if (revision >= 0x016b03ef) {
-            int extraFaceCount = int32() / 2;
+        if (data.revision >= 0x016b03ef) {
+            int extraFaceCount = data.int32() / 2;
             System.out.println(extraFaceCount);
             extraFaces = new short[extraFaceCount];
             for (int i = 0; i < extraFaceCount; ++i)
-                extraFaces[i] = int16();
+                extraFaces[i] = data.int16();
         }
 
-        System.out.println("Mesh Primitives Offset -> 0x" + Bytes.toHex(offset));
-        meshPrimitives = MeshPrimitive.array(this);
+        System.out.println("Mesh Primitives Offset -> 0x" + Bytes.toHex(data.offset));
+        meshPrimitives = MeshPrimitive.array(data);
 
-        System.out.println("Bones Offset -> 0x" + Bytes.toHex(offset));
-        bones = Bone.array(this);
+        System.out.println("Bones Offset -> 0x" + Bytes.toHex(data.offset));
+        bones = Bone.array(data);
 
-        int mirrorCount = int32();
+        int mirrorCount = data.int32();
         for (int i = 0; i < mirrorCount; ++i)
-            bones[i].mirror = int16();
-        int mirrorTypeCount = int32();
+            bones[i].mirror = data.int16();
+        int mirrorTypeCount = data.int32();
         for (int i = 0; i < mirrorTypeCount; ++i)
-            bones[i].mirrorType = int8();
+            bones[i].mirrorType = data.int8();
 
+        
         /*
         for (int i = 1; i < bones.length; ++i) {
             Bone bone = bones[i];
@@ -170,84 +194,122 @@ public class Mesh extends Resource {
             );   
         }
         */
+        
 
-        System.out.println("Mirror Morph Offset  -> 0x" + Bytes.toHex(offset));
-        int mirrorMorphCount = int32();
+        System.out.println("Mirror Morph Offset  -> 0x" + Bytes.toHex(data.offset));
+        int mirrorMorphCount = data.int32();
         mirrorMorphs = new short[mirrorMorphCount];
         for (int i = 0; i < mirrorMorphCount; ++i)
-            mirrorMorphs[i] = int16();
+            mirrorMorphs[i] = data.int16();
 
-        System.out.println("Primitive Type Offset  -> 0x" + Bytes.toHex(offset));
-        primitiveType = int8();
-        System.out.println("Softbody Cluster Offset  -> 0x" + Bytes.toHex(offset));
-        softbodyCluster = new SoftbodyCluster(this);
-        System.out.println("Softbody Springs Offset  -> 0x" + Bytes.toHex(offset));
-        softbodySprings = SoftbodySpring.array(this);
-        System.out.println("Softbody Vert Equivalences Offset  -> 0x" + Bytes.toHex(offset));
-        softbodyEquivs = SoftbodyVertEquivalence.array(this);
-        System.out.println("Mass Offset  -> 0x" + Bytes.toHex(offset));
-        mass = float32arr();
-        System.out.println("Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(offset));
-        implicitEllipsoids = ImplicitEllipsoid.array(this);
-        System.out.println("Cluster Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(offset));
-        clusterImplicitEllipsoids = new float[int32()][];
+        System.out.println("Primitive Type Offset  -> 0x" + Bytes.toHex(data.offset));
+        primitiveType = data.int8();
+        System.out.println("Softbody Cluster Offset  -> 0x" + Bytes.toHex(data.offset));
+        softbodyCluster = new SoftbodyCluster(data);
+        System.out.println("Softbody Springs Offset  -> 0x" + Bytes.toHex(data.offset));
+        softbodySprings = SoftbodySpring.array(data);
+        System.out.println("Softbody Vert Equivalences Offset  -> 0x" + Bytes.toHex(data.offset));
+        softbodyEquivs = SoftbodyVertEquivalence.array(data);
+        System.out.println("Mass Offset  -> 0x" + Bytes.toHex(data.offset));
+        mass = data.float32arr();
+        System.out.println("Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
+        implicitEllipsoids = ImplicitEllipsoid.array(data);
+        System.out.println("Cluster Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
+        clusterImplicitEllipsoids = new float[data.int32()][];
         for (int i = 0; i < clusterImplicitEllipsoids.length; ++i)
-            clusterImplicitEllipsoids[i] = matrix();
-        System.out.println("Inside Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(offset));
-        insideImplicitEllipsoids = ImplicitEllipsoid.array(this);
-        System.out.println("Implicit Planes Offset  -> 0x" + Bytes.toHex(offset));
-        implicitPlanes = ImplicitPlane.array(this);
-        System.out.println("Soft Phys Settings Offset  -> 0x" + Bytes.toHex(offset));
-        softPhysSettings = resource(RType.SETTINGS_SOFT_PHYS);
-        System.out.println("Min Spring Vert Offset  -> 0x" + Bytes.toHex(offset));
-        minSpringVert = int32();
-        System.out.println("Max Spring Vert Offset  -> 0x" + Bytes.toHex(offset));
-        maxSpringVert = int32();
-        System.out.println("Min Unaligned Spring Vert Offset  -> 0x" + Bytes.toHex(offset));
-        minUnalignedSpringVert = int32();
+            clusterImplicitEllipsoids[i] = data.matrix();
+        System.out.println("Inside Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
+        insideImplicitEllipsoids = ImplicitEllipsoid.array(data);
+        System.out.println("Implicit Planes Offset  -> 0x" + Bytes.toHex(data.offset));
+        implicitPlanes = ImplicitPlane.array(data);
+        System.out.println("Soft Phys Settings Offset  -> 0x" + Bytes.toHex(data.offset));
+        softPhysSettings = data.resource(RType.SETTINGS_SOFT_PHYS);
+        System.out.println("Min Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
+        minSpringVert = data.int32();
+        System.out.println("Max Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
+        maxSpringVert = data.int32();
+        System.out.println("Min Unaligned Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
+        minUnalignedSpringVert = data.int32();
 
-        System.out.println("Springy Tri Indices Offset  -> 0x" + Bytes.toHex(offset));
-        springyTriIndices = new short[int32()];
+        System.out.println("Springy Tri Indices Offset  -> 0x" + Bytes.toHex(data.offset));
+        springyTriIndices = new short[data.int32()];
         for (int i = 0; i < springyTriIndices.length; ++i)
-            springyTriIndices[i] = int16();
+            springyTriIndices[i] = data.int16();
 
-        System.out.println("Spring Tris Stripped Offset  -> 0x" + Bytes.toHex(offset));
-        springTrisStripped = int32();
+        System.out.println("Spring Tris Stripped Offset  -> 0x" + Bytes.toHex(data.offset));
+        springTrisStripped = data.int32();
 
-        System.out.println("Softbody Contained Bound Box Min Offset  -> 0x" + Bytes.toHex(offset));
-        softbodyContainingBoundBoxMin = v4();
-        System.out.println("Softbody Contained Bound Box Max Offset  -> 0x" + Bytes.toHex(offset));
-        softbodyContainingBoundBoxMax = v4();
+        System.out.println("Softbody Contained Bound Box Min Offset  -> 0x" + Bytes.toHex(data.offset));
+        softbodyContainingBoundBoxMin = data.v4();
+        System.out.println("Softbody Contained Bound Box Max Offset  -> 0x" + Bytes.toHex(data.offset));
+        softbodyContainingBoundBoxMax = data.v4();
 
-        System.out.println("Cull Bones Offset  -> 0x" + Bytes.toHex(offset));
-        cullBones = CullBone.array(this);
+        System.out.println("Cull Bones Offset  -> 0x" + Bytes.toHex(data.offset));
+        cullBones = CullBone.array(data);
 
-        System.out.println("Region IDs To Hide Offset -> 0x" + Bytes.toHex(offset));
-        regionIDsToHide = new long[int32()];
-        if (regionIDsToHide.length != 0 && revision >= 0x272) int8();
+        System.out.println("Region IDs To Hide Offset -> 0x" + Bytes.toHex(data.offset));
+        regionIDsToHide = new long[data.int32()];
+        if (regionIDsToHide.length != 0 && data.revision >= 0x272) data.int8();
         for (int i = 0; i < regionIDsToHide.length; ++i)
-            regionIDsToHide[i] = uint32f();
+            regionIDsToHide[i] = data.uint32f();
 
-        costumeCategoriesUsed = int32();
-        hairMorphs = int32();
-        bevelVertexCount = int32();
-        implicitBevelSprings = bool();
+        costumeCategoriesUsed = data.int32();
+        hairMorphs = data.int32();
+        bevelVertexCount = data.int32();
+        implicitBevelSprings = data.bool();
 
-        if (revision >= 0x016703ef)
-            skeletonType = int8();
+        if (data.revision >= 0x016703ef)
+            skeletonType = data.int8();
+    }
+    
+    public short[] triangulate() { return triangulate(0, faces.length); }
+    public short[] triangulate(int offset, int count) {
+        ArrayList<Short> triangles = new ArrayList<Short>(count * 3); 
+        
+        for (int i = offset - 1, j = 1; i < offset + count; ++i, ++j) {
+            if (i == (offset - 1) || faces[i] == -1) {
+                triangles.add(faces[i + 1]);
+                triangles.add(faces[i + 2]);
+                triangles.add(faces[i + 3]);
+                i += 3;
+                j = 0;
+            } else {
+                if ((j & 1) == 1) {
+                    triangles.add(faces[i - 2]);
+                    triangles.add(faces[i]);
+                    triangles.add(faces[i - 1]);
+                } else {
+                    triangles.add(faces[i - 2]);
+                    triangles.add(faces[i - 1]);
+                    triangles.add(faces[i]);
+                }
+            }
+        }
+        
+        short[] tris = new short[triangles.size()];
+        for (int i = 0; i < tris.length; ++i)
+            tris[i] = triangles.get(i);
+        return tris;
     }
 
     public byte[] serialize(int revision) {
         Output output = new Output(0x5000000, revision);
 
-        output.int32(streams[0].length);
+        output.int32(vertices.length);
         output.int32(faces.length);
         output.int32(edges.length);
         output.int32(numTris);
 
-        output.int32(streams.length);
+        int streamCount = 1;
+        if (weights != null) streamCount++;
+        if (morphs != null) streamCount += morphs.length;
+        
+        
+        output.int32(streamCount);
         output.int32(attributeCount);
-        output.int32(morphCount);
+        if (morphs != null)
+            output.int32(morphs.length);
+        else output.int32(0);
 
         for (int i = 0; i < 0x20; ++i)
             output.string(morphNames[i], 0x10);
@@ -259,13 +321,24 @@ public class Mesh extends Resource {
         }
 
         output.int32(0);
-        for (int i = 0; i < streams.length; ++i)
-            output.int32((i + 1) * streams[0].length * 0x10);
-        output.int32(streams[0].length * streams.length * 0x10);
+        for (int i = 0; i < streamCount; ++i)
+            output.int32((i + 1) * vertices.length * 0x10);
+        output.int32(vertices.length * vertices.length * 0x10);
 
-        for (int i = 0; i < streams.length; ++i)
-            for (int j = 0; j < streams[i].length; ++j)
-                output.v4(streams[i][j]);
+        for (int i = 0; i < vertices.length; ++i) {
+            output.v3(vertices[i]);
+            output.int32f(0xFF);
+        }
+        
+        if (weights != null) {
+            for (SkinWeight weight : weights)
+                weight.serialize(output);
+        }
+        
+        if (morphs != null) {
+            for (int i = 0; i < morphs.length; ++i)
+                morphs[i].serialize(output);
+        }
 
         output.int32(uvCount * attributeCount * 0x8);
 

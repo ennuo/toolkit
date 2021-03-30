@@ -1,37 +1,44 @@
 package ennuo.craftworld.resources;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
+import ennuo.toolkit.functions.DebugCallbacks;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GfxMaterial {
-    int flags;
-    float alphaTestLevel;
-    byte alphaLayer, alphaMode, shadowCastMode;
-    float bumpLevel, cosinePower,
+    public int flags;
+    public float alphaTestLevel;
+    public byte alphaLayer, alphaMode, shadowCastMode;
+    public float bumpLevel, cosinePower,
     reflectionBlur, refractiveIndex,
     refractiveFresnelFalloffPower, refractiveFresnelMultiplier,
     refractiveFresnelOffset, refractiveFresnelShift;
-    byte fuzzLengthAndRefractiveFlag, translucencyDensity,
+    public byte fuzzLengthAndRefractiveFlag, translucencyDensity,
     fuzzSwirlAngle, fuzzSwirlAmplitude, fuzzLightingBias,
     fuzzLightingScale, iridescenceRoughness;
 
     byte[][] shaders;
-    ResourcePtr[] textures;
+    public ResourcePtr[] textures;
 
-    byte[] wrapS, wrapT;
+    public byte[] wrapS, wrapT;
 
-    Box[] boxes;
-    Wire[] wires;
+    public Box[] boxes;
+    public Wire[] wires;
 
-    int soundEnum;
+    public int soundEnum;
 
-    ParameterAnimation[] parameterAnimations;
-
+    public ParameterAnimation[] parameterAnimations;
+    
     public GfxMaterial(Data data) {
         flags = data.int32();
 
@@ -94,10 +101,15 @@ public class GfxMaterial {
         boxes = Box.array(data);
         System.out.println("Wires offset = 0x" + Bytes.toHex(data.offset));
         wires = Wire.array(data);
+        
+        System.out.println("SoundEnum offset = 0x" + Bytes.toHex(data.offset));
+        soundEnum = data.int32();
+        System.out.println("ParameterAnimations offset = 0x" + Bytes.toHex(data.offset));
+        parameterAnimations = ParameterAnimation.array(data);
 
         // FINISH LATER //
 
-        System.out.println("0x" + Bytes.toHex(data.offset));
+        System.out.println("End Parsing offset = 0x" + Bytes.toHex(data.offset));
     }
 
 }

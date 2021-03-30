@@ -16,6 +16,7 @@ public class PackItem {
     public Slot slot = new Slot();
     public String contentID = "";
     public long timestamp = new Date().getTime() * 2 / 1000;
+    public boolean crossBuyCompatible = false;
     
     public PackItem() {}
     public PackItem(Data data) {
@@ -24,6 +25,8 @@ public class PackItem {
         slot = new Slot(data, true, false);
         contentID = data.str8();
         timestamp = data.uint32();
+        if (data.revision == 0x3e2)
+            crossBuyCompatible = data.bool();
     }
     
     public void serialize(Output output) {
@@ -32,5 +35,7 @@ public class PackItem {
         slot.serialize(output, true, false);
         output.str8(contentID);
         output.uint32(timestamp);
+        if (output.revision == 0x3e2)
+            output.bool(crossBuyCompatible);
     }
 }

@@ -79,6 +79,8 @@ public class Compressor {
             flags = new byte[] { 0, 1 };
         if (revision <= 0x272 && revision > 0x26e)
             flags = new byte[] { 0x4c, 0x44, 0x00, 0x17, 7, 1, 0, 1 };
+        else if (revision == 0x3e2)
+            flags = new byte[] { 0x44, 0x31, 0x00, (byte) 0x87, 0x07, 0x01, 0x01, 0x01 };
         Output output = new Output(size);
         output.string(magic);
         output.int32(revision);

@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xms8192m -Xmx8192m -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
+                <exec.args>-Xms8192m -Xmx8192m -Djava.library.path=D:/lib/lwjgl/native/windows -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -24,7 +24,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -Xms8192m -Xmx8192m -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
+                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -Xms8192m -Xmx8192m -Djava.library.path=D:/lib/lwjgl/native/windows -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -39,7 +39,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xms8192m -Xmx8192m -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
+                <exec.args>-Xms8192m -Xmx8192m -Djava.library.path=D:/lib/lwjgl/native/windows -classpath %classpath ennuo.toolkit.windows.Toolkit</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
