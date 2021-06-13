@@ -2,6 +2,7 @@ package ennuo.craftworld.swing;
 
 import ennuo.craftworld.types.FileEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -30,18 +31,23 @@ public class Nodes {
       }  
   }
   
-  public static int filter(FileNode root, String query) {
+  public static int filter(FileNode root, SearchParameters params) {
       int visibleCount = 0;
       if (root.getChildCount(false, false) >= 0)
         for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements(); ) {
             FileNode node = (FileNode) e.nextElement();
+            boolean isVisible = false;
             if (node.entry != null) {
-                if (node.entry.path.contains(query)) {
-                    node.isVisible = true;  
-                    visibleCount++;
+                if (params.pointer != null) {
+                    if (params.pointer.hash != null) isVisible = Arrays.equals(node.entry.hash, params.pointer.hash);
+                    else isVisible = node.entry.GUID == params.pointer.GUID;
                 }
-                else node.isVisible = false;
-            } else if (filter(node, query) == 0) node.isVisible = false;
+                else if (node.entry.path.contains(params.path)) 
+                    isVisible = true;
+                node.isVisible = isVisible;  
+                if (isVisible)
+                    visibleCount++;
+            } else if (filter(node, params) == 0) node.isVisible = false;
             else { node.isVisible = true; visibleCount++; }
         }
       

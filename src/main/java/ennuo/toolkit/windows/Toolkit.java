@@ -16,6 +16,7 @@ import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
+import ennuo.craftworld.swing.SearchParameters;
 import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.types.FileDB;
@@ -1537,7 +1538,7 @@ public class Toolkit extends javax.swing.JFrame {
     private void searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchActionPerformed
         getCurrentDB().query = search.getText();
         JTree tree = getCurrentTree();
-        Nodes.filter((FileNode) tree.getModel().getRoot(), search.getText());
+        Nodes.filter((FileNode) tree.getModel().getRoot(), new SearchParameters(search.getText()));
         ((FileModel) tree.getModel()).reload();
         tree.updateUI();
     }//GEN-LAST:event_searchActionPerformed
