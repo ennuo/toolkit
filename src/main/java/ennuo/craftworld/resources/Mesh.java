@@ -249,7 +249,7 @@ public class Mesh {
 
         System.out.println("Region IDs To Hide Offset -> 0x" + Bytes.toHex(data.offset));
         regionIDsToHide = new long[data.int32()];
-        if (regionIDsToHide.length != 0 && data.revision >= 0x272) data.int8();
+        if (regionIDsToHide.length != 0 && data.isEncoded()) data.int8();
         for (int i = 0; i < regionIDsToHide.length; ++i)
             regionIDsToHide[i] = data.uint32f();
 
@@ -268,6 +268,7 @@ public class Mesh {
         
         for (int i = offset - 1, j = 1; i < offset + count; ++i, ++j) {
             if (i == (offset - 1) || faces[i] == -1) {
+                if (i + 1 == this.faces.length) break;
                 triangles.add(faces[i + 1]);
                 triangles.add(faces[i + 2]);
                 triangles.add(faces[i + 3]);
