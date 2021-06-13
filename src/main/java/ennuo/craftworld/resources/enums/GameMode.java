@@ -3,7 +3,8 @@ package ennuo.craftworld.resources.enums;
 public enum GameMode {
     NONE(0),
     VERSUS(1),
-    CUTSCENE(2);
+    CUTSCENE(2),
+    TEAM_VERSUS(5);
     
     public final int value;
     

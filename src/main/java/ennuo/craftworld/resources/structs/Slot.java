@@ -187,22 +187,24 @@ public class Slot {
         
         backgroundGUID = data.uint32();
         
-        if (data.revision > 0x272)
+        if (data.revision > 0x2c3)
             planetDecorations = data.resource(RType.PLAN, true);
         
         developerLevelType = LevelType.getValue(data.int32());
         
-        if (data.revision <= 0x272)
+        if (data.revision <= 0x33a)
             gameProgressionState = data.int32();
         
-        if (data.revision <= 0x272) return;
+        if (data.revision <= 0x2c3) return;
         
         System.out.println(String.format("Slot has levelType = %s", developerLevelType.name()));
         
-        int labelCount = data.int8();
-        authorLabels = new Label[labelCount];
-        for (int i = 0; i < labelCount; ++i)
-            authorLabels[i] = new Label(data);
+        if (data.revision > 0x33a) {
+            int labelCount = data.int8();
+            authorLabels = new Label[labelCount];
+            for (int i = 0; i < labelCount; ++i)
+                authorLabels[i] = new Label(data);   
+        }
         
         int collectableRequiredCount = data.int32();
         if (collectableRequiredCount != 0) {
@@ -217,6 +219,8 @@ public class Slot {
             for (int i = 0; i < collectableContainedCount; ++i)
                 containedCollectables[i] = new Collectable(data);
         }
+        
+        if (data.revision <= 0x33a) return;
         
         isSubLevel = data.bool();
         
@@ -342,19 +346,22 @@ public class Slot {
         
         output.uint32(backgroundGUID);
         
-        if (output.revision > 0x272)
+        if (output.revision > 0x2c3)
             output.resource(planetDecorations, true);
         
         output.int32(developerLevelType.value);
         
-        if (output.revision <= 0x272)
+        if (output.revision <= 0x33a)
             output.int32(gameProgressionState);
         
-        if (output.revision <= 0x272) return;
+        if (output.revision <= 0x2c3) return;
         
-        output.int32(authorLabels.length);
-        for (Label label : authorLabels)
-            label.serialize(output);
+        
+        if (output.revision > 0x33a) {
+            output.int32(authorLabels.length);
+            for (Label label : authorLabels)
+                label.serialize(output);   
+        }
         
         output.int32(requiredCollectables.length);
         for (Collectable c : requiredCollectables)
@@ -363,6 +370,8 @@ public class Slot {
         output.int32(containedCollectables.length);
         for (Collectable c : containedCollectables)
             c.serialize(output);
+        
+        if (output.revision <= 0x33a) return;
         
         output.bool(isSubLevel);
         
