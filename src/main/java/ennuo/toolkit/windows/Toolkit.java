@@ -220,7 +220,7 @@ public class Toolkit extends javax.swing.JFrame {
                 fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name);
                 saveMenu.setEnabled(false);
             }
-        }
+        } 
 
         fileExists = false;
         if (Globals.lastSelected != null && Globals.lastSelected.entry != null) {
@@ -252,6 +252,7 @@ public class Toolkit extends javax.swing.JFrame {
             saveDivider.setVisible(false);
             dumpHashes.setVisible(false);
             MAPMenu.setVisible(false);
+            scanFileArchive.setVisible(false);
         } else {
             saveDivider.setVisible(true);
             dumpHashes.setVisible(true);
@@ -262,6 +263,7 @@ public class Toolkit extends javax.swing.JFrame {
                 MAPMenu.setVisible(true);
                 dumpHashes.setVisible(true);
                 dumpRLST.setVisible(true);
+                scanFileArchive.setVisible(true);
             }
         }
 
@@ -294,6 +296,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportModelGroup.setVisible(false);
         exportGroup.setVisible(false);
         replaceImage.setVisible(false);
+        editMenuContext.setVisible(false);
 
         if (Globals.currentWorkspace == WorkspaceType.PROFILE && useContext) deleteContext.setVisible(true);
 
@@ -305,8 +308,11 @@ public class Toolkit extends javax.swing.JFrame {
             if (useContext) {
                 zeroContext.setVisible(true);
                 deleteContext.setVisible(true);
-                if (Globals.lastSelected.entry != null)
+                if (Globals.lastSelected.entry != null) {
                     duplicateContext.setVisible(true);
+                    if (Globals.currentWorkspace == WorkspaceType.MAP)
+                        editMenuContext.setVisible(true);
+                }
             }
         }
 
@@ -369,8 +375,12 @@ public class Toolkit extends javax.swing.JFrame {
         extractContextMenu = new javax.swing.JMenu();
         extractContext = new javax.swing.JMenuItem();
         extractDecompressedContext = new javax.swing.JMenuItem();
-        loadLAMSContext = new javax.swing.JMenuItem();
+        editMenuContext = new javax.swing.JMenu();
+        renameItemContext = new javax.swing.JMenuItem();
+        changeHash = new javax.swing.JMenuItem();
+        changeGUID = new javax.swing.JMenuItem();
         editSlotContext = new javax.swing.JMenuItem();
+        loadLAMSContext = new javax.swing.JMenuItem();
         exportGroup = new javax.swing.JMenu();
         exportTextureGroupContext = new javax.swing.JMenu();
         exportPNG = new javax.swing.JMenuItem();
@@ -390,14 +400,14 @@ public class Toolkit extends javax.swing.JFrame {
         replaceDecompressed = new javax.swing.JMenuItem();
         replaceDependencies = new javax.swing.JMenuItem();
         replaceImage = new javax.swing.JMenuItem();
+        dependencyGroup = new javax.swing.JMenu();
+        removeDependencies = new javax.swing.JMenuItem();
+        removeMissingDependencies = new javax.swing.JMenuItem();
         newItemContext = new javax.swing.JMenuItem();
         newFolderContext = new javax.swing.JMenuItem();
         duplicateContext = new javax.swing.JMenuItem();
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
-        dependencyGroup = new javax.swing.JMenu();
-        removeDependencies = new javax.swing.JMenuItem();
-        removeMissingDependencies = new javax.swing.JMenuItem();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
@@ -483,6 +493,7 @@ public class Toolkit extends javax.swing.JFrame {
         dumpSep = new javax.swing.JPopupMenu.Separator();
         generateDiff = new javax.swing.JMenuItem();
         scanRawData = new javax.swing.JMenuItem();
+        scanFileArchive = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
@@ -495,6 +506,7 @@ public class Toolkit extends javax.swing.JFrame {
         debugJokerTest = new javax.swing.JMenuItem();
         debugAddSlots = new javax.swing.JMenuItem();
         debugRecompressAll = new javax.swing.JMenuItem();
+        emittionTendency = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -516,13 +528,33 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(extractContextMenu);
 
-        loadLAMSContext.setText("Load LAMS");
-        loadLAMSContext.addActionListener(new java.awt.event.ActionListener() {
+        editMenuContext.setText("Edit");
+
+        renameItemContext.setText("Path");
+        renameItemContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadLAMSContextActionPerformed(evt);
+                renameItemContextActionPerformed(evt);
             }
         });
-        entryContext.add(loadLAMSContext);
+        editMenuContext.add(renameItemContext);
+
+        changeHash.setText("Hash");
+        changeHash.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeHashActionPerformed(evt);
+            }
+        });
+        editMenuContext.add(changeHash);
+
+        changeGUID.setText("GUID");
+        changeGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeGUIDActionPerformed(evt);
+            }
+        });
+        editMenuContext.add(changeGUID);
+
+        entryContext.add(editMenuContext);
 
         editSlotContext.setText("Edit Slot");
         editSlotContext.addActionListener(new java.awt.event.ActionListener() {
@@ -531,6 +563,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(editSlotContext);
+
+        loadLAMSContext.setText("Load LAMS");
+        loadLAMSContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadLAMSContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(loadLAMSContext);
 
         exportGroup.setText("Export");
 
@@ -661,6 +701,26 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(replaceContext);
 
+        dependencyGroup.setText("Dependencies");
+
+        removeDependencies.setText("Remove Dependencies");
+        removeDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeDependenciesActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeDependencies);
+
+        removeMissingDependencies.setText("Remove Missing Dependencies");
+        removeMissingDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeMissingDependenciesActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeMissingDependencies);
+
+        entryContext.add(dependencyGroup);
+
         newItemContext.setText("New Item");
         newItemContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -701,26 +761,6 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(deleteContext);
-
-        dependencyGroup.setText("Dependencies");
-
-        removeDependencies.setText("Remove Dependencies");
-        removeDependencies.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeDependenciesActionPerformed(evt);
-            }
-        });
-        dependencyGroup.add(removeDependencies);
-
-        removeMissingDependencies.setText("Remove Missing Dependencies");
-        removeMissingDependencies.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeMissingDependenciesActionPerformed(evt);
-            }
-        });
-        dependencyGroup.add(removeMissingDependencies);
-
-        entryContext.add(dependencyGroup);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -930,7 +970,7 @@ public class Toolkit extends javax.swing.JFrame {
                                 .addComponent(categoryLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                                .addComponent(locationField)
                                 .addComponent(categoryField))))
                     .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -987,7 +1027,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         workspaceDivider.setRightComponent(details);
 
-        progressBar.setBorder(null);
         progressBar.setEnabled(false);
 
         fileMenu.setText("File");
@@ -1263,6 +1302,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(scanRawData);
+
+        scanFileArchive.setText("Scan File Archive");
+        scanFileArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scanFileArchiveActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(scanFileArchive);
         toolsMenu.add(jSeparator3);
 
         mergeFARCs.setText("Merge FARCs");
@@ -1348,6 +1395,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         debugMenu.add(debugRecompressAll);
+
+        emittionTendency.setText("when you have a tendency to emit");
+        emittionTendency.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                emittionTendencyActionPerformed(evt);
+            }
+        });
+        debugMenu.add(emittionTendency);
 
         toolkitMenu.add(debugMenu);
 
@@ -1778,6 +1833,26 @@ public class Toolkit extends javax.swing.JFrame {
         ExportCallbacks.exportMod(false);
     }//GEN-LAST:event_exportAsModGUIDActionPerformed
 
+    private void renameItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameItemContextActionPerformed
+        DatabaseCallbacks.renameItem();
+    }//GEN-LAST:event_renameItemContextActionPerformed
+
+    private void changeGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeGUIDActionPerformed
+        DatabaseCallbacks.changeGUID();
+    }//GEN-LAST:event_changeGUIDActionPerformed
+
+    private void changeHashActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHashActionPerformed
+        DatabaseCallbacks.changeHash();
+    }//GEN-LAST:event_changeHashActionPerformed
+
+    private void scanFileArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanFileArchiveActionPerformed
+        UtilityCallbacks.scanFileArchive();
+    }//GEN-LAST:event_scanFileArchiveActionPerformed
+
+    private void emittionTendencyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emittionTendencyActionPerformed
+        DebugCallbacks.emittionTendency();
+    }//GEN-LAST:event_emittionTendencyActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -1997,6 +2072,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem addKey;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
+    private javax.swing.JMenuItem changeGUID;
+    private javax.swing.JMenuItem changeHash;
     private javax.swing.JMenuItem clear;
     private javax.swing.JMenuItem closeTab;
     private javax.swing.JTextArea console;
@@ -2023,9 +2100,11 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
+    private javax.swing.JMenu editMenuContext;
     private javax.swing.JMenuItem editProfileItems;
     private javax.swing.JMenuItem editProfileSlots;
     private javax.swing.JMenuItem editSlotContext;
+    private javax.swing.JMenuItem emittionTendency;
     private javax.swing.JMenuItem encodeInteger;
     private javax.swing.JPopupMenu entryContext;
     private javax.swing.JSplitPane entryData;
@@ -2095,6 +2174,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem reboot;
     private javax.swing.JMenuItem removeDependencies;
     private javax.swing.JMenuItem removeMissingDependencies;
+    private javax.swing.JMenuItem renameItemContext;
     private javax.swing.JMenuItem replaceCompressed;
     private javax.swing.JMenu replaceContext;
     private javax.swing.JMenuItem replaceDecompressed;
@@ -2104,6 +2184,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator saveDivider;
     public javax.swing.JMenuItem saveMenu;
     public javax.swing.JMenu savedataMenu;
+    private javax.swing.JMenuItem scanFileArchive;
     private javax.swing.JMenuItem scanRawData;
     public javax.swing.JTextField search;
     private javax.swing.JComboBox<String> subCombo;

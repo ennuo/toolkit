@@ -24,7 +24,7 @@ public class EasterEgg {
         }
 
         if (username.equals("shan") || username.equals("aidan")) {
-            toolkit.setTitle("The Fool's Toolkit");
+            toolkit.setTitle("GregTool w/ Andre");
             toolkit.debugMenu.setVisible(true);
         }
 

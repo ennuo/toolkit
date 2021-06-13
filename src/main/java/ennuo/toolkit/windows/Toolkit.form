@@ -31,20 +31,51 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <MenuItem class="javax.swing.JMenuItem" name="loadLAMSContext">
+        <Menu class="javax.swing.JMenu" name="editMenuContext">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Load LAMS"/>
+            <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadLAMSContextActionPerformed"/>
-          </Events>
-        </MenuItem>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="renameItemContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Path"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renameItemContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="changeHash">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Hash"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeHashActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="changeGUID">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="GUID"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeGUIDActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="editSlotContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit Slot"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editSlotContextActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="loadLAMSContext">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Load LAMS"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadLAMSContextActionPerformed"/>
           </Events>
         </MenuItem>
         <Menu class="javax.swing.JMenu" name="exportGroup">
@@ -194,6 +225,29 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="dependencyGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Dependencies"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependencies">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="newItemContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="New Item"/>
@@ -237,29 +291,6 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteContextActionPerformed"/>
           </Events>
         </MenuItem>
-        <Menu class="javax.swing.JMenu" name="dependencyGroup">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Dependencies"/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependencies">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPopupMenu" name="consolePopup">
@@ -642,6 +673,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanRawDataActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="scanFileArchive">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Scan File Archive"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanFileArchiveActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="mergeFARCs">
@@ -732,6 +771,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugRecompressAllActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="emittionTendency">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="when you have a tendency to emit"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="emittionTendencyActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -1122,7 +1169,7 @@
                                               </Group>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="locationField" pref="143" max="32767" attributes="0"/>
+                                                  <Component id="locationField" max="32767" attributes="0"/>
                                                   <Component id="categoryField" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
@@ -1301,9 +1348,6 @@
     </Container>
     <Component class="javax.swing.JProgressBar" name="progressBar">
       <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="null"/>
-        </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <AuxValues>

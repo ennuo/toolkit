@@ -4,6 +4,8 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.Mesh;
+import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -205,5 +207,53 @@ public class UtilityCallbacks {
         output.shrinkToFit();
 
         System.out.println("0x" + Bytes.toHex(integer) + " (" + integer + ")" + " -> " + "0x" + Bytes.toHex(output.buffer));
-    }   
+    }
+    
+    public static void scanFileArchive() {
+        File dumpFARC = Toolkit.instance.fileChooser.openFile("data.farc", "farc", "File Archive", false);
+        if (dumpFARC == null) return;
+        File dumpDB = Toolkit.instance.fileChooser.openFile("dump.map", "map", "FileDB", true);
+        if (dumpDB == null) return;
+        
+        FileIO.write(new byte[] { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 }, dumpDB.getAbsolutePath());
+        FileDB out = new FileDB(dumpDB);
+        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+        
+        FileArchive archive = new FileArchive(dumpFARC);
+        for (FileEntry entry : archive.entries) {
+            FileEntry[] matches = db.findAll(entry.hash);
+            if (matches.length != 0) {
+                for (FileEntry match : matches)
+                    out.add(match);
+            } else {
+                Resource resource = new Resource(archive.extract(entry.hash));
+                entry.GUID = Bytes.toHex(entry.hash).hashCode();
+                
+                String name = "" + entry.offset;
+                switch (resource.magic) {
+                    
+                    case "PLNb": name += ".plan"; break;
+                    case "LVLb": name += ".bin"; break;
+                    default: 
+                        if (resource.magic.startsWith("#")) resource.magic = "txt";
+                        else if (!(resource.magic.length() == 4 && resource.magic.charAt(3) == 't') && (Metadata.getType(resource.magic, 0) == Metadata.CompressionType.UNKNOWN))
+                            resource.magic = "raw";
+                        
+                        name += "." + resource.magic.substring(0, 3).toLowerCase();
+                        break;
+                }
+                
+                try {
+                    if (resource.magic.equals("MSHb"))
+                        name = (new Mesh(resource.data)).bones[0].name + ".mol";   
+                } catch (Exception e) { System.err.println("Error parsing mesh, defaulting to offset name."); } 
+                
+                entry.path = "resources/" + resource.magic.substring(0, 3).toLowerCase() + "/" + name;
+                
+                out.add(entry);
+            }
+        }
+        
+        out.save(out.path);
+    }
 }

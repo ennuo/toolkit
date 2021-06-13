@@ -4,6 +4,8 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.memory.Strings;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -121,14 +123,20 @@ public class DatabaseCallbacks {
         
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
         if (GUID == null) return;
+        GUID = GUID.replaceAll("\\s", "");
         
         long integer;
-        if (GUID.toLowerCase().startsWith("0x"))
-            integer = Long.parseLong(GUID.substring(2), 16);
-        else if (GUID.toLowerCase().startsWith("g"))
-            integer = Long.parseLong(GUID.substring(1));
-        else
-            integer = Long.parseLong(GUID);
+        try {
+            if (GUID.toLowerCase().startsWith("0x"))
+                integer = Long.parseLong(GUID.substring(2), 16);
+            else if (GUID.toLowerCase().startsWith("g"))
+                integer = Long.parseLong(GUID.substring(1));
+            else
+                integer = Long.parseLong(GUID);
+        } catch (NumberFormatException e) {
+            System.err.println("You inputted an invalid GUID!");
+            return;
+        }
         
         if (integer == nextGUID) db.lastGUID++;
         
@@ -173,8 +181,93 @@ public class DatabaseCallbacks {
         tree.scrollPathToVisible(treePath);
     }
     
+    public static void changeHash() {
+        FileNode node = Globals.lastSelected;
+        FileEntry entry = node.entry;
+        
+        String SHA1 = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + Bytes.toHex(entry.hash).toLowerCase());
+        if (SHA1 == null) return;
+        SHA1 = SHA1.replaceAll("\\s", "");
+        
+        byte[] hash;
+        
+        if (SHA1.startsWith("h"))
+            SHA1 = SHA1.substring(1);
+        hash = Bytes.toBytes(Strings.leftPad(SHA1, 40));
+        
+        entry.hash = hash;
+        
+        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+        db.shouldSave = true;
+        
+        Toolkit.instance.updateWorkspace();
+        Toolkit.instance.setEditorPanel(node);
+    }
+    
+    public static void changeGUID() {
+        FileNode node = Globals.lastSelected;
+        FileEntry entry = node.entry;
+        
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
+        if (GUID == null) return;
+        GUID = GUID.replaceAll("\\s", "");
+        
+        long integer;
+        try {
+            if (GUID.toLowerCase().startsWith("0x"))
+                integer = Long.parseLong(GUID.substring(2), 16);
+            else if (GUID.toLowerCase().startsWith("g"))
+                integer = Long.parseLong(GUID.substring(1));
+            else
+                integer = Long.parseLong(GUID);
+        } catch (NumberFormatException e) {
+            System.err.println("You inputted an invalid GUID!");
+            return;
+        }
+        
+        entry.GUID = integer;
+        
+        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+        db.shouldSave = true;
+        
+        Toolkit.instance.updateWorkspace();
+        Toolkit.instance.setEditorPanel(node);
+    }
+    
+    public static void renameItem() {        
+        FileNode node = Globals.lastSelected;
+        FileEntry entry = node.entry;
+        String path = (String) JOptionPane.showInputDialog(Toolkit.instance, "Rename", entry.path);
+        if (path == null) return;
+       
+        
+        JTree tree = Toolkit.instance.getCurrentTree();
+        
+        TreePath[] paths = tree.getSelectionPaths();
+        TreeSelectionModel model = tree.getSelectionModel();
+        int[] rows = tree.getSelectionRows();
+        
+        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+        
+        db.rename(entry, path);
+        node.removeFromParent();
+        
+        db.addNode(entry);
+        
+        ((FileModel) tree.getModel()).reload();
+
+        db.shouldSave = true;
+        
+        Toolkit.instance.updateWorkspace();
+
+        tree.setSelectionPaths(paths);
+        tree.setSelectionRows(rows);
+        tree.setSelectionModel(model);
+    }
+    
     public static void duplicateItem() {                                                 
         FileEntry entry = Globals.lastSelected.entry;
+        
         String path = (String) JOptionPane.showInputDialog(Toolkit.instance, "Duplicate", entry.path);
         if (path == null) return;
 
@@ -188,14 +281,20 @@ public class DatabaseCallbacks {
         
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
         if (GUID == null) return;
+        GUID = GUID.replaceAll("\\s", "");
         
         long integer;
-        if (GUID.toLowerCase().startsWith("0x"))
-            integer = Long.parseLong(GUID.substring(2), 16);
-        else if (GUID.toLowerCase().startsWith("g"))
-            integer = Long.parseLong(GUID.substring(1));
-        else
-            integer = Long.parseLong(GUID);
+        try {
+            if (GUID.toLowerCase().startsWith("0x"))
+                integer = Long.parseLong(GUID.substring(2), 16);
+            else if (GUID.toLowerCase().startsWith("g"))
+                integer = Long.parseLong(GUID.substring(1));
+            else
+                integer = Long.parseLong(GUID);
+        } catch (NumberFormatException e) {
+            System.err.println("You inputted an invalid GUID!");
+            return;
+        }
         
         if (integer == nextGUID) db.lastGUID++;
         

@@ -60,8 +60,8 @@ public class ScanCallback {
         }, file.getAbsolutePath());
         FileArchive farc = new FileArchive(file);
 
-        String[] headers = new String[59];
-        Byte[] chars = new Byte[59];
+        String[] headers = new String[60];
+        Byte[] chars = new Byte[60];
         int m = 0;
         for (Magic magic: Magic.values()) {
             headers[m] = magic.value.substring(0, 3);
@@ -77,7 +77,9 @@ public class ScanCallback {
         headers[58] = "BIK";
         chars[58] = (byte)
         "B".charAt(0);
-
+        headers[59] = "GTF";
+        chars[59] = (byte) " ".charAt(0);
+        
         Set < String > HEADERS = new HashSet<String> (Arrays.asList(headers));
         Set < Byte > VALUES = new HashSet<Byte> (Arrays.asList(chars));
 
@@ -190,8 +192,9 @@ public class ScanCallback {
 
                         case " ":
                             {
-                                if (!magic.equals("TEX")) break;
-                                data.forward(2);
+                                if (magic.equals("TEX")) data.forward(2);
+                                else if (magic.equals("GTF")) data.forward(0x1a);
+                                else break;
                                 int count = data.int16();
                                 int size = 0;
                                 for (int j = 0; j < count; ++j) {
@@ -234,10 +237,9 @@ public class ScanCallback {
                             System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
                             out.add(entry);
                         }
-                        // System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
+                        //System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
                         else {
-
-
+                          
                             FileEntry e = new FileEntry(buffer, Bytes.SHA1(buffer));
 
                             String name = "" + begin;

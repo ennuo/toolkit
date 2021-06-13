@@ -120,6 +120,20 @@ public class FileDB extends FileData {
     return null;
   }
   
+  public void rename(FileEntry entry, String name) {
+      pathSize -= entry.path.length();
+      entry.path = name;
+      pathSize += name.length();
+  }
+  
+  public FileEntry[] findAll(byte[] hash) {
+      ArrayList<FileEntry> results = new ArrayList<FileEntry>();
+      for (int i = 0; i < entries.size(); ++i)
+        if (Arrays.equals(((FileEntry)entries.get(i)).hash, hash))
+            results.add(entries.get(i));
+      return (FileEntry[]) results.toArray(new FileEntry[results.size()]);
+  }
+  
   public FileEntry find(byte[] hash) {
     for (int i = 0; i < entries.size(); i++) {
       if (Arrays.equals(((FileEntry)entries.get(i)).hash, hash))

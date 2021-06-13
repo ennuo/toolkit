@@ -22,20 +22,25 @@ import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.resources.enums.Crater;
+import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
+import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
 import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
 import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
+import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.things.InventoryItem;
+import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Matrix4x4;
 import ennuo.craftworld.types.Mod;
@@ -598,6 +603,53 @@ public class DebugCallbacks {
                 mod.replace(entry, Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));
             }
         }
+    }
+    
+    public static void emittionTendency() {
+        BigProfile profile = null;
+        FileDB db = null;
+        
+       
+        for (FileData database : Globals.databases) {
+            if (database.type.equals("FileDB"))
+                db = (FileDB) database;
+            else if (database.type.equals("Big Profile"))
+                profile = (BigProfile)database;
+        }
+        
+        if (db == null) {
+            System.err.println("Could not find a FileDB.");
+            return;
+        }
+        
+        if (profile == null) {
+            System.err.println("Could not find a Big Profile");
+            return;
+        }
+        
+        for (FileEntry entry : db.entries) {
+            if (entry.path.toLowerCase().contains("levels") && entry.path.toLowerCase().contains(".plan")) {
+                InventoryMetadata metadata = new InventoryMetadata();
+                metadata.userCreatedDetails = new UserCreatedDetails();
+                metadata.userCreatedDetails.title = new File(entry.path).getName();
+                metadata.userCreatedDetails.description = entry.path;
+                metadata.icon = new ResourcePtr(68376, RType.TEXTURE);
+                
+                metadata.translatedCategory = "Emitted Plans";
+                metadata.translatedLocation = "Emitted plans";
+                
+                metadata.resource = new ResourcePtr(entry.GUID, RType.PLAN);
+                
+                metadata.type = ItemType.OBJECTS;
+                
+                profile.addItem(new ResourcePtr(entry.GUID, RType.PLAN), metadata);
+               
+            }
+        }
+        
+        profile.shouldSave = true;
+        
+        
     }
 
     public static void reserializeCurrentMesh() {
