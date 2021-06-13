@@ -22,6 +22,10 @@ public class Output {
         buffer = new byte[size];
         revision = rev;
     }
+    
+    public boolean isEncoded() {
+        return this.revision > ENCODED_REVISION && !(this.revision >= 0x273 && this.revision <= 0x297);
+    }
 
     private boolean hasDependency(ResourcePtr res) {
         for (ResourcePtr ptr: dependencies)
@@ -36,7 +40,8 @@ public class Output {
             return;
         }
         int size = str.length();
-        if (revision > ENCODED_REVISION) size *= 2;
+        if (isEncoded()) size *= 2;
+            
         int32(size);
         bytes(str.getBytes(StandardCharsets.UTF_16BE));
 
@@ -48,7 +53,7 @@ public class Output {
             return;
         }
         int size = str.length();
-        if (revision > ENCODED_REVISION) size *= 2;
+        if (isEncoded()) size *= 2;
         int32(size);
         string(str);
     }
@@ -85,7 +90,7 @@ public class Output {
     }
 
     public void int32(int value) {
-        if (revision > ENCODED_REVISION)
+        if (isEncoded())
             varint(value);
         else int32f(value);
     }
@@ -97,7 +102,7 @@ public class Output {
     }
 
     public void uint32(long value) {
-        if (revision > ENCODED_REVISION)
+        if (isEncoded())
             varint(value);
         else uint32f(value);
     }
@@ -167,7 +172,7 @@ public class Output {
     public void matrix(float[] value) {
         float[] dMatrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         int flags = 0xFFFF;
-        if (revision > ENCODED_REVISION) {
+        if (isEncoded()) {
             flags = 0;
             for (int i = 0; i < 16; ++i)
                 if (value[i] != dMatrix[i])
@@ -186,20 +191,20 @@ public class Output {
     }
     public void resource(ResourcePtr res, boolean bit) {
         byte HASH = 1, GUID = 2;
-        if (revision <= 0x180) {
+        if (revision <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
 
 
         if (revision < 0x230) bit = true;
-        if (revision >= 0x230 && revision <= 0x26e && !bit) int8(0);
+        if (((revision >= 0x230 && revision <= 0x26e) || (this.revision >= 0x273 && this.revision <= 0x297)) && !bit) int8(0);
         if (bit) {
             if (res == null) int8(0);
             else if (res.hash != null) int8(HASH);
             else if (res.GUID != -1) int8(GUID);
             else int8(0);
-        } else if (revision > ENCODED_REVISION) {
+        } else if (isEncoded()) {
             if (res == null) int16((short) 0);
             else if (res.hash != null) int16((short) HASH);
             else if (res.GUID != -1) int16((short) GUID);

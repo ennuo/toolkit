@@ -16,6 +16,10 @@ public class Data {
     public int length;
     
     public int revision = 0x271;
+    
+    public boolean isEncoded() {
+        return this.revision > ENCODED_REVISION && !(this.revision >= 0x273 && this.revision <= 0x297);
+    }
 
     public Data(byte[] data) {
         setData(data);
@@ -90,7 +94,7 @@ public class Data {
     }
 
     public int int32() {
-        if (revision > ENCODED_REVISION) return (int) varint();
+        if (this.isEncoded()) return (int) varint();
         return int32f();
     }
     
@@ -103,7 +107,7 @@ public class Data {
     }
 
     public long uint32() {
-        if (revision > ENCODED_REVISION) return varint();
+        if (this.isEncoded()) return varint();
         return uint32f();
     }
 
@@ -143,7 +147,7 @@ public class Data {
     public float[] matrix() {
         float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         int flags = 0xFFFF;
-        if (revision > ENCODED_REVISION) flags = int16();
+        if (isEncoded()) flags = int16();
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
                 matrix[i] = float32();
@@ -155,7 +159,7 @@ public class Data {
     }
     public ResourcePtr resource(RType rType, boolean bit) {
         byte HASH = 1, GUID = 2;
-        if (revision <= 0x180) {
+        if (revision <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
@@ -163,10 +167,10 @@ public class Data {
         byte type;
 
         if (revision < 0x230) bit = true;
-        if (revision >= 0x230 && revision <= 0x26e && !bit) this.int8();
+        if (((revision >= 0x230 && revision <= 0x26e) || (this.revision >= 0x273 && this.revision <= 0x297)) && !bit) this.int8();
 
         if (bit) type = int8();
-        else if (revision > ENCODED_REVISION) type = (byte) int16();
+        else if (isEncoded()) type = (byte) int16();
         else type = (byte) int32();
 
         ResourcePtr resource = new ResourcePtr();
@@ -198,15 +202,14 @@ public class Data {
 
     public String str16() {
         int size = int32();
-        if (!(revision >= 0x3af && revision < 0x3f8))
-            if (revision < ENCODED_REVISION) size *= 2;
+        if (!isEncoded()) size *= 2;
         byte[] data = bytes(size);
         return new String(data, Charset.forName("UTF-16BE"));
     }
 
     public String str8() {
         int size = int32();
-        if (revision > ENCODED_REVISION) size /= 2;
+        if (isEncoded()) size /= 2;
         return str(size);
     }
 
