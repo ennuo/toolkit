@@ -29,10 +29,10 @@ import javax.swing.ImageIcon;
 
 public class Mod extends FileData {
     public static final String DEFAULT_PASSWORD = "purchasecollege";
-    public static final byte MAX_REVISION = 5;
+    public static final byte MAX_REVISION = 6;
     
     public String modID = "my_mod";
-    public byte revision = 5;
+    public byte revision = 6;
     public ModCompatibility compatibility = ModCompatibility.ALL;
     
     public int major = 1;
@@ -123,7 +123,12 @@ public class Mod extends FileData {
         } else if (!magic.equals("MODb")) return;
         else System.out.println("Mod is not encrypted");
         
+        
+        
         revision = data.int8();
+        
+        if (revision > 5) data.revision = 0x01ae03fa;
+        else data.revision = 0xFFFF;
         
         if (revision > Mod.MAX_REVISION) {
             System.err.println(String.format("This mod file (v%s) isn't supported with your version of Craftworld Toolkit (v%s), are you out of date?", String.valueOf(revision), String.valueOf(Mod.MAX_REVISION)));
@@ -143,7 +148,9 @@ public class Mod extends FileData {
         
         System.out.println(String.format("Mod has version = %02d.%02d", major, minor));
         
-        author = data.str8();
+        if (revision > 5) author = data.str16();
+        else author = data.str8();
+
         title = data.str16();
         description = data.str16();
         
@@ -163,7 +170,9 @@ public class Mod extends FileData {
             }
         }
         
-        int itemCount = data.int16();
+        int itemCount;
+        if (revision > 5) itemCount = data.int32();
+        else itemCount = data.int16();
         System.out.println("Mod has " + itemCount + " inventory patches");
         if (itemCount != 0) {
             items = new ArrayList<InventoryMetadata>(itemCount);
@@ -270,7 +279,8 @@ public class Mod extends FileData {
         output.int8(revision); output.int8(compatibility.value);
         output.int8(major); output.int8(minor);
         output.str8(modID);
-        output.str8(author);
+        if (revision > 5) output.str16(author);
+        else output.str8(author);
         output.str16(title);
         output.str16(description);
         
@@ -284,7 +294,8 @@ public class Mod extends FileData {
                 output.uint32(entry.timestamp);
         }
         
-        output.int16((short) items.size());
+        if (revision > 5) output.int32(items.size());
+        else output.int16((short) items.size());
         for (int i = 0; i < items.size(); ++i) {
             InventoryMetadata metadata = items.get(i);
             new Serializer(output).serializeMetadata(metadata, true);
