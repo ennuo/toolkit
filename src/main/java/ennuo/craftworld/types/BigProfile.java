@@ -239,7 +239,7 @@ public class BigProfile extends FileData {
       
       if (output.revision > 0x010503EF) output.int32(0);
 
-      if (output.revision > 0x272) serializer.serializeMetadata(item.metadata, false);
+      if (output.revision > 0x33a) serializer.serializeMetadata(item.metadata, false);
       else serializer.serializeLegacyMetadata(item.metadata);
 
       if (output.revision == 0x3e2) output.int8(1);
@@ -247,7 +247,7 @@ public class BigProfile extends FileData {
       output.int32(0);
       output.int16((short)(i + 1));
       output.pad(0x3);
-      if (output.revision > 0x272) {
+      if (output.revision > 0x33a) {
         output.int8(item.flags);
         output.pad(0x4);
       } else {
@@ -294,7 +294,7 @@ public class BigProfile extends FileData {
     for (StringEntry entry: stringCollection)
     entry.serialize(output);
 
-    if (profile.revision > 0x395) output.bool(fromProductionBuild);
+    if (profile.revision > 0x33a) output.bool(fromProductionBuild);
 
     output.int32(slotCount);
     for (Slot slot: slots)
@@ -357,12 +357,12 @@ public class BigProfile extends FileData {
       ProfileItem item = new ProfileItem();
       item.resource = profile.resource(RType.PLAN, true);
       if (profile.revision > 0x010503EF) item.GUID = profile.int32();
-      if (profile.revision > 0x272) item.metadata = serializer.ParseMetadata(false);
+      if (profile.revision > 0x33a) item.metadata = serializer.ParseMetadata(false);
       else item.metadata = serializer.ParseLBP1BPRMetadata();
       if (profile.revision == 0x3e2) profile.forward(0x1);
       profile.forward(0x7);
       item.flags = profile.int8();
-      if (profile.revision > 0x272) profile.forward(0x4);
+      if (profile.revision > 0x33a) profile.forward(0x4);
       else {
         profile.forward(0x7);
         item.flags = profile.int8();
@@ -408,14 +408,17 @@ public class BigProfile extends FileData {
     System.out.println("strings offset = 0x" + Bytes.toHex(profile.offset));
 
     stringCount = profile.int32();
-    stringCollection = new ArrayList<StringEntry> (itemCount);
+    System.out.println("strings count = 0x" + Bytes.toHex(stringCount));
+    stringCollection = new ArrayList<StringEntry> (stringCount);
     for (int i = 0; i < stringCount; ++i) {
       stringCollection.add(new StringEntry(profile));
       nextIndex++;
     }
 
-    if (profile.revision > 0x395) fromProductionBuild = profile.bool();
+    if (profile.revision > 0x33a) fromProductionBuild = profile.bool();
 
+    System.out.println("slots offset = 0x" + Bytes.toHex(profile.offset));
+    
     int slotCount = profile.int32();
     slots = new ArrayList<Slot>(slotCount);
     for (int i = 0; i < slotCount; ++i)

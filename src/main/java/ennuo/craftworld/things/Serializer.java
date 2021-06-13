@@ -172,6 +172,7 @@ public class Serializer {
         metadata.creator.serialize(output);
         
         output.pad(0x3);
+        if (output.revision >= 0x33a) output.pad(0x1);
         
         output.varint(metadata.titleKey);
         output.varint(metadata.descriptionKey);
@@ -213,7 +214,7 @@ public class Serializer {
     public InventoryMetadata ParseLBP1BPRMetadata(boolean isItem) {
         System.out.println("Parsing some legacy InventoryItem metadata... This will not be complete.");
         InventoryMetadata metadata = new InventoryMetadata();
-        
+       
         input.forward(0xC);
         
         metadata.locationIndex = (short) input.int32f();
@@ -242,6 +243,8 @@ public class Serializer {
         
         input.forward(0x3);
         
+        if (input.revision >= 0x33a) input.forward(0x1);
+        
         if (input.revision >= 0x272) {
             metadata.titleKey = input.varint();
             metadata.descriptionKey = input.varint();   
@@ -260,6 +263,7 @@ public class Serializer {
         
         int creatorCount = input.int32();
         
+        System.out.println(Bytes.toHex(input.offset));
         if (creatorCount == 0) metadata.creationHistory = null;
         else {
             metadata.creationHistory = new String[creatorCount];
@@ -267,7 +271,11 @@ public class Serializer {
                 metadata.creationHistory[i] = input.str16();
         }
         
+        System.out.println(Bytes.toHex(input.offset));
+        
         metadata.icon = input.resource(RType.TEXTURE, true);
+        
+        System.out.println(Bytes.toHex(input.offset));
         
         if (checkIfSerialized())
             metadata.photoData = new PhotoData(input);
