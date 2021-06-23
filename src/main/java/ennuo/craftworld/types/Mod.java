@@ -5,6 +5,7 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.FileIO;
 import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.patches.ModPatch;
 import ennuo.craftworld.resources.enums.ModCompatibility;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.Slot;
@@ -49,6 +50,7 @@ public class Mod extends FileData {
     public ArrayList<InventoryMetadata> items = new ArrayList<InventoryMetadata>();
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
     public ArrayList<Slot> slots = new ArrayList<Slot>();
+    public ArrayList<ModPatch> patches = new ArrayList<ModPatch>();
     
     public boolean isParsed = false;
     public boolean isProtected = false;
@@ -199,9 +201,10 @@ public class Mod extends FileData {
             }
         }
         
-        int patchCount = data.int32(); // Not implemented //
+        int patchCount = data.int32();
         System.out.println("Mod has " + patchCount + " file patches");
-        
+        for (int i = 0; i < patchCount; ++i)
+            patches.add(ModPatch.deserialize(data));
         
         for (int i = 0; i < entryCount; ++i) {
             entries.get(i).data = data.bytes(entries.get(i).size);
@@ -314,7 +317,7 @@ public class Mod extends FileData {
                 slot.serialize(output, true, false);
         }
         
-        // patches
+        // patches aren't supported yet by this tool, so remove any that exist. //
         output.int32(0);
         
         for (int i = 0; i < entries.size(); ++i)
