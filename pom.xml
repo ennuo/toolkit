@@ -46,16 +46,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>bintray-ice1000-ice1000</id>
-            <url>https://dl.bintray.com/ice1000/ice1000</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -74,9 +64,9 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.bulenkov</groupId>
-            <artifactId>darcula</artifactId>
-            <version>2018.2</version>
+          <groupId>org.freeplane.bulenkov</groupId>
+          <artifactId>darcula</artifactId>
+          <version>2018.2</version>
         </dependency>
 	<dependency>
 	    <groupId>com.github.acmi</groupId>
