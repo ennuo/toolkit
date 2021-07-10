@@ -166,8 +166,7 @@ public class Serializer {
         
         output.uint32f(metadata.type.getValue(output.revision));
         output.uint32f(metadata.subType.value);
-        
-        output.pad(0x4);
+        output.uint32f(metadata.toolType.value);
         
         metadata.creator.serialize(output);
         
@@ -234,10 +233,9 @@ public class Serializer {
         for (int i = 0; i < 4; ++i)
             metadata.flags = input.int8();
         
-        metadata.type = ItemType.getValue(input.int32f(), input.revision);
+        metadata.type = ItemType.getValue(input.uint32f(), input.revision);
         metadata.subType = ItemSubType.getValue(input.uint32f(), metadata.type);
-        
-        input.forward(0x4);
+        metadata.toolType = ToolType.getValue((byte) input.int32f());
         
         metadata.creator = new Copyright(input);
         
@@ -263,7 +261,6 @@ public class Serializer {
         
         int creatorCount = input.int32();
         
-        System.out.println(Bytes.toHex(input.offset));
         if (creatorCount == 0) metadata.creationHistory = null;
         else {
             metadata.creationHistory = new String[creatorCount];
@@ -271,11 +268,7 @@ public class Serializer {
                 metadata.creationHistory[i] = input.str16();
         }
         
-        System.out.println(Bytes.toHex(input.offset));
-        
         metadata.icon = input.resource(RType.TEXTURE, true);
-        
-        System.out.println(Bytes.toHex(input.offset));
         
         if (checkIfSerialized())
             metadata.photoData = new PhotoData(input);
