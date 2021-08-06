@@ -44,6 +44,7 @@ public class SkinWeight {
         weight[0] = (float) ((int) (data.int8() & 0xFF));
         
         if (weight[0] != 0xFF) {
+            weight[3] = 0xFE - weight[2] - weight[1] - weight[0];
             this.weights = new Vector4f(weight[0] / 0xFE, weight[1] / 0xFE, weight[2] / 0xFE, weight[3] / 0xFE);
         } else this.weights = new Vector4f(1.0f, 0, 0, 0);
         
