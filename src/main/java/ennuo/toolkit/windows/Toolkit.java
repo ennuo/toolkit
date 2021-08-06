@@ -7,7 +7,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.Texture;
@@ -1810,7 +1810,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void exportGLTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportGLTFActionPerformed
-        DebugCallbacks.exportGLTF(Globals.lastSelected.entry.mesh);
+        ExportCallbacks.exportGLB();
     }//GEN-LAST:event_exportGLTFActionPerformed
 
     private void debugJokerTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugJokerTestActionPerformed

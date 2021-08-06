@@ -2,7 +2,7 @@ package ennuo.craftworld.resources.structs.mesh;
 
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Vector4f;
+import org.joml.Vector4f;
 
 public class ImplicitPlane {
     public Vector4f planeNormal, pointInPlane;

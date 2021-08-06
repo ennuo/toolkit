@@ -1,7 +1,7 @@
 
 package ennuo.craftworld.resources.enums;
 
-import ennuo.craftworld.memory.Vector4f;
+import org.joml.Vector4f;
 
 public enum Crater {
 	SLOT_0_LBP1(0.31077105f, -0.83225715f, -0.45909613f),

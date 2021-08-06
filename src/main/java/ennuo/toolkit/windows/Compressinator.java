@@ -3,7 +3,7 @@ package ennuo.toolkit.windows;
 import ennuo.craftworld.resources.enums.Magic;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Strings;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.memory.ResourcePtr;

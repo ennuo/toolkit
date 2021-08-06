@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Vector3f;
+import org.joml.Vector3f;
 
 public class Polygon {
     public Vector3f[] vertices = new Vector3f[] {

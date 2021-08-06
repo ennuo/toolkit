@@ -1,10 +1,10 @@
 package ennuo.craftworld.things.parts;
 
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.things.Part;
 import ennuo.craftworld.things.Serializer;
+import org.joml.Vector4f;
 
 public class PGeneratedMesh implements Part {
     public ResourcePtr gfxMaterial = new ResourcePtr(null, RType.GFXMATERIAL);

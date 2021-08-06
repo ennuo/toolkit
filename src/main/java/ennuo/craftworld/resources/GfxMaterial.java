@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;

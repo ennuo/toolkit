@@ -5,7 +5,6 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
@@ -26,6 +25,7 @@ import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.toolkit.utilities.Globals;
 import java.util.Date;
 import javax.swing.JTextField;
+import org.joml.Vector4f;
 
 public class SlotEditor extends javax.swing.JFrame {
     

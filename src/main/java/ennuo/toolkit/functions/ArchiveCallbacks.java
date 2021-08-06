@@ -1,6 +1,6 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;

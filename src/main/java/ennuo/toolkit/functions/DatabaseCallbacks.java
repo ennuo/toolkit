@@ -1,7 +1,7 @@
 package ennuo.toolkit.functions;
 
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;

@@ -2,10 +2,8 @@ package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.Strings;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.RType;
@@ -26,7 +24,6 @@ import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.things.InventoryMetadata;
-import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,6 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.joml.Vector4f;
 
 public class MetadataEditor extends javax.swing.JFrame {
     

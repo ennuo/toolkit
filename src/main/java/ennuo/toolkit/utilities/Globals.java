@@ -1,7 +1,7 @@
 package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.swing.FileData;

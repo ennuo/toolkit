@@ -1,25 +1,20 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.resources.structs.Collectable;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.Texture;
-import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.enums.SlotType;
-import ennuo.craftworld.resources.structs.Label;
-import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.windows.Toolkit;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
+import org.joml.Vector4f;
 
 public class Slot {
     

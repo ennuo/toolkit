@@ -1,7 +1,7 @@
 package ennuo.toolkit.functions;
 
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.Mod;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;

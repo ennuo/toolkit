@@ -2,7 +2,7 @@ package ennuo.toolkit.functions;
 
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
@@ -35,7 +35,19 @@ public class ExportCallbacks {
         );
 
         if (file != null)
-            MeshIO.exportOBJ(file.getAbsolutePath(), Globals.lastSelected.entry.mesh, channel);
+            MeshIO.OBJ.export(file.getAbsolutePath(), Globals.lastSelected.entry.mesh, channel);
+    }
+    
+    public static void exportGLB() {
+        File file = Toolkit.instance.fileChooser.openFile(
+            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + ".glb",
+            "glb",
+            "glTF Binary (.GLB)",
+            true
+        );
+       
+        if (file != null)
+            MeshIO.GLB.FromMesh(Globals.lastSelected.entry.mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {

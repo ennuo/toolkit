@@ -1,6 +1,6 @@
 package ennuo.toolkit.utilities;
 
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.Animation;
@@ -15,6 +15,7 @@ import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import static ennuo.toolkit.utilities.Globals.currentWorkspace;
 import ennuo.toolkit.windows.Toolkit;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
@@ -132,8 +133,10 @@ public class TreeSelectionListener {
                     else System.out.println("Failed to set icon, it's null?");
                     break;
                 case "mol":
-                    if (entry.mesh == null)
-                        entry.mesh = new Mesh(entryBuffer);
+                    if (entry.mesh == null) {
+                        String fileName = Paths.get(entry.path).getFileName().toString();
+                        entry.mesh = new Mesh(fileName.replaceFirst("[.][^.]+$", ""), entryBuffer);   
+                    }
                     System.out.println("Failed to set Mesh preview, does functionality even exist?");
                     break;
                 case "anim": {

@@ -88,6 +88,11 @@
 	    <artifactId>jgltf-model</artifactId>
 	    <version>306ff0a</version>
 	</dependency>
+        <dependency>
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>1.10.1</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

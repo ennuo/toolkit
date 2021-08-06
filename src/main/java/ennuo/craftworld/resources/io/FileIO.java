@@ -1,4 +1,4 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.resources.io;
 
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.image.BufferedImage;

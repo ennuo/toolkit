@@ -6,9 +6,6 @@ import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector2f;
-import ennuo.craftworld.memory.Vector3f;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.mesh.CullBone;
 import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
@@ -18,10 +15,16 @@ import ennuo.craftworld.resources.structs.mesh.SkinWeight;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
 import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
-import ennuo.toolkit.functions.DebugCallbacks;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class Mesh {
+    public String name;
+    
     int numTris = 0;
     int morphCount = 0;
 
@@ -71,7 +74,8 @@ public class Mesh {
     public byte skeletonType;
 
 
-    public Mesh(byte[] data) {
+    public Mesh(String name, byte[] data) {
+        this.name = name;
         if (data == null) {
             System.err.println("No data provided to Mesh constructor");
             return;
@@ -164,6 +168,7 @@ public class Mesh {
             edges[i] = data.int16();
 
         if (data.revision >= 0x016b03ef) {
+            System.out.println("Extra Indices Offset -> 0x" + Bytes.toHex(data.offset));
             int extraFaceCount = data.int32() / 2;
             System.out.println(extraFaceCount);
             extraFaces = new short[extraFaceCount];
@@ -185,7 +190,6 @@ public class Mesh {
             bones[i].mirrorType = data.int8();
 
         
-        /*
         for (int i = 1; i < bones.length; ++i) {
             Bone bone = bones[i];
             System.out.println(
@@ -193,8 +197,6 @@ public class Mesh {
                 i, Bytes.toHex(bone.animHash), bone.name, bone.parent, bones[bone.parent].name, bone.mirror, bones[bone.mirror].name, getMirrorType(bone.mirrorType))
             );   
         }
-        */
-        
 
         System.out.println("Mirror Morph Offset  -> 0x" + Bytes.toHex(data.offset));
         int mirrorMorphCount = data.int32();
@@ -262,13 +264,64 @@ public class Mesh {
             skeletonType = data.int8();
     }
     
-    public short[] triangulate() { return triangulate(0, faces.length); }
-    public short[] triangulate(int offset, int count) {
-        ArrayList<Short> triangles = new ArrayList<Short>(count * 3); 
+    public MeshPrimitive[][] getSubmeshes() {
+        HashMap<Integer, ArrayList<MeshPrimitive>> meshes = new HashMap<Integer, ArrayList<MeshPrimitive>>();
+        for (MeshPrimitive primitive : this.meshPrimitives) {
+            if (meshes.containsKey(primitive.region))
+                meshes.get(primitive.region).add(primitive);
+            else {
+                ArrayList primitives = new ArrayList<MeshPrimitive>();
+                primitives.add(primitive);
+                meshes.put(primitive.region, primitives);
+            }
+        }
         
-        for (int i = offset - 1, j = 1; i < offset + count; ++i, ++j) {
-            if (i == (offset - 1) || faces[i] == -1) {
-                if (i + 1 == this.faces.length) break;
+        MeshPrimitive[][] primitives = new MeshPrimitive[meshes.values().size()][];
+        
+        int i = 0;
+        for (ArrayList<MeshPrimitive> primitiveList : meshes.values()) {
+            primitives[i] = new MeshPrimitive[primitiveList.size()];
+            primitiveList.toArray(primitives[i]);
+            ++i;
+        }
+        
+        return primitives;
+    }
+    
+    public int getBoneIndex(Bone bone) {
+        for (int i = 0; i < this.bones.length; ++i)
+            if (this.bones[i].name.equals(bone.name))
+                return i;
+        return -1;
+    }
+    
+    public Bone[] getBoneChildren(Bone parent) {
+        ArrayList<Bone> bones = new ArrayList<Bone>(this.bones.length);
+        int index = getBoneIndex(parent);
+        if (index == -1) return null;
+        for (Bone bone : this.bones) {
+            if (bone == parent) continue;
+            if (bone.parent == index)
+                bones.add(bone);
+        }
+        Bone[] output = new Bone[bones.size()];
+        bones.toArray(output);
+        return output;
+    }
+    
+    public short[] triangulate() { return triangulate(0, faces.length); }
+    
+    
+    public short[] triangulate(MeshPrimitive primitive) {
+        return this.triangulate(primitive.firstIndex, primitive.numIndices);
+    }
+    
+    public short[] triangulate(int offset, int count) {
+        ArrayList<Short> triangles = new ArrayList<Short>(count * 3);
+        short[] faces = Arrays.copyOfRange(this.faces, offset, offset + count);
+        for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
+            if (i == -1 || (faces[i] == -1)) {
+                if (i + 3 >= count) break;
                 triangles.add(faces[i + 1]);
                 triangles.add(faces[i + 2]);
                 triangles.add(faces[i + 3]);
@@ -291,6 +344,7 @@ public class Mesh {
         for (int i = 0; i < tris.length; ++i)
             tris[i] = triangles.get(i);
         return tris;
+        
     }
 
     public byte[] serialize(int revision) {

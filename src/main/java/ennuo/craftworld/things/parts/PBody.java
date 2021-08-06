@@ -1,9 +1,9 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.things.Part;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.things.ThingPtr;
+import org.joml.Vector3f;
 
 public class PBody implements Part {
     public static long PART_FLAG = 1;

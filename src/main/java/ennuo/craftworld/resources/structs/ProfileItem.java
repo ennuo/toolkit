@@ -1,7 +1,6 @@
 package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.things.InventoryMetadata;
 
 public class ProfileItem {

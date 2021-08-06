@@ -1,7 +1,7 @@
 package ennuo.toolkit.functions;
 
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.resources.Mesh;
@@ -245,7 +245,7 @@ public class UtilityCallbacks {
                 
                 try {
                     if (resource.magic.equals("MSHb"))
-                        name = (new Mesh(resource.data)).bones[0].name + ".mol";   
+                        name = (new Mesh("mesh", resource.data)).bones[0].name + ".mol";   
                 } catch (Exception e) { System.err.println("Error parsing mesh, defaulting to offset name."); } 
                 
                 entry.path = "resources/" + resource.magic.substring(0, 3).toLowerCase() + "/" + name;

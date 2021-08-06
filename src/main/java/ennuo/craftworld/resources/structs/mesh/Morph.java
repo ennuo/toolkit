@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.mesh;
 
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Vector3f;
+import org.joml.Vector3f;
 
 public class Morph {
     public Vector3f[] vertices;

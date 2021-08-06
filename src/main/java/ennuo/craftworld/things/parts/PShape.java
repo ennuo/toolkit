@@ -1,11 +1,11 @@
 package ennuo.craftworld.things.parts;
 
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector3f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.Polygon;
 import ennuo.craftworld.things.Part;
 import ennuo.craftworld.things.Serializer;
+import org.joml.Vector3f;
 
 public class PShape implements Part {
     public Polygon polygon;

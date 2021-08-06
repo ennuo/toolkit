@@ -1,5 +1,6 @@
 package ennuo.craftworld.memory;
 
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;

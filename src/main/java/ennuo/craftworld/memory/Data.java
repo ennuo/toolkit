@@ -1,10 +1,14 @@
 package ennuo.craftworld.memory;
 
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.RType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class Data {
     public static int ENCODED_REVISION = 0x271;
@@ -92,9 +96,14 @@ public class Data {
         byte[] buffer = bytes(2);
         return buffer[0] << 8 & 0xFF00 | buffer[1] & 0xFF;
     }
+    
+    public int int24() {
+        byte[] buffer = bytes(3);
+        return (buffer[0] & 0xFF) << 16 | (buffer[1] & 0xFF) << 8 | buffer[2] & 0xFF;
+    }
 
     public int int32() {
-        if (this.isEncoded()) return (int) varint();
+        if (this.isEncoded()) return (int) varint() & 0xFFFFFFFF;
         return int32f();
     }
     

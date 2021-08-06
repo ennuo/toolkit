@@ -2,7 +2,7 @@ package ennuo.craftworld.types;
 
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.patches.ModPatch;

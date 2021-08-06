@@ -1,11 +1,11 @@
 package ennuo.craftworld.things.parts;
 
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Vector4f;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.things.Part;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.things.ThingPtr;
+import org.joml.Vector4f;
 
 public class PRenderMesh implements Part {
     public ResourcePtr mesh = new ResourcePtr(null, RType.MESH);

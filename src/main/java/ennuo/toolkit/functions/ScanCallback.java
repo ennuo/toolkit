@@ -2,7 +2,7 @@ package ennuo.toolkit.functions;
 
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.FileIO;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.enums.Magic;
 import ennuo.craftworld.resources.enums.RType;
@@ -257,7 +257,7 @@ public class ScanCallback {
                             }
 
                             if (magic.equals("MSH")) {
-                                Mesh mesh = new Mesh(buffer);
+                                Mesh mesh = new Mesh("mesh", buffer);
                                 name = mesh.bones[0].name + ".mol";
                             }
 
