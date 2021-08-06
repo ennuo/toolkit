@@ -190,6 +190,7 @@ public class Mesh {
             bones[i].mirrorType = data.int8();
 
         
+        /*
         for (int i = 1; i < bones.length; ++i) {
             Bone bone = bones[i];
             System.out.println(
@@ -197,6 +198,7 @@ public class Mesh {
                 i, Bytes.toHex(bone.animHash), bone.name, bone.parent, bones[bone.parent].name, bone.mirror, bones[bone.mirror].name, getMirrorType(bone.mirrorType))
             );   
         }
+        */
 
         System.out.println("Mirror Morph Offset  -> 0x" + Bytes.toHex(data.offset));
         int mirrorMorphCount = data.int32();
