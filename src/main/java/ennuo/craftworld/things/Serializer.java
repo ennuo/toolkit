@@ -236,7 +236,7 @@ public class Serializer {
         metadata.type = ItemType.getValue(input.uint32f(), input.revision);
         metadata.subType = ItemSubType.getValue(input.uint32f(), metadata.type);
         metadata.toolType = ToolType.getValue((byte) input.int32f());
-        
+                
         metadata.creator = new Copyright(input);
         
         input.forward(0x3);

@@ -23,7 +23,8 @@ public class EyetoyData {
         alphaMask = data.resource(RType.TEXTURE);
         colorCorrection = data.matrix();
         colorCorrectionSrc = new ColorCorrection(data);
-        outline = data.resource(RType.TEXTURE);
+        if (data.revision > 0x2c3)
+            outline = data.resource(RType.TEXTURE);
     
     }
     
@@ -32,7 +33,8 @@ public class EyetoyData {
         output.resource(alphaMask);
         output.matrix(colorCorrection);
         colorCorrectionSrc.serialize(output);
-        output.resource(outline);
+        if (output.revision > 0x2c3)
+            output.resource(outline);
     }
     
     @Override
