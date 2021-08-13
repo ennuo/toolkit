@@ -30,7 +30,9 @@ public class SkinWeight {
         else output.y = (y / 1023f);
        
         output.z = (float) Math.sqrt(1 - ((Math.pow(output.x, 2)) + (Math.pow(output.y, 2))));
-       
+        
+        if (z_sign)
+            output.z = -output.z;
         
         return output;
     }
