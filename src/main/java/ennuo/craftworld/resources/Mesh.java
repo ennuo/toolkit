@@ -325,7 +325,7 @@ public class Mesh {
         ArrayList<Short> triangles = new ArrayList<Short>(count * 3);
         short[] faces = Arrays.copyOfRange(this.faces, offset, offset + count);
         
-        if (MeshIO.GLB.getMin(faces) != -1)
+        if (this.primitiveType == 5)
             return faces;
         
         for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
