@@ -7,6 +7,7 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.structs.mesh.CullBone;
 import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
 import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
@@ -131,12 +132,14 @@ public class Mesh {
                 morphs = new Morph[streamCount - 2];
                 for (int i = 0; i < streamCount - 2; ++i) {
                     Vector3f[] vertices = new Vector3f[numVerts];
+                    Vector3f[] normals = new Vector3f[numVerts];
                     for (int j = 0; j < numVerts; ++j) {
                         vertices[j] = data.v3();
-                        data.float32();
+                        normals[j] = SkinWeight.decodeI32(data.uint32f());
                     }
                     Morph morph = new Morph(morphNames[streamCount - 2]);
                     morph.vertices = vertices;
+                    morph.normals = normals;
                     morphs[i] = morph;
                 }
             }
@@ -321,6 +324,10 @@ public class Mesh {
     public short[] triangulate(int offset, int count) {
         ArrayList<Short> triangles = new ArrayList<Short>(count * 3);
         short[] faces = Arrays.copyOfRange(this.faces, offset, offset + count);
+        
+        if (MeshIO.GLB.getMin(faces) != -1)
+            return faces;
+        
         for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
             if (i == -1 || (faces[i] == -1)) {
                 if (i + 3 >= count) break;

@@ -5,6 +5,7 @@ import de.javagl.jgltf.impl.v2.Asset;
 import de.javagl.jgltf.impl.v2.Buffer;
 import de.javagl.jgltf.impl.v2.BufferView;
 import de.javagl.jgltf.impl.v2.GlTF;
+import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.impl.v2.Material;
 import de.javagl.jgltf.impl.v2.MaterialPbrMetallicRoughness;
 import de.javagl.jgltf.impl.v2.Mesh;
@@ -14,10 +15,15 @@ import de.javagl.jgltf.impl.v2.Scene;
 import de.javagl.jgltf.impl.v2.Skin;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
+import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -138,6 +145,13 @@ public class MeshIO {
                                     primitive.minVert * 0xC, 
                                     primitive.maxVert - primitive.minVert + 1)
                             );
+                            target.put("NORMAL", glb.createAccessor(
+                                    "MORPH_NORMAL_" + j,
+                                    5126,
+                                    "VEC3",
+                                    primitive.minVert * 0xC, 
+                                    primitive.maxVert - primitive.minVert + 1)
+                            );
                             glPrimitive.addTargets(target);
                         }
                     }
@@ -174,8 +188,31 @@ public class MeshIO {
                     String materialName = "DIFFUSE";
                     if (primitive.material != null) {
                         FileEntry entry = Globals.findEntry(primitive.material);
-                        if (entry != null)
+                        if (entry != null) {
                             materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
+                            /*
+                            byte[] data = Globals.extractFile(entry.hash);
+                            if (data != null) {
+                                Resource gfxMaterial = new Resource(data);
+                                gfxMaterial.getDependencies(entry);
+                                for (FileEntry dependency : gfxMaterial.dependencies) {
+                                    byte[] texData = Globals.extractFile(dependency.hash);
+                                    if (texData == null) continue;
+                                    Texture texture = new Texture(texData);
+                                    if (texture.parsed) {
+                                        BufferedImage image = texture.getImage();
+                                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                        try {
+                                            ImageIO.write(image, "png", baos);
+                                            glb.addImage(Paths.get(dependency.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), baos.toByteArray());  
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(MeshIO.class.getName()).log(Level.SEVERE, null, ex);
+                                        } 
+                                    }
+                                }
+                            }
+*/
+                        }
                         else 
                             materialName = primitive.material.toString();
                     }
@@ -221,6 +258,21 @@ public class MeshIO {
             glb.gltf.addScenes(scene);
 
             return glb;
+        }
+        
+        private void addImage(String name, byte[] buffer) {
+            if (getBufferView("TEXTURE_" + name) != -1) return;
+            Image image = new Image();
+            image.setBufferView(createBufferView("TEXTURE_" + name, this.buffer.length, buffer.length));
+            image.setMimeType("image/png");
+            image.setName(name);
+            this.buffer = Bytes.Combine(this.buffer, buffer);
+            this.gltf.getBuffers().get(0).setByteLength(this.buffer.length);
+            de.javagl.jgltf.impl.v2.Texture texture = new de.javagl.jgltf.impl.v2.Texture();
+            this.gltf.addImages(image);
+            texture.setSource(this.gltf.getImages().size() - 1);
+            texture.setName(name);
+            this.gltf.addTextures(texture);
         }
         
         private void createSkeleton(ennuo.craftworld.resources.Mesh mesh) {
@@ -353,7 +405,7 @@ public class MeshIO {
         
         private void setBufferFromMesh(ennuo.craftworld.resources.Mesh mesh) {
             int morphSize = (mesh.morphs == null) ? 0 : mesh.morphs.length;
-            Output output = new Output( (mesh.vertices.length * 0x40) + (mesh.triangulate().length * 8) + (mesh.attributeCount * mesh.uvCount * 8) + (morphSize * mesh.vertices.length * 0xC) + (mesh.bones.length * 0x40));
+            Output output = new Output( (mesh.vertices.length * 0x40) + (mesh.triangulate().length * 8) + (mesh.attributeCount * mesh.uvCount * 8) + (morphSize * mesh.vertices.length * 0x18) + (mesh.bones.length * 0x40));
             for (Vector3f vertex : mesh.vertices) {
                 output.float32le(vertex.x);
                 output.float32le(vertex.y);
@@ -368,6 +420,8 @@ public class MeshIO {
                     ennuo.craftworld.resources.structs.mesh.MeshPrimitive primitive
                             = subMeshes[i][j];
                     short[] triangles = mesh.triangulate(primitive);
+                    primitive.minVert = getMin(triangles);
+                    primitive.maxVert = getMax(triangles);
                     for (short triangle : triangles)
                         output.int16le((short) (triangle - primitive.minVert));
                     createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.offset - triangleStart);
@@ -398,6 +452,16 @@ public class MeshIO {
                         output.float32le(mesh.morphs[i].vertices[j].z);
                     }
                     createBufferView("MORPH_" + String.valueOf(i), morphStart, output.offset - morphStart);
+                }
+                
+                for (int i = 0; i < mesh.morphs.length; ++i) {
+                    int morphStart = output.offset;
+                    for (int j = 0; j < mesh.vertices.length; ++j) {
+                        output.float32le(mesh.morphs[i].normals[j].x  - mesh.weights[j].normal.x);
+                        output.float32le(mesh.morphs[i].normals[j].y  - mesh.weights[j].normal.y);
+                        output.float32le(mesh.morphs[i].normals[j].z - mesh.weights[j].normal.z);
+                    }
+                    createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.offset - morphStart);
                 }
             }
 
@@ -431,6 +495,22 @@ public class MeshIO {
             this.gltf.addBuffers(buffer);
             
             this.buffer = output.buffer;
+        }
+        
+        public static short getMin(short[] triangles) {
+            short minValue = triangles[0];
+            for (int i = 1; i < triangles.length; ++i)
+                if (triangles[i] < minValue)
+                    minValue = triangles[i];
+            return minValue;
+        }
+        
+        public static short getMax(short[] triangles) {
+            short maxValue = triangles[0];
+            for (int i = 1; i < triangles.length; ++i)
+                if (triangles[i] > maxValue)
+                    maxValue = triangles[i];
+            return maxValue;
         }
         
         public void export(String path) {

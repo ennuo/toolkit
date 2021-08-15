@@ -12,6 +12,30 @@ public class SkinWeight {
     public Vector3f unknown = new Vector3f(0, 0, 0);
     public Vector3f tangent = new Vector3f(0, 0, 0);
     
+    public static Vector3f decodeI32(long value) {
+        Vector3f output = new Vector3f(0, 0, 0);
+        
+        float x = (float) (value & 0x3ffl);
+        boolean x_sign = ((value >>> 10l) & 1l) > 0l;
+        
+        float y = (float) ((value >>> 11l) & 0x3ffl);
+        boolean y_sign = ((value >>> 21l) & 1l) > 0l;
+        
+        float z = (float) ((value >>> 22l) & 0x1ffl);
+        boolean z_sign = ((value >>> 31l & 1l)) > 0l;
+
+        if (x_sign) output.x = -((1023f - x) / 1023f);
+        else output.x = ((x / 1023f));
+
+        if (y_sign) output.y = -((1023f - y) / 1023f);
+        else output.y = (y / 1023f);
+        
+        if (z_sign) output.z = -((511f - z) / 511f);
+        else output.z = (z / 511f);
+        
+        return output;
+    }
+    
     public static Vector3f decodeI24(int value) {
         Vector3f output = new Vector3f(0, 0, 0);
         
@@ -32,7 +56,7 @@ public class SkinWeight {
         output.z = (float) Math.sqrt(1 - ((Math.pow(output.x, 2)) + (Math.pow(output.y, 2))));
         
         if (z_sign)
-            output.z = -output.z;
+          output.z = -output.z;
         
         return output;
     }
