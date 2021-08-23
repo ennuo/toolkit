@@ -6,6 +6,7 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.MeshIO;
@@ -48,6 +49,47 @@ public class ExportCallbacks {
        
         if (file != null)
             MeshIO.GLB.FromMesh(Globals.lastSelected.entry.mesh).export(file.getAbsolutePath());
+    }
+    
+    public static void exportAnimation() {
+        File file = Toolkit.instance.fileChooser.openFile(
+            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".glb",
+            "glb",
+            "glTF Binary (.GLB)",
+            true
+        );
+       
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
+        if (GUID == null) return;
+        GUID = GUID.replaceAll("\\s", "");
+        
+        long integer;
+        try {
+            if (GUID.toLowerCase().startsWith("0x"))
+                integer = Long.parseLong(GUID.substring(2), 16);
+            else if (GUID.toLowerCase().startsWith("g"))
+                integer = Long.parseLong(GUID.substring(1));
+            else
+                integer = Long.parseLong(GUID);
+        } catch (NumberFormatException e) {
+            System.err.println("You inputted an invalid GUID!");
+            return;
+        }
+        
+        FileEntry entry = Globals.findEntry(integer);
+        
+        Mesh mesh = null;
+        if (entry == null) {
+            System.err.println("Couldn't find model!");
+        } else {
+            byte[] data = Globals.extractFile(integer);
+            if (data == null) System.err.println("Couldn't find data for model in any archives.");
+            else
+                mesh = new Mesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), data);
+        }
+        
+        if (file != null)
+            MeshIO.GLB.FromAnimation(Globals.lastSelected.entry.animation, mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {

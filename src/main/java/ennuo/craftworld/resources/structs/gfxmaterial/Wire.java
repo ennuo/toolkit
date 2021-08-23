@@ -10,6 +10,11 @@ public class Wire {
     public Wire(Data data) {
         boxFrom = data.int32(); boxTo = data.int32();
         portFrom = data.int8(); portTo = data.int8();
+        
+        if (data.isEncoded()) boxFrom /= 2;
+        if (data.isEncoded()) boxTo /= 2;
+        
+        data.bytes(5); // Padding bytes?
     }
     
     public static Wire[] array(Data data) {
@@ -23,5 +28,6 @@ public class Wire {
     public void serialize(Output output) {
         output.int32(boxFrom); output.int32(boxTo);
         output.int8(portFrom); output.int8(portTo);
+        output.pad(5);
     }
 }

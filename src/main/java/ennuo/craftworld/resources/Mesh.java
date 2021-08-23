@@ -293,6 +293,13 @@ public class Mesh {
         return primitives;
     }
     
+    public String getBoneName(long animHash) {
+        for (int i = 0; i < this.bones.length; ++i)
+            if (this.bones[i].animHash == animHash)
+                return this.bones[i].name;
+        return null;
+    }
+    
     public int getBoneIndex(Bone bone) {
         for (int i = 0; i < this.bones.length; ++i)
             if (this.bones[i].name.equals(bone.name))

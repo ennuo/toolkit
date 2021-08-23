@@ -142,7 +142,7 @@ public class TreeSelectionListener {
                 case "anim": {
                     Resource resource = new Resource(entryBuffer);
                     resource.decompress(true);
-                    new Animation(resource);
+                    entry.animation = new Animation(resource);
                     break;
                 }
                 case "gmat":

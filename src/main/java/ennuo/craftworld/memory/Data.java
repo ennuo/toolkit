@@ -2,10 +2,13 @@ package ennuo.craftworld.memory;
 
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.RType;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -20,6 +23,24 @@ public class Data {
     public int length;
     
     public int revision = 0x271;
+    
+    public static int[] toPrimitive(Integer[] input) {
+        return Arrays.stream(input).mapToInt(Integer::intValue).toArray();
+    }
+    
+    public static short[] toPrimitive(Short[] input) {
+        short[] output = new short[input.length];
+        for (int i = 0; i < output.length; ++i)
+            output[i] = input[i].shortValue();
+        return output;
+    }
+    
+    public static float[] toPrimitive(Float[] input) {
+        float[] output = new float[input.length];
+        for (int i = 0; i < output.length; ++i)
+            output[i] = input[i].floatValue();
+        return output;
+    }
     
     public boolean isEncoded() {
         return this.revision > ENCODED_REVISION && !(this.revision >= 0x273 && this.revision <= 0x297);
@@ -79,6 +100,17 @@ public class Data {
         this.offset++;
         return this.data[this.offset - 1];
     }
+    
+    public <T> T[] array(Supplier<T> func) {
+        int size = this.int32();
+        if (size < 0) return null;
+        T index = func.get();
+        T[] elements = (T[]) Array.newInstance(index.getClass(), size);
+        elements[0] = index;
+        for (int i = 1; i < size; ++i)
+            elements[i] = (T) func.get();
+        return elements;
+    }
 
     public int peek() {
         int offset = this.offset;
@@ -86,10 +118,15 @@ public class Data {
         seek(offset);
         return value;
     }
+    
+    public float f16() {
+        short half = int16();
+        return Float.intBitsToFloat((( half & 0x8000 )<<16 ) | ((( half & 0x7c00 ) + 0x1C000 )<<13 ) | (( half & 0x03FF )<<13 ));
+    }
 
     public short int16() {
         byte[] buffer = bytes(2);
-        return (short)((buffer[0] & 0xFF) << 8 | buffer[1] & 0xFF);
+        return (short)((buffer[0] << 8) | buffer[1] & 0xFF);
     }
 
     public int int16LE() {

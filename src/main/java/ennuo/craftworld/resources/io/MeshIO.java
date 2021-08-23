@@ -1,33 +1,51 @@
 package ennuo.craftworld.resources.io;
 
 import de.javagl.jgltf.impl.v2.Accessor;
+import de.javagl.jgltf.impl.v2.Animation;
+import de.javagl.jgltf.impl.v2.AnimationChannel;
+import de.javagl.jgltf.impl.v2.AnimationChannelTarget;
+import de.javagl.jgltf.impl.v2.AnimationSampler;
 import de.javagl.jgltf.impl.v2.Asset;
 import de.javagl.jgltf.impl.v2.Buffer;
 import de.javagl.jgltf.impl.v2.BufferView;
 import de.javagl.jgltf.impl.v2.GlTF;
 import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.impl.v2.Material;
+import de.javagl.jgltf.impl.v2.MaterialNormalTextureInfo;
+import de.javagl.jgltf.impl.v2.MaterialOcclusionTextureInfo;
 import de.javagl.jgltf.impl.v2.MaterialPbrMetallicRoughness;
 import de.javagl.jgltf.impl.v2.Mesh;
 import de.javagl.jgltf.impl.v2.MeshPrimitive;
 import de.javagl.jgltf.impl.v2.Node;
+import de.javagl.jgltf.impl.v2.Sampler;
 import de.javagl.jgltf.impl.v2.Scene;
 import de.javagl.jgltf.impl.v2.Skin;
+import de.javagl.jgltf.impl.v2.TextureInfo;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
+import de.javagl.jgltf.model.io.v2.GltfReaderV2;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Texture;
+import ennuo.craftworld.resources.structs.animation.AnimatedMorph;
+import ennuo.craftworld.resources.structs.animation.AnimationBone;
+import ennuo.craftworld.resources.structs.gfxmaterial.Box;
+import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
 import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,6 +54,7 @@ import javax.imageio.ImageIO;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class MeshIO {
     public static class OBJ {
@@ -84,11 +103,166 @@ public class MeshIO {
         
         HashMap<String, Integer> bufferViews = new HashMap<String, Integer>();
         HashMap<String, Integer> materials = new HashMap<String, Integer>();
+        HashMap<String, Integer> textures = new HashMap<String, Integer>();
         int accessorCount = 0;
+        
+        public static GLB FromAnimation(ennuo.craftworld.resources.Animation animation, ennuo.craftworld.resources.Mesh mesh) {
+            GLB glb;
+            
+            if (mesh == null) {
+                glb = new GLB();
+                byte[] dataBuffer = glb.getBufferFromAnimation(animation);
+                Buffer buffer = new Buffer();
+                buffer.setByteLength(dataBuffer.length);
+                glb.gltf.addBuffers(buffer);
+                glb.buffer = dataBuffer;
+                
+                glb.setAsset("CRAFTWORLD", "2.0");
+
+
+                Node root = new Node();
+                root.setName("Armature");
+                root.addChildren(1);
+                root.setSkin(0);
+
+                glb.gltf.addNodes(root);
+
+                for (AnimationBone bone : animation.bones) {
+                    Node child = new Node();
+                    child.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
+                    child.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
+                    child.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
+                    glb.gltf.addNodes(child);
+                }
+
+                Skin skin = new Skin();
+
+                for (int i = 0; i < animation.bones.length; ++i) {
+                    skin.addJoints(i + 1);
+                    if (animation.bones[i].parent != -1)
+                        glb.gltf.getNodes().get(animation.bones[i].parent + 1).addChildren(i + 1);
+                }
+
+                glb.gltf.addSkins(skin);
+            } else {
+                glb = GLB.FromMesh(mesh);
+                byte[] dataBuffer = glb.getBufferFromAnimation(animation);
+                glb.buffer = Bytes.Combine(glb.buffer, dataBuffer);
+                glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
+                for (AnimationBone bone : animation.bones) {
+                    System.out.println(bone.animHash);
+                    System.out.println(mesh.getBoneName(bone.animHash));
+                    Node node = glb.getNode(mesh.getBoneName(bone.animHash));
+                    node.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
+                    node.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
+                    node.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
+                }
+            }
+            
+            if (animation.morphCount != 0)
+                for (Node node : glb.gltf.getNodes()) {
+                    if (node.getMesh() != null)
+                        glb.gltf.getMeshes().get(node.getMesh()).setWeights(animation.initialMorphs);
+                }
+            
+            int time = glb.createAccessor("TIME", 5126, "SCALAR", 0, animation.numFrames - 1);
+            
+            Animation glAnim = new Animation();
+            
+            int samplerIndex = 0;
+            
+            if (animation.morphsAnimatedCount != 0) {
+                for (int i = 0; i < glb.gltf.getNodes().size(); ++i) {
+                    Node node = glb.gltf.getNodes().get(i);
+                    if (node.getMesh() == null) continue;
+                    AnimationChannel channel = new AnimationChannel();
+                    AnimationChannelTarget target = new AnimationChannelTarget();
+                    target.setNode(i);
+                    target.setPath("weights");
+                    channel.setTarget(target);
+                    AnimationSampler sampler = new AnimationSampler();
+                    sampler.setInput(time);
+                    sampler.setInterpolation("LINEAR");
+                    sampler.setOutput(glb.createAccessor("MORPHS_ANIMATED", 5126, "SCALAR", 0, animation.morphCount * (animation.numFrames - 1)));
+                    channel.setSampler(samplerIndex);
+                    samplerIndex++;
+                    glAnim.addChannels(channel);
+                    glAnim.addSamplers(sampler);
+                }
+            }
+            
+            for (short rot : animation.posBonesAnimated) {
+                AnimationChannel channel = new AnimationChannel();
+                AnimationChannelTarget target = new AnimationChannelTarget();
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
+                else target.setNode(rot + 1);
+                target.setPath("translation");
+                channel.setTarget(target);
+                AnimationSampler sampler = new AnimationSampler();
+                sampler.setInput(time);
+                sampler.setInterpolation("LINEAR");
+                sampler.setOutput(glb.createAccessor("BONE_TRANSLATION_" + animation.bones[rot].animHash, 5126, "VEC3", 0, animation.numFrames - 1));
+                channel.setSampler(samplerIndex);
+                samplerIndex++;
+                glAnim.addChannels(channel);
+                glAnim.addSamplers(sampler);
+            }
+            
+            for (short rot : animation.scaledBonesAnimated) {
+                AnimationChannel channel = new AnimationChannel();
+                AnimationChannelTarget target = new AnimationChannelTarget();
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
+                else target.setNode(rot + 1);
+                target.setPath("scale");
+                channel.setTarget(target);
+                AnimationSampler sampler = new AnimationSampler();
+                sampler.setInput(time);
+                sampler.setInterpolation("LINEAR");
+                sampler.setOutput(glb.createAccessor("BONE_SCALE_" + animation.bones[rot].animHash, 5126, "VEC3", 0, animation.numFrames - 1));
+                channel.setSampler(samplerIndex);
+                samplerIndex++;
+                glAnim.addChannels(channel);
+                glAnim.addSamplers(sampler);
+            }
+            
+            for (short rot : animation.rotBonesAnimated) {
+                AnimationChannel channel = new AnimationChannel();
+                AnimationChannelTarget target = new AnimationChannelTarget();
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
+                else target.setNode(rot + 1);
+                target.setPath("rotation");
+                channel.setTarget(target);
+                AnimationSampler sampler = new AnimationSampler();
+                sampler.setInput(time);
+                sampler.setInterpolation("LINEAR");
+                sampler.setOutput(glb.createAccessor("BONE_ROTATION_" + animation.bones[rot].animHash, 5126, "VEC4", 0, animation.numFrames - 1));
+                channel.setSampler(samplerIndex);
+                samplerIndex++;
+                glAnim.addChannels(channel);
+                glAnim.addSamplers(sampler);
+            }
+            
+            glb.gltf.addAnimations(glAnim);
+            
+            
+            
+            
+            return glb;
+        }
        
         public static GLB FromMesh(ennuo.craftworld.resources.Mesh mesh) {
             GLB glb = new GLB();
-            glb.setBufferFromMesh(mesh);
+            
+            
+            byte[] dataBuffer = glb.getBufferFromMesh(mesh);
+            Buffer buffer = new Buffer();
+            buffer.setByteLength(dataBuffer.length);
+            glb.gltf.addBuffers(buffer);
+            glb.buffer = dataBuffer;
+            
             glb.setAsset("CRAFTWORLD", "2.0");
            
             ennuo.craftworld.resources.structs.mesh.MeshPrimitive[][] subMeshes = mesh.getSubmeshes();
@@ -190,34 +364,20 @@ public class MeshIO {
                         FileEntry entry = Globals.findEntry(primitive.material);
                         if (entry != null) {
                             materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
-                            /*
                             byte[] data = Globals.extractFile(entry.hash);
                             if (data != null) {
-                                Resource gfxMaterial = new Resource(data);
-                                gfxMaterial.getDependencies(entry);
-                                for (FileEntry dependency : gfxMaterial.dependencies) {
-                                    byte[] texData = Globals.extractFile(dependency.hash);
-                                    if (texData == null) continue;
-                                    Texture texture = new Texture(texData);
-                                    if (texture.parsed) {
-                                        BufferedImage image = texture.getImage();
-                                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                        try {
-                                            ImageIO.write(image, "png", baos);
-                                            glb.addImage(Paths.get(dependency.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), baos.toByteArray());  
-                                        } catch (IOException ex) {
-                                            Logger.getLogger(MeshIO.class.getName()).log(Level.SEVERE, null, ex);
-                                        } 
-                                    }
-                                }
+                                Resource res = new Resource(data);
+                                res.decompress(true);
+                                glPrimitive.setMaterial(glb.createMaterial(materialName, new GfxMaterial(res)));   
                             }
-*/
+                            else glPrimitive.setMaterial(glb.createMaterial(materialName));
                         }
-                        else 
+                        else  {
                             materialName = primitive.material.toString();
+                            glPrimitive.setMaterial(glb.createMaterial(materialName));
+                        }
                     }
 
-                    glPrimitive.setMaterial(glb.createMaterial(materialName));
                     glPrimitive.setMode(4);
 
                     glMesh.addPrimitives(glPrimitive);
@@ -260,10 +420,10 @@ public class MeshIO {
             return glb;
         }
         
-        private void addImage(String name, byte[] buffer) {
-            if (getBufferView("TEXTURE_" + name) != -1) return;
+        private int addTexture(String name, byte[] buffer) {
+            if (getBufferView("TEXTURE_" + name) != -1) return this.textures.get(name);
             Image image = new Image();
-            image.setBufferView(createBufferView("TEXTURE_" + name, this.buffer.length, buffer.length));
+            image.setBufferView(createBufferView("TEXTURE_" + name, 0, buffer.length));
             image.setMimeType("image/png");
             image.setName(name);
             this.buffer = Bytes.Combine(this.buffer, buffer);
@@ -273,6 +433,9 @@ public class MeshIO {
             texture.setSource(this.gltf.getImages().size() - 1);
             texture.setName(name);
             this.gltf.addTextures(texture);
+            int index = this.gltf.getTextures().size() - 1;
+            this.textures.put(name, index);
+            return index;
         }
         
         private void createSkeleton(ennuo.craftworld.resources.Mesh mesh) {
@@ -335,6 +498,15 @@ public class MeshIO {
             return nodes.get(index);
         }
         
+        
+        private int getBoneIndex(int node) {
+            List<Integer> joints = this.gltf.getSkins().get(0).getJoints();
+            for (int i = 0; i < joints.size(); ++i)
+                if (joints.get(i) == node)
+                    return i;
+            return -1;
+        }
+        
         private int getNodeIndex(String name) {
             List<Node> nodes = this.gltf.getNodes();
             for (int i = 0; i < nodes.size(); ++i)
@@ -349,6 +521,160 @@ public class MeshIO {
                 if (node.getName().equals(name))
                     return node;
             return null;
+        }
+        
+        private int createMaterial(String name, GfxMaterial gmat) {
+            if (this.materials.containsKey(name))
+                return this.materials.get(name);
+            
+            Material material = new Material();
+            material.setName(name);
+            
+            material.setDoubleSided(true);
+            
+            MaterialPbrMetallicRoughness pbr = new MaterialPbrMetallicRoughness();
+            
+            boolean foundDiffuse = false;
+            boolean foundBump = false;
+            int outputBox = gmat.getOutputBox();
+            for (int i = 0; i < gmat.boxes.length; ++i) {
+                if (foundBump && foundDiffuse) break;
+                Box box = gmat.boxes[i];
+                /*
+                
+                DIFFUSE : 0,
+                SPECULAR: 2,
+                BUMP: 3,
+                GLOW: 4,
+                REFLECTION: 6
+                */
+                
+                if (box.type == Box.BoxType.TEXTURE_SAMPLE) {
+                    float[] textureScale = new float[] { Float.intBitsToFloat((int) box.params[0]), Float.intBitsToFloat((int) box.params[1]) };
+                    float[] textureOffset = new float[] { Float.intBitsToFloat((int) box.params[2]), Float.intBitsToFloat((int) box.params[3]) };
+                    int channel = (int) box.params[4];
+                    int textureIndex = (int) box.params[5];
+                    FileEntry entry = Globals.findEntry(gmat.textures[textureIndex]);
+                    if (entry == null) continue;
+                    byte[] texture = gmat.extractTexture(textureIndex);
+                    if (texture == null) continue;
+                    int source = addTexture(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), texture);
+                    
+                    ByteArrayInputStream png = new ByteArrayInputStream(texture);
+                    BufferedImage image = null;
+                    try {
+                        image = ImageIO.read(png);
+                    } catch (IOException ex) {
+                        Logger.getLogger(MeshIO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    HashMap<String, float[]> transforms = new HashMap<String, float[]>();
+                    transforms.put("offset", textureOffset);
+                    transforms.put("scale", textureScale);
+                    
+                    Wire wire = gmat.findWireFrom(i);
+                    while (wire.boxTo != outputBox)
+                        wire = gmat.findWireFrom(wire.boxTo);
+                    
+                    TextureInfo textureInfo = new TextureInfo();
+                    textureInfo.addExtensions("KHR_texture_transform", transforms);
+                    textureInfo.setTexCoord(channel);
+                    textureInfo.setIndex(source);
+                    switch (wire.portTo) {
+                        case 0:                     
+                            if (entry.path.contains("dirt")) {
+                                MaterialOcclusionTextureInfo occInfo = new MaterialOcclusionTextureInfo();
+                                occInfo.addExtensions("KHR_texture_transform", transforms);
+                                occInfo.setIndex(source);
+                                occInfo.setTexCoord(channel);
+                                material.setOcclusionTexture(occInfo);
+                                continue;
+                            }
+                            if (foundDiffuse) continue;
+                            System.out.println(String.format("%s:%d", Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), image.getTransparency()));
+                            if (name.toLowerCase().contains("decal"))
+                                material.setAlphaMode("BLEND");
+                            foundDiffuse = true;
+                            pbr.setBaseColorTexture(textureInfo);
+                            if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
+                                HashMap<String, Object> map = (HashMap<String, Object>) material.getExtensions().get("KHR_materials_pbrSpecularGlossiness");  
+                                if (!map.containsKey("diffuseTexture"))
+                                    map.put("diffuseTexture", textureInfo);
+                            } 
+                            continue;
+                        case 2:
+                            /*
+                            HashMap<String, TextureInfo> extension = new HashMap<String, TextureInfo>();
+                            extension.put("specularGlossinessTexture", textureInfo);
+                            material.addExtensions("KHR_materials_pbrSpecularGlossiness", extension);
+                            */
+                            continue;
+                        case 3:
+                            if (foundBump) continue;
+                            foundBump = true;
+                            
+                            if (image != null) {
+                                for (int x = 0; x < image.getWidth(); ++x) {
+                                    for (int y = 0; y < image.getHeight(); ++y) {
+                                        Color c = new Color(image.getRGB(x, y), true);
+                                        
+                                        Color output = new Color(c.getAlpha(), c.getGreen(), 255, 255);
+                                       
+                                        image.setRGB(x, y, output.getRGB());
+                                    }
+                                }
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                try {
+                                    ImageIO.write(image, "png", baos);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(GfxMaterial.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                
+                                source = addTexture(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "") + "_converted", baos.toByteArray());
+                            }
+                            
+                            MaterialNormalTextureInfo normal = new MaterialNormalTextureInfo();
+                            normal.addExtensions("KHR_texture_transform", transforms);
+                            normal.setIndex(source);
+                            normal.setTexCoord(channel);
+                            material.setNormalTexture(normal);
+                            continue;
+
+                    }
+                } else if (box.type == Box.BoxType.COLOR) {
+                    Wire wire = gmat.findWireFrom(i);
+                    if (wire.boxTo == outputBox) {
+                        float[] color = new float[] { Float.intBitsToFloat((int) box.params[0]) / 255f, Float.intBitsToFloat((int) box.params[1]) / 255f, Float.intBitsToFloat((int) box.params[2]) / 255f, Float.intBitsToFloat((int) box.params[3]) / 255f};
+                        if (wire.portTo == 0) {
+                            if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
+                                HashMap<String, Object> map = (HashMap<String, Object>) material.getExtensions().get("KHR_materials_pbrSpecularGlossiness");  
+                                if (!map.containsKey("diffuseFactor"))
+                                    map.put("diffuseFactor", color);
+                            } 
+                            foundDiffuse = true;
+                            pbr.setBaseColorFactor(color);
+                        } else if (wire.portTo == 2) {
+                            HashMap<String, Object> extension = new HashMap<String, Object>();
+                            extension.put("specularFactor", new float[] { color[0], color[1], color[2] });
+                            if (pbr.getBaseColorFactor() != null)
+                                extension.put("diffuseFactor", pbr.getBaseColorFactor());
+                            if (pbr.getBaseColorTexture() != null)
+                                extension.put("diffuseTexture", pbr.getBaseColorTexture());
+                            material.addExtensions("KHR_materials_pbrSpecularGlossiness", extension);
+                        }
+                    }
+                }
+            }
+            
+            if (!foundDiffuse)
+                pbr.setBaseColorFactor(new float[] { 1.0f, 1.0f, 1.0f, 1.0f });
+            
+            material.setPbrMetallicRoughness(pbr);
+            
+            this.gltf.addMaterials(material);
+            int index = this.materials.size();
+            this.materials.put(name, index);
+            return index;
         }
         
         private int createMaterial(String name) {
@@ -387,6 +713,8 @@ public class MeshIO {
         }
         
         private int createBufferView(String name, int offset, int length) {
+            if (this.buffer != null)
+                offset += this.buffer.length;
             BufferView view = new BufferView();
             view.setBuffer(0);
             view.setByteOffset(offset);
@@ -403,7 +731,66 @@ public class MeshIO {
             return -1;
         }
         
-        private void setBufferFromMesh(ennuo.craftworld.resources.Mesh mesh) {
+        private byte[] getBufferFromAnimation(ennuo.craftworld.resources.Animation animation) {
+            float timestep = 1.0f / ((float) animation.FPS);
+            
+            Output output = new Output(animation.numFrames * animation.FPS * animation.boneCount + (animation.posBonesAnimatedCount + animation.rotBonesAnimatedCount + animation.scaledBonesAnimatedCount) * 0x50 + 0xFF0);
+            
+            float step = 0.0f;
+            for (int i = 0; i < animation.numFrames - 1; ++i, step += timestep)
+                output.float32le(step);
+            createBufferView("TIME", 0, output.offset);
+            for (int i = 0; i < animation.bones.length; ++i) {
+                AnimationBone bone = animation.bones[i];
+                
+                if (bone.positions[0] != null) {
+                    int posStart = output.offset;
+                    for (Vector4f pos : bone.positions) {
+                        output.float32le(pos.x);
+                        output.float32le(pos.y);
+                        output.float32le(pos.z);
+                    }
+                    createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.offset - posStart);
+                }
+                
+                if (bone.rotations[0] != null) {
+                    int rotStart = output.offset;
+                    for (Vector4f rot : bone.rotations) {
+                        output.float32le(rot.x);
+                        output.float32le(rot.y);
+                        output.float32le(rot.z);
+                        output.float32le(rot.w);
+                    }
+                    createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.offset - rotStart);
+                }
+                
+                if (bone.scales[0] != null) {
+                    int scaleStart = output.offset;
+                    for (Vector4f scale : bone.scales) {
+                        output.float32le(scale.x);
+                        output.float32le(scale.y);
+                        output.float32le(scale.z);
+                    }
+                    createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.offset - scaleStart);
+                }
+            }
+            
+            
+            if (animation.morphsAnimatedCount != 0) {
+                int morphStart = output.offset;
+                for (int i = 0; i < animation.numFrames - 1; ++i) {
+                    for (int j = 0; j < animation.morphCount; ++j)
+                        output.float32le(animation.morphs[j].getValueAtFrame(i));
+                }
+                createBufferView("MORPHS_ANIMATED",  morphStart, output.offset - morphStart);
+            }
+            
+            output.shrinkToFit();
+            return output.buffer;
+            
+        }
+        
+        private byte[] getBufferFromMesh(ennuo.craftworld.resources.Mesh mesh) {
             int morphSize = (mesh.morphs == null) ? 0 : mesh.morphs.length;
             Output output = new Output( (mesh.vertices.length * 0x40) + (mesh.triangulate().length * 8) + (mesh.attributeCount * mesh.uvCount * 8) + (morphSize * mesh.vertices.length * 0x18) + (mesh.bones.length * 0x40));
             for (Vector3f vertex : mesh.vertices) {
@@ -490,11 +877,7 @@ public class MeshIO {
    
             output.shrinkToFit();
             
-            Buffer buffer = new Buffer();
-            buffer.setByteLength(output.buffer.length);
-            this.gltf.addBuffers(buffer);
-            
-            this.buffer = output.buffer;
+            return output.buffer;
         }
         
         public static short getMin(short[] triangles) {
@@ -514,7 +897,12 @@ public class MeshIO {
         }
         
         public void export(String path) {
-            GltfAssetV2 gltfAssetV2 = new GltfAssetV2(this.gltf, ByteBuffer.wrap(this.buffer));
+            
+            ByteBuffer buffer = null;
+            if (this.buffer != null)
+                buffer = ByteBuffer.wrap(this.buffer);
+            
+            GltfAssetV2 gltfAssetV2 = new GltfAssetV2(this.gltf, buffer);
             GltfAssetWriterV2 writer = new GltfAssetWriterV2();
             
             try {

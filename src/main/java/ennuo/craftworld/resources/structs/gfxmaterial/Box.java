@@ -4,8 +4,17 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
 
 public class Box {
+    
+    public final class BoxType {
+        public static final int OUTPUT = 0;
+        public static final int TEXTURE_SAMPLE = 1;
+        public static final int COLOR = 3;
+        public static final int MULTIPLY = 10;
+        public static final int SUBTRACT = 12;
+    }
+    
     public int type;
-    public int[] params;
+    public long[] params;
     public float x, y, z, w;
     public int subType;
     
@@ -14,12 +23,14 @@ public class Box {
     
     public Box(Data data) {
        type = data.int32();
-       params = new int[data.int32()];
+       if (data.revision >= 0x2b2)
+           params = new long[data.int32()];
+       else params = new long[6];
        for (int i = 0; i < params.length; ++i)
-           params[i] = data.int32();
+           params[i] = data.uint32();
        x = data.float32(); y = data.float32();
        z = data.float32(); w = data.float32();
-       if (data.revision > 0x272) {
+       if (data.revision >= 0x2a2) {
           subType = data.int32();
           anim = new ParameterAnimation(data);
           anim2 = new ParameterAnimation(data);
@@ -36,12 +47,13 @@ public class Box {
     
     public void serialize(Output output) {
         output.int32(type);
-        output.int32(params.length);
+        if (output.revision >= 0x2b2)
+            output.int32(params.length);
         for (int i = 0; i < params.length; ++i)
-            output.int32(params[i]);
+            output.uint32(params[i]);
         output.float32(x); output.float32(y);
         output.float32(z); output.float32(w);
-        if (output.revision > 0x272) {
+        if (output.revision >= 0x2a2) {
             output.int32(subType);
             anim.serialize(output);
             anim2.serialize(output);

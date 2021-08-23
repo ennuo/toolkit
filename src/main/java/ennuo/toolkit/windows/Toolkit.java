@@ -293,6 +293,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceDependencies.setVisible(false);
         dependencyGroup.setVisible(false);
         exportModGroup.setVisible(false);
+        exportAnimation.setVisible(false);
         exportModelGroup.setVisible(false);
         exportGroup.setVisible(false);
         replaceImage.setVisible(false);
@@ -334,6 +335,13 @@ public class Toolkit extends javax.swing.JFrame {
                         exportModGroup.setVisible(true);
                         replaceDependencies.setVisible(true);
                         dependencyGroup.setVisible(true);
+                    }
+                }
+                
+                if (Globals.lastSelected.header.endsWith(".anim")) {
+                    if (Globals.lastSelected.entry.animation != null) {
+                        exportGroup.setVisible(true);
+                        exportAnimation.setVisible(true);
                     }
                 }
 
@@ -395,6 +403,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportModGroup = new javax.swing.JMenu();
         exportAsMod = new javax.swing.JMenuItem();
         exportAsModGUID = new javax.swing.JMenuItem();
+        exportAnimation = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -662,6 +671,14 @@ public class Toolkit extends javax.swing.JFrame {
         exportModGroup.add(exportAsModGUID);
 
         exportGroup.add(exportModGroup);
+
+        exportAnimation.setText("Animation");
+        exportAnimation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAnimationActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportAnimation);
 
         entryContext.add(exportGroup);
 
@@ -1853,6 +1870,10 @@ public class Toolkit extends javax.swing.JFrame {
         DebugCallbacks.emittionTendency();
     }//GEN-LAST:event_emittionTendencyActionPerformed
 
+    private void exportAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnimationActionPerformed
+        ExportCallbacks.exportAnimation();
+    }//GEN-LAST:event_exportAnimationActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2110,6 +2131,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JSplitPane entryData;
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
+    private javax.swing.JMenuItem exportAnimation;
     private javax.swing.JMenuItem exportAsMod;
     private javax.swing.JMenuItem exportAsModGUID;
     private javax.swing.JMenuItem exportDDS;

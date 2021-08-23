@@ -1,5 +1,6 @@
 package ennuo.craftworld.types;
 
+import ennuo.craftworld.resources.Animation;
 import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Pack;
@@ -27,7 +28,7 @@ public class FileEntry {
   public Mesh mesh;
   public Texture texture;
   public InventoryItem item;
-  
+  public Animation animation;
   public Slot slot;
   public Pack pack;
   public GfxMaterial gfxMaterial;
