@@ -276,7 +276,7 @@ public class Mod extends FileData {
     public boolean save(String path, boolean encrypt) {
         revision = Mod.MAX_REVISION;
         Output output = new Output(size + (0xFF * entries.size()), 0xFFFF);
-        
+        if (revision > 5) output.revision = 0x01ae03fa;
         
         output.string("MODb");
         output.int8(revision); output.int8(compatibility.value);
