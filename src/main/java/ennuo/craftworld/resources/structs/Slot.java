@@ -370,7 +370,7 @@ public class Slot {
         
         output.bool(isSubLevel);
         
-        if (output.revision <= 0x395) return;
+        if (output.revision <= 0x3af) return;
         
         output.int8(minPlayers);
         output.int8(maxPlayers);
