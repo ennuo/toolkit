@@ -58,7 +58,7 @@ public class GfxMaterial {
         reflectionBlur = data.float32();
         refractiveIndex = data.float32();
 
-        if (data.revision > 0x3f9) {
+        if (data.revision > 0x13003ef) {
             refractiveFresnelFalloffPower = data.float32();
             refractiveFresnelMultiplier = data.float32();
             refractiveFresnelOffset = data.float32();
