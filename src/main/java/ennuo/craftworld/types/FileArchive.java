@@ -49,8 +49,8 @@ public class FileArchive {
         System.out.println("Started processing FileArchive located at: " + this.file.getAbsolutePath());
         long begin = System.currentTimeMillis();
         this.hashTable = null;
-        this.entries = new ArrayList < FileEntry > ();
-        this.queue = new ArrayList < FileEntry > ();
+        this.entries = new ArrayList<FileEntry>();
+        this.queue = new ArrayList<FileEntry>();
         queueSize = 0;
         isParsed = false;
         int entryCount = 0;
@@ -182,7 +182,16 @@ public class FileArchive {
         }
         return null;
     }
-
+    
+    public void setFatDataSource(byte[] hash) {
+        if (this.archiveType == ArchiveType.FARC || hash == null || hash.length != 0x14) return;
+        if (this.fat == null)
+            this.fat = new byte[(this.archiveType == ArchiveType.FAR4) ? 0x84 : 0xAC];
+        int start = this.fat.length - 0x3C;
+        for (int i = start; i < start + 0x14; ++i)
+            this.fat[i] = hash[i - start];
+    }
+    
     public boolean save() {
         return save(null);
     }
