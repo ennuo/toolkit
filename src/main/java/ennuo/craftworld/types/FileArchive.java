@@ -44,15 +44,24 @@ public class FileArchive {
         this.file = file;
         process();
     }
+    
+    public void refresh() {
+        this.hashTable = null;
+        this.entries = new ArrayList<FileEntry>();
+        this.queue = new ArrayList<FileEntry>();
+        this.queueSize = 0;
+        this.isParsed = false;
+    }
 
     public void process() {
         System.out.println("Started processing FileArchive located at: " + this.file.getAbsolutePath());
         long begin = System.currentTimeMillis();
-        this.hashTable = null;
-        this.entries = new ArrayList<FileEntry>();
-        this.queue = new ArrayList<FileEntry>();
-        queueSize = 0;
-        isParsed = false;
+        
+        this.refresh();
+        
+        boolean shouldPreload = false;
+        byte[] preload = null;
+        
         int entryCount = 0;
         try {
             RandomAccessFile fishArchive = new RandomAccessFile(this.file.getAbsolutePath(), "rw");
@@ -85,12 +94,19 @@ public class FileArchive {
                     break;
                 case FAR4:
                     this.tableOffset = this.file.length() - 0x1C - (entryCount * 0x1C);
+                    shouldPreload = true;
                     break;
                 case FAR5:
                     this.tableOffset = this.file.length() - 0x20 - (entryCount * 0x1C);
+                    shouldPreload = true;
                     break;
             }
-
+           
+            if (shouldPreload) {
+                preload = new byte[(int) this.tableOffset];
+                fishArchive.read(preload);
+            }
+            
             this.hashTable = new byte[entryCount * 0x1C];
 
             fishArchive.seek(this.tableOffset);
@@ -118,12 +134,17 @@ public class FileArchive {
             return;
         }
         Data table = new Data(this.hashTable);
-        this.entries = new ArrayList < FileEntry > (entryCount);
-        for (int i = 0; i < entryCount; i++)
-            this.entries.add(new FileEntry(table
+        this.entries = new ArrayList <FileEntry>(entryCount);
+        for (int i = 0; i < entryCount; i++) {
+            FileEntry entry = new FileEntry(table
                 .bytes(20), table
                 .uint32(), table
-                .int32(), null));
+                .int32(), null);
+            if (shouldPreload)
+                entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
+            this.entries.add(entry);
+        }
+        
         long end = System.currentTimeMillis();
         System.out.println(
             String.format("Finished processing %s! (%s s %s ms)",
