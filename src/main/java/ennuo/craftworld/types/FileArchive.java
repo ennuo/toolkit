@@ -3,6 +3,7 @@ package ennuo.craftworld.types;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.resources.io.FileIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,7 +109,8 @@ public class FileArchive {
            
             if (shouldPreload) {
                 preload = new byte[(int) this.tableOffset];
-                fishArchive.read(preload);
+                fishArchive.seek(0);
+                fishArchive.readFully(preload, 0, preload.length);
             }
             
             this.hashTable = new byte[entryCount * 0x1C];
@@ -213,6 +216,53 @@ public class FileArchive {
         int start = this.fat.length - 0x3C;
         for (int i = start; i < start + 0x14; ++i)
             this.fat[i] = hash[i - start];
+    }
+    
+    public byte[] build() {
+        if (this.archiveType == ArchiveType.FARC) {
+            System.out.println("FileArchive of type FARC shouldn't be built due to its size.");
+            return null;
+        }
+        
+        int dataSize = this.entries
+                .stream()
+                .mapToInt(element -> element.size)
+                .reduce(0, (total, element) -> total + element);
+        
+        FileEntry[] entries = new FileEntry[this.entries.size()];
+        entries = this.entries.toArray(entries);
+        Arrays.sort(entries, (e1, e2) -> Bytes.toHex(e1.hash).compareTo(Bytes.toHex(e2.hash)));
+        
+        Output output = new Output(dataSize + (0x1C * this.entries.size()) + this.fat.length + 0x80);
+        
+        for (FileEntry entry : entries)
+            output.bytes(entry.data);
+        
+        if (output.offset % 4 != 0)
+            output.pad(4 - (output.offset % 4)); // padding for xxtea encryption
+        
+        output.bytes(this.fat);
+        
+        int lastBufferOffset = 0;
+        for (FileEntry entry : entries) {
+            output.bytes(entry.hash);
+            output.int32(lastBufferOffset);
+            output.int32(entry.size);
+            lastBufferOffset += entry.size;
+        }
+        
+        output.bytes(this.hashinate);
+        if (this.archiveType == ArchiveType.FAR5)
+            output.int32(0); // no idea what this is
+        
+        output.int32(entries.length);
+        output.string(this.archiveType.name());
+        
+        this.queue.clear();
+        this.queueSize = 0;
+        
+        output.shrinkToFit();
+        return output.buffer;
     }
     
     public boolean save() { return this.save(null); }
