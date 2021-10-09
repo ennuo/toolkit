@@ -22,7 +22,8 @@ public class Globals {
         NONE,
         MAP,
         PROFILE,
-        MOD
+        MOD,
+        SAVE
     }
 
     public static ArrayList < FileData > databases = new ArrayList < FileData > ();

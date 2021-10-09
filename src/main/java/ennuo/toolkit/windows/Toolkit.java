@@ -19,6 +19,7 @@ import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.swing.SearchParameters;
 import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.types.indev.FileSave;
 import ennuo.craftworld.types.FileDB;
 import ennuo.toolkit.functions.ArchiveCallbacks;
 import ennuo.toolkit.functions.DatabaseCallbacks;
@@ -142,6 +143,7 @@ public class Toolkit extends javax.swing.JFrame {
                     else search.setForeground(Color.WHITE);
                     if (data.type.equals("Big Profile")) Globals.currentWorkspace = WorkspaceType.PROFILE;
                     else if (data.type.equals("Mod")) Globals.currentWorkspace = WorkspaceType.MOD;
+                    else if (data.type.equals("File Save")) Globals.currentWorkspace = WorkspaceType.SAVE;
                     else Globals.currentWorkspace = WorkspaceType.MAP;
                 }
                 updateWorkspace();
@@ -471,6 +473,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadArchive = new javax.swing.JMenuItem();
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
+        loadSavedata = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         saveDivider = new javax.swing.JPopupMenu.Separator();
         saveAs = new javax.swing.JMenuItem();
@@ -1131,6 +1134,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         savedataMenu.add(loadBigProfile);
+
+        loadSavedata.setText("Savedata (PREVIEW)");
+        loadSavedata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadSavedataActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadSavedata);
 
         loadGroupMenu.add(savedataMenu);
 
@@ -1874,6 +1885,15 @@ public class Toolkit extends javax.swing.JFrame {
         ExportCallbacks.exportAnimation();
     }//GEN-LAST:event_exportAnimationActionPerformed
 
+    private void loadSavedataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadSavedataActionPerformed
+        String directory = fileChooser.openDirectory();
+        if (directory.isEmpty()) return;
+        FileSave save = new FileSave(new File(directory));
+        this.addTab(save);
+        this.updateWorkspace();
+        
+    }//GEN-LAST:event_loadSavedataActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2172,6 +2192,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
     private javax.swing.JMenuItem loadMod;
+    private javax.swing.JMenuItem loadSavedata;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenu menuFileMenu;
