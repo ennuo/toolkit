@@ -3,7 +3,6 @@ package ennuo.craftworld.types;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.resources.io.FileIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -216,6 +214,15 @@ public class FileArchive {
         int start = this.fat.length - 0x3C;
         for (int i = start; i < start + 0x14; ++i)
             this.fat[i] = hash[i - start];
+    }
+    
+    public String getFatDataSource() {
+        if (this.archiveType == ArchiveType.FARC || this.fat == null) return null;
+        int start = this.fat.length - 0x3C;
+        byte[] hash = new byte[0x14];
+        for (int i = start; i < start + 0x14; ++i)
+            hash[i - start] = this.fat[i];
+        return Bytes.toHex(hash);
     }
     
     public byte[] build() {
