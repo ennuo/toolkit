@@ -9,6 +9,10 @@ public class FileSave extends FileData {
     public int revision;
     public File directory;
     public boolean isVita = false;
+    
+    public BigProfile bigProfile;
+    public LocalProfile localProfile;
+    
     public HashMap<String, byte[]> resources;
     
     public FileSave(File folder) {
@@ -19,8 +23,10 @@ public class FileSave extends FileData {
         
         this.getLocalSave();
         this.getBigSave();
-        this.getMoonSlots();
-        this.getDownloadSlots();
+        if (this.bigProfile != null) {
+            this.getMoonSlots();
+            this.getDownloadSlots();   
+        }
     }
     
     private void getLocalSave() {
