@@ -3,7 +3,6 @@ package ennuo.craftworld.types;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.resources.io.FileIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,6 +10,7 @@ import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JProgressBar;
@@ -38,6 +38,9 @@ public class FileArchive {
 
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
     public ArrayList<FileEntry> queue = new ArrayList<FileEntry>();
+    
+    public HashMap<String, FileEntry> lookup = new HashMap<String, FileEntry>();
+    
     public int queueSize = 0;
 
     public FileArchive(File file) {
@@ -134,7 +137,8 @@ public class FileArchive {
             return;
         }
         Data table = new Data(this.hashTable);
-        this.entries = new ArrayList <FileEntry>(entryCount);
+        this.entries = new ArrayList<FileEntry>(entryCount);
+        this.lookup = new HashMap<String, FileEntry>(entryCount);
         for (int i = 0; i < entryCount; i++) {
             FileEntry entry = new FileEntry(table
                 .bytes(20), table
@@ -143,6 +147,7 @@ public class FileArchive {
             if (shouldPreload)
                 entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
             this.entries.add(entry);
+            this.lookup.put(Bytes.toHex(entry.hash), entry);
         }
         
         long end = System.currentTimeMillis();
@@ -155,14 +160,11 @@ public class FileArchive {
         this.isParsed = true;
     }
 
-    public FileEntry find(byte[] hash) {
-        return find(hash, false);
-    }
+    public FileEntry find(byte[] hash) { return find(hash, false); }
     public FileEntry find(byte[] hash, boolean log) {
-        for (int i = 0; i < this.entries.size(); i++) {
-            if (Arrays.equals(hash, (this.entries.get(i)).hash))
-                return this.entries.get(i);
-        }
+        String hashKey = Bytes.toHex(hash);
+        if (this.lookup.containsKey(hashKey))
+            return this.lookup.get(hashKey);
         if (log)
             System.out.println("Could not find entry with SHA1: " + Bytes.toHex(hash));
         return null;
@@ -171,19 +173,19 @@ public class FileArchive {
     public void add(byte[] data) {
         byte[] hash = Bytes.SHA1(data);
         if (find(hash, false) != null) return;
-        queueSize += (0x1C + data.length);
+        
+        this.queueSize += (0x1C + data.length);
 
         FileEntry entry = new FileEntry(data, hash);
         this.entries.add(entry);
 
-        queue.add(new FileEntry(data, hash));
-        shouldSave = true;
+        this.queue.add(new FileEntry(data, hash));
+        this.lookup.put(Bytes.toHex(hash), entry);
+        
+        this.shouldSave = true;
     }
 
-    public byte[] extract(byte[] hash) {
-        return extract(find(hash));
-    }
-
+    public byte[] extract(byte[] hash) { return extract(find(hash)); }
     public byte[] extract(FileEntry entry) {
         if (entry == null)
             return null;
@@ -213,29 +215,27 @@ public class FileArchive {
             this.fat[i] = hash[i - start];
     }
     
-    public boolean save() {
-        return save(null);
-    }
+    public boolean save() { return this.save(null); }
     public boolean save(JProgressBar bar) {
         try {
-            if (queue.size() == 0) {
+            if (this.queue.size() == 0) {
                 System.out.println("FileArchive has no items in queue, skipping save.");
                 return true;
             }
 
-            System.out.println("Saving FileArchive at " + file.getAbsolutePath());
+            System.out.println("Saving FileArchive at " + this.file.getAbsolutePath());
 
             if (bar != null) {
                 bar.setVisible(true);
-                bar.setMaximum(queue.size());
+                bar.setMaximum(this.queue.size());
                 bar.setValue(0);
             }
 
             long offset = this.tableOffset;
-            Output output = new Output(queueSize + this.hashTable.length + 0xFF, 0);
+            Output output = new Output(this.queueSize + this.hashTable.length + 0xFF, 0);
 
-            for (int i = 0; i < queue.size(); ++i) {
-                output.bytes(queue.get(i).data);
+            for (int i = 0; i < this.queue.size(); ++i) {
+                output.bytes(this.queue.get(i).data);
                 if (bar != null) bar.setValue(i + 1);
             }
 
@@ -246,8 +246,8 @@ public class FileArchive {
                 output.bytes(this.fat);
             }
 
-            for (int i = 0; i < queue.size(); ++i) {
-                FileEntry entry = queue.get(i);
+            for (int i = 0; i < this.queue.size(); ++i) {
+                FileEntry entry = this.queue.get(i);
                 output.bytes(entry.hash);
                 output.int32((int) offset);
                 output.int32(entry.size);
@@ -273,9 +273,9 @@ public class FileArchive {
 
             shouldSave = false;
 
-            System.out.println("Successfully saved " + queue.size() + " entries to the FileArchive.");
-            queue.clear();
-            queueSize = 0;
+            System.out.println("Successfully saved " + this.queue.size() + " entries to the FileArchive.");
+            this.queue.clear();
+            this.queueSize = 0;
 
             if (bar != null) {
                 bar.setValue(0);
