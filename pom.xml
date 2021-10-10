@@ -12,7 +12,7 @@
       <configuration>
         <archive>
           <manifest>
-            <mainClass>ennuo.toolkit.windows.Toolkit</mainClass>
+            <mainClass>ennuo.toolkit.Launcher</mainClass>
           </manifest>
         </archive>
         <descriptorRefs>

@@ -23,8 +23,8 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("shan") || username.equals("aidan")) {
-            toolkit.setTitle("GregTool w/ Andre");
+        if (username.equals("aidan")) {
+            toolkit.setTitle("Apex: Toolkit Abstraction Layer");
             toolkit.debugMenu.setVisible(true);
         }
 

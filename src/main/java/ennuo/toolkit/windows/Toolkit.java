@@ -1,6 +1,5 @@
 package ennuo.toolkit.windows;
 
-import com.bulenkov.darcula.DarculaLaf;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;
@@ -35,6 +34,7 @@ import ennuo.toolkit.functions.ScanCallback;
 import ennuo.toolkit.functions.UtilityCallbacks;
 import ennuo.toolkit.streams.CustomPrintStream;
 import ennuo.toolkit.streams.TextAreaOutputStream;
+import ennuo.toolkit.utilities.Config;
 import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
@@ -55,16 +55,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
@@ -112,6 +108,9 @@ public class Toolkit extends javax.swing.JFrame {
         setResizable(false);
         EasterEgg.initialize(this);
         instance = this;
+        
+        if (Config.enableNewSavedata)
+            this.loadSavedata.setVisible(true);
        
         entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -1136,6 +1135,7 @@ public class Toolkit extends javax.swing.JFrame {
         savedataMenu.add(loadBigProfile);
 
         loadSavedata.setText("Savedata (PREVIEW)");
+        loadSavedata.setVisible(false);
         loadSavedata.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadSavedataActionPerformed(evt);
@@ -2088,20 +2088,6 @@ public class Toolkit extends javax.swing.JFrame {
         }
         hex.repaint();
     }
-
-    public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel(new DarculaLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Toolkit().setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JMenu FARMenu;
     private javax.swing.JRadioButton LAMSMetadata;

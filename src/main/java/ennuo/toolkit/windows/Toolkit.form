@@ -453,6 +453,9 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadSavedataActionPerformed"/>
                       </Events>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="loadSavedata.setVisible(false);"/>
+                      </AuxValues>
                     </MenuItem>
                   </SubComponents>
                 </Menu>
