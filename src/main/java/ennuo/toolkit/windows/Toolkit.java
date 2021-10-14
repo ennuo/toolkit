@@ -109,7 +109,7 @@ public class Toolkit extends javax.swing.JFrame {
         EasterEgg.initialize(this);
         instance = this;
         
-        if (Config.enableNewSavedata)
+        if (Config.ENABLE_NEW_SAVEDATA)
             this.loadSavedata.setVisible(true);
        
         entryTable.getActionMap().put("copy", new AbstractAction() {

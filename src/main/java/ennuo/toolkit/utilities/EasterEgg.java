@@ -23,8 +23,8 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("aidan")) {
-            toolkit.setTitle("Apex: Toolkit Abstraction Layer");
+        if (username.equals("abz")) {
+            toolkit.setTitle("Ib'Box");
             toolkit.debugMenu.setVisible(true);
         }
 
@@ -38,7 +38,9 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (toolkit.debugMenu.isVisible())
+        if (toolkit.debugMenu.isVisible()) {
             toolkit.setTitle(toolkit.getTitle() + " | Debug");
+            Config.ENABLE_NEW_SAVEDATA = true;
+        }
     }
 }
