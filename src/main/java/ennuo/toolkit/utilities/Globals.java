@@ -185,9 +185,9 @@ public class Globals {
 
     public static String Translate(long key) {
         String translated = null;
-        if (LAMS != null) translated = LAMS.Translate(key);
+        if (LAMS != null) translated = LAMS.translate(key);
         if (translated == null && KEYS != null)
-            translated = KEYS.Translate(key);
+            translated = KEYS.translate(key);
         return translated;
     }
 }

@@ -130,24 +130,16 @@ public class ExportCallbacks {
     }
 
     public static void exportTranslations() {
-        if (Globals.LAMS == null)
-            Globals.LAMS = new TranslationTable(new Data(Globals.lastSelected.entry.data));
-        if (Globals.LAMS != null) {
-            Output out = new Output(0xFEFF * Globals.LAMS.map.size());
-            for (Map.Entry < Long, String > entry: Globals.LAMS.map.entrySet())
-                out.str(entry.getKey() + "\n\t" + entry.getValue() + "\n");
-
-            File file = Toolkit.instance.fileChooser.openFile(
-                Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".txt",
-                "txt",
-                "Text Document",
-                true
-            );
-
-            if (file == null) return;
-            out.shrink();
-            FileIO.write(out.buffer, file.getAbsolutePath());
-        }
+        TranslationTable table = new TranslationTable(new Data(Globals.lastSelected.entry.data));
+        byte[] data = table.export();
+        File file = Toolkit.instance.fileChooser.openFile(
+        Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".txt",
+            "txt",
+            "Text Document",
+            true
+        );
+        if (file == null) return;
+        FileIO.write(data, file.getAbsolutePath());
     }
 
     public static void exportMod(boolean hashinate) {

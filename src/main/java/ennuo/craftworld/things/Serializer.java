@@ -347,13 +347,13 @@ public class Serializer {
         System.out.println(String.format("InventoryItem has titleKey = %d, descriptionKey = %d", metadata.titleKey, metadata.descriptionKey));
         if (LAMS != null) {
             if (metadata.titleKey != 0) {
-                String translated = LAMS.Translate(metadata.titleKey);
+                String translated = LAMS.translate(metadata.titleKey);
                 if (translated != null)
                     System.out.println(String.format("InventoryItem has title = %s", translated));
                 else System.err.println("== COULD NOT TRANSLATE TITLE KEY, DOES IT EXIST? ==");
             }
             if (metadata.descriptionKey != 0) {
-                String translated = LAMS.Translate(metadata.descriptionKey);
+                String translated = LAMS.translate(metadata.descriptionKey);
                 if (translated != null)
                     System.out.println(String.format("InventoryItem has description = %s", translated));
                 else System.err.println("== COULD NOT TRANSLATE DESCRIPTION KEY, DOES IT EXIST? ==");
@@ -417,7 +417,7 @@ public class Serializer {
         
         if (LAMS != null) {
             if (metadata.location != 0) {
-                String translated = LAMS.Translate(metadata.location);
+                String translated = LAMS.translate(metadata.location);
                 if (translated != null) {
                     System.out.println(String.format("InventoryItem has theme = %s", translated));
                     metadata.translatedLocation = translated;
@@ -425,7 +425,7 @@ public class Serializer {
                 else System.err.println("== COULD NOT TRANSLATE LOCATION KEY, DOES IT EXIST? ==");
             }
             if (metadata.category != 0) {
-                String translated = LAMS.Translate(metadata.category);
+                String translated = LAMS.translate(metadata.category);
                 if (translated != null) {
                     System.out.println(String.format("InventoryItem has category = %s", translated));
                     metadata.translatedCategory = translated;
@@ -438,7 +438,6 @@ public class Serializer {
         
         
     }
-    
     
     public ThingPtr isThingSerialized(int sp) {
         if (things.size() == 0) return null;
