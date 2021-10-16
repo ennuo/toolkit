@@ -5,7 +5,6 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
-import ennuo.craftworld.resources.io.FileIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -160,12 +159,6 @@ public class Texture {
     public void unswizzle() {
         int[] pixels = DDSReader.read(this.data, DDSReader.ARGB, 0);
         pixels = this.unswizzleData(pixels);
-        
-        Output unswizzled = new Output(pixels.length * 4);
-        for (int pixel : pixels)
-            unswizzled.i32(pixel);
-        FileIO.write(unswizzled.buffer, "C:/users/aidan/desktop/image");
-        
         this.cached = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
         if (this.cached != null)
             this.cached.setRGB(0, 0, this.width, this.height, pixels, 0, this.width);
