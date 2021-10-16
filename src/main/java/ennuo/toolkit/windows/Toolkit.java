@@ -105,7 +105,6 @@ public class Toolkit extends javax.swing.JFrame {
 
     public Toolkit() {
         initComponents();
-        setResizable(false);
         EasterEgg.initialize(this);
         instance = this;
         
@@ -794,11 +793,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Craftworld Toolkit");
+        setMinimumSize(new java.awt.Dimension(698, 296));
 
         workspaceDivider.setDividerLocation(275);
 
         treeContainer.setDividerLocation(30);
         treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
+        treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
 
         search.setEditable(false);
         search.setText(" Search is currently disabled.");
@@ -814,7 +816,9 @@ public class Toolkit extends javax.swing.JFrame {
 
         workspaceDivider.setLeftComponent(treeContainer);
 
+        details.setResizeWeight(1);
         details.setDividerLocation(850);
+        details.setEnabled(false);
 
         previewContainer.setDividerLocation(325);
         previewContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -866,6 +870,10 @@ public class Toolkit extends javax.swing.JFrame {
         entryData.setMinimumSize(new java.awt.Dimension(55, 102));
         entryData.setPreferredSize(new java.awt.Dimension(55, 1120));
 
+        tableContainer.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        tableContainer.setMaximumSize(new java.awt.Dimension(452, 32767));
+        tableContainer.setMinimumSize(new java.awt.Dimension(452, 6));
+
         entryTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {"Path", "N/A"},
@@ -898,8 +906,9 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryData.setLeftComponent(tableContainer);
 
-        entryModifiers.setMinimumSize(new java.awt.Dimension(55, 81));
-        entryModifiers.setPreferredSize(new java.awt.Dimension(55, 713));
+        entryModifiers.setMaximumSize(new java.awt.Dimension(452, 32767));
+        entryModifiers.setMinimumSize(new java.awt.Dimension(452, 81));
+        entryModifiers.setPreferredSize(new java.awt.Dimension(452, 713));
 
         dependencyTreeContainer.setAlignmentX(2.0F);
 
@@ -1036,7 +1045,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
@@ -1444,18 +1453,18 @@ public class Toolkit extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE)
-                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(workspaceDivider, javax.swing.GroupLayout.PREFERRED_SIZE, 517, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
         );
 
         pack();
@@ -2038,7 +2047,6 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public void setImage(ImageIcon image) {
-        preview.setDividerLocation(325);
         if (image == null) {
             texture.setText("No preview to be displayed");
             texture.setIcon(null);
@@ -2046,7 +2054,6 @@ public class Toolkit extends javax.swing.JFrame {
             texture.setText(null);
             texture.setIcon(image);
         }
-        preview.setDividerLocation(325);
     }
 
     public void setEditorPanel(FileNode node) {

@@ -74,8 +74,7 @@ public class TreeSelectionListener {
             String path = entry.path.toLowerCase();
 
             String ext = path.substring(path.lastIndexOf(".") + 1);
-
-            toolkit.preview.setDividerLocation(325);
+            
             Resource res = new Resource(entryBuffer);
             entry.revision = res.revision;
             toolkit.setEditorPanel(selected);
@@ -184,7 +183,6 @@ public class TreeSelectionListener {
                     }
                     break;
             }
-            toolkit.preview.setDividerLocation(325);
         });
     }
 }
