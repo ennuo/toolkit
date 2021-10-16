@@ -14,7 +14,7 @@ public class CullBone {
     }
     
     public static CullBone[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         CullBone[] out = new CullBone[count];
         for (int i = 0; i < count; ++i)
             out[i] = new CullBone(data);

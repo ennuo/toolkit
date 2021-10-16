@@ -13,12 +13,12 @@ public class ShapeVert {
     public ShapeVert(Data data) {
         localPos = data.v4();
         localNormal = data.v4();
-        boneIndex = data.int32();
+        boneIndex = data.i32();
     }
     
     public void serialize(Output output) {
         output.v4(localPos);
         output.v4(localNormal);
-        output.int32(boneIndex);
+        output.i32(boneIndex);
     }
 }

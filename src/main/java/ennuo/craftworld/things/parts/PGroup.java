@@ -28,10 +28,10 @@ public class PGroup implements Part {
         planDescriptor = serializer.input.resource(RType.PLAN, true);
         if (serializer.partsRevision < 0x5e) editable = serializer.input.bool();
         emitter = serializer.deserializeThing();
-        lifetime = serializer.input.int32();
-        aliveFrames = serializer.input.int32();
+        lifetime = serializer.input.i32();
+        aliveFrames = serializer.input.i32();
         if (serializer.partsRevision < 0x5e) pickupAllMembers = serializer.input.bool();
-        flags = serializer.input.int32();
+        flags = serializer.input.i32();
     }
     
 }

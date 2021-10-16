@@ -46,9 +46,9 @@ public class FileDB extends FileData {
   public void process(Data data, JProgressBar bar) {
     System.out.println("Started processing FileDB located at: " + this.path);
     long begin = System.currentTimeMillis();
-    header = data.int32();
+    header = data.i32();
     isLBP3 = isLBP3(this.header);
-    entryCount = data.int32();
+    entryCount = data.i32();
     if (bar != null) {
         bar.setVisible(true);
         bar.setMaximum(entryCount);
@@ -59,14 +59,14 @@ public class FileDB extends FileData {
     model = new FileModel(new FileNode("FILEDB", null, null));
     root = (FileNode)model.getRoot();
     for (int i = 0; i < entryCount; i++) {
-      String path = data.str(isLBP3 ? data.int16() : data.int32());
+      String path = data.str(isLBP3 ? data.i16() : data.i32());
       pathSize += path.length();
       if (!isLBP3)
         data.forward(4); 
-      int timestamp = data.int32();
-      int size = data.int32();
+      int timestamp = data.i32();
+      int size = data.i32();
       byte[] hash = data.bytes(20);
-      long guid = data.uint32();
+      long guid = data.u32();
       if (path.startsWith(".")) {
           String newPath = "data/";
           switch (path.toLowerCase()) {
@@ -236,20 +236,20 @@ public class FileDB extends FileData {
   @Override
   public boolean save(String path) {
       Output output = new Output(0x8 + (0x28 * entries.size()) + pathSize, 0);
-      output.int32(header);
-      output.int32(entries.size());
+      output.i32(header);
+      output.i32(entries.size());
       for (int i = 0; i < entries.size(); ++i) {
           FileEntry entry = entries.get(i);
-          if (isLBP3) output.int16((short) entry.path.length());
-          else output.int32(entry.path.length());
-          output.string(entry.path);
-          if (!isLBP3) output.int32(0);
-          output.uint32(entry.timestamp);
-          output.int32(entry.size);
+          if (isLBP3) output.i16((short) entry.path.length());
+          else output.i32(entry.path.length());
+          output.str(entry.path);
+          if (!isLBP3) output.i32(0);
+          output.u32(entry.timestamp);
+          output.i32(entry.size);
           output.bytes(entry.hash);
-          output.uint32(entry.GUID);
+          output.u32(entry.GUID);
       }
-      output.shrinkToFit();
+      output.shrink();
       if (FileIO.write(output.buffer, path)) {
           if (path.equals(this.path))
             shouldSave = false;

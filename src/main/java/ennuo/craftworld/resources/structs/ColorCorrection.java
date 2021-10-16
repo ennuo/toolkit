@@ -15,21 +15,21 @@ public class ColorCorrection {
     
     public ColorCorrection() {}
     public ColorCorrection(Data data) {
-        saturation = data.float32();
-        hueShift = data.float32();
-        brightness = data.float32();
-        contrast = data.float32();
-        tintHue = data.float32();
-        tintAmount = data.float32();
+        saturation = data.f32();
+        hueShift = data.f32();
+        brightness = data.f32();
+        contrast = data.f32();
+        tintHue = data.f32();
+        tintAmount = data.f32();
     }
     
     public void serialize(Output output) {
-        output.float32(saturation);
-        output.float32(hueShift);
-        output.float32(brightness);
-        output.float32(contrast);
-        output.float32(tintHue);
-        output.float32(tintAmount);
+        output.f32(saturation);
+        output.f32(hueShift);
+        output.f32(brightness);
+        output.f32(contrast);
+        output.f32(tintHue);
+        output.f32(tintAmount);
     }
     
     @Override

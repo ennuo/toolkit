@@ -1827,11 +1827,11 @@ public class Toolkit extends javax.swing.JFrame {
         FileDB mod = (FileDB) getCurrentDB();
         
         Output output = new Output((mod.entries.size() * 0x1C) + 0x4);
-        output.int32(mod.entries.size());
+        output.i32(mod.entries.size());
         for (FileEntry e : mod.entries) {
-            output.int32(1);
+            output.i32(1);
             output.bytes(e.hash);
-            output.int32(13);
+            output.i32(13);
         }
         
         FileIO.write(output.buffer, "C:/Users/Shan/Desktop/table");

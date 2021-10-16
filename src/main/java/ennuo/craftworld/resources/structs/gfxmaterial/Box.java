@@ -22,23 +22,23 @@ public class Box {
     public ParameterAnimation anim2;
     
     public Box(Data data) {
-       type = data.int32();
+       type = data.i32();
        if (data.revision >= 0x2b2)
-           params = new long[data.int32()];
+           params = new long[data.i32()];
        else params = new long[6];
        for (int i = 0; i < params.length; ++i)
-           params[i] = data.uint32();
-       x = data.float32(); y = data.float32();
-       z = data.float32(); w = data.float32();
+           params[i] = data.u32();
+       x = data.f32(); y = data.f32();
+       z = data.f32(); w = data.f32();
        if (data.revision >= 0x2a2) {
-          subType = data.int32();
+          subType = data.i32();
           anim = new ParameterAnimation(data);
           anim2 = new ParameterAnimation(data);
        }
     }
     
     public static Box[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         Box[] out = new Box[count];
         for (int i = 0; i < count; ++i)
             out[i] = new Box(data);
@@ -46,15 +46,15 @@ public class Box {
     }
     
     public void serialize(Output output) {
-        output.int32(type);
+        output.i32(type);
         if (output.revision >= 0x2b2)
-            output.int32(params.length);
+            output.i32(params.length);
         for (int i = 0; i < params.length; ++i)
-            output.uint32(params[i]);
-        output.float32(x); output.float32(y);
-        output.float32(z); output.float32(w);
+            output.u32(params[i]);
+        output.f32(x); output.f32(y);
+        output.f32(z); output.f32(w);
         if (output.revision >= 0x2a2) {
-            output.int32(subType);
+            output.i32(subType);
             anim.serialize(output);
             anim2.serialize(output);
         }

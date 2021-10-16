@@ -8,13 +8,13 @@ public class SoftbodySpring {
     public float restLengthSq;
     
     public SoftbodySpring(Data data) {
-        A = data.int16();
-        B = data.int16();
-        restLengthSq = data.float32();
+        A = data.i16();
+        B = data.i16();
+        restLengthSq = data.f32();
     }
     
     public static SoftbodySpring[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         SoftbodySpring[] out = new SoftbodySpring[count];
         for (int i = 0; i < count; ++i)
             out[i] = new SoftbodySpring(data);
@@ -22,7 +22,7 @@ public class SoftbodySpring {
     }
     
     public void serialize(Output output) {
-        output.int16(A); output.int16(B);
-        output.float32(restLengthSq);
+        output.i16(A); output.i16(B);
+        output.f32(restLengthSq);
     }
 }

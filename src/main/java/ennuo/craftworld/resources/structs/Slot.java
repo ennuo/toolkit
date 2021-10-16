@@ -180,35 +180,35 @@ public class Slot {
         System.out.println("Slot is locked? " + isLocked);
         System.out.println("Slot is copyable? " + copyable);
         
-        backgroundGUID = data.uint32();
+        backgroundGUID = data.u32();
         
         if (data.revision > 0x2c3)
             planetDecorations = data.resource(RType.PLAN, true);
         
-        developerLevelType = LevelType.getValue(data.int32());
+        developerLevelType = LevelType.getValue(data.i32());
         
         if (data.revision <= 0x33a)
-            gameProgressionState = data.int32();
+            gameProgressionState = data.i32();
         
         if (data.revision <= 0x2c3) return;
         
         System.out.println(String.format("Slot has levelType = %s", developerLevelType.name()));
         
         if (data.revision > 0x33a) {
-            int labelCount = data.int8();
+            int labelCount = data.i8();
             authorLabels = new Label[labelCount];
             for (int i = 0; i < labelCount; ++i)
                 authorLabels[i] = new Label(data);   
         }
         
-        int collectableRequiredCount = data.int32();
+        int collectableRequiredCount = data.i32();
         if (collectableRequiredCount != 0) {
             requiredCollectables = new Collectable[collectableRequiredCount];
             for (int i = 0; i < collectableRequiredCount; ++i)
                 requiredCollectables[i] = new Collectable(data);
         }
         
-        int collectableContainedCount = data.int32();
+        int collectableContainedCount = data.i32();
         if (collectableContainedCount != 0) {
             containedCollectables = new Collectable[collectableContainedCount];
             for (int i = 0; i < collectableContainedCount; ++i)
@@ -223,8 +223,8 @@ public class Slot {
         
         System.out.println("Slot is sublevel? " + isSubLevel);
         
-        minPlayers = data.int8();
-        maxPlayers = data.int8();
+        minPlayers = data.i8();
+        maxPlayers = data.i8();
         
         if (data.revision >= 0x021803F9)
             enforceMinMaxPlayers = data.bool();
@@ -243,25 +243,25 @@ public class Slot {
         
         showOnPlanet = data.bool();
         
-        livesOverride = data.int8();
+        livesOverride = data.i8();
         
         if (data.revision == 0x3e2) {
             acingEnabled = data.bool();
             customRewardEnabled = data.u32a();
             
-            int rrdCount = data.int32();
+            int rrdCount = data.i32();
             rewardConditionDescription = new String[rrdCount];
             for (int i = 0; i < rrdCount; ++i)
                  rewardConditionDescription[i] = data.str16();
             
             customRewardCondition = data.u32a();
             
-            int ancrCount = data.int32();
+            int ancrCount = data.i32();
             amountNeededCustomReward = new long[ancrCount];
             for (int i = 0; i < ancrCount; ++i)
-                amountNeededCustomReward[i] = data.uint32f();
+                amountNeededCustomReward[i] = data.u32f();
             
-            int crdCount = data.int32();
+            int crdCount = data.i32();
             customRewardDescription = new String[crdCount];
             for (int i = 0; i < crdCount; ++i)
                 customRewardDescription[i] = data.str16();
@@ -269,21 +269,21 @@ public class Slot {
             containsCollectabubbles = data.bool();
             enforceMinMaxPlayers = data.bool();
             sameScreenGame = data.bool();
-            sizeOfResources = data.uint32();
-            sizeOfSubLevels = data.uint32();
+            sizeOfResources = data.u32();
+            sizeOfSubLevels = data.u32();
             
-            int subLevelCount = data.int32();
+            int subLevelCount = data.i32();
             subLevels = new SlotID[subLevelCount];
             for (int i = 0; i < subLevelCount; ++i)
                 subLevels[i] = new SlotID(data);
             
             slotList = data.resource(RType.SLOT_LIST);
-            vitaRevision = data.int32();
+            vitaRevision = data.i32();
         }
         
         if (data.revision <= 0x3f8) return;
         
-        gameMode = GameMode.getValue(data.int8());
+        gameMode = GameMode.getValue(data.i8());
         
         System.out.println(String.format("Slot has gameMode = %s", gameMode.name()));
         
@@ -297,7 +297,7 @@ public class Slot {
         
         if (data.revision <= 0x014703ef) return;
         
-        customBadgeSize = data.int8();
+        customBadgeSize = data.i8();
         
         System.out.println("Slot has customBadgeSize = " + customBadgeSize);
         
@@ -320,7 +320,7 @@ public class Slot {
         output.resource(icon, true);
         
         output.v4(location);
-        output.string(authorID, 0x14);
+        output.str(authorID, 0x14);
         
         output.str16(authorName);
         output.str8(translationKey);
@@ -339,30 +339,30 @@ public class Slot {
         output.bool(isLocked);
         output.bool(copyable);
         
-        output.uint32(backgroundGUID);
+        output.u32(backgroundGUID);
         
         if (output.revision > 0x2c3)
             output.resource(planetDecorations, true);
         
-        output.int32(developerLevelType.value);
+        output.i32(developerLevelType.value);
         
         if (output.revision <= 0x33a)
-            output.int32(gameProgressionState);
+            output.i32(gameProgressionState);
         
         if (output.revision <= 0x2c3) return;
         
         
         if (output.revision > 0x33a) {
-            output.int32(authorLabels.length);
+            output.i32(authorLabels.length);
             for (Label label : authorLabels)
                 label.serialize(output);   
         }
         
-        output.int32(requiredCollectables.length);
+        output.i32(requiredCollectables.length);
         for (Collectable c : requiredCollectables)
             c.serialize(output);
         
-        output.int32(containedCollectables.length);
+        output.i32(containedCollectables.length);
         for (Collectable c : containedCollectables)
             c.serialize(output);
         
@@ -372,8 +372,8 @@ public class Slot {
         
         if (output.revision <= 0x3af) return;
         
-        output.int8(minPlayers);
-        output.int8(maxPlayers);
+        output.u8(minPlayers);
+        output.u8(maxPlayers);
         
         if (output.revision >= 0x021803F9)
             output.bool(enforceMinMaxPlayers);
@@ -386,43 +386,43 @@ public class Slot {
         
         output.bool(showOnPlanet);
         
-        output.int8(livesOverride);
+        output.u8(livesOverride);
         
         if (output.revision == 0x3e2) {
             output.bool(acingEnabled);
             output.u32a(customRewardEnabled);
             
-            output.int32(rewardConditionDescription.length);
+            output.i32(rewardConditionDescription.length);
             for (int i = 0; i < rewardConditionDescription.length; ++i)
                  output.str16(rewardConditionDescription[i]);
             
             output.u32a(customRewardCondition);
             
-            output.int32(amountNeededCustomReward.length);
+            output.i32(amountNeededCustomReward.length);
             for (int i = 0; i < amountNeededCustomReward.length; ++i)
-                 output.uint32f(amountNeededCustomReward[i]);
+                 output.u32f(amountNeededCustomReward[i]);
            
-            output.int32(customRewardDescription.length);
+            output.i32(customRewardDescription.length);
             for (int i = 0; i < customRewardDescription.length; ++i)
                  output.str16(customRewardDescription[i]);
             
             output.bool(containsCollectabubbles);
             output.bool(enforceMinMaxPlayers);
             output.bool(sameScreenGame);
-            output.uint32(sizeOfResources);
-            output.uint32(sizeOfSubLevels);
+            output.u32(sizeOfResources);
+            output.u32(sizeOfSubLevels);
             
-            output.int32(subLevels.length);
+            output.i32(subLevels.length);
             for (int i = 0; i < subLevels.length; ++i)
                 subLevels[i].serialize(output);
             
             output.resource(slotList); 
-            output.int32(vitaRevision);
+            output.i32(vitaRevision);
         }
         
         if (output.revision <= 0x3f8) return;
         
-        output.int8(gameMode.value);
+        output.u8(gameMode.value);
         
         output.bool(isGameKit);
         
@@ -434,7 +434,7 @@ public class Slot {
         
         if (output.revision <= 0x014703ef) return;
         
-        output.int8(customBadgeSize);
+        output.u8(customBadgeSize);
         
         output.str8("");
         if (output.revision > 0x01ae03f9)

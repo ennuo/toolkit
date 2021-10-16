@@ -41,12 +41,12 @@ public class PGeneratedMesh implements Part {
         uvOffset = serializer.input.v4();
         
         if (serializer.partsRevision >= 0x4e)
-            planGUID = serializer.input.int32();
+            planGUID = serializer.input.i32();
         
         if (serializer.partsRevision >= 0x5e) {
-            visibilityFlags = serializer.input.int8();
-            textureAnimationSpeed = serializer.input.float32();
-            textureAnimationSpeedOff = serializer.input.float32();
+            visibilityFlags = serializer.input.i8();
+            textureAnimationSpeed = serializer.input.f32();
+            textureAnimationSpeedOff = serializer.input.f32();
         }
         
         if (serializer.partsRevision >= 0x76) {
@@ -57,9 +57,9 @@ public class PGeneratedMesh implements Part {
         if (serializer.partsRevision >= 0x7e) {
             includeSides = serializer.input.bool();
             if (serializer.gameRevision >= 0x014703f0)
-                slideImpactDamping = serializer.input.int8();
-            slideSteer = serializer.input.int8();
-            slideSpeed = serializer.input.int8();
+                slideImpactDamping = serializer.input.i8();
+            slideSteer = serializer.input.i8();
+            slideSpeed = serializer.input.i8();
         }
         
     }

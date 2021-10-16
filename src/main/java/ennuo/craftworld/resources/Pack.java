@@ -11,7 +11,7 @@ public class Pack {
     public ArrayList<PackItem> packs;
 
     public Pack(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         packs = new ArrayList<PackItem>(count);
         for (int i = 0; i < count; ++i)
             packs.add(new PackItem(data));
@@ -21,10 +21,10 @@ public class Pack {
     public byte[] serialize(int revision, boolean compressed) {
         int count = packs.size();
         Output output = new Output(0x5 + (PackItem.MAX_SIZE * count), revision);
-        output.int32(packs.size());
+        output.i32(packs.size());
         for (PackItem item: packs)
             item.serialize(output);
-        output.shrinkToFit();
+        output.shrink();
         if (compressed) {
             ResourcePtr[] dependencies = new ResourcePtr[output.dependencies.size()];
             dependencies = output.dependencies.toArray(dependencies);

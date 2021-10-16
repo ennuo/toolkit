@@ -23,22 +23,22 @@ public class PTrigger implements Part {
 
     @Override
     public void Deserialize(Serializer serializer) {
-        triggerType = serializer.input.int32();
-        int thingCount = serializer.input.int32();
+        triggerType = serializer.input.i32();
+        int thingCount = serializer.input.i32();
         if (thingCount != 0) {
             inThings = new ThingPtr[thingCount];
             for (int i = 0; i < thingCount; ++i)
                 inThings[i] = serializer.deserializeThing();
         }
-        radiusMultiplier = serializer.input.float32();
+        radiusMultiplier = serializer.input.f32();
         if (serializer.partsRevision >= 0x7e)
-            zRangeHundreds = serializer.input.int32();
+            zRangeHundreds = serializer.input.i32();
         allZLayers = serializer.input.bool();
-        hysteresisMultiplier = serializer.input.float32();
+        hysteresisMultiplier = serializer.input.f32();
         enabled = serializer.input.bool();
         if (serializer.partsRevision >= 0x7e) {
-            zOffset = serializer.input.float32();
-            scoreValue = serializer.input.int32();
+            zOffset = serializer.input.f32();
+            scoreValue = serializer.input.i32();
         }
     }
     

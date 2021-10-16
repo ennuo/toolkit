@@ -15,13 +15,13 @@ public class FieldLayoutDetails {
     public FieldLayoutDetails(Data data, int partsRevision) {
         fieldName = data.str8();
         
-        if (partsRevision >= 0x76) modifiers = data.int16();
-        else modifiers = data.int32();
+        if (partsRevision >= 0x76) modifiers = data.i16();
+        else modifiers = data.i32();
         
-        machineType = MachineType.getValue(data.int32());
-        fishType = data.int32();
-        dimensionCount = data.int8();
-        arrayBaseMachineType = data.int32();
-        instanceOffset = data.int32();
+        machineType = MachineType.getValue(data.i32());
+        fishType = data.i32();
+        dimensionCount = data.i8();
+        arrayBaseMachineType = data.i32();
+        instanceOffset = data.i32();
     }
 }

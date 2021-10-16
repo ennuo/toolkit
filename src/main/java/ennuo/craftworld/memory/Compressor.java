@@ -44,11 +44,11 @@ public class Compressor {
         }
 
         Output output = new Output(2 + (chunks.length * 4), 0);
-        output.int16((short) zlibStreams.length);
+        output.i16((short) zlibStreams.length);
 
         for (int i = 0; i < zlibStreams.length; ++i) {
-            output.int16(compressedSize[i]);
-            output.int16(uncompressedSize[i]);
+            output.i16(compressedSize[i]);
+            output.i16(uncompressedSize[i]);
         }
 
         byte[] compressed = Bytes.Combine(zlibStreams);
@@ -59,10 +59,10 @@ public class Compressor {
 
     public static byte[] CompressStaticMesh(byte[] data, int revision, ResourcePtr[] dependencies) {
         Output output = new Output(0xD);
-        output.string("SMHb");
-        output.int32f(revision);
-        output.int32f(0xD + data.length);
-        output.int8(0);
+        output.str("SMHb");
+        output.i32f(revision);
+        output.i32f(0xD + data.length);
+        output.u8(0);
 
         return Bytes.Combine(output.buffer, data, Dependinate(dependencies));
 
@@ -82,11 +82,11 @@ public class Compressor {
         else if (revision == 0x3e2)
             flags = new byte[] { 0x44, 0x31, 0x00, (byte) 0x87, 0x07, 0x01, 0x01, 0x01 };
         Output output = new Output(size);
-        output.string(magic);
-        output.int32(revision);
-        output.int32(output.offset + 4 + compressed.length + flags.length);
+        output.str(magic);
+        output.i32(revision);
+        output.i32(output.offset + 4 + compressed.length + flags.length);
         output.bytes(flags);
-        output.shrinkToFit();
+        output.shrink();
         return Bytes.Combine(new byte[][] {
             output.buffer, compressed, Dependinate(dependencies)
         });
@@ -95,13 +95,13 @@ public class Compressor {
     private static byte[] Dependinate(ResourcePtr[] resources) {
         Output output = new Output(0x1C * resources.length + 4);
 
-        output.int32(resources.length);
+        output.i32(resources.length);
         for (ResourcePtr resource: resources) {
             output.resource(resource, true);
-            output.int32(resource.type.value);
+            output.i32(resource.type.value);
         }
 
-        output.shrinkToFit();
+        output.shrink();
         return output.buffer;
 
     }

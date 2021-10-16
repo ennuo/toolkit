@@ -13,30 +13,30 @@ public class SoftbodyCluster {
     
     public SoftbodyCluster() {};
     public SoftbodyCluster(Data data) {
-        clusterCount = data.int32();
-        restCenterOfMass = new Vector4f[data.int32()];
+        clusterCount = data.i32();
+        restCenterOfMass = new Vector4f[data.i32()];
         for (int i = 0; i < restCenterOfMass.length; ++i)
             restCenterOfMass[i] = data.v4();
-        restDyadicSum = new float[data.int32()][];
+        restDyadicSum = new float[data.i32()][];
         for (int i = 0; i < restDyadicSum.length; ++i)
             restDyadicSum[i] = data.matrix();
-        restQuadraticDyadicSum = data.float32arr();
-        name = new String[data.int32()];
+        restQuadraticDyadicSum = data.f32a();
+        name = new String[data.i32()];
         for (int i = 0; i < name.length; ++i)
             name[i] = data.str(0x20);
     }
     
     public void serialize(Output output) {
-        output.int32(clusterCount);
-        output.int32(restCenterOfMass.length);
+        output.i32(clusterCount);
+        output.i32(restCenterOfMass.length);
         for (int i = 0; i < restCenterOfMass.length; ++i)
             output.v4(restCenterOfMass[i]);
-        output.int32(restDyadicSum.length);
+        output.i32(restDyadicSum.length);
         for (int i = 0; i < restDyadicSum.length; ++i)
             output.matrix(restDyadicSum[i]);
-        output.float32arr(restQuadraticDyadicSum);
-        output.int32(name.length);
+        output.f32a(restQuadraticDyadicSum);
+        output.i32(name.length);
         for (int i = 0; i < name.length; ++i)
-           output.string(name[i], 0x20);
+           output.str(name[i], 0x20);
     }
 }

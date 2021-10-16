@@ -45,33 +45,33 @@ public class GfxMaterial {
     public ParameterAnimation[] parameterAnimations;
     
     public GfxMaterial(Data data) {
-        flags = data.int32();
+        flags = data.i32();
 
-        alphaTestLevel = data.float32();
-        alphaLayer = data.int8();
+        alphaTestLevel = data.f32();
+        alphaLayer = data.i8();
         if (data.revision > 0x331)
-            alphaMode = data.int8();
-        shadowCastMode = data.int8();
+            alphaMode = data.i8();
+        shadowCastMode = data.i8();
 
-        bumpLevel = data.float32();
-        cosinePower = data.float32();
-        reflectionBlur = data.float32();
-        refractiveIndex = data.float32();
+        bumpLevel = data.f32();
+        cosinePower = data.f32();
+        reflectionBlur = data.f32();
+        refractiveIndex = data.f32();
 
         if (data.revision > 0x13003ef) {
-            refractiveFresnelFalloffPower = data.float32();
-            refractiveFresnelMultiplier = data.float32();
-            refractiveFresnelOffset = data.float32();
-            refractiveFresnelShift = data.float32();
-            fuzzLengthAndRefractiveFlag = data.int8();
+            refractiveFresnelFalloffPower = data.f32();
+            refractiveFresnelMultiplier = data.f32();
+            refractiveFresnelOffset = data.f32();
+            refractiveFresnelShift = data.f32();
+            fuzzLengthAndRefractiveFlag = data.i8();
             
             if (data.revision > 0x17703ef) {
-                translucencyDensity = data.int8();
-                fuzzSwirlAngle = data.int8();
-                fuzzSwirlAmplitude = data.int8();
-                fuzzLightingBias = data.int8();
-                fuzzLightingScale = data.int8();
-                iridescenceRoughness = data.int8();
+                translucencyDensity = data.i8();
+                fuzzSwirlAngle = data.i8();
+                fuzzSwirlAmplitude = data.i8();
+                fuzzLightingBias = data.i8();
+                fuzzLightingScale = data.i8();
+                iridescenceRoughness = data.i8();
             }
         }
 
@@ -82,7 +82,7 @@ public class GfxMaterial {
         else if (data.revision == 0x272 || data.revision >= 0x336) shaderCount = 4;
         
         int[] offsets = new int[shaderCount + 1];
-        for (int i = (data.revision >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i) offsets[i] = data.int32();
+        for (int i = (data.revision >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i) offsets[i] = data.i32();
         shaders = new byte[shaderCount][];
         System.out.println("Shaders offset = 0x" + Bytes.toHex(data.offset));
         for (int i = 1; i <= shaderCount; ++i)
@@ -98,13 +98,13 @@ public class GfxMaterial {
         }
 
         System.out.println("WrapS offset = 0x" + Bytes.toHex(data.offset));
-        wrapS = new byte[data.int32()];
+        wrapS = new byte[data.i32()];
         for (int i = 0; i < wrapS.length; ++i)
-            wrapS[i] = data.int8();
+            wrapS[i] = data.i8();
         System.out.println("WrapT offset = 0x" + Bytes.toHex(data.offset));
-        wrapT = new byte[data.int32()];
+        wrapT = new byte[data.i32()];
         for (int i = 0; i < wrapT.length; ++i)
-            wrapT[i] = data.int8();
+            wrapT[i] = data.i8();
 
         System.out.println("Boxes offset = 0x" + Bytes.toHex(data.offset));
         boxes = Box.array(data);
@@ -113,7 +113,7 @@ public class GfxMaterial {
         
         if (data.revision >= 0x149) {
             System.out.println("SoundEnum offset = 0x" + Bytes.toHex(data.offset));
-            soundEnum = data.int32();
+            soundEnum = data.i32();
         }
         
         if (data.revision >= 0x2a2) {

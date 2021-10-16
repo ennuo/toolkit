@@ -22,14 +22,14 @@ public class TranslationPatch implements ModPatch {
     @Override
     public void serialize(Output output) {
         output.str8(this.key);
-        output.int32(this.ID);
+        output.i32(this.ID);
         output.str16(this.value);
     }
     
     public static ModPatch deserialize(Data data) {
         TranslationPatch patch = new TranslationPatch();
         patch.key = data.str8();
-        patch.ID = data.int32();
+        patch.ID = data.i32();
         patch.value = data.str16();
         System.out.println(String.format("Found Translation Patch with key = %s, ID = %d, value = %s", patch.key, patch.ID, patch.value));
         return patch;

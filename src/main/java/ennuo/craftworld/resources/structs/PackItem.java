@@ -20,21 +20,21 @@ public class PackItem {
     
     public PackItem() {}
     public PackItem(Data data) {
-        contentsType = ContentsType.getValue(data.int32());
+        contentsType = ContentsType.getValue(data.i32());
         mesh = data.resource(RType.MESH, true);
         slot = new Slot(data, true, false);
         contentID = data.str8();
-        timestamp = data.uint32();
+        timestamp = data.u32();
         if (data.revision == 0x3e2)
             crossBuyCompatible = data.bool();
     }
     
     public void serialize(Output output) {
-        output.int8(contentsType.value);
+        output.u8(contentsType.value);
         output.resource(mesh, true);
         slot.serialize(output, true, false);
         output.str8(contentID);
-        output.uint32(timestamp);
+        output.u32(timestamp);
         if (output.revision == 0x3e2)
             output.bool(crossBuyCompatible);
     }

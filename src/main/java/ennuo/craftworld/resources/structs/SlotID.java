@@ -14,8 +14,8 @@ public class SlotID {
     public SlotID() {}
     
     public SlotID(Data data) {
-        type = SlotType.getValue(data.int32());
-        ID = data.uint32();
+        type = SlotType.getValue(data.i32());
+        ID = data.u32();
     }
     
     public SlotID(SlotType type, int ID) {
@@ -24,8 +24,8 @@ public class SlotID {
     }
     
     public void serialize(Output output) {
-        output.int32(type.value);
-        output.uint32(ID);
+        output.i32(type.value);
+        output.u32(ID);
     }
     
     @Override

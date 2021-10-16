@@ -21,8 +21,8 @@ public class PBody implements Part {
     @Override
     public void Deserialize(Serializer serializer) {
         posVel = serializer.input.v3();
-        angVel = serializer.input.float32();
-        frozen = serializer.input.int32();
+        angVel = serializer.input.f32();
+        frozen = serializer.input.i32();
         editingPlayer = serializer.deserializeThing();
     }
 }

@@ -143,8 +143,8 @@ public class FileArchive {
         for (int i = 0; i < entryCount; i++) {
             FileEntry entry = new FileEntry(table
                 .bytes(20), table
-                .uint32(), table
-                .int32(), null);
+                .u32(), table
+                .i32(), null);
             if (shouldPreload)
                 entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
             this.entries.add(entry);
@@ -253,22 +253,22 @@ public class FileArchive {
         int lastBufferOffset = 0;
         for (FileEntry entry : entries) {
             output.bytes(entry.hash);
-            output.int32(lastBufferOffset);
-            output.int32(entry.size);
+            output.i32(lastBufferOffset);
+            output.i32(entry.size);
             lastBufferOffset += entry.size;
         }
         
         output.bytes(this.hashinate);
         if (this.archiveType == ArchiveType.FAR5)
-            output.int32(0); // no idea what this is
+            output.i32(0); // no idea what this is
         
-        output.int32(entries.length);
-        output.string(this.archiveType.name());
+        output.i32(entries.length);
+        output.str(this.archiveType.name());
         
         this.queue.clear();
         this.queueSize = 0;
         
-        output.shrinkToFit();
+        output.shrink();
         return output.buffer;
     }
     
@@ -306,8 +306,8 @@ public class FileArchive {
             for (int i = 0; i < this.queue.size(); ++i) {
                 FileEntry entry = this.queue.get(i);
                 output.bytes(entry.hash);
-                output.int32((int) offset);
-                output.int32(entry.size);
+                output.i32((int) offset);
+                output.i32(entry.size);
                 if (bar != null) bar.setValue(i + 1);
             }
 
@@ -317,11 +317,11 @@ public class FileArchive {
                 output.bytes(this.hashinate);
 
             if (this.archiveType == ArchiveType.FAR5)
-                output.int32(0); // unsure what this is
+                output.i32(0); // unsure what this is
 
-            output.int32(this.entries.size());
-            output.string(this.archiveType.toString());
-            output.shrinkToFit();
+            output.i32(this.entries.size());
+            output.str(this.archiveType.toString());
+            output.shrink();
 
             RandomAccessFile fileArchive = new RandomAccessFile(this.file.getAbsolutePath(), "rw");
             fileArchive.seek(offset);

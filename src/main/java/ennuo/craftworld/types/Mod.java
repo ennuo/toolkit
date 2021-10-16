@@ -127,7 +127,7 @@ public class Mod extends FileData {
         
         
         
-        revision = data.int8();
+        revision = data.i8();
         
         if (revision > 5) data.revision = 0x01ae03fa;
         else data.revision = 0xFFFF;
@@ -139,12 +139,12 @@ public class Mod extends FileData {
         }
         
         
-        compatibility = ModCompatibility.getValue(data.int8());
+        compatibility = ModCompatibility.getValue(data.i8());
         
         System.out.println(String.format("Mod has revison = %d, compatibility = %d (%s)", revision, compatibility.value, compatibility.name()));
         
-        major = data.int8();
-        minor = data.int8();
+        major = data.i8();
+        minor = data.i8();
         
         modID = data.str8();
         
@@ -158,13 +158,13 @@ public class Mod extends FileData {
         
         System.out.println(String.format("Mod has author = %s, title = %s, description = %s", author, title, description));
         
-        int entryCount = data.int32();
+        int entryCount = data.i32();
         System.out.println("Mod has " + entryCount + " entries");
         if (entryCount != 0) {
             entries = new ArrayList<FileEntry>(entryCount);
             for (int i = 0; i < entryCount; ++i) {
-                FileEntry entry = new FileEntry(data.str8(), data.int32(), data.uint32());
-                if (revision > 3) entry.timestamp = data.uint32();
+                FileEntry entry = new FileEntry(data.str8(), data.i32(), data.u32());
+                if (revision > 3) entry.timestamp = data.u32();
                 else entry.timestamp = 0;
                 size += entry.size + (0xFFFF);
                 entries.add(entry);
@@ -173,8 +173,8 @@ public class Mod extends FileData {
         }
         
         int itemCount;
-        if (revision > 5) itemCount = data.int32();
-        else itemCount = data.int16();
+        if (revision > 5) itemCount = data.i32();
+        else itemCount = data.i16();
         System.out.println("Mod has " + itemCount + " inventory patches");
         if (itemCount != 0) {
             items = new ArrayList<InventoryMetadata>(itemCount);
@@ -184,15 +184,15 @@ public class Mod extends FileData {
                 item.translatedLocation = data.str16();
                 item.translatedCategory = data.str16();
                 if (revision > 4) {
-                    item.minRevision = data.int32();
-                    item.maxRevision = data.int32();
+                    item.minRevision = data.i32();
+                    item.maxRevision = data.i32();
                 }
                 items.add(item);
             }
         }
         
         if (revision > 3) {
-            int slotCount = data.int32();
+            int slotCount = data.i32();
             System.out.println("Mod has " + slotCount + " slots");
             if (slotCount != 0) {
                 slots = new ArrayList<Slot>(slotCount);
@@ -201,7 +201,7 @@ public class Mod extends FileData {
             }
         }
         
-        int patchCount = data.int32();
+        int patchCount = data.i32();
         System.out.println("Mod has " + patchCount + " file patches");
         for (int i = 0; i < patchCount; ++i)
             patches.add(ModPatch.deserialize(data));
@@ -211,7 +211,7 @@ public class Mod extends FileData {
             entries.get(i).hash = Bytes.SHA1(entries.get(i).data);
         }
         
-        int imageSize = data.int32();
+        int imageSize = data.i32();
         if (imageSize == 0) {
             System.out.println("Mod has no image file");
             isParsed = true;
@@ -278,27 +278,27 @@ public class Mod extends FileData {
         Output output = new Output(size + (0xFF * entries.size()), 0xFFFF);
         if (revision > 5) output.revision = 0x01ae03fa;
         
-        output.string("MODb");
-        output.int8(revision); output.int8(compatibility.value);
-        output.int8(major); output.int8(minor);
+        output.str("MODb");
+        output.i8(revision); output.u8(compatibility.value);
+        output.u8(major); output.u8(minor);
         output.str8(modID);
         if (revision > 5) output.str16(author);
         else output.str8(author);
         output.str16(title);
         output.str16(description);
         
-        output.int32(entries.size());
+        output.i32(entries.size());
         for (int i = 0; i < entries.size(); ++i) {
             FileEntry entry = entries.get(i);
             output.str8(entry.path);
-            output.int32(entry.data.length);
-            output.uint32(entry.GUID);
+            output.i32(entry.data.length);
+            output.u32(entry.GUID);
             if (revision > 3)
-                output.uint32(entry.timestamp);
+                output.u32(entry.timestamp);
         }
         
-        if (revision > 5) output.int32(items.size());
-        else output.int16((short) items.size());
+        if (revision > 5) output.i32(items.size());
+        else output.i16((short) items.size());
         for (int i = 0; i < items.size(); ++i) {
             InventoryMetadata metadata = items.get(i);
             new Serializer(output).serializeMetadata(metadata, true);
@@ -306,25 +306,25 @@ public class Mod extends FileData {
             output.str16(metadata.translatedLocation);
             output.str16(metadata.translatedCategory);
             if (revision > 4) {
-                output.int32(metadata.minRevision);
-                output.int32(metadata.maxRevision);
+                output.i32(metadata.minRevision);
+                output.i32(metadata.maxRevision);
             }
         }
         
         if (revision > 3) {
-            output.int32(slots.size());
+            output.i32(slots.size());
             for (Slot slot : slots)
                 slot.serialize(output, true, false);
         }
         
         // patches aren't supported yet by this tool, so remove any that exist. //
-        output.int32(0);
+        output.i32(0);
         
         for (int i = 0; i < entries.size(); ++i)
             output.bytes(entries.get(i).data);
         
         //icon
-        if (icon == null) output.int32(0);
+        if (icon == null) output.i32(0);
         else {
            BufferedImage out = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_4BYTE_ABGR);
            Graphics g = out.createGraphics();
@@ -336,16 +336,16 @@ public class Mod extends FileData {
                 ImageIO.write(out, "png", baos);
                 baos.flush();
                 byte[] img = baos.toByteArray();
-                output.int32(img.length);
+                output.i32(img.length);
                 output.bytes(img);
             } catch (IOException ex) {
                 System.err.println("Failed to write icon.");
-                output.int32(0);
+                output.i32(0);
             }
         }
        
         
-        output.shrinkToFit();
+        output.shrink();
         
         
         if (!encrypt || !isProtected) {
@@ -361,7 +361,7 @@ public class Mod extends FileData {
         
         
         Output o = new Output(encrypted.length + 5);
-        o.string("MODe");
+        o.str("MODe");
         o.bool(!password.equals(DEFAULT_PASSWORD));
         o.bytes(encrypted);
         

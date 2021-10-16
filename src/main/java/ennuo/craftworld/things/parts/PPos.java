@@ -16,7 +16,7 @@ public class PPos implements Part {
     @Override
     public void Serialize(Serializer serializer) {
         serializer.serializeThing(thingOfWhichIAmABone);
-        serializer.output.int32((int) animHash);
+        serializer.output.i32((int) animHash);
         serializer.output.matrix(localPosition);
         if (serializer.partsRevision < 0x5e)
             serializer.output.matrix(worldPosition);
@@ -25,7 +25,7 @@ public class PPos implements Part {
     @Override
     public void Deserialize(Serializer serializer) {
         thingOfWhichIAmABone = serializer.deserializeThing();
-        animHash = serializer.input.uint32();
+        animHash = serializer.input.u32();
         localPosition = serializer.input.matrix();
         if (serializer.partsRevision < 0x5e)
             worldPosition = serializer.input.matrix();

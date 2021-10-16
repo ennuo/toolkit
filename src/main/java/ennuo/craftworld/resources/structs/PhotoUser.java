@@ -19,7 +19,7 @@ public class PhotoUser {
     }
     
     public void serialize(Output output) {
-        output.string(PSID, 0x14);
+        output.str(PSID, 0x14);
         output.str16(user);
         output.v4(bounds);
     }

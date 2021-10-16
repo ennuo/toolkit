@@ -15,12 +15,12 @@ public class Collectable {
     public Collectable() {}
     public Collectable(Data data) {
         item = data.resource(RType.PLAN, true);
-        count = data.int32();
+        count = data.i32();
     }
     
     public void serialize(Output output) {
         output.resource(item, true);
-        output.int32(count);
+        output.i32(count);
     }
     
 }

@@ -12,12 +12,12 @@ public class Label {
     public String translated;
     
     public Label(Data data) {
-        key = data.uint32();
-        category = data.int8();
+        key = data.u32();
+        category = data.i8();
     }
     
     public void serialize(Output output) {
-        output.int32((int) key);
-        output.int8(category);
+        output.i32((int) key);
+        output.u8(category);
     }
 }

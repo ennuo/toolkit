@@ -115,7 +115,7 @@ public class ScanCallback {
                         case "i":
                             {
                                 if (!magic.equals("BIK")) break;
-                                int size = Integer.reverseBytes(data.int32());
+                                int size = Integer.reverseBytes(data.i32());
                                 data.offset -= 8;
                                 buffer = data.bytes(size + 8);
                             }
@@ -151,14 +151,14 @@ public class ScanCallback {
                         case "4":
                             {
                                 if (!magic.equals("FSB")) break;
-                                int count = Integer.reverseBytes(data.int32());
+                                int count = Integer.reverseBytes(data.i32());
                                 data.forward(0x4);
-                                int size = Integer.reverseBytes(data.int32());
+                                int size = Integer.reverseBytes(data.i32());
                                 data.forward(0x20);
                                 for (int i = 0; i < count; ++i)
-                                    data.forward(Short.reverseBytes(data.int16()) - 2);
+                                    data.forward(Short.reverseBytes(data.i16()) - 2);
                                 if (data.data[data.offset] == 0) {
-                                    while (data.int8() == 0);
+                                    while (data.i8() == 0);
                                     data.offset -= 1;
                                 }
                                 data.forward(size);
@@ -171,17 +171,17 @@ public class ScanCallback {
                         case "b":
                             {
                                 if (magic.equals("FSB") || magic.equals("TEX")) break;
-                                int revision = data.int32f();
+                                int revision = data.i32f();
                                 if (revision > 0x021803F9 || revision < 0) {
                                     data.seek(begin + 1);
                                     continue;
                                 }
-                                int dependencyOffset = data.int32f();
+                                int dependencyOffset = data.i32f();
                                 data.forward(dependencyOffset - 12);
-                                int count = data.int32f();
+                                int count = data.i32f();
                                 for (int j = 0; j < count; ++j) {
                                     data.resource(RType.FILE_OF_BYTES, true);
-                                    data.int32f();
+                                    data.i32f();
                                 }
 
                                 int size = data.offset - begin;
@@ -195,11 +195,11 @@ public class ScanCallback {
                                 if (magic.equals("TEX")) data.forward(2);
                                 else if (magic.equals("GTF")) data.forward(0x1a);
                                 else break;
-                                int count = data.int16();
+                                int count = data.i16();
                                 int size = 0;
                                 for (int j = 0; j < count; ++j) {
-                                    size += data.int16();
-                                    data.int16();
+                                    size += data.i16();
+                                    data.i16();
                                 }
                                 data.forward(size);
 

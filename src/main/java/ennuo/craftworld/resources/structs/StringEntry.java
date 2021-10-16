@@ -14,14 +14,14 @@ public class StringEntry {
     public StringEntry() {}
     
     public StringEntry(Data data) {
-        key = data.uint32();
+        key = data.u32();
         string = data.str16();
-        index = data.int32();
+        index = data.i32();
     }
     
     public void serialize(Output output) {
-        output.uint32(key);
+        output.u32(key);
         output.str16(string);
-        output.int32(index);
+        output.i32(index);
     }
 }

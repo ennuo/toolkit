@@ -9,12 +9,12 @@ public class ImplicitEllipsoid {
     
     public ImplicitEllipsoid(Data data) {
         transform = data.matrix();
-        parentBone = data.int32();
-        affectWorldOnly = data.int32();
+        parentBone = data.i32();
+        affectWorldOnly = data.i32();
     }
     
     public static ImplicitEllipsoid[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         ImplicitEllipsoid[] out = new ImplicitEllipsoid[count];
         for (int i = 0; i < count; ++i)
             out[i] = new ImplicitEllipsoid(data);
@@ -23,7 +23,7 @@ public class ImplicitEllipsoid {
     
     public void serialize(Output output) {
         output.matrix(transform);
-        output.int32(parentBone);
-        output.int32(affectWorldOnly);
+        output.i32(parentBone);
+        output.i32(affectWorldOnly);
     }
 }

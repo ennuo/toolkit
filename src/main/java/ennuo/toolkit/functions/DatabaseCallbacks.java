@@ -370,8 +370,8 @@ public class DatabaseCallbacks {
     
     public static void newFileDB(int header) {
         Output output = new Output(0x8);
-        output.int32(header);
-        output.int32(0);
+        output.i32(header);
+        output.i32(0);
         File file = Toolkit.instance.fileChooser.openFile("blurayguids.map", "map", "FileDB", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {

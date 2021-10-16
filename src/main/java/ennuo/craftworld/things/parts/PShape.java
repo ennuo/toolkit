@@ -86,56 +86,56 @@ public class PShape implements Part {
        oldMaterial = serializer.input.resource(RType.MATERIAL);
        
        if (serializer.partsRevision >= 0x4e)
-        thickness = serializer.input.float32();
-       massDepth = serializer.input.float32();
+        thickness = serializer.input.f32();
+       massDepth = serializer.input.f32();
        
        if (serializer.partsRevision >= 0x5e)
-           editorColour = serializer.input.uint32();
+           editorColour = serializer.input.u32();
        else editorColourLegacy = serializer.input.v3();
        
-       editorColourBrightness = serializer.input.float32();
+       editorColourBrightness = serializer.input.f32();
        
-       bevelSize = serializer.input.float32();
+       bevelSize = serializer.input.f32();
        
        COM = serializer.input.matrix();
        
        if (serializer.partsRevision >= 0x5e) {
-           behaviour = serializer.input.int32();
-           editorColourOff = serializer.input.uint32();
-           editorColourOffBrightness = serializer.input.float32();
-           lethalType = serializer.input.int16();
+           behaviour = serializer.input.i32();
+           editorColourOff = serializer.input.u32();
+           editorColourOffBrightness = serializer.input.f32();
+           lethalType = serializer.input.i16();
        } else {
-           interactPlayMode = serializer.input.int8();
-           interactEditMode = serializer.input.int8();
-           lethalType = serializer.input.int32();
+           interactPlayMode = serializer.input.i8();
+           interactEditMode = serializer.input.i8();
+           lethalType = serializer.input.i32();
            collidableGame = serializer.input.bool();
            collidablePoppet = serializer.input.bool();
            if (serializer.partsRevision >= 0x4e)
                collidableWithParent = serializer.input.bool();
        }
        
-       soundEnumOverride = serializer.input.int32();
+       soundEnumOverride = serializer.input.i32();
        
        if (serializer.partsRevision < 0x5e) return;
        
-       playerNumberColour = serializer.input.int8();
+       playerNumberColour = serializer.input.i8();
        
-       flags = serializer.input.int16();
+       flags = serializer.input.i16();
        
        contactCache = new ContactCache(serializer);
        
-       stickiness = serializer.input.int32();
+       stickiness = serializer.input.i32();
        
        if (serializer.partsRevision < 0x76) return;
        
-       grabbability = serializer.input.int32();
-       grabFilter = serializer.input.int32();
+       grabbability = serializer.input.i32();
+       grabFilter = serializer.input.i32();
        
-       editorColourOpacity = serializer.input.int32();
-       editorColourOffOpacity = serializer.input.int32();
+       editorColourOpacity = serializer.input.i32();
+       editorColourOffOpacity = serializer.input.i32();
        
        if (serializer.partsRevision >= 0x7a)
-           editorColourShiny = serializer.input.int32();
+           editorColourShiny = serializer.input.i32();
        
        canCollect = serializer.input.bool();
        ghosty = serializer.input.bool();
@@ -161,10 +161,10 @@ public class PShape implements Part {
        cameraExcluderIsSticky = serializer.input.bool();
        
        ethereal = serializer.input.bool();
-       zBias = serializer.input.int32();
+       zBias = serializer.input.i32();
        
-       fireDensity = serializer.input.int8();
-       fireLifetime = serializer.input.int8();
+       fireDensity = serializer.input.i8();
+       fireLifetime = serializer.input.i8();
     }
     
 }

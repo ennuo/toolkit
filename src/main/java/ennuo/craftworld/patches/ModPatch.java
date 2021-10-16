@@ -11,7 +11,7 @@ public interface ModPatch {
     
     public void serialize(Output output);
     public static ModPatch deserialize(Data data) {
-        PatchType type = PatchType.getValue(data.int8());
+        PatchType type = PatchType.getValue(data.i8());
         switch (type) {
             case LAMS: return TranslationPatch.deserialize(data);
             default: throw new Error("Unknown Patch!");

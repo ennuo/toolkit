@@ -65,6 +65,12 @@ public class Bytes {
 
     public static final byte[] toBytes(int value) {
         return new byte[] {
+            (byte)(value), (byte)(value >>> 8L), (byte)(value >> 16L), (byte)(value >> 24L)
+        };
+    }
+    
+    public static final byte[] toBytesLE(int value) {
+        return new byte[] {
             (byte)(value >>> 24), (byte)(value >>> 16), (byte)(value >> 8), (byte) value
         };
     }
@@ -72,6 +78,12 @@ public class Bytes {
     public static final byte[] toBytes(long value) {
         return new byte[] {
             (byte)(int)(value >>> 24L), (byte)(int)(value >>> 16L), (byte)(int)(value >> 8L), (byte)(int) value
+        };
+    }
+    
+    public static final byte[] toBytesLE(long value) {
+        return new byte[] {
+            (byte)(int)(value), (byte)(int)(value >>> 8L), (byte)(int)(value >> 16L), (byte)(int)(value >> 24L)
         };
     }
 
@@ -93,7 +105,7 @@ public class Bytes {
     public static byte[] createResourceReference(ResourcePtr res, int revision) {
         Output output = new Output(0x1C + 0x4, revision);
         output.resource(res, true);
-        output.shrinkToFit();
+        output.shrink();
         return output.buffer;
     }
 
@@ -271,7 +283,7 @@ public class Bytes {
 
     public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, FileEntry entry) {
         byte[] left = resource.bytes(0x36);
-        int planSize = resource.int32f();
+        int planSize = resource.i32f();
         Resource plan = new Resource(resource.bytes(planSize));
         plan.revision = 0x270;
         byte[] right = resource.bytes(resource.length - resource.offset);
@@ -301,7 +313,7 @@ public class Bytes {
             result[0x8 + i] = tableOffset[i];
 
         plan.seek(0x17);
-        tableOffset = Bytes.toBytes(0x1b + plan.int32f());
+        tableOffset = Bytes.toBytes(0x1b + plan.i32f());
         for (int i = 0; i < 4; ++i)
             result[0x42 + i] = tableOffset[i];
 

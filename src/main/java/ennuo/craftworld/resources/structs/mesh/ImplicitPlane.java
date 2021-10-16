@@ -11,11 +11,11 @@ public class ImplicitPlane {
     public ImplicitPlane(Data data) {
         planeNormal = data.v4();
         pointInPlane = data.v4();
-        parentBone = data.int32();
+        parentBone = data.i32();
     }
     
     public static ImplicitPlane[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         ImplicitPlane[] out = new ImplicitPlane[count];
         for (int i = 0; i < count; ++i)
             out[i] = new ImplicitPlane(data);
@@ -25,6 +25,6 @@ public class ImplicitPlane {
     public void serialize(Output output) {
         output.v4(planeNormal);
         output.v4(pointInPlane);
-        output.int32(parentBone);
+        output.i32(parentBone);
     }
 }

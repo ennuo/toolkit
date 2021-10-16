@@ -67,7 +67,7 @@ public class DebugCallbacks {
         Data res = new Data(FileIO.read("C:/Users/Aidan/Desktop/lbp2storymode.slt"));
         res.revision = 0x3e2;
         
-        int count = res.int32();
+        int count = res.i32();
         Slot[] slots = new Slot[count];
         SlotID[] slotIDs = new SlotID[count];
         

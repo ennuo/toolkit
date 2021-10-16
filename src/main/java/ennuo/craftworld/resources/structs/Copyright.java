@@ -24,8 +24,8 @@ public class Copyright {
     }
     
     public void serialize(Output output) {
-        output.string(PSID, 0x14);
-        output.string(region, 0x8);
+        output.str(PSID, 0x14);
+        output.str(region, 0x8);
         output.bool(shareable);
         output.pad(7);
     }

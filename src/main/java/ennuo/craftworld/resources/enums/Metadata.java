@@ -12,24 +12,23 @@ public class Metadata {
     HASH, RESOURCE;
   }
   
-  
-  public static Map<String, CompressionType> magic;
+  public static Map<String, CompressionType> MAGIC;
   static {
-      magic = new HashMap<String, CompressionType>();
-      magic.put("OFTb", CompressionType.CUSTOM_COMPRESSION); magic.put("PINb", CompressionType.CUSTOM_COMPRESSION);
-      magic.put("FNTb", CompressionType.CUSTOM_COMPRESSION_LEGACY);
-      magic.put("ADCb", CompressionType.CUSTOM_COMPRESSION); magic.put("ADSb", CompressionType.CUSTOM_COMPRESSION); magic.put("QSTb", CompressionType.CUSTOM_COMPRESSION); 
-      magic.put("TEX ", CompressionType.LEGACY_TEXTURE); magic.put("GTF ", CompressionType.GTF_TEXTURE); magic.put("GTFs", CompressionType.GXT_SIMPLE_TEXTURE); magic.put("GTFS", CompressionType.GXT_EXTENDED_TEXTURE); 
-      magic.put("JNTb", CompressionType.CUSTOM_COMPRESSION); magic.put("PLNb", CompressionType.CUSTOM_COMPRESSION); magic.put("BEVb", CompressionType.CUSTOM_COMPRESSION); magic.put("ANMb", CompressionType.CUSTOM_COMPRESSION); magic.put("LVLb", CompressionType.CUSTOM_COMPRESSION); 
-      magic.put("CLDb", CompressionType.CUSTOM_COMPRESSION); magic.put("FSHb", CompressionType.CUSTOM_COMPRESSION); magic.put("GMTb", CompressionType.CUSTOM_COMPRESSION); magic.put("MATb", CompressionType.CUSTOM_COMPRESSION); 
-      magic.put("OATb", CompressionType.CUSTOM_COMPRESSION); magic.put("SLTb", CompressionType.CUSTOM_COMPRESSION); magic.put("PALb", CompressionType.CUSTOM_COMPRESSION); magic.put("PCKb", CompressionType.CUSTOM_COMPRESSION); 
-      magic.put("BPRb", CompressionType.CUSTOM_COMPRESSION); magic.put("INSb", CompressionType.CUSTOM_COMPRESSION); magic.put("MSHb", CompressionType.CUSTOM_COMPRESSION); magic.put("VOPb", CompressionType.CUSTOM_COMPRESSION);
-      magic.put("IPRe", CompressionType.ENCRYPTED); magic.put("IPRb", CompressionType.CUSTOM_COMPRESSION);  magic.put("FRMb", CompressionType.FISH_MOD); magic.put("FRMe", CompressionType.ENCRYPTED); magic.put("SMHb", CompressionType.STATIC_MESH);
+      MAGIC = new HashMap<String, CompressionType>();
+      MAGIC.put("OFTb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("PINb", CompressionType.CUSTOM_COMPRESSION);
+      MAGIC.put("FNTb", CompressionType.CUSTOM_COMPRESSION_LEGACY);
+      MAGIC.put("ADCb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("ADSb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("QSTb", CompressionType.CUSTOM_COMPRESSION); 
+      MAGIC.put("TEX ", CompressionType.LEGACY_TEXTURE); MAGIC.put("GTF ", CompressionType.GTF_TEXTURE); MAGIC.put("GTFs", CompressionType.GXT_SIMPLE_TEXTURE); MAGIC.put("GTFS", CompressionType.GXT_EXTENDED_TEXTURE); 
+      MAGIC.put("JNTb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("PLNb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("BEVb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("ANMb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("LVLb", CompressionType.CUSTOM_COMPRESSION); 
+      MAGIC.put("CLDb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("FSHb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("GMTb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("MATb", CompressionType.CUSTOM_COMPRESSION); 
+      MAGIC.put("OATb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("SLTb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("PALb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("PCKb", CompressionType.CUSTOM_COMPRESSION); 
+      MAGIC.put("BPRb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("INSb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("MSHb", CompressionType.CUSTOM_COMPRESSION); MAGIC.put("VOPb", CompressionType.CUSTOM_COMPRESSION);
+      MAGIC.put("IPRe", CompressionType.ENCRYPTED); MAGIC.put("IPRb", CompressionType.CUSTOM_COMPRESSION);  MAGIC.put("FRMb", CompressionType.FISH_MOD); MAGIC.put("FRMe", CompressionType.ENCRYPTED); MAGIC.put("SMHb", CompressionType.STATIC_MESH);
   }
   
   public static CompressionType getType(String header, int revision) {
-    if (magic.containsKey(header)) {
-      CompressionType key = magic.get(header);
+    if (Metadata.MAGIC.containsKey(header)) {
+      CompressionType key = MAGIC.get(header);
       if (key == CompressionType.CUSTOM_COMPRESSION && revision < 0x272)
         key = CompressionType.CUSTOM_COMPRESSION_LEGACY; 
       return key;

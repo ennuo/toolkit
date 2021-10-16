@@ -8,8 +8,8 @@ public class Wire {
     public byte portFrom, portTo;
     
     public Wire(Data data) {
-        boxFrom = data.int32(); boxTo = data.int32();
-        portFrom = data.int8(); portTo = data.int8();
+        boxFrom = data.i32(); boxTo = data.i32();
+        portFrom = data.i8(); portTo = data.i8();
         
         if (data.isEncoded()) boxFrom /= 2;
         if (data.isEncoded()) boxTo /= 2;
@@ -18,7 +18,7 @@ public class Wire {
     }
     
     public static Wire[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         Wire[] out = new Wire[count];
         for (int i = 0; i < count; ++i)
             out[i] = new Wire(data);
@@ -26,8 +26,8 @@ public class Wire {
     }
     
     public void serialize(Output output) {
-        output.int32(boxFrom); output.int32(boxTo);
-        output.int8(portFrom); output.int8(portTo);
+        output.i32(boxFrom); output.i32(boxTo);
+        output.i8(portFrom); output.i8(portTo);
         output.pad(5);
     }
 }

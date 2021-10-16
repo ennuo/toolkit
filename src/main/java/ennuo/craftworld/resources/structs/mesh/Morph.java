@@ -15,7 +15,7 @@ public class Morph {
     public void serialize(Output output) {
         for (Vector3f vertex : vertices) {
             output.v3(vertex);
-            output.float32(0);
+            output.f32(0);
         }
     }
     

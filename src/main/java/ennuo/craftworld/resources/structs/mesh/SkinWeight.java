@@ -65,9 +65,9 @@ public class SkinWeight {
         
         float[] weight = new float[4];
         weight[3] = 0;
-        weight[2] = (float) ((int) (data.int8() & 0xFF));
-        weight[1] = (float) ((int) (data.int8() & 0xFF));
-        weight[0] = (float) ((int) (data.int8() & 0xFF));
+        weight[2] = (float) ((int) (data.i8() & 0xFF));
+        weight[1] = (float) ((int) (data.i8() & 0xFF));
+        weight[0] = (float) ((int) (data.i8() & 0xFF));
         
         if (weight[0] != 0xFF) {
             weight[3] = 0xFE - weight[2] - weight[1] - weight[0];
@@ -76,13 +76,13 @@ public class SkinWeight {
         
         this.boneIndex = new byte[4];
         
-        this.boneIndex[0] = data.int8();
-        this.normal = decodeI24(data.int24());
-        this.boneIndex[1] = data.int8();
-        this.unknown = decodeI24(data.int24());
-        this.boneIndex[2] = data.int8();
-        this.tangent = decodeI24(data.int24());
-        this.boneIndex[3] = data.int8();
+        this.boneIndex[0] = data.i8();
+        this.normal = decodeI24(data.i24());
+        this.boneIndex[1] = data.i8();
+        this.unknown = decodeI24(data.i24());
+        this.boneIndex[2] = data.i8();
+        this.tangent = decodeI24(data.i24());
+        this.boneIndex[3] = data.i8();
     }
     
     public void serialize(Output output) {

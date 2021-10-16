@@ -20,15 +20,15 @@ public class MeshPrimitive {
         boolean isBit = data.revision < 0x230;
         material = data.resource(RType.GFXMATERIAL, isBit);
         textureAlternatives = data.resource(RType.TEXTURE_LIST, isBit);
-        minVert = data.int32();
-        maxVert = data.int32();
-        firstIndex = data.int32();
-        numIndices = data.int32();
-        region = data.int32();
+        minVert = data.i32();
+        maxVert = data.i32();
+        firstIndex = data.i32();
+        numIndices = data.i32();
+        region = data.i32();
     }
     
     public static MeshPrimitive[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         MeshPrimitive[] out = new MeshPrimitive[count];
         for (int i = 0; i < count; ++i)
             out[i] = new MeshPrimitive(data);
@@ -39,8 +39,8 @@ public class MeshPrimitive {
         boolean isBit = output.revision < 0x230;
         output.resource(material, isBit);
         output.resource(textureAlternatives, isBit);
-        output.int32(minVert); output.int32(maxVert);
-        output.int32(firstIndex); output.int32(numIndices);
-        output.int32(region);
+        output.i32(minVert); output.i32(maxVert);
+        output.i32(firstIndex); output.i32(numIndices);
+        output.i32(region);
     }
 }

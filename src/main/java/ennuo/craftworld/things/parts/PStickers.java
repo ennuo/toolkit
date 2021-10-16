@@ -17,17 +17,17 @@ public class PStickers implements Part {
 
     @Override
     public void Deserialize(Serializer serializer) {
-        int count = serializer.input.int32();
+        int count = serializer.input.i32();
         if (count != 0) {
             decals = new Decal[count];
             for (int i = 0; i < count; ++i)
                 decals[i] = new Decal(serializer.input);
         }
-        count = serializer.input.int32();
+        count = serializer.input.i32();
         if (count != 0) {
             costumeDecals = new Decal[count][];
             for (int i = 0; i < count; ++i) {
-                int subcount = serializer.input.int32();
+                int subcount = serializer.input.i32();
                 if (subcount != 0) {
                     costumeDecals[i] = new Decal[subcount];
                     for (int j = 0; j < subcount; ++i)
@@ -36,9 +36,9 @@ public class PStickers implements Part {
             }
         }
         
-        if (serializer.partsRevision <= 0x4e) serializer.input.int32();
+        if (serializer.partsRevision <= 0x4e) serializer.input.i32();
         
-        count = serializer.input.int32();
+        count = serializer.input.i32();
         if (count != 0) {
             eyetoyData = new Decal[count];
             for (int i = 0; i < count; ++i)

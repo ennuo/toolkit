@@ -12,12 +12,12 @@ public class Locator {
     public Locator(Data data) {
         position = data.v3();
         name = data.str8();
-        looping = data.int8();
-        type = data.int8();
+        looping = data.i8();
+        type = data.i8();
     }
     
     public static Locator[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         Locator[] out = new Locator[count];
         for (int i = 0; i < count; ++i)
             out[i] = new Locator(data);
@@ -27,8 +27,8 @@ public class Locator {
     public void serialize(Output output) {
         output.v3(position);
         output.str8(name);
-        output.int8(looping);
-        output.int8(type);
+        output.i8(looping);
+        output.i8(type);
     }
     
 }

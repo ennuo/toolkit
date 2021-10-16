@@ -12,17 +12,17 @@ public class ParameterAnimation {
     
     public ParameterAnimation(Data data) {
         baseValue = data.v4();
-        keys = new float[data.int32()];
+        keys = new float[data.i32()];
         for (int i = 0; i < keys.length; ++i)
-            keys[i] = data.float32();
-        name = new byte[data.int32()];
+            keys[i] = data.f32();
+        name = new byte[data.i32()];
         for (int i = 0; i < name.length; ++i)
-            name[i] = data.int8();
-        componentsAnimated = data.int8();
+            name[i] = data.i8();
+        componentsAnimated = data.i8();
     }
     
     public static ParameterAnimation[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         ParameterAnimation[] out = new ParameterAnimation[count];
         for (int i = 0; i < count; ++i)
             out[i] = new ParameterAnimation(data);
@@ -31,11 +31,11 @@ public class ParameterAnimation {
     
     public void serialize(Output output) {
         output.v4(baseValue);
-        output.int32(keys.length);
-        for (float key : keys) output.float32(key);
-        output.int32(name.length);
+        output.i32(keys.length);
+        for (float key : keys) output.f32(key);
+        output.i32(name.length);
         for (byte name : name)
-            output.int8(name);
-        output.int8(componentsAnimated);
+            output.i8(name);
+        output.i8(componentsAnimated);
     }
 }

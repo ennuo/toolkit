@@ -18,11 +18,11 @@ public class DependencyCallbacks {
         Output output = new Output(resource.length);
 
         output.bytes(resource.bytes(0x8));
-        int offset = resource.int32f();
-        output.int32f(offset);
+        int offset = resource.i32f();
+        output.i32f(offset);
         output.bytes(resource.bytes(offset - resource.offset));
-        output.int32f(0);
-        output.shrinkToFit();
+        output.i32f(0);
+        output.shrink();
 
         Globals.replaceEntry(entry, output.buffer);
     }
@@ -39,8 +39,8 @@ public class DependencyCallbacks {
         Output output = new Output(resource.length);
 
         output.bytes(resource.bytes(0x8));
-        int offset = resource.int32f();
-        output.int32f(offset);
+        int offset = resource.i32f();
+        output.i32f(offset);
         output.bytes(resource.bytes(offset - resource.offset));
 
         ArrayList < ResourcePtr > dependencies = new ArrayList < ResourcePtr > (resource.dependencies.length);
@@ -51,13 +51,13 @@ public class DependencyCallbacks {
             }
         }
 
-        output.int32f(dependencies.size());
+        output.i32f(dependencies.size());
         for (ResourcePtr ptr: dependencies) {
             output.resource(ptr, true);
-            output.int32f(ptr.type.value);
+            output.i32f(ptr.type.value);
         }
 
-        output.shrinkToFit();
+        output.shrink();
 
         Globals.replaceEntry(entry, output.buffer);
     }

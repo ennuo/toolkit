@@ -36,36 +36,36 @@ public class PRenderMesh implements Part {
     @Override
     public void Deserialize(Serializer serializer) {
         mesh = serializer.input.resource(RType.MESH);
-        boneThings = new ThingPtr[serializer.input.int32()];
+        boneThings = new ThingPtr[serializer.input.i32()];
         for (int i = 0; i < boneThings.length; ++i)
             boneThings[i] = serializer.deserializeThing();
         anim = serializer.input.resource(RType.ANIM);
-        animPos = serializer.input.float32();
-        animSpeed = serializer.input.float32();
+        animPos = serializer.input.f32();
+        animSpeed = serializer.input.f32();
         animLoop = serializer.input.bool();
-        loopStart = serializer.input.float32();
-        loopEnd = serializer.input.float32();
+        loopStart = serializer.input.f32();
+        loopEnd = serializer.input.f32();
         
         if (serializer.partsRevision < 0x5e) {
             editorColourLegacy = serializer.input.v4();
             dontCastShadows = serializer.input.bool();
         }
         else {
-            editorColour = serializer.input.uint32();
-            castShadows = serializer.input.int32();
+            editorColour = serializer.input.u32();
+            castShadows = serializer.input.i32();
         }
         
         RTTEnable = serializer.input.bool();
                     
         if (serializer.partsRevision < 0x5e)
             visible = serializer.input.bool();
-        else visibilityFlags = serializer.input.int32();
+        else visibilityFlags = serializer.input.i32();
         
-        poppetRenderScale = serializer.input.float32();
+        poppetRenderScale = serializer.input.f32();
         
         if (serializer.partsRevision < 0x5e) {
-            parentDistanceFront = serializer.input.float32();
-            parentDistanceSide = serializer.input.float32();
+            parentDistanceFront = serializer.input.f32();
+            parentDistanceSide = serializer.input.f32();
         }
     }
     

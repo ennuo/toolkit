@@ -23,7 +23,7 @@ public class PhotoMetadata {
         levelName = data.str16();
         levelHash = data.bytes(0x14);
         timestamp = data.varint();
-        int userCount = data.int8();
+        int userCount = data.i8();
         if (userCount != 0) {
             users = new PhotoUser[userCount];
             for (int i = 0; i < userCount; ++i)
@@ -38,10 +38,10 @@ public class PhotoMetadata {
         output.bytes(levelHash);
         output.varint(timestamp);
         if (users != null) {
-            output.int32(users.length);
+            output.i32(users.length);
             for (PhotoUser user : users)
                 user.serialize(output);
-        } else output.int8(0);
+        } else output.u8(0);
     }
     
     @Override

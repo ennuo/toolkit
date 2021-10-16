@@ -7,12 +7,12 @@ public class SoftbodyVertEquivalence {
     public short first, count;
     
     public SoftbodyVertEquivalence(Data data) {
-        first = data.int16();
-        count = data.int16();
+        first = data.i16();
+        count = data.i16();
     }
     
     public static SoftbodyVertEquivalence[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         SoftbodyVertEquivalence[] out = new SoftbodyVertEquivalence[count];
         for (int i = 0; i < count; ++i)
             out[i] = new SoftbodyVertEquivalence(data);
@@ -20,7 +20,7 @@ public class SoftbodyVertEquivalence {
     }
     
     public void serialize(Output output) {
-        output.int16(first);
-        output.int16(count);
+        output.i16(first);
+        output.i16(count);
     }
 }

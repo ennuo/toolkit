@@ -14,21 +14,21 @@ public class Polygon {
     
     public Polygon(Data data, int partsRevision) {
         boolean isVector3 = true;
-        int count = data.int32();
+        int count = data.i32();
         if (partsRevision >= 0x5e) isVector3 = data.bool();
         Vector3f[] vertices = new Vector3f[count];
         for (int i = 0; i < vertices.length; ++i) {
             Vector3f vector = new Vector3f(0, 0, 0);
-            vector.x = data.float32();
-            vector.y = data.float32();
-            if (isVector3) vector.z = data.float32();
+            vector.x = data.f32();
+            vector.y = data.f32();
+            if (isVector3) vector.z = data.f32();
         }
         
-        int loopCount = data.int32();
-        if (partsRevision >= 0x4e) data.int8();
+        int loopCount = data.i32();
+        if (partsRevision >= 0x4e) data.i8();
         
         loops = new int[loopCount];
         for (int i = 0; i < loopCount; ++i)
-            loops[i] = data.int32(); 
+            loops[i] = data.i32(); 
     }
 }

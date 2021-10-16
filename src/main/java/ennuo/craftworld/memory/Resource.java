@@ -29,10 +29,11 @@ public class Resource extends Data {
     public Resource(byte[] data) {
         super(data);
         if (data != null) {
-            magic = str(4);
-            revision = int32f();
-            type = Metadata.getType(magic, revision);
-            seek(0);
+            this.magic = this.str(4);
+            if (this.magic.charAt(3) == 'b')
+                this.revision = i32f();
+            this.type = Metadata.getType(this.magic, this.revision);   
+            this.seek(0);
         }
     }
 
@@ -59,7 +60,7 @@ public class Resource extends Data {
         if (revision <= 0x272) serializer.serializeLegacyMetadata(data, true);
         else serializer.serializeMetadata(data, true);
 
-        output.shrinkToFit();
+        output.shrink();
     }
 
     public void removePlanDescriptors(long GUID, boolean compressed) {
@@ -69,29 +70,29 @@ public class Resource extends Data {
 
 
         if (peek() == 1 || peek() == 0) bool();
-        int32();
+        i32();
 
         int start = offset;
         seek(0);
 
         byte[] left = bytes(start);
 
-        int size = int32();
+        int size = i32();
 
         Data thingData = new Data(bytes(size), revision);
 
         byte[] right = bytes(length - offset);
 
         Output output = new Output(0x8, revision);
-        output.uint32(GUID);
-        output.shrinkToFit();
+        output.u32(GUID);
+        output.shrink();
 
         Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourcePtr(GUID, RType.PLAN), revision), new byte[] { 00 });
         Bytes.ReplaceAll(thingData, output.buffer, new byte[] { 00 });
 
         Output sb = new Output(6, revision);
-        sb.int32(thingData.data.length);
-        sb.shrinkToFit();
+        sb.i32(thingData.data.length);
+        sb.shrink();
 
         setData(Bytes.Combine(
             left,
@@ -125,7 +126,7 @@ public class Resource extends Data {
         if (magic.equals("PLNb")) {
 
             if (data.peek() == 1 || data.peek() == 0 || isStreamingChunk) data.bool();
-            data.int32();
+            data.i32();
 
             int start = data.offset;
 
@@ -133,7 +134,7 @@ public class Resource extends Data {
 
             byte[] left = data.bytes(start);
 
-            int size = data.int32();
+            int size = data.i32();
 
             Data thingData = new Data(data.bytes(size), revision);
 
@@ -143,8 +144,8 @@ public class Resource extends Data {
             Bytes.ReplaceAll(thingData, oldRes, newRes);
 
             Output output = new Output(6, revision);
-            output.int32(thingData.data.length);
-            output.shrinkToFit();
+            output.i32(thingData.data.length);
+            output.shrink();
 
 
             setData(Bytes.Combine(
@@ -190,28 +191,28 @@ public class Resource extends Data {
         entry.canReplaceDecompressed = true;
         int missingDependencies = 0;
         seek(8);
-        int tableOffset = int32f();
+        int tableOffset = i32f();
         seek(tableOffset);
-        int dependencyCount = int32f();
+        int dependencyCount = i32f();
         if (dependencies == null || dependencyCount != dependencies.length)
             dependencies = new FileEntry[dependencyCount];
         resources = new ResourcePtr[dependencyCount];
         for (int i = 0; i < dependencyCount; i++) {
             resources[i] = new ResourcePtr();
-            switch (int8()) {
+            switch (i8()) {
                 case 1:
                     byte[] hash = bytes(20);
                     resources[i].hash = hash;
                     dependencies[i] = Globals.findEntry(hash);
                     break;
                 case 2:
-                    long GUID = uint32f();
+                    long GUID = u32f();
                     resources[i].GUID = GUID;
                     dependencies[i] = Globals.findEntry(GUID);
                     break;
             }
             if (dependencies[i] == null) missingDependencies++;
-            resources[i].type = RType.getValue(int32f());
+            resources[i].type = RType.getValue(i32f());
             if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
                 byte[] data = Globals.extractFile(dependencies[i].hash);
                 if (data != null) {
@@ -233,8 +234,8 @@ public class Resource extends Data {
     public byte[] decompress(boolean set) {
         if (type == CompressionType.STATIC_MESH) {
             seek(0x8);
-            int dep = int32f();
-            int8();
+            int dep = i32f();
+            i8();
             byte[] data = bytes(dep - offset);
             if (set)
                 this.setData(data);
@@ -264,12 +265,12 @@ public class Resource extends Data {
                 return null;
         }
 
-        short chunks = int16();
+        short chunks = i16();
 
         if (chunks == 0) {
             int old = offset;
             seek(8);
-            int tableOffset = int32f();
+            int tableOffset = i32f();
             seek(old);
             byte[] data = bytes(tableOffset - offset);
             if (set) setData(data);
@@ -280,8 +281,8 @@ public class Resource extends Data {
         int[] decompressed = new int[chunks];
         int decompressedSize = 0;
         for (int i = 0; i < chunks; i++) {
-            compressed[i] = int16LE();
-            decompressed[i] = int16LE();
+            compressed[i] = i16LE();
+            decompressed[i] = i16LE();
             decompressedSize += decompressed[i];
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream(decompressedSize);

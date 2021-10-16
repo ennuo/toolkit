@@ -10,12 +10,12 @@ public class ShapeInfo {
     public int isPointCloud;
     
     public ShapeInfo(Data data) {
-        numVerts = data.int32();
-        isPointCloud = data.int32();
+        numVerts = data.i32();
+        isPointCloud = data.i32();
     }
     
     public void serialize(Output output) {
-        output.int32(numVerts);
-        output.int32(isPointCloud);
+        output.i32(numVerts);
+        output.i32(isPointCloud);
     }
 }

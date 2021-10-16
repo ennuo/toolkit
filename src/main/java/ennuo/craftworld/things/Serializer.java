@@ -82,7 +82,7 @@ public class Serializer {
     }
     
     private boolean checkIfSerialized() {
-        int component = input.int32();
+        int component = input.i32();
         if (component == 0) return false;
         if (components.contains(component)) return false;
         components.add(component);
@@ -104,39 +104,39 @@ public class Serializer {
         
         if (metadata.creationHistory != null && metadata.creationHistory.length != 0) {
             currentComponent++; output.varint(currentComponent);
-            output.int8(metadata.creationHistory.length);
+            output.u8(metadata.creationHistory.length);
             for (String creator : metadata.creationHistory)
-                output.string(creator, 0x14);
-        } else output.int32(0);
+                output.str(creator, 0x14);
+        } else output.i32(0);
         
         output.resource(metadata.icon, true);
         
         if (metadata.userCreatedDetails != null) {
                 currentComponent++; output.varint(currentComponent);
                 metadata.userCreatedDetails.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
         if (metadata.photoData  != null) {
             currentComponent++; output.varint(currentComponent);
             metadata.photoData.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
         if (metadata.eyetoyData != null) {
             currentComponent++; output.varint(currentComponent);
             metadata.eyetoyData.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
-        output.int16(metadata.locationIndex);
-        output.int16(metadata.categoryIndex);
-        output.int16(metadata.primaryIndex);
+        output.i16(metadata.locationIndex);
+        output.i16(metadata.categoryIndex);
+        output.i16(metadata.primaryIndex);
         
         if (metadata.creator != null) {
             currentComponent++; output.varint(currentComponent);
             metadata.creator.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
-        output.int8(metadata.toolType.value);
-        output.int8(metadata.flags);
+        output.i8(metadata.toolType.value);
+        output.i8(metadata.flags);
         
         if (!item) return;
         
@@ -148,25 +148,25 @@ public class Serializer {
     public void serializeLegacyMetadata(InventoryMetadata metadata, boolean item) {
         output.pad(0xC);
         
-        output.int32f(metadata.locationIndex);
-        output.int32f(metadata.categoryIndex);
-        output.int32f(metadata.primaryIndex);
+        output.i32f(metadata.locationIndex);
+        output.i32f(metadata.categoryIndex);
+        output.i32f(metadata.primaryIndex);
         
         output.pad(0x8);
         
-        output.uint32f(metadata.colour);
+        output.u32f(metadata.colour);
         
         output.pad(0x4);
         
-        output.uint32f(metadata.dateAdded);
-        output.uint32f(metadata.highlightSound);
+        output.u32f(metadata.dateAdded);
+        output.u32f(metadata.highlightSound);
         
         for (int i = 0; i < 4; ++i)
-            output.int8(metadata.flags);
+            output.i8(metadata.flags);
         
-        output.uint32f(metadata.type.getValue(output.revision));
-        output.uint32f(metadata.subType.value);
-        output.uint32f(metadata.toolType.value);
+        output.u32f(metadata.type.getValue(output.revision));
+        output.u32f(metadata.subType.value);
+        output.u32f(metadata.toolType.value);
         
         metadata.creator.serialize(output);
         
@@ -178,31 +178,31 @@ public class Serializer {
         
         if (metadata.userCreatedDetails != null)
             metadata.userCreatedDetails.serialize(output);
-        else output.int16((short) 0);
+        else output.i16((short) 0);
         
         if (metadata.creationHistory != null) {
-            output.int8(metadata.creationHistory.length);
+            output.u8(metadata.creationHistory.length);
             for (int i = 0; i < metadata.creationHistory.length; ++i)
                 output.str16(metadata.creationHistory[i]);
-        } else output.int32(0);
+        } else output.i32(0);
         
         output.resource(metadata.icon, true);
         
         if (metadata.photoData != null) {
-            currentComponent++; output.int32(currentComponent);
+            currentComponent++; output.i32(currentComponent);
             metadata.photoData.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
         if (metadata.eyetoyData != null) {
-            currentComponent++; output.int32(currentComponent);
+            currentComponent++; output.i32(currentComponent);
             metadata.eyetoyData.serialize(output);
-        } else output.int32(0);
+        } else output.i32(0);
         
         if (!item) return;
         
         if (output.revision >= 0x272) {
-            output.uint32(metadata.location);
-            output.uint32(metadata.category);
+            output.u32(metadata.location);
+            output.u32(metadata.category);
         } else {
             output.str8(metadata.legacyLocationKey);
             output.str8(metadata.legacyCategoryKey);
@@ -216,26 +216,26 @@ public class Serializer {
        
         input.forward(0xC);
         
-        metadata.locationIndex = (short) input.int32f();
-        metadata.categoryIndex = (short) input.int32f();
-        metadata.primaryIndex = (short) input.int32f();
+        metadata.locationIndex = (short) input.i32f();
+        metadata.categoryIndex = (short) input.i32f();
+        metadata.primaryIndex = (short) input.i32f();
         
         input.forward(0x8);
         
-        metadata.colour = input.uint32f();
+        metadata.colour = input.u32f();
         
         input.forward(0x4);
         
-        metadata.dateAdded = input.uint32f();
+        metadata.dateAdded = input.u32f();
         
-        metadata.highlightSound = input.int32f();
+        metadata.highlightSound = input.i32f();
         
         for (int i = 0; i < 4; ++i)
-            metadata.flags = input.int8();
+            metadata.flags = input.i8();
         
-        metadata.type = ItemType.getValue(input.uint32f(), input.revision);
-        metadata.subType = ItemSubType.getValue(input.uint32f(), metadata.type);
-        metadata.toolType = ToolType.getValue((byte) input.int32f());
+        metadata.type = ItemType.getValue(input.u32f(), input.revision);
+        metadata.subType = ItemSubType.getValue(input.u32f(), metadata.type);
+        metadata.toolType = ToolType.getValue((byte) input.i32f());
                 
         metadata.creator = new Copyright(input);
         
@@ -259,7 +259,7 @@ public class Serializer {
             metadata.userCreatedDetails.description = description;
         }
         
-        int creatorCount = input.int32();
+        int creatorCount = input.i32();
         
         if (creatorCount == 0) metadata.creationHistory = null;
         else {
@@ -279,8 +279,8 @@ public class Serializer {
         if (!isItem) return metadata;
         
         if (input.revision >= 0x272) {
-            metadata.location = input.uint32();
-            metadata.category = input.uint32();
+            metadata.location = input.u32();
+            metadata.category = input.u32();
         } else {
             metadata.legacyLocationKey = input.str8();
             metadata.legacyCategoryKey = input.str8();
@@ -295,14 +295,14 @@ public class Serializer {
         System.out.println("Parsing some legacy InventoryItem metadata... This will not be complete.");
         InventoryMetadata metadata = new InventoryMetadata();
         
-        metadata.translationKey = input.str(input.int32f());
-        metadata.locationIndex = (short) input.int32f();
-        metadata.categoryIndex = (short) input.int32f();
+        metadata.translationKey = input.str(input.i32f());
+        metadata.locationIndex = (short) input.i32f();
+        metadata.categoryIndex = (short) input.i32f();
         
         
         input.forward(0x8);
         
-        metadata.type = ItemType.getValue(input.int32(), input.revision);
+        metadata.type = ItemType.getValue(input.i32(), input.revision);
         
         input.forward(0x8);
         
@@ -330,19 +330,19 @@ public class Serializer {
         
         InventoryMetadata metadata = new InventoryMetadata();
         
-        metadata.dateAdded = input.uint32(); 
+        metadata.dateAdded = input.u32(); 
         metadata.levelUnlockSlotID = new SlotID(input);
-        metadata.highlightSound = input.uint32();
-        metadata.colour = input.uint32();
+        metadata.highlightSound = input.u32();
+        metadata.colour = input.u32();
         
-        metadata.type = ItemType.getValue(input.uint32(), input.revision);
+        metadata.type = ItemType.getValue(input.u32(), input.revision);
         
-        metadata.subType = ItemSubType.getValue(input.uint32(), metadata.type);
+        metadata.subType = ItemSubType.getValue(input.u32(), metadata.type);
         
         System.out.println(String.format("InventoryItem has type = %d (%s), subtype = %d (%s)", metadata.type.getValue(input.revision), metadata.type.name(), metadata.subType.value, metadata.subType.name()));
         
-        metadata.titleKey = input.uint32();
-        metadata.descriptionKey = input.uint32();
+        metadata.titleKey = input.u32();
+        metadata.descriptionKey = input.u32();
         
         System.out.println(String.format("InventoryItem has titleKey = %d, descriptionKey = %d", metadata.titleKey, metadata.descriptionKey));
         if (LAMS != null) {
@@ -361,7 +361,7 @@ public class Serializer {
         }
         
         if (checkIfSerialized()) {
-            int historyCount = input.int32();
+            int historyCount = input.i32();
             if (historyCount != 0) {
                 metadata.creationHistory = new String[historyCount];
                 for (int i = 0; i < historyCount; ++i)
@@ -394,24 +394,24 @@ public class Serializer {
         if (checkIfSerialized()) 
             metadata.eyetoyData = new EyetoyData(input);
         
-        metadata.locationIndex = input.int16();
-        metadata.categoryIndex = input.int16();
-        metadata.primaryIndex = input.int16();
+        metadata.locationIndex = input.i16();
+        metadata.categoryIndex = input.i16();
+        metadata.primaryIndex = input.i16();
         
         if (checkIfSerialized()) {
             metadata.creator = new Copyright(input);
             System.out.println("Copyright belongs to " + metadata.creator.PSID);
         }
         
-        metadata.toolType = ToolType.getValue(input.int8());  
-        metadata.flags = input.int8();
+        metadata.toolType = ToolType.getValue(input.i8());  
+        metadata.flags = input.i8();
         
         if (!item) return metadata;
         
         System.out.println(String.format("InventoryItem has toolType = %d, flags = %d", metadata.toolType.value, metadata.flags));
         
-        metadata.location = input.uint32();
-        metadata.category = input.uint32(); 
+        metadata.location = input.u32();
+        metadata.category = input.u32(); 
         
         System.out.println(String.format("InventoryItem has locationKey = %d, categoryKey = %d", metadata.location, metadata.category));   
         
@@ -451,7 +451,7 @@ public class Serializer {
     public void serializeThing(ThingPtr thing) {}
     public ThingPtr deserializeThing() {
         if (stopParsing) return null;
-        sp = input.int32();
+        sp = input.i32();
         if (sp == 0) return new ThingPtr();
         
         ThingPtr isSerialized = isThingSerialized(sp);
@@ -463,14 +463,14 @@ public class Serializer {
         things.add(thingPtr);
         
         if (gameRevision > LEGACY_THING)
-            input.int8();
+            input.i8();
         
         Thing thing = new Thing();
         thingPtr.thing = thing;
         
         if (gameRevision <= 0x272)
             thing.parent = deserializeThing();
-        thingPtr.UID = input.int32();
+        thingPtr.UID = input.i32();
         
         
         if (gameRevision > 0x272)
@@ -480,29 +480,29 @@ public class Serializer {
         
         long flags = 0;
         if (gameRevision > 0x25b) {
-            thing.createdBy = input.int16();
-            thing.changedBy = input.int16();
+            thing.createdBy = input.i16();
+            thing.changedBy = input.i16();
             
             if (gameRevision > 0x272) {
-                thing.planGUID = input.int32();
-                thing.extraFlags = (gameRevision > 0x010503ef) ? input.int16() : (short) input.int32();
+                thing.planGUID = input.i32();
+                thing.extraFlags = (gameRevision > 0x010503ef) ? input.i16() : (short) input.i32();
             } else {
-                thing.extraFlags = (short) input.int32();
-                thing.planGUID = input.int32();
+                thing.extraFlags = (short) input.i32();
+                thing.planGUID = input.i32();
             }
             
-            partsRevision = input.int8();
-            flags = input.uint32();
+            partsRevision = input.i8();
+            flags = input.u32();
         } else {
             partsRevision = 0x3e;
             if (gameRevision > 0x210) {
-                thing.createdBy = input.int16();
-                thing.changedBy = input.int16();
+                thing.createdBy = input.i16();
+                thing.changedBy = input.i16();
                 input.bool();
             }
             if (gameRevision > 0x25b)
-                input.int32();
-            input.int32();
+                input.i32();
+            input.i32();
         }
         
         System.out.println(String.format("Thing (UID = 0x%s, Parent = 0x%s, Group = 0x%s, GUID = 0x%s, Version = 0x%s)", 
@@ -520,7 +520,7 @@ public class Serializer {
     }
     
     public Part deserializePart(String part) {
-        int comp = input.int32();
+        int comp = input.i32();
         if (part == "SCRIPTINSTANCE") {
             System.out.println("Deserializing ScriptInstance");
             ScriptInstance instance = new ScriptInstance();
@@ -535,7 +535,7 @@ public class Serializer {
     
     
     public boolean deserializePart(String part, Thing thing) {
-        int comp = input.int32();
+        int comp = input.i32();
         try {
             System.out.println("P" + part + " (START: 0x" + Bytes.toHex(input.offset) + ")"); 
             thing.parts.add(part).Deserialize(this);
@@ -554,14 +554,14 @@ public class Serializer {
             item.isUsedForStreaming = input.bool();
        
         
-        gameRevision = input.int32(); 
+        gameRevision = input.i32(); 
         item.revision = gameRevision; 
         input.revision = gameRevision;
         
-        int bufferSize = input.int32();
+        int bufferSize = input.i32();
         
         int metadataOffset = input.offset + bufferSize;
-        int thingCount = input.int32();
+        int thingCount = input.i32();
         
         System.out.println(String.format("Parsing Inventory Item (r%d, thingCount: %d)", gameRevision, thingCount));
         System.out.println("Inventory Item is used for streaming?: " + item.isUsedForStreaming);

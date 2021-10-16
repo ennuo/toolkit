@@ -8,6 +8,6 @@ public class Contact {
     
     public Contact(Serializer serializer) {
         shape = (PShape) serializer.deserializePart("Shape");
-        flags = serializer.input.int32();  
+        flags = serializer.input.i32();  
     }
 }

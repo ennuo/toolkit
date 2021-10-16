@@ -18,15 +18,15 @@ public class ScriptInstance implements Part {
 
     @Override
     public void Deserialize(Serializer serializer) {
-        int count = serializer.input.int32();
+        int count = serializer.input.i32();
         if (count != 0) {
             fieldLayout = new FieldLayoutDetails[count];
             for (int i = 0; i < count; ++i)
                 fieldLayout[i] = new FieldLayoutDetails(serializer.input, serializer.partsRevision);
         }
-        instanceSize = serializer.input.int32();
+        instanceSize = serializer.input.i32();
         
-        serializer.input.int8();
+        serializer.input.i8();
         
         getObjects(serializer);
     }
@@ -45,16 +45,16 @@ public class ScriptInstance implements Part {
                     object.bool = serializer.input.bool();
                     break;
                 case FLOAT:
-                    object.f = serializer.input.float32();
+                    object.f = serializer.input.f32();
                     break;
                 case INT:
-                    object.integer = serializer.input.int32();
+                    object.integer = serializer.input.i32();
                     break;
                 case SAFE_PTR:
                     object.thing = serializer.deserializeThing();
                     break;
                 case OBJECT: {
-                    int objectType = serializer.input.int32();
+                    int objectType = serializer.input.i32();
                     switch (objectType) {
                         case 13:
                             object.part = serializer.deserializePart("Script");

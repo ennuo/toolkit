@@ -41,14 +41,14 @@ public class Images {
         }
 
         Output output = new Output(0x1E + DDS.length);
-        output.string("GTF ");
-        if (image.getColorModel().hasAlpha()) output.int8(0x88);
-        else output.int8(0x86);
+        output.str("GTF ");
+        if (image.getColorModel().hasAlpha()) output.u8(0x88);
+        else output.u8(0x86);
 
         output.bytes(new byte[] { 0x0A, 0x02, 0x00, 0x00, 0x00, (byte) 0xAA, (byte) 0xE4 });
 
-        output.int16((short) image.getWidth());
-        output.int16((short) image.getHeight());
+        output.i16((short) image.getWidth());
+        output.i16((short) image.getHeight());
 
         output.bytes(new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 });
 
@@ -113,8 +113,8 @@ public class Images {
         }
 
         Output output = new Output(0x6 + DDS.length);
-        output.string("TEX ");
-        output.int16((short) 1);
+        output.str("TEX ");
+        output.i16((short) 1);
         output.bytes(DDS);
 
         return new Resource(output.buffer);

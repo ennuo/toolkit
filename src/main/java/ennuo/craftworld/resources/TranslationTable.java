@@ -17,19 +17,19 @@ public class TranslationTable {
         System.out.println("Started processing Translation Table...");
         long begin = System.currentTimeMillis();
 
-        int count = data.int32();
+        int count = data.i32();
         System.out.println("Entry Count: " + count);
 
         int tableOffset = 4 + (count * 8);
         map = new HashMap<Long, String>(count);
         for (int i = 0; i < count; ++i) {
-            long key = data.uint32();
-            int offset = data.int32();
+            long key = data.u32();
+            int offset = data.i32();
             int old = data.offset;
 
             data.seek(tableOffset + offset + 2);
             while (data.offset != data.length) {
-                if (data.int16() == -257)
+                if (data.i16() == -257)
                     break;
             };
 

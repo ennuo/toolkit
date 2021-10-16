@@ -98,7 +98,7 @@ public class TreeSelectionListener {
                         res.decompress(true);
                         entry.revision = res.revision;
 
-                        int count = res.int32();
+                        int count = res.i32();
                         entry.slots = new ArrayList < Slot > (count);
                         for (int i = 0; i < count; ++i) {
                             Slot slot = new Slot(res, true, false);

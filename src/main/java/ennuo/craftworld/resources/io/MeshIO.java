@@ -738,7 +738,7 @@ public class MeshIO {
             
             float step = 0.0f;
             for (int i = 0; i < animation.numFrames - 1; ++i, step += timestep)
-                output.float32le(step);
+                output.f32LE(step);
             createBufferView("TIME", 0, output.offset);
             for (int i = 0; i < animation.bones.length; ++i) {
                 AnimationBone bone = animation.bones[i];
@@ -746,9 +746,9 @@ public class MeshIO {
                 if (bone.positions[0] != null) {
                     int posStart = output.offset;
                     for (Vector4f pos : bone.positions) {
-                        output.float32le(pos.x);
-                        output.float32le(pos.y);
-                        output.float32le(pos.z);
+                        output.f32LE(pos.x);
+                        output.f32LE(pos.y);
+                        output.f32LE(pos.z);
                     }
                     createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.offset - posStart);
                 }
@@ -756,10 +756,10 @@ public class MeshIO {
                 if (bone.rotations[0] != null) {
                     int rotStart = output.offset;
                     for (Vector4f rot : bone.rotations) {
-                        output.float32le(rot.x);
-                        output.float32le(rot.y);
-                        output.float32le(rot.z);
-                        output.float32le(rot.w);
+                        output.f32LE(rot.x);
+                        output.f32LE(rot.y);
+                        output.f32LE(rot.z);
+                        output.f32LE(rot.w);
                     }
                     createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.offset - rotStart);
                 }
@@ -767,9 +767,9 @@ public class MeshIO {
                 if (bone.scales[0] != null) {
                     int scaleStart = output.offset;
                     for (Vector4f scale : bone.scales) {
-                        output.float32le(scale.x);
-                        output.float32le(scale.y);
-                        output.float32le(scale.z);
+                        output.f32LE(scale.x);
+                        output.f32LE(scale.y);
+                        output.f32LE(scale.z);
                     }
                     createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.offset - scaleStart);
                 }
@@ -780,12 +780,12 @@ public class MeshIO {
                 int morphStart = output.offset;
                 for (int i = 0; i < animation.numFrames - 1; ++i) {
                     for (int j = 0; j < animation.morphCount; ++j)
-                        output.float32le(animation.morphs[j].getValueAtFrame(i));
+                        output.f32LE(animation.morphs[j].getValueAtFrame(i));
                 }
                 createBufferView("MORPHS_ANIMATED",  morphStart, output.offset - morphStart);
             }
             
-            output.shrinkToFit();
+            output.shrink();
             return output.buffer;
             
         }
@@ -794,9 +794,9 @@ public class MeshIO {
             int morphSize = (mesh.morphs == null) ? 0 : mesh.morphs.length;
             Output output = new Output( (mesh.vertices.length * 0x40) + (mesh.triangulate().length * 8) + (mesh.attributeCount * mesh.uvCount * 8) + (morphSize * mesh.vertices.length * 0x18) + (mesh.bones.length * 0x40));
             for (Vector3f vertex : mesh.vertices) {
-                output.float32le(vertex.x);
-                output.float32le(vertex.y);
-                output.float32le(vertex.z);
+                output.f32LE(vertex.x);
+                output.f32LE(vertex.y);
+                output.f32LE(vertex.z);
             }
             createBufferView("VERTICES", 0, output.offset);
             
@@ -810,23 +810,23 @@ public class MeshIO {
                     primitive.minVert = getMin(triangles);
                     primitive.maxVert = getMax(triangles);
                     for (short triangle : triangles)
-                        output.int16le((short) (triangle - primitive.minVert));
+                        output.i16LE((short) (triangle - primitive.minVert));
                     createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.offset - triangleStart);
                 }
             }
             
             int normalStart = output.offset;
             for (int i = 0; i < mesh.weights.length; ++i) {
-                output.float32le(mesh.weights[i].normal.x);
-                output.float32le(mesh.weights[i].normal.y);
-                output.float32le(mesh.weights[i].normal.z);
+                output.f32LE(mesh.weights[i].normal.x);
+                output.f32LE(mesh.weights[i].normal.y);
+                output.f32LE(mesh.weights[i].normal.z);
             }
             createBufferView("NORMAL", normalStart, output.offset - normalStart);
             for (int i = 0; i < mesh.attributeCount; ++i) {
                 int uvStart = output.offset;
                 for (int j = 0; j < mesh.uvCount; ++j) {
-                    output.float32le(mesh.attributes[j][i].x);
-                    output.float32le(mesh.attributes[j][i].y);
+                    output.f32LE(mesh.attributes[j][i].x);
+                    output.f32LE(mesh.attributes[j][i].y);
                 }
                 createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.offset - uvStart);
             }
@@ -834,9 +834,9 @@ public class MeshIO {
                 for (int i = 0; i < mesh.morphs.length; ++i) {
                     int morphStart = output.offset;
                     for (int j = 0; j < mesh.vertices.length; ++j) {
-                        output.float32le(mesh.morphs[i].vertices[j].x);
-                        output.float32le(mesh.morphs[i].vertices[j].y);
-                        output.float32le(mesh.morphs[i].vertices[j].z);
+                        output.f32LE(mesh.morphs[i].vertices[j].x);
+                        output.f32LE(mesh.morphs[i].vertices[j].y);
+                        output.f32LE(mesh.morphs[i].vertices[j].z);
                     }
                     createBufferView("MORPH_" + String.valueOf(i), morphStart, output.offset - morphStart);
                 }
@@ -844,9 +844,9 @@ public class MeshIO {
                 for (int i = 0; i < mesh.morphs.length; ++i) {
                     int morphStart = output.offset;
                     for (int j = 0; j < mesh.vertices.length; ++j) {
-                        output.float32le(mesh.morphs[i].normals[j].x  - mesh.weights[j].normal.x);
-                        output.float32le(mesh.morphs[i].normals[j].y  - mesh.weights[j].normal.y);
-                        output.float32le(mesh.morphs[i].normals[j].z - mesh.weights[j].normal.z);
+                        output.f32LE(mesh.morphs[i].normals[j].x  - mesh.weights[j].normal.x);
+                        output.f32LE(mesh.morphs[i].normals[j].y  - mesh.weights[j].normal.y);
+                        output.f32LE(mesh.morphs[i].normals[j].z - mesh.weights[j].normal.z);
                     }
                     createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.offset - morphStart);
                 }
@@ -855,27 +855,27 @@ public class MeshIO {
             int matrixStart = output.offset;
             for (int i = 0; i < mesh.bones.length; ++i)
                 for (int j = 0; j < 16; ++j)
-                    output.float32le(mesh.bones[i].invSkinPoseMatrix[j]);
+                    output.f32LE(mesh.bones[i].invSkinPoseMatrix[j]);
             createBufferView("MATRIX", matrixStart, output.offset - matrixStart);
 
             int jointStart = output.offset;
             for (int i = 0; i < mesh.weights.length; ++i)
                 for (int j = 0; j < 4; ++j)
-                    output.int8(mesh.weights[i].boneIndex[j]);
+                    output.i8(mesh.weights[i].boneIndex[j]);
             
             createBufferView("JOINTS", jointStart, output.offset - jointStart);
 
             int weightStart = output.offset;
             for (int i = 0; i < mesh.weights.length; ++i) {
-                output.float32le(mesh.weights[i].weights.x);
-                output.float32le(mesh.weights[i].weights.y);
-                output.float32le(mesh.weights[i].weights.z);
-                output.float32le(mesh.weights[i].weights.w);
+                output.f32LE(mesh.weights[i].weights.x);
+                output.f32LE(mesh.weights[i].weights.y);
+                output.f32LE(mesh.weights[i].weights.z);
+                output.f32LE(mesh.weights[i].weights.w);
             }
             
             createBufferView("WEIGHTS", weightStart, output.offset - weightStart);
    
-            output.shrinkToFit();
+            output.shrink();
             
             return output.buffer;
         }

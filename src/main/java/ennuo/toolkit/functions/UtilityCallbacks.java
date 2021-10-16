@@ -131,13 +131,13 @@ public class UtilityCallbacks {
         for (FileEntry entry: updateDB.entries) {
             FileEntry baseEntry = baseDB.find(entry.GUID);
             if (baseEntry == null)
-                output.string("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
             else if (baseEntry.size != entry.size) {
-                output.string("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.hash) + " -> " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.hash) + " -> " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
             }
 
         }
-        output.shrinkToFit();
+        output.shrink();
 
         File out = Toolkit.instance.fileChooser.openFile("diff.txt", ".txt", "Text Document", true);
         if (out == null) return;
@@ -204,7 +204,7 @@ public class UtilityCallbacks {
 
         Output output = new Output(12, 0xFFFFFFFF);
         output.varint(integer);
-        output.shrinkToFit();
+        output.shrink();
 
         System.out.println("0x" + Bytes.toHex(integer) + " (" + integer + ")" + " -> " + "0x" + Bytes.toHex(output.buffer));
     }

@@ -15,19 +15,19 @@ public class Decal {
     
     public Decal(Data data) {
         texture = data.resource(RType.TEXTURE);
-        u = data.float32();
-        v = data.float32();
-        xvecu = data.float32();
-        xvecv = data.float32();
-        yvecu = data.float32();
-        yvecv = data.float32();
-        packedCol = data.int32();
-        type = data.int32();
-        metadataIndex = data.int16();
+        u = data.f32();
+        v = data.f32();
+        xvecu = data.f32();
+        xvecv = data.f32();
+        yvecu = data.f32();
+        yvecv = data.f32();
+        packedCol = data.i32();
+        type = data.i32();
+        metadataIndex = data.i16();
         if (data.revision <= 0x272)
-            numMetadata = data.int16();
-        placedBy = data.int16();
-        scorchMark = data.int32();
+            numMetadata = data.i16();
+        placedBy = data.i16();
+        scorchMark = data.i32();
         plan = data.resource(RType.PLAN);
     }
     

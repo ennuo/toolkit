@@ -135,7 +135,7 @@ public class ExportCallbacks {
         if (Globals.LAMS != null) {
             Output out = new Output(0xFEFF * Globals.LAMS.map.size());
             for (Map.Entry < Long, String > entry: Globals.LAMS.map.entrySet())
-                out.string(entry.getKey() + "\n\t" + entry.getValue() + "\n");
+                out.str(entry.getKey() + "\n\t" + entry.getValue() + "\n");
 
             File file = Toolkit.instance.fileChooser.openFile(
                 Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".txt",
@@ -145,7 +145,7 @@ public class ExportCallbacks {
             );
 
             if (file == null) return;
-            out.shrinkToFit();
+            out.shrink();
             FileIO.write(out.buffer, file.getAbsolutePath());
         }
     }
