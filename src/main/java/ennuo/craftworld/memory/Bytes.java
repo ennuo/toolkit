@@ -63,13 +63,13 @@ public class Bytes {
         return toInteger(toBytes(Strings.leftPad(value, 8)));
     }
 
-    public static final byte[] toBytes(int value) {
+    public static final byte[] toBytesLE(int value) {
         return new byte[] {
             (byte)(value), (byte)(value >>> 8L), (byte)(value >> 16L), (byte)(value >> 24L)
         };
     }
     
-    public static final byte[] toBytesLE(int value) {
+    public static final byte[] toBytes(int value) {
         return new byte[] {
             (byte)(value >>> 24), (byte)(value >>> 16), (byte)(value >> 8), (byte) value
         };
