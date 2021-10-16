@@ -7,6 +7,29 @@ import java.util.Map;
 
 public class TranslationTable {
 
+    public static long MakeLamsKeyID(String key) {
+        long v0 = 0, v1 = 0xC8509800L;
+        for (int i = 32; i > 0; --i) {
+            long c = 0x20;
+            if ((i - 1) < key.length())
+                c = key.charAt(i - 1);
+            v0 = v0 * 0x1b + c;
+        }
+        
+        if (key.length() > 32) {
+            v1 = 0;
+            for (int i = 64; i > 32; --i) {
+                long c = 0x20;
+                if ((i - 1) < key.length())
+                    c = key.charAt(i - 1);
+                v1 = v1 * 0x1b + c;
+            }
+        }
+        
+        return (v0 + v1 * 0xDEADBEEFL) & 0xFFFFFFFFL;
+    }
+    
+    
     public Map<Long, String> map;
 
     public TranslationTable(Data data) {
