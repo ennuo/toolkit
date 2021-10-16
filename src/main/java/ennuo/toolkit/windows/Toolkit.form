@@ -1017,7 +1017,7 @@
             </Container>
             <Container class="javax.swing.JSplitPane" name="entryData">
               <Properties>
-                <Property name="dividerLocation" type="int" value="132"/>
+                <Property name="dividerLocation" type="int" value="148"/>
                 <Property name="orientation" type="int" value="0"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[55, 2147483647]"/>
@@ -1052,8 +1052,8 @@
                     <Component class="javax.swing.JTable" name="entryTable">
                       <Properties>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                          <Table columnCount="2" rowCount="7">
-                            <Column editable="false" title="Field" type="java.lang.Object">
+                          <Table columnCount="2" rowCount="8">
+                            <Column editable="true" title="Field" type="java.lang.Object">
                               <Data value="Path"/>
                               <Data value="Timestamp"/>
                               <Data value="SHA1"/>
@@ -1061,8 +1061,10 @@
                               <Data value="GUID"/>
                               <Data value="GUID (Hex)"/>
                               <Data value="GUID (7-bit)"/>
+                              <Data value="Revision"/>
                             </Column>
                             <Column editable="false" title="Value" type="java.lang.Object">
+                              <Data value="N/A"/>
                               <Data value="N/A"/>
                               <Data value="N/A"/>
                               <Data value="N/A"/>
@@ -1248,7 +1250,7 @@
                                       <Component id="creatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="creatorField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="36" max="32767" attributes="0"/>
+                                  <EmptySpace pref="20" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>

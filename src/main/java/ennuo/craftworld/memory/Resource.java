@@ -30,8 +30,9 @@ public class Resource extends Data {
         super(data);
         if (data != null) {
             this.magic = this.str(4);
-            if (this.magic.charAt(3) == 'b')
-                this.revision = i32f();
+            if (this.magic.length() == 4 && this.magic.charAt(3) == 'b')
+                this.revision = this.i32f();
+            else this.revision = 0;
             this.type = Metadata.getType(this.magic, this.revision);   
             this.seek(0);
         }

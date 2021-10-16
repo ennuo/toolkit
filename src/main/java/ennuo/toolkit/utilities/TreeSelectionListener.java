@@ -76,12 +76,13 @@ public class TreeSelectionListener {
             String ext = path.substring(path.lastIndexOf(".") + 1);
 
             toolkit.preview.setDividerLocation(325);
+            Resource res = new Resource(entryBuffer);
+            entry.revision = res.revision;
+            toolkit.setEditorPanel(selected);
             switch (ext) {
                 case "pck":
                     if (entry.pack == null) {
-                        Resource res = new Resource(entryBuffer);
                         res.decompress(true);
-                        entry.revision = res.revision;
                         try {
                             Pack pack = new Pack(res);
                             entry.pack = pack;
@@ -93,7 +94,6 @@ public class TreeSelectionListener {
                     break;
                 case "slt":
                     if (entry.slots == null) {
-                        Resource res = new Resource(entryBuffer);
                         if (res.magic.equals("SLTt")) return;
                         res.decompress(true);
                         entry.revision = res.revision;
@@ -140,24 +140,21 @@ public class TreeSelectionListener {
                     System.out.println("Failed to set Mesh preview, does functionality even exist?");
                     break;
                 case "anim": {
-                    Resource resource = new Resource(entryBuffer);
-                    resource.decompress(true);
-                    entry.animation = new Animation(resource);
+                    res.decompress(true);
+                    entry.animation = new Animation(res);
                     break;
                 }
                 case "gmat":
                     if (entry.gfxMaterial == null) {
-                        Resource resource = new Resource(entryBuffer);
-                        resource.decompress(true);
-                        entry.gfxMaterial = new GfxMaterial(resource);
+                        res.decompress(true);
+                        entry.gfxMaterial = new GfxMaterial(res);
                     }
                     break;
                 case "plan":
                     if (selected.entry.item == null) {
                         try {
-                            Resource resource = new Resource(entryBuffer);
-                            resource.decompress(true);
-                            selected.entry.item = new Serializer(resource, Globals.LAMS).DeserializeItem();
+                            res.decompress(true);
+                            selected.entry.item = new Serializer(res, Globals.LAMS).DeserializeItem();
                         } catch (Exception e) {
                             System.err.println("There was an error parsing the InventoryItem!");
                             return;

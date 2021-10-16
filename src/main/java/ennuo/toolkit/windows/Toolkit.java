@@ -860,7 +860,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         details.setLeftComponent(previewContainer);
 
-        entryData.setDividerLocation(132);
+        entryData.setDividerLocation(148);
         entryData.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         entryData.setMaximumSize(new java.awt.Dimension(55, 2147483647));
         entryData.setMinimumSize(new java.awt.Dimension(55, 102));
@@ -874,14 +874,15 @@ public class Toolkit extends javax.swing.JFrame {
                 {"Size", "N/A"},
                 {"GUID", "N/A"},
                 {"GUID (Hex)", "N/A"},
-                {"GUID (7-bit)", "N/A"}
+                {"GUID (7-bit)", "N/A"},
+                {"Revision", "N/A"}
             },
             new String [] {
                 "Field", "Value"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                true, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1035,7 +1036,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
@@ -2052,7 +2053,7 @@ public class Toolkit extends javax.swing.JFrame {
         FileEntry entry = node.entry;
         if (entry == null) {
             entryTable.setValueAt(node.path + node.header, 0, 1);
-            for (int i = 1; i < 7; ++i)
+            for (int i = 1; i < 8; ++i)
                 entryTable.setValueAt("N/A", i, 1);
             return;
         }
@@ -2074,6 +2075,8 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.setValueAt("N/A", 5, 1);
             entryTable.setValueAt("N/A", 6, 1);
         }
+        if (entry.revision != 0)
+            entryTable.setValueAt(Bytes.toHex(entry.revision), 7, 1);
     }
 
     public void setHexEditor(byte[] bytes) {
