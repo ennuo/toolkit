@@ -14,6 +14,7 @@ import ennuo.craftworld.resources.structs.PhotoData;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
 import ennuo.craftworld.things.parts.ScriptInstance;
+import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;
 
 public class Serializer {
@@ -246,8 +247,11 @@ public class Serializer {
         if (input.revision >= 0x272) {
             metadata.titleKey = input.varint();
             metadata.descriptionKey = input.varint();   
-        } else
+        } else {
             metadata.translationKey = input.str8();
+            metadata.titleKey = TranslationTable.makeLamsKeyID(metadata.translationKey + "_NAME");
+            metadata.descriptionKey = TranslationTable.makeLamsKeyID(metadata.translationKey + "_DESC");
+        }
         
         String title = input.str16();
         String description = input.str16();
@@ -284,6 +288,8 @@ public class Serializer {
         } else {
             metadata.legacyLocationKey = input.str8();
             metadata.legacyCategoryKey = input.str8();
+            metadata.location = TranslationTable.makeLamsKeyID(metadata.legacyLocationKey);
+            metadata.category = TranslationTable.makeLamsKeyID(metadata.legacyCategoryKey);
         }
         
 
@@ -296,6 +302,9 @@ public class Serializer {
         InventoryMetadata metadata = new InventoryMetadata();
         
         metadata.translationKey = input.str(input.i32f());
+        metadata.titleKey = TranslationTable.makeLamsKeyID(metadata.translationKey + "_NAME");
+        metadata.descriptionKey = TranslationTable.makeLamsKeyID(metadata.translationKey + "_DESC");
+        
         metadata.locationIndex = (short) input.i32f();
         metadata.categoryIndex = (short) input.i32f();
         
@@ -319,6 +328,7 @@ public class Serializer {
         }
         
         metadata.legacyCategoryKey = category;
+        metadata.category = TranslationTable.makeLamsKeyID(category);
         
         return metadata;
     }

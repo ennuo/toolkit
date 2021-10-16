@@ -1961,19 +1961,6 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public void setPlanDescriptions(InventoryMetadata metadata) {
-        if (Globals.lastSelected.entry.item.revision < 0x272) {
-            titleField.setText(metadata.translationKey);
-            descriptionField.setText("");
-            categoryField.setText(metadata.legacyCategoryKey);
-            locationField.setText(metadata.legacyLocationKey);
-
-            LAMSMetadata.setEnabled(false);
-            LAMSMetadata.setSelected(false);
-            StringMetadata.setEnabled(true);
-            StringMetadata.setSelected(true);
-            return;
-        }
-
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
 
