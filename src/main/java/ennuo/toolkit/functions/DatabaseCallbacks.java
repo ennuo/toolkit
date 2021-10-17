@@ -68,10 +68,10 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         int added = 0, patched = 0;
         for (FileEntry entry: newDB.entries) {
-            int old = db.entries.size();
-            db.add(entry);
-            if (old == db.entries.size()) patched++;
-            else added++;
+            if (db.add(entry) && !FileDB.isHidden(entry.path)) {
+                db.addNode(entry);
+                added++;
+            } else patched++;
         }
         Toolkit.instance.updateWorkspace();
         System.out.println(String.format("Succesfully updated FileDB (added = %d, patched = %d)", added, patched));
