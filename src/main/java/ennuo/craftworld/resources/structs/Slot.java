@@ -25,7 +25,7 @@ public class Slot {
     
     public ResourcePtr root;
     public ResourcePtr adventure;
-    public ResourcePtr icon = new ResourcePtr(10682, RType.TEXTURE);
+    public ResourcePtr icon = null;
     
     public ImageIcon renderedIcon;
     
@@ -45,8 +45,8 @@ public class Slot {
     public boolean isLocked = false;
     public boolean copyable = false;
     
-    public long backgroundGUID = 405678;
-    public ResourcePtr planetDecorations = new ResourcePtr(250423, RType.LEVEL);
+    public long backgroundGUID = 0;
+    public ResourcePtr planetDecorations = null;
     
     public LevelType developerLevelType = LevelType.COOPERATIVE;
     
