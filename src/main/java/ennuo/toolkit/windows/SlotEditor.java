@@ -5,6 +5,7 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.memory.StringUtils;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
@@ -1209,7 +1210,7 @@ public class SlotEditor extends javax.swing.JFrame {
     private ResourcePtr getResource(String root, RType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
-            return new ResourcePtr(parseInteger(root), type);
+            return new ResourcePtr(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
             return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
         else
@@ -1220,19 +1221,6 @@ public class SlotEditor extends javax.swing.JFrame {
         if (res != null) field.setText(res.toString());
         else field.setText("");
     }
-    
-    private long parseInteger(String str) {
-        long number = -1;
-        if (str.startsWith("0x"))
-            number = Long.parseLong(str.substring(2), 16);
-        else if (str.startsWith("g"))
-            number = Long.parseLong(str.substring(1));
-        else number = Long.parseLong(str);
-        return number;
-    }
-    
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner W;
     private javax.swing.JSpinner X;

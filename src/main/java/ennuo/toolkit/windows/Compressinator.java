@@ -4,7 +4,7 @@ import ennuo.craftworld.resources.enums.Magic;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Strings;
+import ennuo.craftworld.memory.StringUtils;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.toolkit.utilities.FileChooser;
@@ -336,7 +336,7 @@ public class Compressinator extends javax.swing.JFrame {
 
             model.add(model.size(), "g" + GUID);
         } else {
-            value = Strings.leftPad(value, 40);
+            value = StringUtils.leftPad(value, 40);
             resource.hash = Bytes.toBytes(value);
             model.add(model.size(), "h" + Bytes.toHex(resource.hash));
         }

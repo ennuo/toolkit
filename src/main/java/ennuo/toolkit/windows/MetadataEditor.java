@@ -3,7 +3,7 @@ package ennuo.toolkit.windows;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Strings;
+import ennuo.craftworld.memory.StringUtils;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.RType;
@@ -1485,11 +1485,11 @@ public class MetadataEditor extends javax.swing.JFrame {
             
             String SHA1 = levelSHA1.getText();
             if (SHA1.toLowerCase().startsWith("h")) SHA1 = SHA1.substring(1);
-            SHA1 = Strings.leftPad(SHA1, 40);
+            SHA1 = StringUtils.leftPad(SHA1, 40);
             data.photoMetadata.levelHash = Bytes.toBytes(SHA1);
             
             data.photoMetadata.level.type = (SlotType) photoSlotType.getSelectedItem();
-            data.photoMetadata.level.ID = parseInteger(photoSlotID.getText());
+            data.photoMetadata.level.ID = StringUtils.getLong(photoSlotID.getText());
             
             data.photoMetadata.levelName = levelName.getText();
             
@@ -1507,17 +1507,17 @@ public class MetadataEditor extends javax.swing.JFrame {
         } else item.metadata.eyetoyData = null;
         
         
-        item.metadata.titleKey = Long.valueOf(parseInteger(titleKey.getText()));
-        item.metadata.descriptionKey = Long.valueOf(parseInteger(descriptionKey.getText()));
+        item.metadata.titleKey = StringUtils.getLong(titleKey.getText());
+        item.metadata.descriptionKey = StringUtils.getLong(descriptionKey.getText());
         
         item.metadata.translatedLocation = locationKey.getText();
         item.metadata.translatedCategory = categoryKey.getText();
         
-        item.metadata.highlightSound = parseInteger(highlightSound.getText());
+        item.metadata.highlightSound = StringUtils.getLong(highlightSound.getText());
         
         SlotID id = new SlotID();
         id.type = (SlotType) unlockSlotType.getSelectedItem();
-        id.ID = parseInteger(unlockSlotID.getText()); 
+        id.ID = StringUtils.getLong(unlockSlotID.getText()); 
         
         int flags = 0;
         
@@ -1585,7 +1585,7 @@ public class MetadataEditor extends javax.swing.JFrame {
     private ResourcePtr getResource(String root, RType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
-            return new ResourcePtr(parseInteger(root), type);
+            return new ResourcePtr(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
             return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
         else
@@ -1646,21 +1646,8 @@ public class MetadataEditor extends javax.swing.JFrame {
     private void titleKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleKeyActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_titleKeyActionPerformed
-    
-    
+
     private int internalCount = 0;
-    private long parseInteger(String str) {
-        long number = -1;
-        if (str.startsWith("0x"))
-            number = Long.parseLong(str.substring(2), 16);
-        else if (str.startsWith("g"))
-            number = Long.parseLong(str.substring(1));
-        else number = Long.parseLong(str);
-        return number;
-    }
-    
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner B;
     private javax.swing.JSpinner G;

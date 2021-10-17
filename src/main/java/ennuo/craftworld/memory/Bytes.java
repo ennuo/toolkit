@@ -60,7 +60,7 @@ public class Bytes {
     }
 
     public static int toInteger(String value) {
-        return toInteger(toBytes(Strings.leftPad(value, 8)));
+        return toInteger(toBytes(StringUtils.leftPad(value, 8)));
     }
 
     public static final byte[] toBytesLE(int value) {
