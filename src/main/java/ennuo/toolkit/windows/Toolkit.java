@@ -9,6 +9,7 @@ import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.swing.FileData;
@@ -339,17 +340,18 @@ public class Toolkit extends javax.swing.JFrame {
                 }
                 
                 if (Globals.lastSelected.header.endsWith(".anim")) {
-                    if (Globals.lastSelected.entry.animation != null) {
+                    if (Globals.lastSelected.entry.getResource("animation") != null) {
                         exportGroup.setVisible(true);
                         exportAnimation.setVisible(true);
                     }
                 }
 
                 if (Globals.lastSelected.header.endsWith(".mol")) {
-                    if (Globals.lastSelected.entry.mesh != null) {
+                    Mesh mesh = Globals.lastSelected.entry.getResource("mesh");
+                    if (mesh != null) {
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
-                        int count = Globals.lastSelected.entry.mesh.attributeCount;
+                        int count = mesh.attributeCount;
                         exportOBJTEXCOORD0.setVisible((count > 0));
                         exportOBJTEXCOORD1.setVisible((count > 1));
                         exportOBJTEXCOORD2.setVisible((count > 2));
@@ -1578,7 +1580,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
+        InventoryMetadata metadata = Globals.lastSelected.entry.<InventoryItem>getResource("item").metadata;
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
         locationField.setText("" + metadata.location);
@@ -1586,7 +1588,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
+        InventoryMetadata metadata = Globals.lastSelected.entry.<InventoryItem>getResource("item").metadata;
 
         if (Globals.LAMS != null) {
             titleField.setText(Globals.Translate(metadata.titleKey));
@@ -1649,7 +1651,7 @@ public class Toolkit extends javax.swing.JFrame {
             getCurrentDB().shouldSave = true;
             new SlotEditor(this, Globals.lastSelected.entry).setVisible(true);
         } else {
-            boolean isSlotsFile = Globals.lastSelected.entry.pack == null;
+            boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
             new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
         }
     }//GEN-LAST:event_editSlotContextActionPerformed
@@ -1948,7 +1950,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
             loadImage(metadata.icon, item);
 
-        if (Globals.lastSelected.entry.item != item) return;
+        if (Globals.lastSelected.entry.<InventoryItem>getResource("item") != item) return;
 
         setPlanDescriptions(metadata);
 
@@ -2020,15 +2022,16 @@ public class Toolkit extends javax.swing.JFrame {
         if (hash == null) return;
         if (entry == null) entry = Globals.findEntry(hash);
 
-        if (entry != null && entry.texture != null)
-            setImage(entry.texture.getImageIcon(320, 320));
+        Texture texture = entry.getResource("texture");
+        if (entry != null && texture != null)
+            setImage(texture.getImageIcon(320, 320));
         else {
             byte[] data = Globals.extractFile(hash);
             if (data == null) return;
-            Texture texture = new Texture(data);
-            if (entry != null) entry.texture = texture;
+            texture = new Texture(data);
+            if (entry != null) entry.setResource("texture", texture);
             if (texture.parsed == true)
-                if (Globals.lastSelected.entry.item == item)
+                if (Globals.lastSelected.entry.<InventoryItem>getResource("item") == item)
                     setImage(texture.getImageIcon(320, 320));
         }
     }

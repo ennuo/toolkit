@@ -5,6 +5,8 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -330,8 +332,10 @@ public class DatabaseCallbacks {
                 FileEntry entry = node.entry;
                 node.removeFromParent();
                 if (entry == null) continue;
-                if (entry.slot != null) profile.slots.remove(entry.slot);
-                if (entry.profileItem != null) profile.inventoryCollection.remove(entry.profileItem);
+                Slot slot = entry.getResource("slot");
+                if (slot != null) profile.slots.remove(slot);
+                ProfileItem item = entry.getResource("profileItem");
+                if (item != null) profile.inventoryCollection.remove(item);
                 profile.entries.remove(entry);
                 profile.shouldSave = true;
             }

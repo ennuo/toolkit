@@ -8,6 +8,7 @@ import ennuo.craftworld.memory.Images;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.ItemType;
@@ -451,10 +452,8 @@ public class BigProfile extends FileData {
         planets = profile.resource(RType.LEVEL, true);
     }
     
-    
-
-    this.profile.slots = slots;
-    this.profile.items = inventoryCollection;
+    this.profile.setResource("slots", slots);
+    this.profile.setResource("items", inventoryCollection);
   }
   
   public void checkForSlotChanges() {
@@ -542,8 +541,8 @@ public class BigProfile extends FileData {
     shouldSave = true;
     byte[] hash = Bytes.SHA1(data);
     
-    Slot slot = entry.slot;
-    ProfileItem item = entry.profileItem;
+    Slot slot = entry.getResource("slot");
+    ProfileItem item = entry.getResource("profileItem");
     
     if (item != null) {
         ResourcePtr newRes = new ResourcePtr(hash, RType.PLAN);
@@ -612,7 +611,7 @@ public class BigProfile extends FileData {
     FileEntry entry = find(item.resource.hash);
     if (entry == null) return;
     
-    entry.profileItem = item;
+    entry.setResource("profileItem", item);
     entry.path = "items/" + item.metadata.type.name().toLowerCase() + "/";
     if (item.metadata.type.equals(ItemType.USER_COSTUMES) || item.metadata.type.equals(ItemType.COSTUMES)) {
       if (item.metadata.subType.equals(ItemType.ALL)) entry.path += "outfits/";
@@ -645,14 +644,13 @@ public class BigProfile extends FileData {
         if (slot.root == null) return;
         FileEntry entry = find(slot.root.hash);
         if (entry != null) {
-
-          entry.slot = slot;
-
+          entry.setResource("slot", slot);
           int revision = new Resource(extract(entry.SHA1)).revision;
           if (slot.icon != null && slot.icon.hash != null) {
             FileEntry iconEntry = find(slot.icon.hash);
             if (iconEntry != null) {
-              if (iconEntry.texture != null) slot.renderedIcon = Images.getSlotIcon(iconEntry.texture.getImage(), new Resource(extract(entry.SHA1)).revision);
+                Texture texture = iconEntry.getResource("texture");
+              if (texture != null) slot.renderedIcon = Images.getSlotIcon(texture.getImage(), new Resource(extract(entry.SHA1)).revision);
             }
           }
 

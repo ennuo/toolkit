@@ -1,18 +1,13 @@
 package ennuo.craftworld.types;
 
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.resources.Animation;
-import ennuo.craftworld.resources.GfxMaterial;
-import ennuo.craftworld.resources.Mesh;
-import ennuo.craftworld.resources.Pack;
-import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
-import ennuo.craftworld.things.InventoryItem;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FileEntry {
+    public int revision;
     public String path;
     public long timestamp = 0;
     public int size = 0;
@@ -21,44 +16,40 @@ public class FileEntry {
     public long GUID = -1;
     public byte[] data = null;
 
-    public int revision = 0;
-
-    public Mesh mesh;
-    public Texture texture;
-    public InventoryItem item;
-    public Animation animation;
-    public Slot slot;
-    public Pack pack;
-    public GfxMaterial gfxMaterial;
-    public ArrayList<Slot> slots;
-    public ArrayList<ProfileItem> items;
-
-    public ProfileItem profileItem;
-
     public FileModel dependencyModel;
     public FileEntry[] dependencies;
-    public boolean missingDependencies = true;
-
+    
+    public boolean hasMissingDependencies = true;
     public boolean canReplaceDecompressed = false;
+    
+    public HashMap<String, Object> resources = new HashMap<String, Object>();
   
+    public void setResource(String type, Object resource) {
+        this.resources.put(type, resource);
+    }
+    
+    public <T> T getResource(String type) {
+        if (this.resources.containsKey(type))
+            return (T) this.resources.get(type);
+        return null;
+    }
+    
     public void resetResources() { this.resetResources(true); }
     public void resetResources(boolean resetBigProfile) {
         this.dependencyModel = null;
         this.dependencies = null;
-        this.missingDependencies = true;
-        this.items = null;
-        this.slots = null;
-
-        if (resetBigProfile) {
-            this.slot = null;
-            this.profileItem = null;
+        this.hasMissingDependencies = true;
+        
+        if (!resetBigProfile) {
+            Slot slot = this.getResource("slot");
+            ProfileItem item = this.getResource("profileItem");
+            this.resources.clear();
+            this.setResource("slot", slot);
+            this.setResource("profileItem", item);
+            return;
         }
-
-        this.pack = null;
-        this.mesh = null;
-        this.gfxMaterial = null;
-        this.texture = null;
-        this.item = null;
+        
+        this.resources.clear();
     }
   
     public FileEntry(String path) {

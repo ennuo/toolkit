@@ -3,26 +3,25 @@ package ennuo.toolkit.functions;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.Mesh;
+import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
+import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.Mod;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
-import ennuo.toolkit.functions.ModCallbacks;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
@@ -36,7 +35,7 @@ public class ExportCallbacks {
         );
 
         if (file != null)
-            MeshIO.OBJ.export(file.getAbsolutePath(), Globals.lastSelected.entry.mesh, channel);
+            MeshIO.OBJ.export(file.getAbsolutePath(), Globals.lastSelected.entry.getResource("mesh"), channel);
     }
     
     public static void exportGLB() {
@@ -48,7 +47,7 @@ public class ExportCallbacks {
         );
        
         if (file != null)
-            MeshIO.GLB.FromMesh(Globals.lastSelected.entry.mesh).export(file.getAbsolutePath());
+            MeshIO.GLB.FromMesh(Globals.lastSelected.entry.getResource("mesh")).export(file.getAbsolutePath());
     }
     
     public static void exportAnimation() {
@@ -89,7 +88,7 @@ public class ExportCallbacks {
         }
         
         if (file != null)
-            MeshIO.GLB.FromAnimation(Globals.lastSelected.entry.animation, mesh).export(file.getAbsolutePath());
+            MeshIO.GLB.FromAnimation(Globals.lastSelected.entry.getResource("animation"), mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {
@@ -102,10 +101,11 @@ public class ExportCallbacks {
 
         if (file == null) return;
 
-        if (Globals.lastSelected.entry.texture == null || !Globals.lastSelected.entry.texture.parsed) return;
+        Texture texture = Globals.lastSelected.entry.getResource("texture");
+        if (texture == null || !texture.parsed) return;
 
         try {
-            ImageIO.write(Globals.lastSelected.entry.texture.getImage(), extension, file);
+            ImageIO.write(texture.getImage(), extension, file);
         } catch (IOException ex) {
             System.err.println("There was an error exporting the image.");
             return;
@@ -124,9 +124,10 @@ public class ExportCallbacks {
 
         if (file == null) return;
 
-        if (Globals.lastSelected.entry.texture == null || !Globals.lastSelected.entry.texture.parsed) return;
+        Texture texture = Globals.lastSelected.entry.getResource("texture");
+        if (texture == null || !texture.parsed) return;
 
-        FileIO.write(Globals.lastSelected.entry.texture.data, file.getAbsolutePath());
+        FileIO.write(texture.data, file.getAbsolutePath());
     }
 
     public static void exportTranslations() {
@@ -145,7 +146,8 @@ public class ExportCallbacks {
     public static void exportMod(boolean hashinate) {
         FileEntry entry = Globals.lastSelected.entry;
         String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
-        if (Globals.lastSelected.entry.item != null)
+        InventoryItem item = Globals.lastSelected.entry.getResource("item");
+        if (item != null)
             name = name.substring(0, name.length() - 5);
         else name = name.substring(0, name.length() - 4);
 
@@ -162,7 +164,7 @@ public class ExportCallbacks {
 
         byte[] compressed = mod.entries.get(mod.entries.size() - 1).data;
 
-        if (entry.item != null) {
+        if (item != null) {
             resource.setData(compressed);
             resource.decompress(true);
             InventoryMetadata metadata = new Serializer(resource).DeserializeItem().metadata;

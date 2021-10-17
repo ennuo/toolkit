@@ -228,7 +228,7 @@ public class DebugCallbacks {
 
         if (Globals.lastSelected == null || Globals.lastSelected.entry == null) return;
 
-        ennuo.craftworld.resources.Mesh mesh = Globals.lastSelected.entry.mesh;
+        ennuo.craftworld.resources.Mesh mesh = Globals.lastSelected.entry.getResource("mesh");
         if (mesh == null) return;
 
         String number = JOptionPane.showInputDialog(Toolkit.instance, "Revision", "0x" + Bytes.toHex(0x272));

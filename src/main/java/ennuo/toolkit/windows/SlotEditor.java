@@ -6,6 +6,7 @@ import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
@@ -66,8 +67,9 @@ public class SlotEditor extends javax.swing.JFrame {
         setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         setTitle("Slot Editor");
         
-        slotInstances.add(entry.slot);
-        slots.add(entry.slot.title);
+        Slot slot = entry.getResource("slot");
+        slotInstances.add(slot);
+        slots.add(slot.title);
         
         combo.setEnabled(false);
         combo.setSelectedIndex(0);
@@ -110,7 +112,7 @@ public class SlotEditor extends javax.swing.JFrame {
                 }
                 
                 else if (type == EditorType.PACKS) {
-                    byte[] data = entry.pack.serialize(entry.revision, true);
+                    byte[] data = entry.<Pack>getResource("pack").serialize(entry.revision, true);
                     if (data != null)
                         Globals.replaceEntry(entry, data);
                 }
@@ -128,9 +130,9 @@ public class SlotEditor extends javax.swing.JFrame {
         
         if (editor == EditorType.PACKS) {
             slotInstances = new ArrayList<Slot>();
-            for (PackItem item : entry.pack.packs) 
+            for (PackItem item : entry.<Pack>getResource("pack").packs) 
                 slotInstances.add(item.slot);
-        } else slotInstances = entry.slots;
+        } else slotInstances = entry.getResource("slots");
         for (int i = 0; i < slotInstances.size(); ++i) {
             Slot slot = slotInstances.get(i);
             String title = slot.title;
@@ -158,7 +160,7 @@ public class SlotEditor extends javax.swing.JFrame {
         if (slot == null) return;
         
         if (editor == EditorType.PACKS) {
-            PackItem pack = entry.pack.packs.get(index);
+            PackItem pack = entry.<Pack>getResource("pack").packs.get(index);
             
             contentsType.setEnabled(true);
             contentsType.setSelectedItem(pack.contentsType);
@@ -1101,7 +1103,7 @@ public class SlotEditor extends javax.swing.JFrame {
         if (editor == EditorType.PACKS) {
             PackItem item = new PackItem();
             item.slot = slot;
-            entry.pack.packs.add(item);
+            entry.<Pack>getResource("pack").packs.add(item);
         }
         
         combo.setSelectedIndex(combo.getItemCount() - 1);
@@ -1113,7 +1115,7 @@ public class SlotEditor extends javax.swing.JFrame {
         madeChanges = true;
         int index = combo.getSelectedIndex();
         if (editor == EditorType.PACKS)
-            entry.pack.packs.remove(index);
+            entry.<Pack>getResource("pack").packs.remove(index);
         slots.remove(index);
         slotInstances.remove(index);
         if (slots.size() == 0) {
@@ -1136,7 +1138,7 @@ public class SlotEditor extends javax.swing.JFrame {
         madeChanges = true;
         
         if (editor == EditorType.PACKS) {
-            PackItem pack = entry.pack.packs.get(combo.getSelectedIndex());
+            PackItem pack = entry.<Pack>getResource("pack").packs.get(combo.getSelectedIndex());
             
             pack.contentsType = (ContentsType) contentsType.getSelectedItem();
             pack.contentID = contentID.getText();

@@ -11,6 +11,7 @@ import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
+import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import static ennuo.toolkit.utilities.Globals.currentWorkspace;
@@ -59,11 +60,11 @@ public class TreeSelectionListener {
                 return;
             }
             toolkit.setHexEditor(entryBuffer);
-            if (entry.dependencyModel == null || entry.dependencies == null || entry.missingDependencies) {
+            if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
                 FileModel model = new FileModel(new FileNode("x", null, null));
                 Resource resource = new Resource(entryBuffer);
                 boolean recursive = !(resource.magic.equals("PCKb") || resource.magic.equals("SLTb") || resource.magic.equals("LVLb") || resource.magic.equals("ADCb") || resource.magic.equals("PALb"));
-                entry.missingDependencies = resource.getDependencies(entry, recursive) != 0;
+                entry.hasMissingDependencies = resource.getDependencies(entry, recursive) != 0;
                 entry.dependencies = resource.dependencies;
                 toolkit.generateDependencyTree(entry, model);
                 entry.dependencyModel = model;
@@ -80,11 +81,11 @@ public class TreeSelectionListener {
             toolkit.setEditorPanel(selected);
             switch (ext) {
                 case "pck":
-                    if (entry.pack == null) {
+                    if (entry.getResource("pack") == null) {
                         res.decompress(true);
                         try {
                             Pack pack = new Pack(res);
-                            entry.pack = pack;
+                            entry.setResource("pack", pack);
                         } catch (Exception e) {
                             System.err.println("There was an error processing the RPack file! -> ");
                             System.err.println(e);
@@ -92,30 +93,33 @@ public class TreeSelectionListener {
                     }
                     break;
                 case "slt":
-                    if (entry.slots == null) {
+                    ArrayList<Slot> slots = entry.getResource("slots");
+                    if (slots == null) {
                         if (res.magic.equals("SLTt")) return;
                         res.decompress(true);
                         entry.revision = res.revision;
 
                         int count = res.i32();
-                        entry.slots = new ArrayList < Slot > (count);
+                        slots = new ArrayList<Slot>(count);
                         for (int i = 0; i < count; ++i) {
                             Slot slot = new Slot(res, true, false);
-                            entry.slots.add(slot);
+                            slots.add(slot);
                             if (slot.root != null) {
                                 FileEntry e = Globals.findEntry(slot.root);
                                 e.revision = res.revision;
                                 if (e != null)
-                                    e.slot = slot;
+                                    e.setResource("slot", slot);
                             }
                         }
+                        entry.setResource("slots", slots);
                     }
                     break;
                 case "bin":
-                    if (entry.slot != null) {
-                        if (entry.slot.renderedIcon == null)
-                            entry.slot.renderIcon(entry);
-                        toolkit.setImage(entry.slot.renderedIcon);
+                    Slot slot = entry.getResource("slot");
+                    if (slot != null) {
+                        if (slot.renderedIcon == null)
+                            slot.renderIcon(entry);
+                        toolkit.setImage(slot.renderedIcon);
                     }
                     break;
                 case "tex":
@@ -125,44 +129,46 @@ public class TreeSelectionListener {
                 case "jpeg":
                 case "png":
                 case "jfif":
-                    if (entry.texture == null)
-                        entry.texture = new Texture(entryBuffer);
-                    ImageIcon icon = entry.texture.getImageIcon(320, 320);
+                    if (entry.getResource("texture") == null)
+                        entry.setResource("texture", new Texture(entryBuffer));
+                    ImageIcon icon = entry.<Texture>getResource("texture").getImageIcon(320, 320);
                     if (icon != null) toolkit.setImage(icon);
                     else System.out.println("Failed to set icon, it's null?");
                     break;
                 case "mol":
-                    if (entry.mesh == null) {
+                    if (entry.getResource("mesh") == null) {
                         String fileName = Paths.get(entry.path).getFileName().toString();
-                        entry.mesh = new Mesh(fileName.replaceFirst("[.][^.]+$", ""), entryBuffer);   
+                        entry.setResource("mesh", new Mesh(fileName.replaceFirst("[.][^.]+$", ""), entryBuffer));   
                     }
                     System.out.println("Failed to set Mesh preview, does functionality even exist?");
                     break;
                 case "anim": {
                     res.decompress(true);
-                    entry.animation = new Animation(res);
+                    if (entry.getResource("animation") == null)
+                        entry.setResource("animation", new Animation(res));
                     break;
                 }
                 case "gmat":
-                    if (entry.gfxMaterial == null) {
+                    if (entry.getResource("gfxMaterial") == null) {
                         res.decompress(true);
-                        entry.gfxMaterial = new GfxMaterial(res);
+                        entry.setResource("gfxMaterial", new GfxMaterial(res));
                     }
                     break;
                 case "plan":
-                    if (selected.entry.item == null) {
+                    if (selected.entry.getResource("item") == null) {
                         try {
                             res.decompress(true);
-                            selected.entry.item = new Serializer(res, Globals.LAMS).DeserializeItem();
+                            selected.entry.setResource("item", new Serializer(res, Globals.LAMS).DeserializeItem());
                         } catch (Exception e) {
                             System.err.println("There was an error parsing the InventoryItem!");
                             return;
                         }
                     }
                     if (Globals.lastSelected.entry == entry) {
-                        if (entry.item != null && tree == currentTree) {
-                            if (entry.item.metadata != null)
-                                toolkit.populateMetadata(entry.item);
+                        InventoryItem item = entry.getResource("item");
+                        if (item != null && tree == currentTree) {
+                            if (item.metadata != null)
+                                toolkit.populateMetadata(item);
                             else {
                                 System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
                                 try {
@@ -170,7 +176,7 @@ public class TreeSelectionListener {
                                         if (e.path.contains(".tex")) {
                                             ResourcePtr ptr = new ResourcePtr();
                                             ptr.hash = e.SHA1;
-                                            toolkit.loadImage(ptr, entry.item);
+                                            toolkit.loadImage(ptr, item);
                                             return;
                                         }
                                     }
