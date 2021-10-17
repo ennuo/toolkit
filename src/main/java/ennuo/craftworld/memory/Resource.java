@@ -282,8 +282,8 @@ public class Resource extends Data {
         int[] decompressed = new int[chunks];
         int decompressedSize = 0;
         for (int i = 0; i < chunks; i++) {
-            compressed[i] = i16LE();
-            decompressed[i] = i16LE();
+            compressed[i] = u16();
+            decompressed[i] = u16();
             decompressedSize += decompressed[i];
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream(decompressedSize);

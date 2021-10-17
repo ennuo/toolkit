@@ -142,7 +142,7 @@ public class Data {
      * Reads a short from the stream in little endian.
      * @return Short read from the stream
      */
-    public int i16LE() {
+    public int u16() {
         byte[] buffer = this.bytes(2);
         return buffer[0] << 8 & 0xFF00 | buffer[1] & 0xFF;
     }
@@ -187,8 +187,8 @@ public class Data {
     }
 
     /**
-     * Reads an integer from the stream as 32-bit regardless of revision.
-     * @return Integer read from the stream
+     * Reads an integer as an unsigned short from the stream.
+     * @return Unsigned short read from the stream
      */
     public int i32f() {
         byte[] buffer = this.bytes(4);
