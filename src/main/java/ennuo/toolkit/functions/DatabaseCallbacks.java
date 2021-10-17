@@ -4,7 +4,6 @@ import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.memory.StringUtils;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;

@@ -25,7 +25,7 @@ public class FileDB extends FileData {
     public HashMap<Long, FileEntry> GUIDLookup;
     
     /**
-     * Creates a FileDB from file and updates progress bar with loading progress.
+     * Creates a FileDB from file and generates nodes
      * @param file Path of FileDB resource
      * @param progress Progress bar to update
      */
@@ -90,8 +90,10 @@ public class FileDB extends FileData {
         this.SHA1Lookup = new HashMap<String, FileEntry>(count);
         this.GUIDLookup = new HashMap<Long, FileEntry>(count);
 
-        this.model = new FileModel(new FileNode("FILEDB", null, null));
-        this.root = (FileNode) this.model.getRoot();
+        if (bar != null) {
+            this.model = new FileModel(new FileNode("FILEDB", null, null));
+            this.root = (FileNode) this.model.getRoot();
+        }
 
         for (int i = 0; i < count; i++) {
             if (bar != null) bar.setValue(i);
@@ -113,8 +115,8 @@ public class FileDB extends FileData {
             this.SHA1Lookup.put(Bytes.toHex(SHA1), entry);
             this.entries.add(entry);
             
-            if (!FileDB.isHidden(path))
-                addNode(entry);
+            if (bar != null && !FileDB.isHidden(path))
+                this.addNode(entry);
         }
         
         if (bar != null) {
