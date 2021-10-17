@@ -93,7 +93,8 @@ public class SlotEditor extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 if (!madeChanges) return;
-                
+                Toolkit.instance.getCurrentDB().shouldSave = true;
+                Toolkit.instance.updateWorkspace();
                 if (type == EditorType.SLOTS) {
                     Output output = new Output(0x5 + Slot.MAX_SIZE * (slotInstances.size() + 1),  entry.revision);
                     output.i32(slotInstances.size());

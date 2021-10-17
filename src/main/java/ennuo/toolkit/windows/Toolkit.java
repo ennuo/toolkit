@@ -1719,7 +1719,6 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        getCurrentDB().shouldSave = true;
         new SlotEditor(this, ((BigProfile) getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile) getCurrentDB()).revision).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
