@@ -239,6 +239,22 @@ public class FileDB extends FileData {
         }
         return false;
     }
+    
+    /**
+     * Edits the GUID of the FileEntry.
+     * @param entry Entry to edit
+     * @param GUID GUID to set
+     * @return Whether or not the operation was successful.
+     */
+    public boolean edit(FileEntry entry, long GUID) {
+        FileEntry lookup = this.find(entry.GUID);
+        if (lookup != null) {
+            entry.GUID = GUID;
+            this.shouldSave = true;
+            return true;
+        }
+        return false;
+    }
   
     /**
      * Replaces the buffer contained by the FileEntry.
