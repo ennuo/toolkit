@@ -140,7 +140,7 @@ public class DebugCallbacks {
                 InventoryItem item = serializer.DeserializeItem();
 
                 if (item != null && item.metadata != null) {
-                    item.metadata.resource = new ResourcePtr(entry.hash, RType.PLAN);
+                    item.metadata.resource = new ResourcePtr(entry.SHA1, RType.PLAN);
                     mod.items.add(item.metadata);
                 }
             }
@@ -155,7 +155,7 @@ public class DebugCallbacks {
         Mod mod = (Mod) Toolkit.instance.getCurrentDB();
 
         for (FileEntry entry: mod.entries)
-            map.put(Bytes.toHex(entry.hash), entry.GUID);
+            map.put(Bytes.toHex(entry.SHA1), entry.GUID);
 
         for (FileEntry entry: mod.entries) {
             Resource resource = new Resource(entry.data);
@@ -171,7 +171,7 @@ public class DebugCallbacks {
                     resource.replaceDependency(i, newRes, false);
                 }
 
-                mod.replace(entry, Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));
+                mod.edit(entry, Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));
             }
         }
     }

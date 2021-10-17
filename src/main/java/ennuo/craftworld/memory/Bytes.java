@@ -359,7 +359,7 @@ public class Bytes {
                     for (FileEntry e: profile.entries) {
                         int index = -1;
                         for (int j = 0; j < resource.resources.length; ++j) {
-                            if (Arrays.equals(resource.resources[j].hash, e.hash)) {
+                            if (Arrays.equals(resource.resources[j].hash, e.SHA1)) {
                                 index = j;
                                 break;
                             }

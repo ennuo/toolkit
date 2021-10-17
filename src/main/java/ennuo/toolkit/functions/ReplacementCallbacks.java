@@ -28,7 +28,7 @@ public class ReplacementCallbacks {
             return;
         }
 
-        Resource oldImage = new Resource(Globals.extractFile(entry.hash));
+        Resource oldImage = new Resource(Globals.extractFile(entry.SHA1));
 
         Resource newImage = null;
         if (oldImage.type == Metadata.CompressionType.GTF_TEXTURE)
@@ -50,7 +50,7 @@ public class ReplacementCallbacks {
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) {
             byte[] original = Globals.extractFile(Globals.lastSelected.entry.GUID);
-            if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.hash);
+            if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.SHA1);
             if (original == null) {
                 System.out.println("Couldn't find entry, can't replace.");
                 return;

@@ -48,7 +48,7 @@ public class Dependinator extends javax.swing.JFrame {
         this.entry = entry;
         
         byte[] data = Globals.extractFile(entry.GUID);
-        if (data == null) data = Globals.extractFile(entry.hash);
+        if (data == null) data = Globals.extractFile(entry.SHA1);
         
         if (data == null) {
             dispose();

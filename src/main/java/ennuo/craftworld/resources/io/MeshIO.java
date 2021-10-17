@@ -364,7 +364,7 @@ public class MeshIO {
                         FileEntry entry = Globals.findEntry(primitive.material);
                         if (entry != null) {
                             materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
-                            byte[] data = Globals.extractFile(entry.hash);
+                            byte[] data = Globals.extractFile(entry.SHA1);
                             if (data != null) {
                                 Resource res = new Resource(data);
                                 res.decompress(true);

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class DependencyCallbacks {
     public static void removeDependencies() {
         FileEntry entry = Globals.lastSelected.entry;
-        byte[] data = Globals.extractFile(entry.hash);
+        byte[] data = Globals.extractFile(entry.SHA1);
 
         if (data == null) return;
 
@@ -29,7 +29,7 @@ public class DependencyCallbacks {
 
     public static void removeMissingDependencies() {
         FileEntry entry = Globals.lastSelected.entry;
-        byte[] data = Globals.extractFile(entry.hash);
+        byte[] data = Globals.extractFile(entry.SHA1);
 
         if (data == null) return;
 
@@ -46,7 +46,7 @@ public class DependencyCallbacks {
         ArrayList < ResourcePtr > dependencies = new ArrayList < ResourcePtr > (resource.dependencies.length);
         for (int i = 0; i < resource.dependencies.length; ++i) {
             if (resource.dependencies[i] != null) {
-                if (Globals.extractFile(resource.dependencies[i].hash) != null)
+                if (Globals.extractFile(resource.dependencies[i].SHA1) != null)
                     dependencies.add(resource.resources[i]);
             }
         }

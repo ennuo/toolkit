@@ -46,7 +46,7 @@ public class TreeSelectionListener {
             if (!Globals.canExtract()) return;
 
             byte[] entryBuffer = null;
-            entryBuffer = Globals.extractFile(entry.hash);
+            entryBuffer = Globals.extractFile(entry.SHA1);
             if (entryBuffer == null) {
                 if (Toolkit.instance.getCurrentDB().USRDIR != null && currentWorkspace == Globals.WorkspaceType.MAP) {
                     System.out.println("Attempting to extract from disk...");
@@ -169,7 +169,7 @@ public class TreeSelectionListener {
                                     for (FileEntry e: entry.dependencies) {
                                         if (e.path.contains(".tex")) {
                                             ResourcePtr ptr = new ResourcePtr();
-                                            ptr.hash = e.hash;
+                                            ptr.hash = e.SHA1;
                                             toolkit.loadImage(ptr, entry.item);
                                             return;
                                         }

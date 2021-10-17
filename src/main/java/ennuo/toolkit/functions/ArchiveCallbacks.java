@@ -83,7 +83,7 @@ public class ArchiveCallbacks {
                 FileNode node = Globals.entries.get(i);
                 if (node.entry != null) {
                     total++;
-                    byte[] data = Globals.extractFile(node.entry.hash);
+                    byte[] data = Globals.extractFile(node.entry.SHA1);
                     if (data != null) {
                         Resource resource = new Resource(data);
                         if (decompress) resource.decompress(true);
@@ -100,7 +100,7 @@ public class ArchiveCallbacks {
         } else {
             FileNode node = Globals.entries.get(0);
             if (node.entry != null) {
-                byte[] data = Globals.extractFile(node.entry.hash);
+                byte[] data = Globals.extractFile(node.entry.SHA1);
                 if (data != null) {
                     Resource resource = new Resource(data);
                     if (decompress) resource.decompress(true);

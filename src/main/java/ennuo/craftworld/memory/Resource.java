@@ -187,7 +187,7 @@ public class Resource extends Data {
 
         ResourcePtr self = new ResourcePtr();
         if (entry.GUID != -1) self.GUID = entry.GUID;
-        else self.hash = entry.hash;
+        else self.hash = entry.SHA1;
 
         entry.canReplaceDecompressed = true;
         int missingDependencies = 0;
@@ -215,7 +215,7 @@ public class Resource extends Data {
             if (dependencies[i] == null) missingDependencies++;
             resources[i].type = RType.getValue(i32f());
             if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
-                byte[] data = Globals.extractFile(dependencies[i].hash);
+                byte[] data = Globals.extractFile(dependencies[i].SHA1);
                 if (data != null) {
                     Resource resource = new Resource(data);
                     if (resource.magic.equals("FSHb")) continue;

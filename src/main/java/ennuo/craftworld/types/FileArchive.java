@@ -148,7 +148,7 @@ public class FileArchive {
             if (shouldPreload)
                 entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
             this.entries.add(entry);
-            this.lookup.put(Bytes.toHex(entry.hash), entry);
+            this.lookup.put(Bytes.toHex(entry.SHA1), entry);
         }
         
         long end = System.currentTimeMillis();
@@ -238,7 +238,7 @@ public class FileArchive {
         
         FileEntry[] entries = new FileEntry[this.entries.size()];
         entries = this.entries.toArray(entries);
-        Arrays.sort(entries, (e1, e2) -> Bytes.toHex(e1.hash).compareTo(Bytes.toHex(e2.hash)));
+        Arrays.sort(entries, (e1, e2) -> Bytes.toHex(e1.SHA1).compareTo(Bytes.toHex(e2.SHA1)));
         
         Output output = new Output(dataSize + (0x1C * this.entries.size()) + this.fat.length + 0x80);
         
@@ -252,7 +252,7 @@ public class FileArchive {
         
         int lastBufferOffset = 0;
         for (FileEntry entry : entries) {
-            output.bytes(entry.hash);
+            output.bytes(entry.SHA1);
             output.i32(lastBufferOffset);
             output.i32(entry.size);
             lastBufferOffset += entry.size;
@@ -305,7 +305,7 @@ public class FileArchive {
 
             for (int i = 0; i < this.queue.size(); ++i) {
                 FileEntry entry = this.queue.get(i);
-                output.bytes(entry.hash);
+                output.bytes(entry.SHA1);
                 output.i32((int) offset);
                 output.i32(entry.size);
                 if (bar != null) bar.setValue(i + 1);

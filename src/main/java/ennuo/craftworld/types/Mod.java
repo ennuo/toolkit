@@ -81,7 +81,7 @@ public class Mod extends FileData {
         FileEntry old = find(GUID);
         if (old != null) {
             old.timestamp = System.currentTimeMillis() / 1000L;
-            old.hash = hash;
+            old.SHA1 = hash;
             old.size = data.length;
             old.data = data;
             old.resetResources();
@@ -208,7 +208,7 @@ public class Mod extends FileData {
         
         for (int i = 0; i < entryCount; ++i) {
             entries.get(i).data = data.bytes(entries.get(i).size);
-            entries.get(i).hash = Bytes.SHA1(entries.get(i).data);
+            entries.get(i).SHA1 = Bytes.SHA1(entries.get(i).data);
         }
         
         int imageSize = data.i32();
@@ -234,7 +234,7 @@ public class Mod extends FileData {
     public FileEntry find(byte[] hash) {
         if (hash == null) return null;
         for (int i = 0; i < entries.size(); i++)
-            if (Arrays.equals(hash, entries.get(i).hash))
+            if (Arrays.equals(hash, entries.get(i).SHA1))
                 return entries.get(i);
         return null;
     }
@@ -247,12 +247,12 @@ public class Mod extends FileData {
         return null;
     }
     
-    public void replace(FileEntry entry, byte[] buffer) {
+    public boolean edit(FileEntry entry, byte[] buffer) {
         entry.data = buffer;
         entry.size = buffer.length;
-        byte[] oldHash = entry.hash;
+        byte[] oldHash = entry.SHA1;
         byte[] newHash = Bytes.SHA1(buffer);
-        entry.hash = newHash;
+        entry.SHA1 = newHash;
         entry.timestamp = System.currentTimeMillis() / 1000L;
         size += buffer.length;
         shouldSave = true;
@@ -262,6 +262,7 @@ public class Mod extends FileData {
         for (InventoryMetadata item : items)
             if (item.resource != null && Arrays.equals(oldHash, item.resource.hash))
                 item.resource.hash = newHash;
+        return true;
     }
     
     public void remove(FileEntry entry) { entries.remove(entry); }

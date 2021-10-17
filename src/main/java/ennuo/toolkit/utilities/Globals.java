@@ -104,7 +104,7 @@ public class Globals {
         if (currentWorkspace == WorkspaceType.MAP) {
             FileEntry entry = ((FileDB) db).find(GUID);
             if (entry != null)
-                return extractFile(entry.hash);
+                return extractFile(entry.SHA1);
         } else if (currentWorkspace == WorkspaceType.MOD) {
             FileEntry entry = ((Mod) db).find(GUID);
             if (entry != null)
@@ -115,7 +115,7 @@ public class Globals {
             if (data.type.equals("FileDB")) {
                 FileEntry entry = ((FileDB) data).find(GUID);
                 if (entry != null) {
-                    byte[] buffer = extractFile(entry.hash);
+                    byte[] buffer = extractFile(entry.SHA1);
                     if (buffer != null) return buffer;
                 }
 
@@ -153,7 +153,7 @@ public class Globals {
                 addFile(data);
         }
 
-        Toolkit.instance.getCurrentDB().replace(entry, data);
+        Toolkit.instance.getCurrentDB().edit(entry, data);
         Toolkit.instance.updateWorkspace();
 
         JTree tree = Toolkit.instance.getCurrentTree();

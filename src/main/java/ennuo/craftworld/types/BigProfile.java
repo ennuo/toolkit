@@ -319,9 +319,9 @@ public class BigProfile extends FileData {
 
     profile.data = Compressor.Compress(output.buffer, "BPRb", output.revision, dependencies);
     profile.size = profile.data.length;
-    profile.hash = Bytes.SHA1(profile.data);
+    profile.SHA1 = Bytes.SHA1(profile.data);
 
-    setIntegrityHash(profile.hash);
+    setIntegrityHash(profile.SHA1);
   }
 
   private StringEntry findString(String string) {
@@ -470,7 +470,7 @@ public class BigProfile extends FileData {
   public FileEntry find(byte[] hash) {
     if (hash == null) return null;
     for (int i = 0; i < entries.size(); i++)
-    if (Arrays.equals(hash, entries.get(i).hash)) return entries.get(i);
+    if (Arrays.equals(hash, entries.get(i).SHA1)) return entries.get(i);
     return null;
   }
 
@@ -538,7 +538,7 @@ public class BigProfile extends FileData {
     this.addNode(entry);
   }
 
-  public void replace(FileEntry entry, byte[] data) {
+  public boolean edit(FileEntry entry, byte[] data) {
     shouldSave = true;
     byte[] hash = Bytes.SHA1(data);
     
@@ -555,11 +555,13 @@ public class BigProfile extends FileData {
     if (slot != null)
         slot.root = new ResourcePtr(hash, RType.LEVEL);
     
-    entry.hash = hash;
+    entry.SHA1 = hash;
     entry.data = data;
     entry.size = data.length;
     
     entry.resetResources(false);
+    
+    return true;
   }
 
   public void addString(String string, long hash) {
@@ -646,11 +648,11 @@ public class BigProfile extends FileData {
 
           entry.slot = slot;
 
-          int revision = new Resource(extract(entry.hash)).revision;
+          int revision = new Resource(extract(entry.SHA1)).revision;
           if (slot.icon != null && slot.icon.hash != null) {
             FileEntry iconEntry = find(slot.icon.hash);
             if (iconEntry != null) {
-              if (iconEntry.texture != null) slot.renderedIcon = Images.getSlotIcon(iconEntry.texture.getImage(), new Resource(extract(entry.hash)).revision);
+              if (iconEntry.texture != null) slot.renderedIcon = Images.getSlotIcon(iconEntry.texture.getImage(), new Resource(extract(entry.SHA1)).revision);
             }
           }
 
@@ -690,7 +692,7 @@ public class BigProfile extends FileData {
 
     Arrays.sort(entries, new Comparator < FileEntry > () {@Override
       public int compare(FileEntry e1, FileEntry e2) {
-        return Bytes.toHex(e1.hash).compareTo(Bytes.toHex(e2.hash));
+        return Bytes.toHex(e1.SHA1).compareTo(Bytes.toHex(e2.SHA1));
       }
     });
 
@@ -708,7 +710,7 @@ public class BigProfile extends FileData {
 
     int offset = 0;
     for (FileEntry entry: entries) {
-      output.bytes(entry.hash);
+      output.bytes(entry.SHA1);
       output.i32(offset);
       output.i32(entry.size);
       offset += entry.size;

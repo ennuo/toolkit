@@ -1,7 +1,6 @@
 package ennuo.toolkit;
 
 import com.bulenkov.darcula.DarculaLaf;
-import ennuo.toolkit.utilities.Config;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.EventQueue;
 import javax.swing.UIManager;

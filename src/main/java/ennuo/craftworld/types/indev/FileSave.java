@@ -50,7 +50,7 @@ public class FileSave extends FileData {
         FileArchive archive = new FileArchive(save);
         if (archive.isParsed) {
             for (FileEntry entry : archive.entries)
-                this.resources.put(Bytes.toHex(entry.hash), entry.data);
+                this.resources.put(Bytes.toHex(entry.SHA1), entry.data);
             String dataSourceHash = archive.getFatDataSource();
             if (this.resources.containsKey(dataSourceHash))
                 return new Resource(this.resources.get(dataSourceHash));

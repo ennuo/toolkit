@@ -1840,7 +1840,7 @@ public class Toolkit extends javax.swing.JFrame {
         output.i32(mod.entries.size());
         for (FileEntry e : mod.entries) {
             output.i32(1);
-            output.bytes(e.hash);
+            output.bytes(e.SHA1);
             output.i32(13);
         }
         
@@ -2014,7 +2014,7 @@ public class Toolkit extends javax.swing.JFrame {
         else {
             entry = Globals.findEntry(resource.GUID);
             if (entry != null)
-                hash = entry.hash;
+                hash = entry.SHA1;
         }
 
         if (hash == null) return;
@@ -2058,7 +2058,7 @@ public class Toolkit extends javax.swing.JFrame {
             Timestamp timestamp = new Timestamp(entry.timestamp * 1000L);
             entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
-        entryTable.setValueAt(Bytes.toHex(entry.hash), 2, 1);
+        entryTable.setValueAt(Bytes.toHex(entry.SHA1), 2, 1);
         entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
         if (entry.GUID != -1) {
             entryTable.setValueAt("g" + Long.valueOf(entry.GUID), 4, 1);

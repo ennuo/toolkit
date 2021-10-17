@@ -127,13 +127,13 @@ public class UtilityCallbacks {
             return;
         }
 
-        Output output = new Output(updateDB.entryCount * 0x100);
+        Output output = new Output(updateDB.entries.size() * 0x100);
         for (FileEntry entry: updateDB.entries) {
             FileEntry baseEntry = baseDB.find(entry.GUID);
             if (baseEntry == null)
-                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.SHA1) + " " + Bytes.toHex(entry.GUID) + '\n');
             else if (baseEntry.size != entry.size) {
-                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.hash) + " -> " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.SHA1) + " -> " + Bytes.toHex(entry.SHA1) + " " + Bytes.toHex(entry.GUID) + '\n');
             }
 
         }
@@ -221,13 +221,13 @@ public class UtilityCallbacks {
         
         FileArchive archive = new FileArchive(dumpFARC);
         for (FileEntry entry : archive.entries) {
-            FileEntry[] matches = db.findAll(entry.hash);
+            FileEntry[] matches = db.findAll(entry.SHA1);
             if (matches.length != 0) {
                 for (FileEntry match : matches)
                     out.add(match);
             } else {
-                Resource resource = new Resource(archive.extract(entry.hash));
-                entry.GUID = Bytes.toHex(entry.hash).hashCode();
+                Resource resource = new Resource(archive.extract(entry.SHA1));
+                entry.GUID = Bytes.toHex(entry.SHA1).hashCode();
                 
                 String name = "" + entry.offset;
                 switch (resource.magic) {

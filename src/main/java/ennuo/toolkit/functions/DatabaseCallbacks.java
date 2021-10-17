@@ -94,7 +94,7 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         StringBuilder builder = new StringBuilder(0x100 * db.entries.size());
         for (FileEntry entry: db.entries)
-            builder.append(Bytes.toHex(entry.hash) + '\n');
+            builder.append(Bytes.toHex(entry.SHA1) + '\n');
         FileIO.write(builder.toString().getBytes(), file.getAbsolutePath());
     }
     
@@ -185,7 +185,7 @@ public class DatabaseCallbacks {
         FileNode node = Globals.lastSelected;
         FileEntry entry = node.entry;
         
-        String SHA1 = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + Bytes.toHex(entry.hash).toLowerCase());
+        String SHA1 = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + Bytes.toHex(entry.SHA1).toLowerCase());
         if (SHA1 == null) return;
         SHA1 = SHA1.replaceAll("\\s", "");
         
@@ -195,7 +195,7 @@ public class DatabaseCallbacks {
             SHA1 = SHA1.substring(1);
         hash = Bytes.toBytes(Strings.leftPad(SHA1, 40));
         
-        entry.hash = hash;
+        entry.SHA1 = hash;
         
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         db.shouldSave = true;
@@ -312,7 +312,7 @@ public class DatabaseCallbacks {
                 resource.getDependencies(entry);
                 resource.removePlanDescriptors(entry.GUID, true);
                 Globals.addFile(resource.data);
-                duplicate.hash = Bytes.SHA1(resource.data);
+                duplicate.SHA1 = Bytes.SHA1(resource.data);
             }
         }
 
