@@ -216,6 +216,13 @@ public class FileArchive {
             this.fat[i] = hash[i - start];
     }
     
+    public void swapFatEndianness() {
+        if (this.archiveType != ArchiveType.FAR4) return;
+        Bytes.swap32(this.fat, 0x00);
+        Bytes.swap32(this.fat, 0x34);
+        Bytes.swap32(this.fat, 0x38);
+    }
+    
     public String getFatDataSource() {
         if (this.archiveType == ArchiveType.FARC || this.fat == null) return null;
         int start = this.fat.length - 0x3C;

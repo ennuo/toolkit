@@ -19,6 +19,7 @@ import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.swing.SearchParameters;
 import ennuo.craftworld.things.InventoryItem;
 import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.types.FileArchive.ArchiveType;
 import ennuo.craftworld.types.indev.FileSave;
 import ennuo.craftworld.types.FileDB;
 import ennuo.toolkit.functions.ArchiveCallbacks;
@@ -509,6 +510,8 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         addAllPlansToInventory = new javax.swing.JMenuItem();
@@ -1367,6 +1370,15 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(installProfileMod);
+        toolsMenu.add(jSeparator7);
+
+        swapProfilePlatform.setText("Swap Profile Platform");
+        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                swapProfilePlatformActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(swapProfilePlatform);
 
         toolkitMenu.add(toolsMenu);
 
@@ -1905,6 +1917,26 @@ public class Toolkit extends javax.swing.JFrame {
         
     }//GEN-LAST:event_loadSavedataActionPerformed
 
+    private void swapProfilePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapProfilePlatformActionPerformed
+        File FAR4 = fileChooser.openFile("bigfart", "", "FAR4 Archive", false);
+        if (FAR4 == null) return;
+        if (FAR4.exists()) {
+            FileArchive archive = new FileArchive(FAR4);
+            if (archive.isParsed) {
+                if (archive.archiveType != ArchiveType.FAR4) {
+                    System.out.println("FileArchive isn't a FAR4!");
+                    return;
+                }
+                archive.swapFatEndianness();
+                FileIO.write(archive.build(), FAR4.getAbsolutePath());
+                JOptionPane.showMessageDialog(this, 
+                        String.format("FAR4 has been swapped to %s endianness.", 
+                                (archive.fat[0x38] != 0x00) ? "PS4" : "PS3"));
+            } 
+        } else 
+            System.out.println(String.format("%s does not exist!", FAR4.getAbsolutePath()));
+    }//GEN-LAST:event_swapProfilePlatformActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2171,6 +2203,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
@@ -2216,6 +2249,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem scanRawData;
     public javax.swing.JTextField search;
     private javax.swing.JComboBox<String> subCombo;
+    private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JScrollPane tableContainer;
     private javax.swing.JMenuItem testSerializeCurrentMesh;
     public javax.swing.JLabel texture;

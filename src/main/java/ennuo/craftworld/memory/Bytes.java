@@ -101,6 +101,15 @@ public class Bytes {
             (byte)((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
         return data;
     }
+    
+    public static final void swap32(byte[] data, int offset) {
+        byte temp = data[offset];
+        data[offset] = data[offset + 3];
+        data[offset + 3] = temp;
+        temp = data[offset + 1];
+        data[offset + 1] = data[offset + 2];
+        data[offset + 2] = temp;
+    }
 
     public static byte[] createResourceReference(ResourcePtr res, int revision) {
         Output output = new Output(0x1C + 0x4, revision);
