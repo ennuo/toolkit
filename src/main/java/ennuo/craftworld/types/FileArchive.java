@@ -279,10 +279,11 @@ public class FileArchive {
         return output.buffer;
     }
     
-    public boolean save() { return this.save(null); }
-    public boolean save(JProgressBar bar) {
+    public boolean save() { return this.save(null, false); }
+    public boolean save(JProgressBar bar) { return this.save(bar, false); }
+    public boolean save(JProgressBar bar, boolean force) {
         try {
-            if (this.queue.size() == 0) {
+            if (this.queue.size() == 0 && !force) {
                 System.out.println("FileArchive has no items in queue, skipping save.");
                 return true;
             }
@@ -335,6 +336,7 @@ public class FileArchive {
             RandomAccessFile fileArchive = new RandomAccessFile(this.file.getAbsolutePath(), "rw");
             fileArchive.seek(offset);
             fileArchive.write(output.buffer);
+            fileArchive.setLength(offset + output.buffer.length);
             fileArchive.close();
 
             shouldSave = false;

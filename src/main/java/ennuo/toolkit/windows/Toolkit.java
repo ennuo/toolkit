@@ -517,6 +517,7 @@ public class Toolkit extends javax.swing.JFrame {
         generateDiff = new javax.swing.JMenuItem();
         scanRawData = new javax.swing.JMenuItem();
         scanFileArchive = new javax.swing.JMenuItem();
+        fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
@@ -1371,6 +1372,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(scanFileArchive);
+
+        fileArchiveIntegrityCheck.setText("File Archive Integrity Check");
+        fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileArchiveIntegrityCheckActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(fileArchiveIntegrityCheck);
         toolsMenu.add(jSeparator3);
 
         mergeFARCs.setText("Merge FARCs");
@@ -1959,6 +1968,10 @@ public class Toolkit extends javax.swing.JFrame {
         ArchiveCallbacks.addFolder();
     }//GEN-LAST:event_addFolderActionPerformed
 
+    private void fileArchiveIntegrityCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileArchiveIntegrityCheckActionPerformed
+        ArchiveCallbacks.integrityCheck();
+    }//GEN-LAST:event_fileArchiveIntegrityCheckActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2210,6 +2223,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem extractContext;
     private javax.swing.JMenu extractContextMenu;
     private javax.swing.JMenuItem extractDecompressedContext;
+    private javax.swing.JMenuItem fileArchiveIntegrityCheck;
     public javax.swing.JTabbedPane fileDataTabs;
     public javax.swing.JMenu fileMenu;
     private javax.swing.JMenu gamedataMenu;

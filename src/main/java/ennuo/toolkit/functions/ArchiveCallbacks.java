@@ -1,11 +1,14 @@
 package ennuo.toolkit.functions;
 
+import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
+import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +52,37 @@ public class ArchiveCallbacks {
             }, file.getAbsolutePath());
             ArchiveCallbacks.loadFileArchive(file);
         }
+    }
+    
+    public static void integrityCheck() {
+        File file = Toolkit.instance.fileChooser.openFile("data.farc", "farc", "File Archive", false);
+        if (file == null) return;
+        FileArchive archive = new FileArchive(file);
+        int count = 0;
+        Output table = new Output(archive.entries.size() * 0x1c);
+        ArrayList<FileEntry> toRemove = new ArrayList<FileEntry>(archive.entries.size());
+        for (int i = 0; i < archive.entries.size(); ++i) {
+            FileEntry entry = archive.entries.get(i);
+            byte[] data = archive.extract(entry);
+            if (data == null) continue;
+            String realSHA1 = Bytes.toHex(Bytes.SHA1(data));
+            String storedSHA1 = Bytes.toHex(entry.SHA1);
+            if (realSHA1.equals(storedSHA1)) {
+                table.bytes(entry.SHA1);
+                table.i32f((int) entry.offset);
+                table.i32f(entry.size);
+            } else {
+                toRemove.add(entry);
+                archive.lookup.remove(storedSHA1);
+                count++;
+            }
+        }
+        for (FileEntry entry : toRemove)
+            archive.entries.remove(entry);
+        table.shrink();
+        archive.hashTable = table.buffer;
+        archive.save(null, true);
+        System.out.println(String.format("%d files failed integrity check and were removed.", count));
     }
     
     public static void addFile() {                                        
