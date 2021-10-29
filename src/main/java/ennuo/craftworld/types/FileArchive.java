@@ -310,11 +310,13 @@ public class FileArchive {
                 output.bytes(this.fat);
             }
 
+            int bufferOffset = (int) this.tableOffset;
             for (int i = 0; i < this.queue.size(); ++i) {
                 FileEntry entry = this.queue.get(i);
                 output.bytes(entry.SHA1);
-                output.i32((int) offset);
+                output.i32(bufferOffset);
                 output.i32(entry.size);
+                bufferOffset += entry.size;
                 if (bar != null) bar.setValue(i + 1);
             }
 
