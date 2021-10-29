@@ -202,15 +202,15 @@ public class Slot {
         }
         
         int collectableRequiredCount = data.i32();
+        requiredCollectables = new Collectable[collectableRequiredCount];
         if (collectableRequiredCount != 0) {
-            requiredCollectables = new Collectable[collectableRequiredCount];
             for (int i = 0; i < collectableRequiredCount; ++i)
                 requiredCollectables[i] = new Collectable(data);
         }
         
         int collectableContainedCount = data.i32();
+        containedCollectables = new Collectable[collectableContainedCount];
         if (collectableContainedCount != 0) {
-            containedCollectables = new Collectable[collectableContainedCount];
             for (int i = 0; i < collectableContainedCount; ++i)
                 containedCollectables[i] = new Collectable(data);
         }
