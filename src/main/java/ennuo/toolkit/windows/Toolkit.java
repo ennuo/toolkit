@@ -238,8 +238,17 @@ public class Toolkit extends javax.swing.JFrame {
             saveMenu.setVisible(false);
         }
 
-        if (Globals.canExtract() && Globals.currentWorkspace != WorkspaceType.MOD)
+        addFolder.setVisible(false);
+        
+        if (Globals.currentWorkspace == WorkspaceType.NONE && Globals.archives.size() != 0) {
             FARMenu.setVisible(true);
+            addFolder.setVisible(true);
+        }
+        else if (Globals.canExtract() && Globals.currentWorkspace != WorkspaceType.MOD) {
+            FARMenu.setVisible(true); 
+            if (Globals.currentWorkspace == WorkspaceType.MAP)
+                addFolder.setVisible(true);
+        }
         else FARMenu.setVisible(false);
 
         if (Globals.currentWorkspace != WorkspaceType.NONE) {
@@ -484,6 +493,7 @@ public class Toolkit extends javax.swing.JFrame {
         reboot = new javax.swing.JMenuItem();
         FARMenu = new javax.swing.JMenu();
         addFile = new javax.swing.JMenuItem();
+        addFolder = new javax.swing.JMenuItem();
         MAPMenu = new javax.swing.JMenu();
         patchMAP = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
@@ -1221,6 +1231,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         FARMenu.add(addFile);
 
+        addFolder.setText("Add Folder");
+        addFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFolderActionPerformed(evt);
+            }
+        });
+        FARMenu.add(addFolder);
+
         toolkitMenu.add(FARMenu);
 
         MAPMenu.setText("FileDB");
@@ -1937,6 +1955,10 @@ public class Toolkit extends javax.swing.JFrame {
             System.out.println(String.format("%s does not exist!", FAR4.getAbsolutePath()));
     }//GEN-LAST:event_swapProfilePlatformActionPerformed
 
+    private void addFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFolderActionPerformed
+        ArchiveCallbacks.addFolder();
+    }//GEN-LAST:event_addFolderActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2127,6 +2149,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JRadioButton StringMetadata;
     private javax.swing.JMenuItem addAllPlansToInventory;
     private javax.swing.JMenuItem addFile;
+    private javax.swing.JMenuItem addFolder;
     private javax.swing.JMenuItem addKey;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;

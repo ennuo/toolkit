@@ -9,7 +9,15 @@ import ennuo.craftworld.types.FileArchive;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
@@ -67,6 +75,44 @@ public class ArchiveCallbacks {
         }
 
         System.out.println("Added file to queue, make sure to save your workspace!");
+    }
+    
+    public static void addFolder() {                                        
+        if (Globals.archives.size() == 0) return;
+
+        String directory = Toolkit.instance.fileChooser.openDirectory();
+        if (directory == null || directory.isEmpty()) return;
+        directory = directory.substring(0, directory.length() - 1); // shit fix for fnf on linux
+        
+        FileArchive[] archives = Toolkit.instance.getSelectedArchives();
+        if (archives == null) return;
+        
+        try (Stream<Path> stream = Files.walk(Paths.get(directory))) {
+           List<String> collect = stream
+                   .map(String::valueOf)
+                   .sorted()
+                   .collect(Collectors.toList());
+           collect.forEach(path -> {
+               File file = new File(path);
+               if (file.isFile()) {
+                byte[] data = FileIO.read(file.getAbsolutePath());
+                if (data != null)
+                    Globals.addFile(data, archives);
+               } 
+           });
+                   
+        } catch (IOException ex) { Logger.getLogger(ArchiveCallbacks.class.getName()).log(Level.SEVERE, null, ex); }
+
+        Toolkit.instance.updateWorkspace();
+
+        if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
+            JTree tree = Toolkit.instance.getCurrentTree();
+            TreePath selectionPath = tree.getSelectionPath();
+            ((FileModel) tree.getModel()).reload();
+            tree.setSelectionPath(selectionPath);
+        }
+
+        System.out.println("Added files to queue, make sure to save your workspace!");
     }   
 
     public static void extract(boolean decompress) {
