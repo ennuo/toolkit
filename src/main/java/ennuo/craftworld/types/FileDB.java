@@ -14,15 +14,15 @@ import java.util.HashMap;
 import javax.swing.JProgressBar;
 
 public class FileDB extends FileData {
-    public boolean isLBP3;
-    public int header;
+    public boolean isLBP3 = true;
+    public int header = 21496064;
   
     public boolean isParsed = false;
   
-    public ArrayList<FileEntry> entries;
+    public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
   
-    public HashMap<String, FileEntry> SHA1Lookup;
-    public HashMap<Long, FileEntry> GUIDLookup;
+    public HashMap<String, FileEntry> SHA1Lookup = new HashMap<>();
+    public HashMap<Long, FileEntry> GUIDLookup = new HashMap<>();
     
     /**
      * Creates a FileDB from file and generates nodes
@@ -49,6 +49,15 @@ public class FileDB extends FileData {
         
         this.checkGameDirectory(file);
         this.process(new Data(this.path), null);
+    }
+    
+    /**
+     * Creates an in-memory FileDB.
+     */
+    public FileDB() {
+        this.type = "FileDB";
+        this.isLBP3 = true;
+        this.isParsed = true;
     }
     
     /**
@@ -314,19 +323,12 @@ public class FileDB extends FileData {
                 builder.append(entry.path + "\n");
         return builder.toString();
     }
-  
-    /**
-     * Saves the FileDB to a file.
-     * @return Whether or not the operation was successful 
-     */
-    public boolean save() { return this.save(this.path); }
     
     /**
-     * Saves the FileDB to a specified file.
-     * @param path Path to save FileDB to
-     * @return Whether or not the operation was successful.
+     * Serializes a FileDB to a byte array.
+     * @return The serialized FileDB
      */
-    public boolean save(String path) {
+    public byte[] build() {
         int pathSize = this.entries
             .stream()
             .mapToInt(element -> element.path.length())
@@ -345,7 +347,24 @@ public class FileDB extends FileData {
             output.u32(entry.GUID);
         }
         output.shrink();
-        if (FileIO.write(output.buffer, path)) {
+        return output.buffer;
+    }
+  
+    /**
+     * Saves the FileDB to a file.
+     * @return Whether or not the operation was successful 
+     */
+    public boolean save() { return this.save(this.path); }
+    
+    /**
+     * Saves the FileDB to a specified file.
+     * @param path Path to save FileDB to
+     * @return Whether or not the operation was successful.
+     */
+    public boolean save(String path) {
+        byte[] database = this.build();
+        if (database == null) return false;
+        if (FileIO.write(database, path)) {
             if (path.equals(this.path))
                 this.shouldSave = false;
             return true;
