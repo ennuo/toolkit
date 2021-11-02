@@ -16,7 +16,7 @@ public class Output {
     public static int ENCODED_REVISION = 0x271;
     
     public int offset = 0;
-    public int revision = 0;
+    public int revision = 0x271;
     public byte[] buffer;
 
     public ArrayList<ResourcePtr> dependencies = new ArrayList<ResourcePtr>();
