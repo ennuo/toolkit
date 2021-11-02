@@ -43,13 +43,19 @@ public class FileArchive {
     
     public int queueSize = 0;
 
+    public FileArchive() {
+        this.archiveType = ArchiveType.FAR4;
+        this.refresh();
+        this.isParsed = true;
+    }
+    
     public FileArchive(File file) {
         this.file = file;
         process();
     }
     
     public void refresh() {
-        this.hashTable = null;
+        this.hashTable = new byte[0];
         this.entries = new ArrayList<FileEntry>();
         this.queue = new ArrayList<FileEntry>();
         this.queueSize = 0;
@@ -255,6 +261,7 @@ public class FileArchive {
         if (output.offset % 4 != 0)
             output.pad(4 - (output.offset % 4)); // padding for xxtea encryption
         
+        if (this.fat == null) this.setFatDataSource(new byte[0x14]);
         output.bytes(this.fat);
         
         int lastBufferOffset = 0;
@@ -282,6 +289,7 @@ public class FileArchive {
     public boolean save() { return this.save(null, false); }
     public boolean save(JProgressBar bar) { return this.save(bar, false); }
     public boolean save(JProgressBar bar, boolean force) {
+        if (this.file == null) return false;
         try {
             if (this.queue.size() == 0 && !force) {
                 System.out.println("FileArchive has no items in queue, skipping save.");
@@ -305,6 +313,7 @@ public class FileArchive {
             }
 
             if (this.archiveType != ArchiveType.FARC) {
+                if (this.fat == null) this.setFatDataSource(new byte[0x14]);
                 offset -= this.fat.length;
                 if ((offset + output.offset) % 4 != 0)
                     output.pad(4 - (((int) offset + output.offset) % 4)); // padding for xxtea encryption
