@@ -1,6 +1,8 @@
 package ennuo.toolkit;
 
 import com.bulenkov.darcula.DarculaLaf;
+import com.github.weisj.darklaf.LafManager;
+import com.github.weisj.darklaf.theme.DarculaTheme;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.EventQueue;
 import javax.swing.UIManager;
@@ -15,7 +17,7 @@ public class Launcher {
             catch (UnsupportedLookAndFeelException ex) { 
                 System.out.println("There was an error setting the Darcula theme."); 
             }
-        }
+        } else LafManager.install(new DarculaTheme()); // NOTE(Abz): I don't really like how this looks, but I don't like light themes!
         EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
     }
 }

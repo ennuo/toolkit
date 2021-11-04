@@ -2,7 +2,6 @@
 package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Resource;
 import ennuo.craftworld.memory.ResourcePtr;

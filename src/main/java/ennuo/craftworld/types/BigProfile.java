@@ -21,9 +21,10 @@ import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
-import ennuo.craftworld.things.InventoryItem;
-import ennuo.craftworld.things.InventoryMetadata;
-import ennuo.craftworld.things.Serializer;
+import ennuo.craftworld.resources.InventoryItem;
+import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.types.mods.Mod;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -137,18 +138,6 @@ public class BigProfile extends FileData {
         integrity = data.bytes(tableOffset - data.offset);
     }
     isParsed = true;
-  }
-  
-  public void dumpToMod() {
-      Mod mod = new Mod();
-      for (FileEntry entry : entries)
-          mod.add(entry.path, entry.data);
-      for (ProfileItem item : inventoryCollection) {
-          item.metadata.resource = item.resource;
-          mod.items.add(item.metadata);
-      }
-      mod.save(Paths.get(System.getProperty("user.home"), "/Desktop/", "dump.mod").toAbsolutePath().toString());
-      System.out.println("dumped.");
   }
 
   public FileNode addNode(FileEntry entry) {

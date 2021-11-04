@@ -1,73 +1,37 @@
 package ennuo.toolkit.windows;
 
-import ennuo.craftworld.types.BigProfile;
-import ennuo.craftworld.types.FileArchive;
-import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
+import ennuo.toolkit.windows.editors.*;
+import ennuo.craftworld.memory.*;
+import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.Mesh;
-import ennuo.craftworld.resources.Texture;
-import ennuo.craftworld.resources.TranslationTable;
-import ennuo.craftworld.swing.FileData;
-import ennuo.craftworld.swing.FileModel;
-import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.swing.Nodes;
-import ennuo.craftworld.swing.SearchParameters;
-import ennuo.craftworld.things.InventoryItem;
-import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.swing.*;
+import ennuo.craftworld.resources.InventoryItem;
+import ennuo.craftworld.resources.structs.InventoryMetadata;
 import ennuo.craftworld.types.FileArchive.ArchiveType;
-import ennuo.craftworld.types.indev.FileSave;
-import ennuo.craftworld.types.FileDB;
-import ennuo.toolkit.functions.ArchiveCallbacks;
-import ennuo.toolkit.functions.DatabaseCallbacks;
-import ennuo.toolkit.functions.DebugCallbacks;
-import ennuo.toolkit.functions.DependencyCallbacks;
+import ennuo.craftworld.types.savedata.FileSave;
 import ennuo.toolkit.utilities.EasterEgg;
-import ennuo.toolkit.functions.ExportCallbacks;
-import ennuo.toolkit.functions.FileCallbacks;
-import ennuo.toolkit.functions.ModCallbacks;
-import ennuo.toolkit.functions.ProfileCallbacks;
-import ennuo.toolkit.functions.ReplacementCallbacks;
-import ennuo.toolkit.functions.ScanCallback;
-import ennuo.toolkit.functions.UtilityCallbacks;
 import ennuo.toolkit.streams.CustomPrintStream;
 import ennuo.toolkit.streams.TextAreaOutputStream;
-import ennuo.toolkit.utilities.Config;
-import ennuo.toolkit.utilities.FileChooser;
-import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.utilities.Globals.WorkspaceType;
-import ennuo.toolkit.utilities.TreeSelectionListener;
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import tv.porst.jhexview.JHexView;
+import tv.porst.jhexview.SimpleDataProvider;
+import ennuo.craftworld.types.*;
+import ennuo.craftworld.types.mods.Mod;
+import ennuo.toolkit.utilities.*;
+import ennuo.toolkit.functions.*;
+import ennuo.toolkit.utilities.Globals.WorkspaceType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
-import tv.porst.jhexview.JHexView;
-import tv.porst.jhexview.SimpleDataProvider;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
@@ -110,7 +74,7 @@ public class Toolkit extends javax.swing.JFrame {
         EasterEgg.initialize(this);
         instance = this;
         
-        if (Config.ENABLE_NEW_SAVEDATA)
+        if (Flags.ENABLE_NEW_SAVEDATA)
             this.loadSavedata.setVisible(true);
        
         entryTable.getActionMap().put("copy", new AbstractAction() {
@@ -524,15 +488,7 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        addAllPlansToInventory = new javax.swing.JMenuItem();
-        convertAllToGUID = new javax.swing.JMenuItem();
-        dumpBPRToMod = new javax.swing.JMenuItem();
-        testSerializeCurrentMesh = new javax.swing.JMenuItem();
-        debugJokerTest = new javax.swing.JMenuItem();
-        debugAddSlots = new javax.swing.JMenuItem();
-        debugRecompressAll = new javax.swing.JMenuItem();
-        emittionTendency = new javax.swing.JMenuItem();
+        dummyPlaceholder = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -834,7 +790,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         details.setResizeWeight(1);
         details.setDividerLocation(850);
-        details.setEnabled(false);
 
         previewContainer.setDividerLocation(325);
         previewContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -1411,77 +1366,8 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
-        jMenuItem1.setText("create fake table");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        debugMenu.add(jMenuItem1);
-
-        addAllPlansToInventory.setText("add all plans to inv table");
-        addAllPlansToInventory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addAllPlansToInventoryActionPerformed(evt);
-            }
-        });
-        debugMenu.add(addAllPlansToInventory);
-
-        convertAllToGUID.setText("convert all to guid");
-        convertAllToGUID.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                convertAllToGUIDActionPerformed(evt);
-            }
-        });
-        debugMenu.add(convertAllToGUID);
-
-        dumpBPRToMod.setText("dump bpr to mod");
-        dumpBPRToMod.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dumpBPRToModActionPerformed(evt);
-            }
-        });
-        debugMenu.add(dumpBPRToMod);
-
-        testSerializeCurrentMesh.setText("test serialize current mesh");
-        testSerializeCurrentMesh.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testSerializeCurrentMeshActionPerformed(evt);
-            }
-        });
-        debugMenu.add(testSerializeCurrentMesh);
-
-        debugJokerTest.setText("joker test");
-        debugJokerTest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugJokerTestActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugJokerTest);
-
-        debugAddSlots.setText("add slots");
-        debugAddSlots.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugAddSlotsActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugAddSlots);
-
-        debugRecompressAll.setText("recompress all slots");
-        debugRecompressAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugRecompressAllActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugRecompressAll);
-
-        emittionTendency.setText("when you have a tendency to emit");
-        emittionTendency.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                emittionTendencyActionPerformed(evt);
-            }
-        });
-        debugMenu.add(emittionTendency);
+        dummyPlaceholder.setText("This doesn't do anything!");
+        debugMenu.add(dummyPlaceholder);
 
         toolkitMenu.add(debugMenu);
 
@@ -1846,62 +1732,19 @@ public class Toolkit extends javax.swing.JFrame {
         ReplacementCallbacks.replaceImage();
     }//GEN-LAST:event_replaceImageActionPerformed
 
-    private void dumpBPRToModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpBPRToModActionPerformed
-        BigProfile profile = (BigProfile) getCurrentDB();
-        profile.dumpToMod();
-    }//GEN-LAST:event_dumpBPRToModActionPerformed
-
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
         checkForChanges(); dispose();
         Toolkit toolkit = new Toolkit();
         toolkit.setVisible(true);
     }//GEN-LAST:event_rebootActionPerformed
 
-    private void addAllPlansToInventoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllPlansToInventoryActionPerformed
-        DebugCallbacks.addAllPlansToInventoryTable();
-    }//GEN-LAST:event_addAllPlansToInventoryActionPerformed
-
-    private void convertAllToGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertAllToGUIDActionPerformed
-        DebugCallbacks.convertAllToGUID();
-    }//GEN-LAST:event_convertAllToGUIDActionPerformed
-
     private void closeTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeTabActionPerformed
         FileCallbacks.closeTab();
     }//GEN-LAST:event_closeTabActionPerformed
 
-    private void testSerializeCurrentMeshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testSerializeCurrentMeshActionPerformed
-        DebugCallbacks.reserializeCurrentMesh();
-    }//GEN-LAST:event_testSerializeCurrentMeshActionPerformed
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        FileDB mod = (FileDB) getCurrentDB();
-        
-        Output output = new Output((mod.entries.size() * 0x1C) + 0x4);
-        output.i32(mod.entries.size());
-        for (FileEntry e : mod.entries) {
-            output.i32(1);
-            output.bytes(e.SHA1);
-            output.i32(13);
-        }
-        
-        FileIO.write(output.buffer, "C:/Users/Shan/Desktop/table");
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
-
     private void exportGLTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportGLTFActionPerformed
         ExportCallbacks.exportGLB();
     }//GEN-LAST:event_exportGLTFActionPerformed
-
-    private void debugJokerTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugJokerTestActionPerformed
-        DebugCallbacks.jokerTest();
-    }//GEN-LAST:event_debugJokerTestActionPerformed
-
-    private void debugAddSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugAddSlotsActionPerformed
-        DebugCallbacks.addSlots();
-    }//GEN-LAST:event_debugAddSlotsActionPerformed
-
-    private void debugRecompressAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugRecompressAllActionPerformed
-        DebugCallbacks.recompressAllSlots();
-    }//GEN-LAST:event_debugRecompressAllActionPerformed
 
     private void newModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModActionPerformed
         UtilityCallbacks.newMod();
@@ -1926,10 +1769,6 @@ public class Toolkit extends javax.swing.JFrame {
     private void scanFileArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanFileArchiveActionPerformed
         UtilityCallbacks.scanFileArchive();
     }//GEN-LAST:event_scanFileArchiveActionPerformed
-
-    private void emittionTendencyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emittionTendencyActionPerformed
-        DebugCallbacks.emittionTendency();
-    }//GEN-LAST:event_emittionTendencyActionPerformed
 
     private void exportAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnimationActionPerformed
         ExportCallbacks.exportAnimation();
@@ -2160,7 +1999,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu MAPMenu;
     private javax.swing.JMenu ProfileMenu;
     private javax.swing.JRadioButton StringMetadata;
-    private javax.swing.JMenuItem addAllPlansToInventory;
     private javax.swing.JMenuItem addFile;
     private javax.swing.JMenuItem addFolder;
     private javax.swing.JMenuItem addKey;
@@ -2173,14 +2011,10 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea console;
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
-    private javax.swing.JMenuItem convertAllToGUID;
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
-    private javax.swing.JMenuItem debugAddSlots;
-    private javax.swing.JMenuItem debugJokerTest;
     public javax.swing.JMenu debugMenu;
-    private javax.swing.JMenuItem debugRecompressAll;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
     private javax.swing.JMenu dependencyGroup;
@@ -2189,7 +2023,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JSplitPane details;
-    private javax.swing.JMenuItem dumpBPRToMod;
+    private javax.swing.JMenuItem dummyPlaceholder;
     private javax.swing.JMenuItem dumpHashes;
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
@@ -2198,7 +2032,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem editProfileItems;
     private javax.swing.JMenuItem editProfileSlots;
     private javax.swing.JMenuItem editSlotContext;
-    private javax.swing.JMenuItem emittionTendency;
     private javax.swing.JMenuItem encodeInteger;
     private javax.swing.JPopupMenu entryContext;
     private javax.swing.JSplitPane entryData;
@@ -2233,7 +2066,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -2288,7 +2120,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JScrollPane tableContainer;
-    private javax.swing.JMenuItem testSerializeCurrentMesh;
     public javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;

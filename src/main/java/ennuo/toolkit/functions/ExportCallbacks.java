@@ -12,11 +12,11 @@ import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.UserCreatedDetails;
-import ennuo.craftworld.things.InventoryItem;
-import ennuo.craftworld.things.InventoryMetadata;
-import ennuo.craftworld.things.Serializer;
+import ennuo.craftworld.resources.InventoryItem;
+import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -160,32 +160,8 @@ public class ExportCallbacks {
             mod = resource.hashinate(entry);
         else mod = resource.recurse(entry);
 
-        mod.title = name;
-
-        byte[] compressed = mod.entries.get(mod.entries.size() - 1).data;
-
-        if (item != null) {
-            resource.setData(compressed);
-            resource.decompress(true);
-            InventoryMetadata metadata = new Serializer(resource).DeserializeItem().metadata;
-            if (Globals.LAMS != null) {
-                metadata.translatedLocation = Globals.Translate(metadata.location);
-                metadata.translatedCategory = Globals.Translate(metadata.category);
-            }
-            if (metadata == null) {
-                metadata = new InventoryMetadata();
-                metadata.userCreatedDetails = new UserCreatedDetails();
-                metadata.userCreatedDetails.title = name;
-            }
-            metadata.resource = new ResourcePtr(Bytes.SHA1(compressed), RType.PLAN);
-            mod.items.add(metadata);
-        } else if (Globals.lastSelected.entry.path.toLowerCase().endsWith(".bin")) {
-            Slot slot = new Slot();
-            slot.root = new ResourcePtr(Bytes.SHA1(compressed), RType.LEVEL);
-            slot.title = name;
-            mod.slots.add(slot);
-        }
-
+        mod.config.title = name;
+        
         if (file.exists()) {
             int result = JOptionPane.showConfirmDialog(null, "This mod already exists, do you want to merge them?", "Existing mod!", JOptionPane.YES_NO_CANCEL_OPTION);
             if (result == JOptionPane.YES_OPTION) {
@@ -193,10 +169,6 @@ public class ExportCallbacks {
                 if (oldMod != null) {
                     for (FileEntry e: oldMod.entries)
                         mod.add(e.path, e.data, e.GUID);
-                    for (InventoryMetadata m: oldMod.items)
-                        mod.items.add(m);
-                    for (Slot slot: oldMod.slots)
-                        mod.slots.add(slot);
                 }
             } else if (result != JOptionPane.NO_OPTION) return;
         }

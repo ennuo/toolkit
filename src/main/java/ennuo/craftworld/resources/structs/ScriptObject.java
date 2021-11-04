@@ -1,8 +1,8 @@
 package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.resources.enums.MachineType;
-import ennuo.craftworld.things.Part;
-import ennuo.craftworld.things.ThingPtr;
+import ennuo.craftworld.resources.things.parts.Part;
+import ennuo.craftworld.resources.things.ThingPtr;
 
 public class ScriptObject {
     public MachineType type;

@@ -52,6 +52,14 @@ public class FileDB extends FileData {
     }
     
     /**
+     * Creates a FileDB from byte array.
+     * @param buffer FileDB data source
+     */
+    public FileDB(byte[] buffer) {
+        this.process(new Data(buffer), null);
+    }
+    
+    /**
      * Creates an in-memory FileDB.
      */
     public FileDB() {
@@ -80,7 +88,9 @@ public class FileDB extends FileData {
      * @param bar Progress bar to update
      */
     private void process(Data data, JProgressBar bar) {
-        System.out.println("Started processing FileDB located at: " + this.path);
+        if (this.path != null)
+            System.out.println("Started processing FileDB located at: " + this.path);
+        else System.out.println("Started processing FileDB from byte array.");
         long begin = System.currentTimeMillis();
 
         this.header = data.i32();

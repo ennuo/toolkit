@@ -35,10 +35,10 @@ public class FileCallbacks {
         if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
             type = "Big Profile";
         } else if (Globals.currentWorkspace == Globals.WorkspaceType.MOD) {
-            ext = ".mod";
+            ext = "mod";
             type = "Mod";
         } else {
-            ext = ".map";
+            ext = "map";
             type = "FileDB";
         }
 

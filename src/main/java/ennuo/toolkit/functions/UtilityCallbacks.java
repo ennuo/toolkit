@@ -9,14 +9,14 @@ import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.things.InventoryMetadata;
+import ennuo.craftworld.resources.structs.InventoryMetadata;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.windows.ModEditor;
+import ennuo.toolkit.windows.editors.ModEditor;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
 import javax.swing.JOptionPane;
@@ -31,6 +31,11 @@ public class UtilityCallbacks {
             Mod mod = new Mod();
             new ModEditor(mod, true).setVisible(true);
             mod.save(file.getAbsolutePath());
+            mod = ModCallbacks.loadMod(file);
+            if (mod != null && mod.isParsed) {
+                Toolkit.instance.addTab(mod);
+                Toolkit.instance.updateWorkspace();
+            }
         }
     }
         
@@ -158,11 +163,7 @@ public class UtilityCallbacks {
                 if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
                     BigProfile profile = (BigProfile) Toolkit.instance.getCurrentDB();
                     for (FileEntry entry: mod.entries)
-                        profile.add(entry.data, false);
-                    for (InventoryMetadata item: mod.items)
-                        profile.addItem(item.resource, item);
-                    for (Slot slot: mod.slots)
-                        profile.addSlot(slot);
+                        profile.add(entry.data, true);
                 } else if (Globals.currentWorkspace == Globals.WorkspaceType.MAP) {
                     if (mod.entries.size() == 0) return;
                     FileDB db = (FileDB) Toolkit.instance.getCurrentDB();

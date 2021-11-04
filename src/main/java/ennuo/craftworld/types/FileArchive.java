@@ -179,20 +179,32 @@ public class FileArchive {
 
     public void add(byte[] data) {
         byte[] hash = Bytes.SHA1(data);
-        if (find(hash, false) != null) return;
+        if (this.find(hash, false) != null) return;
         
         this.queueSize += (0x1C + data.length);
 
         FileEntry entry = new FileEntry(data, hash);
         this.entries.add(entry);
 
-        this.queue.add(new FileEntry(data, hash));
+        this.queue.add(entry);
         this.lookup.put(Bytes.toHex(hash), entry);
         
         this.shouldSave = true;
     }
+    
+    public void add(FileEntry entry) {
+        if (entry.data == null) return;
+        byte[] hash = Bytes.SHA1(entry.data);
+        entry.SHA1 = hash;
+        if (this.find(hash, false) != null) return;
+        this.entries.add(entry);
+        this.queueSize += (0x1C + entry.data.length);
+        this.queue.add(entry);
+        this.lookup.put(Bytes.toHex(hash), entry);
+        this.shouldSave = true;
+    }
 
-    public byte[] extract(byte[] hash) { return extract(find(hash)); }
+    public byte[] extract(byte[] hash) { return this.extract(this.find(hash)); }
     public byte[] extract(FileEntry entry) {
         if (entry == null)
             return null;
@@ -211,6 +223,22 @@ public class FileArchive {
             Logger.getLogger(FileArchive.class.getName()).log(Level.SEVERE, (String) null, ex);
         }
         return null;
+    } 
+    
+    public void preload() {
+        byte[] preload = null;
+        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
+            preload = new byte[(int) this.tableOffset];
+            archive.seek(0);
+            archive.readFully(preload, 0, preload.length);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FileArchive.class.getName()).log(Level.SEVERE, (String) null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(FileArchive.class.getName()).log(Level.SEVERE, (String) null, ex);
+        }
+        if (preload != null)
+            for (FileEntry entry : this.entries)
+                entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
     }
     
     public void setFatDataSource(byte[] hash) {
@@ -244,6 +272,8 @@ public class FileArchive {
             return null;
         }
         
+        if (this.fat == null) this.setFatDataSource(new byte[0x14]);
+        
         int dataSize = this.entries
                 .stream()
                 .mapToInt(element -> element.size)
@@ -261,7 +291,6 @@ public class FileArchive {
         if (output.offset % 4 != 0)
             output.pad(4 - (output.offset % 4)); // padding for xxtea encryption
         
-        if (this.fat == null) this.setFatDataSource(new byte[0x14]);
         output.bytes(this.fat);
         
         int lastBufferOffset = 0;

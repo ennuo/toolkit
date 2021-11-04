@@ -133,11 +133,11 @@ public class FileEntry {
             return;
         }
         
+        this.updateTimestamp();
+        this.resetResources();
         this.SHA1 = Bytes.SHA1(buffer);
         this.size = buffer.length;
         this.data = buffer;
-        this.updateTimestamp();
-        this.resetResources();
     }
     
     public void updateTimestamp() { this.timestamp = System.currentTimeMillis() / 1000; }

@@ -1,7 +1,6 @@
 package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.swing.FileData;
@@ -11,8 +10,11 @@ import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.windows.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -23,7 +25,17 @@ public class Globals {
         MAP,
         PROFILE,
         MOD,
-        SAVE
+        SAVE,
+        
+    }
+    
+    public static File workingDirectory;
+    
+    static {
+        try {
+            Globals.workingDirectory = Files.createTempDirectory("twd").toFile();
+            Globals.workingDirectory.deleteOnExit();
+        } catch (IOException ex) { System.out.println("An error occurred creating temp directory."); }
     }
 
     public static ArrayList < FileData > databases = new ArrayList < FileData > ();

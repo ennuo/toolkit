@@ -51,9 +51,11 @@ public class Texture {
         }
         
         Resource resource = new Resource(data);
-        switch (resource.magic.substring(0, 3)) {
-            case "ÿØÿ":
-            case "‰PN":
+        int magic = resource.i24();
+        resource.offset = 0;
+        switch (magic) {
+            case 0xffd8ff:
+            case 0x89504e:
                 InputStream stream = new ByteArrayInputStream(data);
                 try {
                     this.cached = ImageIO.read(stream);
@@ -64,7 +66,7 @@ public class Texture {
                     this.parsed = false;
                 }
                 return;
-            case "DDS":
+            case 0x444453:
                 this.cached = Images.fromDDS(data);
                 this.parsed = true;
                 return;
