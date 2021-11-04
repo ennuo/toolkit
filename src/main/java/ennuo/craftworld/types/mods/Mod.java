@@ -110,6 +110,8 @@ public class Mod extends FileData {
 
             FileDB database = new FileDB(Files.readAllBytes(databasePath));
             for (FileEntry entry : database.entries) {
+                if (entry.GUID > this.lastGUID)
+                    this.lastGUID = entry.GUID + 1;
                 if (archive != null) entry.data = archive.extract(entry.SHA1);
                 if (entry.data == null) {
                     Path filePath = fileSystem.getPath(entry.path);
