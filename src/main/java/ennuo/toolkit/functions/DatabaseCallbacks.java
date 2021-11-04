@@ -139,7 +139,17 @@ public class DatabaseCallbacks {
             return;
         }
         
-        if (integer == nextGUID) db.lastGUID++;
+        boolean alreadyExists = false;
+        if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
+            alreadyExists = ((Mod) db).find(integer) != null;
+        else alreadyExists = ((FileDB) db).find(integer) != null;
+        
+        if (alreadyExists) {
+            System.err.println("This GUID already exists!");
+            return;
+        }
+        
+        if (integer > db.lastGUID) db.lastGUID = integer;
         
         FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, integer);
 
