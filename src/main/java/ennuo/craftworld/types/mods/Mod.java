@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Images;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -68,7 +69,9 @@ public class Mod extends FileData {
                 System.err.println("Mod is missing config.json!");
                 return;
             }
-            String config = Files.readString(configPath);
+            
+            
+            String config = FileIO.readString(configPath);
             
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(new TypeToken<ModPatch>(){}.getType(), new PatchDeserializer(ModPatch.class))
@@ -125,7 +128,7 @@ public class Mod extends FileData {
             
             Path patchesPath = fileSystem.getPath("patches.json");
             if (Files.exists(patchesPath)) {
-                String patchJSON = Files.readString(patchesPath);
+                String patchJSON = FileIO.readString(patchesPath);
                 ModPatch[] patches = gson.fromJson(patchJSON, ModPatch[].class);
                 this.patches = new ArrayList(Arrays.asList(patches));
             }

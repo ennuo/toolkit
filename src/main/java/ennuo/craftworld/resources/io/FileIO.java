@@ -9,6 +9,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
@@ -46,6 +50,16 @@ public class FileIO {
             System.err.println("Failed to read image");
         }
         return image;
+    }
+    
+    public static String readString(Path path) {
+        try {
+            byte[] data = Files.readAllBytes(path);
+            return new String(data);
+        } catch (IOException ex) {
+            System.err.println("An error occurred reading file.");
+            return null;
+        }
     }
 
     public static byte[] read(String path) {
