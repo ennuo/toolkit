@@ -20,7 +20,6 @@ import ennuo.craftworld.resources.things.parts.PartList;
 import ennuo.craftworld.resources.things.Thing;
 import ennuo.craftworld.resources.things.ThingPtr;
 import ennuo.craftworld.resources.structs.ScriptInstance;
-import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;
 
 public class Serializer {

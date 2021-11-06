@@ -24,15 +24,12 @@ import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.resources.InventoryItem;
 import ennuo.craftworld.resources.structs.InventoryMetadata;
 import ennuo.craftworld.serializer.Serializer;
-import ennuo.craftworld.types.mods.Mod;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Random;
 
 public class BigProfile extends FileData {
   public boolean isParsed = false;

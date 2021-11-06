@@ -135,6 +135,17 @@ public class Output {
         buffer[offset] = value;
         offset += 1;
     }
+    
+    /**
+     * Writes an array of bytes to the stream.
+     * @param values Bytes to write
+     */
+    public void i8a(byte[] values) {
+        if (values == null) { this.i32(0); return; }
+        this.i32(values.length);
+        for (byte value : values)
+            this.i8(value);
+    }
 
     /**
      * Writes a 32-bit integer to the stream, encoded depending on the revision.

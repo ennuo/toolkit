@@ -1,17 +1,13 @@
 package ennuo.craftworld.resources;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import ennuo.craftworld.memory.Bytes;
 import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
-import ennuo.toolkit.functions.DebugCallbacks;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
 import ennuo.toolkit.utilities.Globals;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
-public class GfxMaterial {
+public class GfxMaterial implements Serializable {
     public int flags;
     public float alphaTestLevel;
     public byte alphaLayer, alphaMode, shadowCastMode;
@@ -44,84 +40,89 @@ public class GfxMaterial {
 
     public ParameterAnimation[] parameterAnimations;
     
+    public GfxMaterial() {}
     public GfxMaterial(Data data) {
-        flags = data.i32();
-
-        alphaTestLevel = data.f32();
-        alphaLayer = data.i8();
-        if (data.revision > 0x331)
-            alphaMode = data.i8();
-        shadowCastMode = data.i8();
-
-        bumpLevel = data.f32();
-        cosinePower = data.f32();
-        reflectionBlur = data.f32();
-        refractiveIndex = data.f32();
-
-        if (data.revision > 0x13003ef) {
-            refractiveFresnelFalloffPower = data.f32();
-            refractiveFresnelMultiplier = data.f32();
-            refractiveFresnelOffset = data.f32();
-            refractiveFresnelShift = data.f32();
-            fuzzLengthAndRefractiveFlag = data.i8();
-            
-            if (data.revision > 0x17703ef) {
-                translucencyDensity = data.i8();
-                fuzzSwirlAngle = data.i8();
-                fuzzSwirlAmplitude = data.i8();
-                fuzzLightingBias = data.i8();
-                fuzzLightingScale = data.i8();
-                iridescenceRoughness = data.i8();
+        Serializer serializer = new Serializer(data);
+        this.serialize(serializer, this);
+    }
+    
+    public GfxMaterial serialize(Serializer serializer, Serializable structure) {
+        
+        GfxMaterial gfxMaterial = null;
+        if (structure != null) gfxMaterial = (GfxMaterial) structure;
+        else gfxMaterial = new GfxMaterial();
+        
+        gfxMaterial.flags = serializer.i32(gfxMaterial.flags);
+        gfxMaterial.alphaTestLevel = serializer.f32(gfxMaterial.alphaTestLevel);
+        gfxMaterial.alphaLayer = serializer.i8(gfxMaterial.alphaLayer);
+        if (serializer.revision > 0x331)
+            gfxMaterial.alphaMode = serializer.i8(gfxMaterial.alphaMode);
+        gfxMaterial.shadowCastMode = serializer.i8(gfxMaterial.shadowCastMode);
+        gfxMaterial.bumpLevel = serializer.f32(gfxMaterial.bumpLevel);
+        gfxMaterial.cosinePower = serializer.f32(gfxMaterial.cosinePower);
+        gfxMaterial.reflectionBlur = serializer.f32(gfxMaterial.reflectionBlur);
+        gfxMaterial.refractiveIndex = serializer.f32(gfxMaterial.refractiveIndex);
+        if (serializer.revision > 0x13003ef) {
+            gfxMaterial.refractiveFresnelFalloffPower = serializer.f32(gfxMaterial.refractiveFresnelFalloffPower);
+            gfxMaterial.refractiveFresnelMultiplier = serializer.f32(gfxMaterial.refractiveFresnelMultiplier);
+            gfxMaterial.refractiveFresnelOffset = serializer.f32(gfxMaterial.refractiveFresnelOffset);
+            gfxMaterial.refractiveFresnelShift = serializer.f32(gfxMaterial.refractiveFresnelShift);
+            gfxMaterial.fuzzLengthAndRefractiveFlag = serializer.i8(gfxMaterial.fuzzLengthAndRefractiveFlag);
+            if (serializer.revision > 0x17703ef) {
+                gfxMaterial.translucencyDensity = serializer.i8(gfxMaterial.translucencyDensity);
+                gfxMaterial.fuzzSwirlAngle = serializer.i8(gfxMaterial.fuzzSwirlAngle);
+                gfxMaterial.fuzzSwirlAmplitude = serializer.i8(gfxMaterial.fuzzSwirlAmplitude);
+                gfxMaterial.fuzzLightingBias = serializer.i8(gfxMaterial.fuzzLightingBias);
+                gfxMaterial.fuzzLightingScale = serializer.i8(gfxMaterial.fuzzLightingScale);
+                gfxMaterial.iridescenceRoughness = serializer.i8(gfxMaterial.iridescenceRoughness);
             }
         }
-
         
-        int shaderCount = 3;
-        if (data.revision >= 0x398) shaderCount = 11;
-        else if (data.revision >= 0x353) shaderCount = 8;
-        else if (data.revision == 0x272 || data.revision >= 0x336) shaderCount = 4;
-        
-        int[] offsets = new int[shaderCount + 1];
-        for (int i = (data.revision >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i) offsets[i] = data.i32();
-        shaders = new byte[shaderCount][];
-        System.out.println("Shaders offset = 0x" + Bytes.toHex(data.offset));
-        for (int i = 1; i <= shaderCount; ++i)
-            shaders[i - 1] = data.bytes(offsets[i] - offsets[i - 1]);
-
-        textures = new ResourcePtr[8];
-        for (int i = 0; i < 8; ++i) {
-            textures[i] = data.resource(RType.TEXTURE);
-            String str;
-            if (textures[i] != null) str = textures[i].toString();
-            else str = "null";
-            System.out.println("Texture [" + i + "]  offset = 0x" + Bytes.toHex(data.offset) + ", value = " + str);
-        }
-
-        System.out.println("WrapS offset = 0x" + Bytes.toHex(data.offset));
-        wrapS = new byte[data.i32()];
-        for (int i = 0; i < wrapS.length; ++i)
-            wrapS[i] = data.i8();
-        System.out.println("WrapT offset = 0x" + Bytes.toHex(data.offset));
-        wrapT = new byte[data.i32()];
-        for (int i = 0; i < wrapT.length; ++i)
-            wrapT[i] = data.i8();
-
-        System.out.println("Boxes offset = 0x" + Bytes.toHex(data.offset));
-        boxes = Box.array(data);
-        System.out.println("Wires offset = 0x" + Bytes.toHex(data.offset));
-        wires = Wire.array(data);
-        
-        if (data.revision >= 0x149) {
-            System.out.println("SoundEnum offset = 0x" + Bytes.toHex(data.offset));
-            soundEnum = data.i32();
+        if (serializer.isWriting) {
+            int offset = 0;
+            if (serializer.revision < 0x398) 
+                serializer.output.i32(0);
+            for (byte[] shader : gfxMaterial.shaders) {
+                offset += shader.length;
+                serializer.output.i32(offset);
+            }
+            for (byte[] shader : gfxMaterial.shaders)
+                serializer.output.bytes(shader);
+            for (int i = 0; i < 8; ++i)
+                serializer.output.resource(gfxMaterial.textures[i]);            
+        } else {
+            int shaderCount = 3;
+            if (serializer.revision == 0x3e2) shaderCount = 25;
+            else if (serializer.revision >= 0x398) shaderCount = 11;
+            else if (serializer.revision >= 0x353) shaderCount = 8;
+            else if (serializer.revision == 0x272 || serializer.revision >= 0x336) shaderCount = 4;
+            
+            gfxMaterial.shaders = new byte[shaderCount][];
+            
+            int[] offsets = new int[shaderCount + 1];
+            for (int i = (serializer.revision >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i)
+                offsets[i] = serializer.input.i32();
+            for (int i = 1; i <= shaderCount; ++i)
+                gfxMaterial.shaders[i - 1] = serializer.input.bytes(offsets[i] - offsets[i - 1]);
+            
+            gfxMaterial.textures = new ResourcePtr[8];
+            for (int i = 0; i < 8; ++i)
+                gfxMaterial.textures[i] = serializer.input.resource(RType.TEXTURE);
         }
         
-        if (data.revision >= 0x2a2) {
-            System.out.println("ParameterAnimations offset = 0x" + Bytes.toHex(data.offset));
-            parameterAnimations = ParameterAnimation.array(data);            
-        }
-
-        System.out.println("End Parsing offset = 0x" + Bytes.toHex(data.offset));
+        gfxMaterial.wrapS = serializer.i8a(gfxMaterial.wrapS);
+        gfxMaterial.wrapT = serializer.i8a(gfxMaterial.wrapT);
+        gfxMaterial.boxes = serializer.array(gfxMaterial.boxes, Box.class);
+        gfxMaterial.wires = serializer.array(gfxMaterial.wires, Wire.class);
+        
+        if (serializer.revision >= 0x129)
+            gfxMaterial.soundEnum = serializer.i32(gfxMaterial.soundEnum);
+        
+        if (serializer.revision >= 0x2a2)
+            gfxMaterial.parameterAnimations = 
+                        serializer.array(gfxMaterial.parameterAnimations, ParameterAnimation.class);
+        
+        return gfxMaterial;
     }
     
     public Wire findWireFrom(int box) {
@@ -165,5 +166,4 @@ public class GfxMaterial {
         }
         return null;
     }
-
 }

@@ -1,10 +1,9 @@
 package ennuo.craftworld.resources.structs.gfxmaterial;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
 
-public class Box {
-    
+public class Box implements Serializable {
     public final class BoxType {
         public static final int OUTPUT = 0;
         public static final int TEXTURE_SAMPLE = 1;
@@ -21,42 +20,32 @@ public class Box {
     public ParameterAnimation anim;
     public ParameterAnimation anim2;
     
-    public Box(Data data) {
-       type = data.i32();
-       if (data.revision >= 0x2b2)
-           params = new long[data.i32()];
-       else params = new long[6];
-       for (int i = 0; i < params.length; ++i)
-           params[i] = data.u32();
-       x = data.f32(); y = data.f32();
-       z = data.f32(); w = data.f32();
-       if (data.revision >= 0x2a2) {
-          subType = data.i32();
-          anim = new ParameterAnimation(data);
-          anim2 = new ParameterAnimation(data);
-       }
-    }
-    
-    public static Box[] array(Data data) {
-        int count = data.i32();
-        Box[] out = new Box[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new Box(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.i32(type);
-        if (output.revision >= 0x2b2)
-            output.i32(params.length);
-        for (int i = 0; i < params.length; ++i)
-            output.u32(params[i]);
-        output.f32(x); output.f32(y);
-        output.f32(z); output.f32(w);
-        if (output.revision >= 0x2a2) {
-            output.i32(subType);
-            anim.serialize(output);
-            anim2.serialize(output);
+    public Box serialize(Serializer serializer, Serializable structure) {
+        Box box = null;
+        if (structure != null) box = (Box) structure;
+        else box = new Box();
+        
+        box.type = serializer.i32(box.type);
+        
+        if (serializer.revision >= 0x2b2)
+            box.params = serializer.u32a(box.params);
+        else {
+            if (!serializer.isWriting) box.params = new long[6];
+            for (int i = 0; i < 6; ++i)
+                box.params[i] = serializer.u32(box.params[i]);
         }
+        
+        box.x = serializer.f32(box.x);
+        box.y = serializer.f32(box.y);
+        box.z = serializer.f32(box.z);
+        box.w = serializer.f32(box.w);
+        
+        if (serializer.revision >= 0x2a2) {
+            box.subType = serializer.i32(box.subType);
+            box.anim = serializer.struct(box.anim, ParameterAnimation.class);
+            box.anim2 = serializer.struct(box.anim2, ParameterAnimation.class);
+        }
+        
+        return box;
     }
 }

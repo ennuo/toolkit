@@ -1,33 +1,26 @@
 package ennuo.craftworld.resources.structs.gfxmaterial;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
 
-public class Wire {
+public class Wire implements Serializable {
     public int boxFrom, boxTo;
     public byte portFrom, portTo;
     
-    public Wire(Data data) {
-        boxFrom = data.i32(); boxTo = data.i32();
-        portFrom = data.i8(); portTo = data.i8();
+    public Wire serialize(Serializer serializer, Serializable structure) {
+        Wire wire = null;
+        if (structure != null) wire = (Wire) structure;
+        else wire = new Wire();
         
-        if (data.isEncoded()) boxFrom /= 2;
-        if (data.isEncoded()) boxTo /= 2;
+        wire.boxFrom = (int) serializer.u32d(wire.boxFrom);
+        wire.boxTo = (int) serializer.u32d(wire.boxTo);
+        wire.portFrom = serializer.i8(wire.portFrom);
+        wire.portTo = serializer.i8(wire.portTo);
         
-        data.bytes(5); // Padding bytes?
-    }
-    
-    public static Wire[] array(Data data) {
-        int count = data.i32();
-        Wire[] out = new Wire[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new Wire(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.i32(boxFrom); output.i32(boxTo);
-        output.i8(portFrom); output.i8(portTo);
-        output.pad(5);
+        // NOTE(Abz): I have no idea what this is, no named fields for it,
+        // it's always just null bytes, so I figure it doesn't matter anyway.
+        serializer.pad(0x5);
+        
+        return wire;
     }
 }

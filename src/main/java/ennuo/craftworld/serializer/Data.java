@@ -108,6 +108,17 @@ public class Data {
         this.offset++;
         return this.data[this.offset - 1];
     }
+    
+    /**
+     * Reads an array of bytes from the stream
+     * @return Array of bytes read from the stream
+     */
+    public byte[] i8a() {
+        byte[] values = new byte[this.i32()];
+        for (int i = 0; i < values.length; ++i)
+            values[i] = this.i8();
+        return values;
+    }
 
     /**
      * Peeks at the next integer in the stream without advancing.
