@@ -1,5 +1,6 @@
 package ennuo.craftworld.resources;
 
+import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.memory.Data;
 import ennuo.craftworld.memory.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
@@ -78,25 +79,26 @@ public class GfxMaterial implements Serializable {
             }
         }
         
+        int shaderCount = 3;
+        if (serializer.revision == 0x3e2) shaderCount = 25;
+        else if (serializer.revision >= 0x398) shaderCount = 11;
+        else if (serializer.revision >= 0x353) shaderCount = 8;
+        else if (serializer.revision == 0x272 || serializer.revision >= 0x336) shaderCount = 4;
+        
         if (serializer.isWriting) {
             int offset = 0;
             if (serializer.revision < 0x398) 
                 serializer.output.i32(0);
-            for (byte[] shader : gfxMaterial.shaders) {
+            for (int i = 0; i < shaderCount; ++i) {
+                byte[] shader = gfxMaterial.shaders[i];
                 offset += shader.length;
                 serializer.output.i32(offset);
             }
-            for (byte[] shader : gfxMaterial.shaders)
-                serializer.output.bytes(shader);
+            for (int i = 0; i < shaderCount; ++i)
+                serializer.output.bytes(gfxMaterial.shaders[i]);
             for (int i = 0; i < 8; ++i)
                 serializer.output.resource(gfxMaterial.textures[i]);            
-        } else {
-            int shaderCount = 3;
-            if (serializer.revision == 0x3e2) shaderCount = 25;
-            else if (serializer.revision >= 0x398) shaderCount = 11;
-            else if (serializer.revision >= 0x353) shaderCount = 8;
-            else if (serializer.revision == 0x272 || serializer.revision >= 0x336) shaderCount = 4;
-            
+        } else {            
             gfxMaterial.shaders = new byte[shaderCount][];
             
             int[] offsets = new int[shaderCount + 1];
@@ -123,6 +125,16 @@ public class GfxMaterial implements Serializable {
                         serializer.array(gfxMaterial.parameterAnimations, ParameterAnimation.class);
         
         return gfxMaterial;
+    }
+    
+    public byte[] build(int revision) {
+        int dataSize = 0x1000;
+        for (byte[] shader : this.shaders)
+            dataSize += shader.length;
+        Serializer serializer = new Serializer(dataSize, revision);
+        this.serialize(serializer, this);
+        return Compressor.Compress(serializer.getBuffer(), "GMTb", revision, 
+                    serializer.output.dependencies.toArray(new ResourcePtr[serializer.output.dependencies.size()]));      
     }
     
     public Wire findWireFrom(int box) {

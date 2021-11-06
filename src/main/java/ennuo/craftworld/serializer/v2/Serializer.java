@@ -282,8 +282,14 @@ public class Serializer {
         return output;
     }
     
-    public void write(String path) {
+    public byte[] getBuffer() {
+        if (!this.isWriting) return null;
         this.output.shrink();
-        FileIO.write(this.output.buffer, path);
+        return this.output.buffer;
+    }
+    
+    public void write(String path) {
+        if (!this.isWriting) return;
+        FileIO.write(this.getBuffer(), path);
     }
 }
