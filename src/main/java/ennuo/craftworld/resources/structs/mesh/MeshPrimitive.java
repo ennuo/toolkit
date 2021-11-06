@@ -1,11 +1,11 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
 
-public class MeshPrimitive {
+public class MeshPrimitive implements Serializable {
     public static int MAX_SIZE = 0x4B;
     
     public ResourcePtr material;
@@ -15,32 +15,18 @@ public class MeshPrimitive {
     public int firstIndex;
     public int numIndices;
     public int region;
-    
-    public MeshPrimitive(Data data) {
-        boolean isBit = data.revision < 0x230;
-        material = data.resource(RType.GFXMATERIAL, isBit);
-        textureAlternatives = data.resource(RType.TEXTURE_LIST, isBit);
-        minVert = data.i32();
-        maxVert = data.i32();
-        firstIndex = data.i32();
-        numIndices = data.i32();
-        region = data.i32();
-    }
-    
-    public static MeshPrimitive[] array(Data data) {
-        int count = data.i32();
-        MeshPrimitive[] out = new MeshPrimitive[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new MeshPrimitive(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        boolean isBit = output.revision < 0x230;
-        output.resource(material, isBit);
-        output.resource(textureAlternatives, isBit);
-        output.i32(minVert); output.i32(maxVert);
-        output.i32(firstIndex); output.i32(numIndices);
-        output.i32(region);
+
+    public MeshPrimitive serialize(Serializer serializer, Serializable structure) {
+        MeshPrimitive primitive = (structure == null) ? new MeshPrimitive() : (MeshPrimitive) structure;
+        
+        primitive.material = serializer.resource(primitive.material, RType.GFXMATERIAL);
+        primitive.textureAlternatives = serializer.resource(primitive.textureAlternatives, RType.TEXTURE_LIST);
+        primitive.minVert = serializer.i32(primitive.minVert);
+        primitive.maxVert = serializer.i32(primitive.maxVert);
+        primitive.firstIndex = serializer.i32(primitive.firstIndex);
+        primitive.numIndices = serializer.i32(primitive.numIndices);
+        primitive.region = serializer.i32(primitive.region);
+        
+        return primitive;
     }
 }

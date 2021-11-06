@@ -1,61 +1,72 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.resources.structs.mesh.Bone;
-import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import com.google.gson.Gson;
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.resources.structs.mesh.CullBone;
 import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
 import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
+import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
 import ennuo.craftworld.resources.structs.mesh.Morph;
-import ennuo.craftworld.resources.structs.mesh.SkinWeight;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
 import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
 import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Compressor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class Mesh {
+public class Mesh implements Serializable {
     public String name;
     
-    int numTris = 0;
-    int morphCount = 0;
-
-    float[] minUV = new float[] { 0.0f, 0.0f };
-    float[] maxUV = new float[] { 0.0f, 0.0f };
-    
-    float areaScaleFactor = 100;
-
-    public short[] faces;
-    public short[] extraFaces;
-    public short[] edges;
-    
-    public Vector3f[] vertices;
-    public SkinWeight[] weights;
-    public Morph[] morphs;
-    
+    public int numVerts;
+    public int numIndices;
+    public int numEdgeIndices;
+    public int numTris;
+    public int streamCount;
     public int attributeCount;
-    public int uvCount;
-
-    public Vector2f[][] attributes;
+    public int morphCount;
+    
     public String[] morphNames;
+    
+    public float[] minUV = new float[] { 0.0f, 0.0f, };
+    public float[] maxUV = new float[] { 1.0f, 1.0f };
+    public float areaScaleFactor = 500;
+    
+    public byte[][] streams;
+    public byte[] attributes;
+    public byte[] indices;
+    public byte[] triangles;
+    
     public MeshPrimitive[] meshPrimitives;
     public Bone[] bones;
+    
+    public short[] mirror;
+    public byte[] mirrorType;
     public short[] mirrorMorphs;
-    public byte primitiveType;
+    
+    // NOTE(Abz): Primitive type 5 is for triangle lists, although the game
+    // generally tends to use triangle strips. As a reference for possible
+    // values, see: 
+    // https://www.khronos.org/opengl/wiki/Primitive
+    
+    public byte primitiveType = 5;
+    
     public SoftbodyCluster softbodyCluster;
     public SoftbodySpring[] softbodySprings;
     public SoftbodyVertEquivalence[] softbodyEquivs;
     public float[] mass;
     public ImplicitEllipsoid[] implicitEllipsoids;
-    public float[][] clusterImplicitEllipsoids;
+    public Matrix4f[] clusterImplicitEllipsoids;
     public ImplicitEllipsoid[] insideImplicitEllipsoids;
     public ImplicitPlane[] implicitPlanes;
     public ResourcePtr softPhysSettings;
@@ -65,207 +76,164 @@ public class Mesh {
     public int springTrisStripped;
     public Vector4f softbodyContainingBoundBoxMin;
     public Vector4f softbodyContainingBoundBoxMax;
+    
     public CullBone[] cullBones;
+    
     public long[] regionIDsToHide;
     public int costumeCategoriesUsed;
     public int hairMorphs;
+    
     public int bevelVertexCount;
     public boolean implicitBevelSprings;
+    
     public byte skeletonType;
-
-
+    
+    public Mesh(){}
     public Mesh(String name, byte[] data) {
         this.name = name;
-        if (data == null) {
-            System.err.println("No data provided to Mesh constructor");
-            return;
-        }
-        process(new Resource(data));
+        Resource resource = new Resource(data);
+        resource.decompress(true);
+        Serializer serializer = new Serializer(resource);
+        this.serialize(serializer, this);
     }
 
-    private void process(Resource data) {
-        data.decompress(true);
-        System.out.println("Parsing Mesh...");
-        int numVerts = data.i32(), numIndices = data.i32(),
-            numEdgeIndices = data.i32();
-        numTris = data.i32();
-
-        int streamCount = data.i32();
-        attributeCount = data.i32();
-        morphCount = data.i32();
-
-        System.out.println("Morph Count -> " + morphCount);
-
-        morphNames = new String[0x20];
+    public Mesh serialize(Serializer serializer, Serializable structure) {
+        Mesh mesh = (structure == null) ? new Mesh() : (Mesh) structure;
+        
+        mesh.numVerts = serializer.i32(mesh.numVerts);
+        mesh.numIndices = serializer.i32(mesh.numIndices);
+        mesh.numEdgeIndices = serializer.i32(mesh.numEdgeIndices);
+        mesh.numTris = serializer.i32(mesh.numTris);
+        mesh.streamCount = serializer.i32(mesh.streamCount);
+        mesh.attributeCount = serializer.i32(mesh.attributeCount);
+        mesh.morphCount = serializer.i32(mesh.morphCount);
+        
+        if (!serializer.isWriting) 
+            mesh.morphNames = new String[0x20];
         for (int i = 0; i < 0x20; ++i)
-            morphNames[i] = data.str(0x10);
-        for (int i = 0; i < morphCount; ++i)
-            System.out.println("Morph[" + i + "] -> " + morphNames[i]);
-
-        if (data.revision > 0x238) {
-            minUV = data.f32a();
-            maxUV = data.f32a();
-            areaScaleFactor = data.f32();
-        }
-
-        int[] streamOffsets = new int[streamCount + 1];
-        for (int i = 0; i < streamCount + 1; ++i)
-            streamOffsets[i] = data.i32();
-
-        System.out.println("Vertex Count -> " + numVerts);
-        System.out.println("Stream Count -> " + streamCount);
+            mesh.morphNames[i] = serializer.str(mesh.morphNames[i], 0x10);
         
-        int streamSize = data.i32();
-        
-        vertices = new Vector3f[numVerts];
-        for (int i = 0; i < numVerts; ++i) {
-            vertices[i] = data.v3();
-            data.f32();
+        if (serializer.revision >= 0x239) {
+            mesh.minUV = serializer.f32a(mesh.minUV);
+            mesh.maxUV = serializer.f32a(mesh.maxUV);
+            mesh.areaScaleFactor = serializer.f32(mesh.areaScaleFactor);
         }
         
-        if (streamCount > 1) {
-            weights = new SkinWeight[numVerts];
-            for (int i = 0; i < numVerts; ++i)
-                weights[i] = new SkinWeight(data);
-            if (streamCount > 2) {
-                morphs = new Morph[streamCount - 2];
-                for (int i = 0; i < streamCount - 2; ++i) {
-                    Vector3f[] vertices = new Vector3f[numVerts];
-                    Vector3f[] normals = new Vector3f[numVerts];
-                    for (int j = 0; j < numVerts; ++j) {
-                        vertices[j] = data.v3();
-                        normals[j] = SkinWeight.decodeI32(data.u32f());
-                    }
-                    Morph morph = new Morph(morphNames[streamCount - 2]);
-                    morph.vertices = vertices;
-                    morph.normals = normals;
-                    morphs[i] = morph;
+        if (serializer.isWriting) {
+            int offset = 0;
+            serializer.output.i32(offset);
+            for (int i = 0; i < mesh.streams.length; ++i) {
+                offset += mesh.streams[i].length;
+                serializer.output.i32(offset);
+            }
+            serializer.output.i32(offset);
+            for (byte[] stream : mesh.streams)
+                serializer.output.bytes(stream);
+        } else {
+            // NOTE(Abz): We're skipping source stream offsets. 
+            for (int i = 0; i < mesh.streamCount + 1; ++i)
+                serializer.input.i32();
+            serializer.input.i32();
+            
+            mesh.streams = new byte[mesh.streamCount][];
+            for (int i = 0; i < mesh.streamCount; ++i)
+                mesh.streams[i] = serializer.input.bytes(mesh.numVerts * 0x10);
+        }
+        
+        mesh.attributes = serializer.i8a(mesh.attributes);
+        mesh.indices = serializer.i8a(mesh.indices);
+        if (serializer.revision >= 0x016b03f0)
+            mesh.triangles = serializer.i8a(mesh.triangles);
+        
+        mesh.meshPrimitives = serializer.array(mesh.meshPrimitives, MeshPrimitive.class);
+        mesh.bones = serializer.array(mesh.bones, Bone.class);
+        
+        mesh.mirror = serializer.i16a(mesh.mirror);
+        mesh.mirrorType = serializer.i8a(mesh.mirrorType);
+        mesh.mirrorMorphs = serializer.i16a(mesh.mirrorMorphs);
+        
+        mesh.primitiveType = serializer.i8(mesh.primitiveType);
+        
+        mesh.softbodyCluster = serializer.struct(mesh.softbodyCluster, SoftbodyCluster.class);
+        mesh.softbodySprings = serializer.array(mesh.softbodySprings, SoftbodySpring.class);
+        mesh.softbodyEquivs = serializer.array(mesh.softbodyEquivs, SoftbodyVertEquivalence.class);
+        mesh.mass = serializer.f32a(mesh.mass);
+        mesh.implicitEllipsoids = serializer.array(mesh.implicitEllipsoids, ImplicitEllipsoid.class);
+        
+        if (!serializer.isWriting) mesh.clusterImplicitEllipsoids = new Matrix4f[serializer.input.i32()];
+        else serializer.output.i32(mesh.clusterImplicitEllipsoids.length);
+        for (int i = 0; i < mesh.clusterImplicitEllipsoids.length; ++i)
+            mesh.clusterImplicitEllipsoids[i] = serializer.matrix(mesh.clusterImplicitEllipsoids[i]);
+        
+        mesh.insideImplicitEllipsoids = serializer.array(mesh.insideImplicitEllipsoids, ImplicitEllipsoid.class);
+        mesh.implicitPlanes = serializer.array(mesh.implicitPlanes, ImplicitPlane.class);
+        mesh.softPhysSettings = serializer.resource(mesh.softPhysSettings, RType.SETTINGS_SOFT_PHYS);
+        mesh.minSpringVert = serializer.i32(mesh.minSpringVert);
+        mesh.maxSpringVert = serializer.i32(mesh.maxSpringVert);
+        mesh.minUnalignedSpringVert = serializer.i32(mesh.minUnalignedSpringVert);
+        mesh.springyTriIndices = serializer.i16a(mesh.springyTriIndices);
+        mesh.springTrisStripped = serializer.i32(mesh.springTrisStripped);
+        mesh.softbodyContainingBoundBoxMin = serializer.v4(mesh.softbodyContainingBoundBoxMin);
+        mesh.softbodyContainingBoundBoxMax = serializer.v4(mesh.softbodyContainingBoundBoxMax);
+        
+        mesh.cullBones = serializer.array(mesh.cullBones, CullBone.class);
+        
+        // NOTE(Abz): I have no idea whatsoever why region IDs are encoded like this,
+        // is there some benefit to it?
+        
+        if (serializer.revision < 0x272)
+            mesh.regionIDsToHide = serializer.u32a(mesh.regionIDsToHide);
+        else if (serializer.isWriting) {
+            if (mesh.regionIDsToHide != null && mesh.regionIDsToHide.length != 0) {
+                serializer.output.i32(mesh.regionIDsToHide.length);
+                serializer.output.i32(4);
+                byte[][] regionIDs = new byte[mesh.regionIDsToHide.length][];
+                for (int i = 0; i < regionIDs.length; ++i) {
+                    long regionID = mesh.regionIDsToHide[i];
+                    regionIDs[i] = Bytes.toBytesLE(regionID);
                 }
+                for (int i = 0; i < 4; ++i)
+                    for (int j = 0; j < mesh.regionIDsToHide.length; ++j)
+                        serializer.output.i8(regionIDs[j][i]);                
+            }
+            else serializer.output.i32(0);
+        } else {
+            mesh.regionIDsToHide = new long[serializer.input.i32()];
+            if (mesh.regionIDsToHide.length != 0) {
+                byte[][] regionIDs = new byte[mesh.regionIDsToHide.length][];
+                int packSize = serializer.input.i32();
+                for (int i = 0; i < regionIDs.length; ++i)
+                    regionIDs[i] = new byte[packSize];
+                for (int i = 0; i < packSize; ++i)
+                    for (int j = 0; j < regionIDs.length; ++i)
+                        regionIDs[j][i] = serializer.input.i8();
+                for (int i = 0; i < regionIDs.length; ++i)
+                    mesh.regionIDsToHide[i] = Bytes.toIntegerLE(regionIDs[i]);
             }
         }
-
-        System.out.println("UV Offset -> 0x" + Bytes.toHex(data.offset));
-
-        int uvSize = data.i32();
-        uvCount = uvSize / (0x8 * attributeCount);
-
-        System.out.println("UV Count -> " + uvCount);
-        attributes = new Vector2f[uvCount][];
-        for (int i = 0; i < uvCount; ++i) {
-            attributes[i] = new Vector2f[attributeCount];
-            for (int j = 0; j < attributeCount; ++j)
-                attributes[i][j] = data.v2();
-        }
-
-        System.out.println("Indices Offset -> 0x" + Bytes.toHex(data.offset));
-        int faceSize = data.i32();
-        System.out.println("Index Count -> " + numIndices);
-        faces = new short[numIndices];
-        for (int i = 0; i < numIndices; ++i)
-            faces[i] = data.i16();
-        System.out.println("Edge Indices Offset -> 0x" + Bytes.toHex(data.offset));
-        System.out.println("Edge Index Count -> " + numEdgeIndices);
-        edges = new short[numEdgeIndices];
-        for (int i = 0; i < numEdgeIndices; ++i)
-            edges[i] = data.i16();
-
-        if (data.revision >= 0x016b03ef) {
-            System.out.println("Extra Indices Offset -> 0x" + Bytes.toHex(data.offset));
-            int extraFaceCount = data.i32() / 2;
-            System.out.println(extraFaceCount);
-            extraFaces = new short[extraFaceCount];
-            for (int i = 0; i < extraFaceCount; ++i)
-                extraFaces[i] = data.i16();
-        }
-
-        System.out.println("Mesh Primitives Offset -> 0x" + Bytes.toHex(data.offset));
-        meshPrimitives = MeshPrimitive.array(data);
-
-        System.out.println("Bones Offset -> 0x" + Bytes.toHex(data.offset));
-        bones = Bone.array(data);
-
-        int mirrorCount = data.i32();
-        for (int i = 0; i < mirrorCount; ++i)
-            bones[i].mirror = data.i16();
-        int mirrorTypeCount = data.i32();
-        for (int i = 0; i < mirrorTypeCount; ++i)
-            bones[i].mirrorType = data.i8();
-
         
-        /*
-        for (int i = 1; i < bones.length; ++i) {
-            Bone bone = bones[i];
-            System.out.println(
-                String.format("Bone %d [%s] (%s) has Parent=%d (%s) and Mirror=%d (%s) with MirrorType=%s", 
-                i, Bytes.toHex(bone.animHash), bone.name, bone.parent, bones[bone.parent].name, bone.mirror, bones[bone.mirror].name, getMirrorType(bone.mirrorType))
-            );   
-        }
-        */
-
-        System.out.println("Mirror Morph Offset  -> 0x" + Bytes.toHex(data.offset));
-        int mirrorMorphCount = data.i32();
-        mirrorMorphs = new short[mirrorMorphCount];
-        for (int i = 0; i < mirrorMorphCount; ++i)
-            mirrorMorphs[i] = data.i16();
-
-        System.out.println("Primitive Type Offset  -> 0x" + Bytes.toHex(data.offset));
-        primitiveType = data.i8();
-        System.out.println("Softbody Cluster Offset  -> 0x" + Bytes.toHex(data.offset));
-        softbodyCluster = new SoftbodyCluster(data);
-        System.out.println("Softbody Springs Offset  -> 0x" + Bytes.toHex(data.offset));
-        softbodySprings = SoftbodySpring.array(data);
-        System.out.println("Softbody Vert Equivalences Offset  -> 0x" + Bytes.toHex(data.offset));
-        softbodyEquivs = SoftbodyVertEquivalence.array(data);
-        System.out.println("Mass Offset  -> 0x" + Bytes.toHex(data.offset));
-        mass = data.f32a();
-        System.out.println("Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
-        implicitEllipsoids = ImplicitEllipsoid.array(data);
-        System.out.println("Cluster Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
-        clusterImplicitEllipsoids = new float[data.i32()][];
-        for (int i = 0; i < clusterImplicitEllipsoids.length; ++i)
-            clusterImplicitEllipsoids[i] = data.matrix();
-        System.out.println("Inside Implicit Ellipsoids Offset  -> 0x" + Bytes.toHex(data.offset));
-        insideImplicitEllipsoids = ImplicitEllipsoid.array(data);
-        System.out.println("Implicit Planes Offset  -> 0x" + Bytes.toHex(data.offset));
-        implicitPlanes = ImplicitPlane.array(data);
-        System.out.println("Soft Phys Settings Offset  -> 0x" + Bytes.toHex(data.offset));
-        softPhysSettings = data.resource(RType.SETTINGS_SOFT_PHYS);
-        System.out.println("Min Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
-        minSpringVert = data.i32();
-        System.out.println("Max Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
-        maxSpringVert = data.i32();
-        System.out.println("Min Unaligned Spring Vert Offset  -> 0x" + Bytes.toHex(data.offset));
-        minUnalignedSpringVert = data.i32();
-
-        System.out.println("Springy Tri Indices Offset  -> 0x" + Bytes.toHex(data.offset));
-        springyTriIndices = new short[data.i32()];
-        for (int i = 0; i < springyTriIndices.length; ++i)
-            springyTriIndices[i] = data.i16();
-
-        System.out.println("Spring Tris Stripped Offset  -> 0x" + Bytes.toHex(data.offset));
-        springTrisStripped = data.i32();
-
-        System.out.println("Softbody Contained Bound Box Min Offset  -> 0x" + Bytes.toHex(data.offset));
-        softbodyContainingBoundBoxMin = data.v4();
-        System.out.println("Softbody Contained Bound Box Max Offset  -> 0x" + Bytes.toHex(data.offset));
-        softbodyContainingBoundBoxMax = data.v4();
-
-        System.out.println("Cull Bones Offset  -> 0x" + Bytes.toHex(data.offset));
-        cullBones = CullBone.array(data);
-
-        System.out.println("Region IDs To Hide Offset -> 0x" + Bytes.toHex(data.offset));
-        regionIDsToHide = new long[data.i32()];
-        if (regionIDsToHide.length != 0 && data.isEncoded()) data.i8();
-        for (int i = 0; i < regionIDsToHide.length; ++i)
-            regionIDsToHide[i] = data.u32f();
-
-        costumeCategoriesUsed = data.i32();
-        hairMorphs = data.i32();
-        bevelVertexCount = data.i32();
-        implicitBevelSprings = data.bool();
-
-        if (data.revision >= 0x016703ef)
-            skeletonType = data.i8();
+        mesh.costumeCategoriesUsed = serializer.i32(mesh.costumeCategoriesUsed);
+        mesh.hairMorphs = serializer.i32(mesh.hairMorphs);
+        mesh.bevelVertexCount = serializer.i32(mesh.bevelVertexCount);
+        mesh.implicitBevelSprings = serializer.bool(mesh.implicitBevelSprings);
+        
+        if (serializer.revision >= 0x015f03ef)
+            mesh.skeletonType = serializer.i8(mesh.skeletonType);
+        
+        return mesh;
+    }
+    
+    public byte[] build(int revision) {
+        int dataSize = 1024 * 500;
+        for (byte[] stream : this.streams)
+            dataSize += stream.length;
+        if (this.attributes != null) dataSize += this.attributes.length;
+        if (this.indices != null) dataSize += this.indices.length;
+        if (this.triangles != null) dataSize += this.triangles.length;
+        Serializer serializer = new Serializer(dataSize, revision);
+        this.serialize(serializer, this);
+        return Compressor.Compress(serializer.getBuffer(), "MSHb", revision, 
+                    serializer.output.dependencies.toArray(new ResourcePtr[serializer.output.dependencies.size()]));      
     }
     
     public MeshPrimitive[][] getSubmeshes() {
@@ -320,20 +288,134 @@ public class Mesh {
         return output;
     }
     
-    public short[] triangulate() { return triangulate(0, faces.length); }
-    
-    
-    public short[] triangulate(MeshPrimitive primitive) {
-        return this.triangulate(primitive.firstIndex, primitive.numIndices);
+    public Vector3f[] getVertices(int start, int count) {
+        Data data = new Data(this.streams[0]);
+        data.offset = 0x10 * start;
+        Vector3f[] vertices = new Vector3f[count];
+        for (int i = 0; i < count; ++i) {
+            vertices[i] = data.v3();
+            data.f32(); // NOTE(Abz): We're skipping that 0x000000FF bit, no idea what it is, seems irrelevant!
+        }
+        return vertices;
     }
     
-    public short[] triangulate(int offset, int count) {
+    public Vector3f[] getVertices(MeshPrimitive primitive) {
+        return this.getVertices(primitive.minVert, primitive.maxVert - primitive.minVert);
+    }
+    
+    public Vector3f[] getVertices() { return this.getVertices(0, this.numVerts); }
+    
+    public Vector2f[] getUVs(int start, int count, int channel) {
+        if (channel < 0 || (channel + 1 > this.attributeCount)) return null;
+        Data data = new Data(this.attributes);
+        data.offset = (0x8 * this.attributeCount) * start;
+        Vector2f[] UVs = new Vector2f[count];
+        for (int i = 0; i < count; ++i) {
+            data.offset = start + (0x8 * this.attributeCount * i) + (0x8 * channel);
+            UVs[i] = data.v2();
+        }
+        return UVs;
+    }
+    
+    public Vector2f[] getUVs(MeshPrimitive primitive, int channel) {
+        return this.getUVs(primitive.minVert, primitive.maxVert - primitive.minVert, channel);
+    }
+    
+    public Vector2f[] getUVs(int channel) { return this.getUVs(0, this.numVerts, channel); }
+    
+    public Vector3f[] getNormals(int start, int count) {
+        Data data = new Data(this.streams[1]);
+        Vector3f[] normals = new Vector3f[count];
+        for (int i = 0; i < count; ++i) {
+            data.offset = (0x10 * start) + (0x10 * i) + 0x4;
+            normals[i] = Bytes.decodeI24(data.i24());
+        }
+        return normals;
+    }
+    
+    public Vector3f[] getNormals(MeshPrimitive primitive) {
+        return this.getNormals(primitive.minVert, primitive.maxVert - primitive.minVert);
+    }
+    
+    public Vector3f[] getNormals() { return this.getNormals(0, this.numVerts); }
+    
+    public byte[][] getJoints(int start, int count) {
+       Data data = new Data(this.streams[1]);
+       data.offset = 0x10 * start;
+       byte[][] joints = new byte[count][];
+       for (int i = 0; i < count; ++i) {
+           byte[] buffer = data.bytes(0x10);
+           joints[i] = new byte[] { 
+               buffer[3], buffer[7], buffer[0xB], buffer[0xF] 
+           };
+       }
+       return joints;
+    }
+    
+    public byte[][] getJoints(MeshPrimitive primitive) {
+        return this.getJoints(primitive.minVert, primitive.maxVert - primitive.minVert);
+    }
+    
+    public byte[][] getJoints() { return this.getJoints(0, this.numVerts); }
+    
+    public Vector4f[] getWeights(int start, int count) {
+        Data data = new Data(this.streams[1]);
+        data.offset = 0x10 * start;
+        Vector4f[] weights = new Vector4f[count];
+        for (int i = 0; i < count; ++i) {
+            byte[] buffer = data.bytes(0x10);
+            float[] rawWeight = new float[] {
+                (float)((int)buffer[2] & 0xFF), 
+                (float)((int)buffer[1] & 0xFF), 
+                (float)((int)buffer[0] & 0xFF), 
+                0
+            };
+            
+            if (rawWeight[0] != 0xFF) {
+                rawWeight[3] = 0xFE - rawWeight[2] - rawWeight[1] - rawWeight[0];
+                weights[i] = new Vector4f(
+                        rawWeight[0] / 0xFE,
+                        rawWeight[1] / 0xFE,
+                        rawWeight[2] / 0xFE,
+                        rawWeight[3] / 0xFE
+                );
+            } else weights[i] = new Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+        }
+        return weights;
+    }
+    
+    public Vector4f[] getWeights(MeshPrimitive primitive) {
+        return this.getWeights(primitive.minVert, primitive.maxVert - primitive.minVert);
+    }
+    
+    public Vector4f[] getWeights() {
+        return this.getWeights(0, this.numVerts);
+    }
+    
+    public Morph[] getMorphs() {
+        Morph[] morphs = new Morph[this.morphCount];
+        for (int i = 0; i < this.morphCount; ++i) {
+            Data data = new Data(this.streams[2 + i]);
+            Morph morph = new Morph();
+            morph.vertices = new Vector3f[this.numVerts];
+            morph.normals = new Vector3f[this.numVerts];
+            for (int j = 0; j < this.numVerts; ++j) {
+                morph.vertices[j] = data.v3();
+                morph.normals[j] = Bytes.decodeI32(data.u32f());
+            }
+            morphs[i] = morph;
+        }
+        return morphs;
+    }
+    
+    public short[] getIndices(int start, int count) {
+        short[] faces = new short[count];
+        Data data = new Data(this.indices);
+        data.offset = 0x2 * start;
+        for (int i = 0; i < count; ++i)
+            faces[i] = data.i16();
+        if (this.primitiveType == 5) return faces;
         ArrayList<Short> triangles = new ArrayList<Short>(count * 3);
-        short[] faces = Arrays.copyOfRange(this.faces, offset, offset + count);
-        
-        if (this.primitiveType == 5)
-            return faces;
-        
         for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
             if (i == -1 || (faces[i] == -1)) {
                 if (i + 3 >= count) break;
@@ -359,182 +441,11 @@ public class Mesh {
         for (int i = 0; i < tris.length; ++i)
             tris[i] = triangles.get(i);
         return tris;
-        
     }
-
-    public byte[] serialize(int revision) {
-        Output output = new Output(0x5000000, revision);
-
-        output.i32(vertices.length);
-        output.i32(faces.length);
-        output.i32(edges.length);
-        output.i32(numTris);
-
-        int streamCount = 1;
-        if (weights != null) streamCount++;
-        if (morphs != null) streamCount += morphs.length;
-        
-        
-        output.i32(streamCount);
-        output.i32(attributeCount);
-        if (morphs != null)
-            output.i32(morphs.length);
-        else output.i32(0);
-
-        for (int i = 0; i < 0x20; ++i)
-            output.str(morphNames[i], 0x10);
-
-        if (revision > 0x238) {
-            output.f32a(minUV);
-            output.f32a(maxUV);
-            output.f32(areaScaleFactor);
-        }
-
-        output.i32(0);
-        for (int i = 0; i < streamCount; ++i)
-            output.i32((i + 1) * vertices.length * 0x10);
-        output.i32(vertices.length * vertices.length * 0x10);
-
-        for (int i = 0; i < vertices.length; ++i) {
-            output.v3(vertices[i]);
-            output.i32f(0xFF);
-        }
-        
-        if (weights != null) {
-            for (SkinWeight weight : weights)
-                weight.serialize(output);
-        }
-        
-        if (morphs != null) {
-            for (int i = 0; i < morphs.length; ++i)
-                morphs[i].serialize(output);
-        }
-
-        output.i32(uvCount * attributeCount * 0x8);
-
-        for (int i = 0; i < uvCount; ++i)
-            for (int j = 0; j < attributeCount; ++j)
-                output.v2(attributes[i][j]);
-
-        output.i32((faces.length + edges.length) * 2);
-
-        for (int i = 0; i < faces.length; ++i)
-            output.i16(faces[i]);
-
-        for (int i = 0; i < edges.length; ++i)
-            output.i16(edges[i]);
-
-        if (revision >= 0x016b03ef) {
-            output.i32(extraFaces.length * 0x2);
-            for (int i = 0; i < extraFaces.length; ++i)
-                output.i16(extraFaces[i]);
-        }
-
-        output.i32(meshPrimitives.length);
-        for (int i = 0; i < meshPrimitives.length; ++i)
-            meshPrimitives[i].serialize(output);
-
-        output.i32(bones.length);
-        for (int i = 0; i < bones.length; ++i)
-            bones[i].serialize(output);
-
-        output.i32(bones.length);
-        for (int i = 0; i < bones.length; ++i)
-            output.i16(bones[i].mirror);
-
-        output.i32(bones.length);
-        for (int i = 0; i < bones.length; ++i)
-            output.i8(bones[i].mirrorType);
-
-        output.i32(mirrorMorphs.length);
-        for (int i = 0; i < mirrorMorphs.length; ++i)
-            output.i16(mirrorMorphs[i]);
-
-        output.i8(primitiveType);
-
-        softbodyCluster.serialize(output);
-
-        output.i32(softbodySprings.length);
-        for (int i = 0; i < softbodySprings.length; ++i)
-            softbodySprings[i].serialize(output);
-
-        output.i32(softbodyEquivs.length);
-        for (int i = 0; i < softbodyEquivs.length; ++i)
-            softbodyEquivs[i].serialize(output);
-
-        output.f32a(mass);
-
-        output.i32(implicitEllipsoids.length);
-        for (int i = 0; i < implicitEllipsoids.length; ++i)
-            implicitEllipsoids[i].serialize(output);
-
-        output.i32(clusterImplicitEllipsoids.length);
-        for (int i = 0; i < clusterImplicitEllipsoids.length; ++i)
-            output.matrix(clusterImplicitEllipsoids[i]);
-
-
-        output.i32(insideImplicitEllipsoids.length);
-        for (int i = 0; i < insideImplicitEllipsoids.length; ++i)
-            insideImplicitEllipsoids[i].serialize(output);
-
-        output.i32(implicitPlanes.length);
-        for (int i = 0; i < implicitPlanes.length; ++i)
-            implicitPlanes[i].serialize(output);
-
-        output.resource(softPhysSettings);
-
-        output.i32(minSpringVert);
-        output.i32(maxSpringVert);
-        output.i32(minUnalignedSpringVert);
-
-        output.i32(springyTriIndices.length);
-        for (int i = 0; i < springyTriIndices.length; ++i)
-            output.i16(springyTriIndices[i]);
-
-        output.i32(springTrisStripped);
-        output.v4(softbodyContainingBoundBoxMin);
-        output.v4(softbodyContainingBoundBoxMax);
-
-        output.i32(cullBones.length);
-        for (int i = 0; i < cullBones.length; ++i)
-            cullBones[i].serialize(output);
-
-        output.i32(regionIDsToHide.length);
-        if (regionIDsToHide.length != 0 && revision >= 0x272)
-            output.u8(0x4);
-        for (int i = 0; i < regionIDsToHide.length; ++i)
-            output.u32f(regionIDsToHide[i]);
-
-        output.i32(costumeCategoriesUsed);
-        output.i32(hairMorphs);
-        output.i32(bevelVertexCount);
-        output.bool(implicitBevelSprings);
-
-        if (revision >= 0x016703ef)
-            output.i8(skeletonType);
-
-        output.shrink();
-
-        return output.buffer;
+    
+    public short[] getIndices(MeshPrimitive primitive) {
+        return this.getIndices(primitive.firstIndex, primitive.numIndices);
     }
-
-    private String getMirrorType(byte type) {
-        switch (type) {
-            case 0:
-                return "Max (X.pos, X.rot)";
-            case 1:
-                return "BipRoot (Y.pos, Y.rot + prerot)";
-            case 2:
-                return "BipPelvis (Z.pos, Z.rot + prerot)";
-            case 3:
-                return "BipBone (Z.pos, Z.rot)";
-            case 4:
-                return "ParentWasBipBone (Z.pos, Z.rot + null prerot)";
-            case 5:
-                return "GrandparentWasBipBone (X.pos, X.rot + prerot)";
-            case 6:
-                return "Copy (no flip, straight copy from mirror bone)";
-        }
-        return "UNKNOWN";
-    }
+    
+    public short[] getIndices() { return this.getIndices(0, this.numIndices); }
 }

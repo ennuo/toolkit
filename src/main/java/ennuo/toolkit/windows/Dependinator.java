@@ -2,9 +2,9 @@
 package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.memory.Compressor;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.toolkit.utilities.Globals;
 import java.nio.file.Paths;
 import javax.swing.DefaultListModel;

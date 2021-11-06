@@ -1,8 +1,8 @@
 package ennuo.craftworld.types;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

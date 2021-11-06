@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 
 public class ProfileItem {
     public int GUID = 0;

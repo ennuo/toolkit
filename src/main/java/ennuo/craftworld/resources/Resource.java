@@ -1,13 +1,17 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.resources;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.types.mods.Mod;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Compressor;
 import ennuo.toolkit.utilities.Globals;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

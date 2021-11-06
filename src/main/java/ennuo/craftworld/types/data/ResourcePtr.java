@@ -1,6 +1,7 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.types.data;
 
 import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.utilities.Bytes;
 
 public class ResourcePtr {
 

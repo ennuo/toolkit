@@ -1,9 +1,9 @@
 package ennuo.craftworld.serializer;
 
 import ennuo.craftworld.resources.enums.ItemType;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.RType;

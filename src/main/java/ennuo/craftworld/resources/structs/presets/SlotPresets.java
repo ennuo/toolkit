@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs.presets;
 
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Slot;

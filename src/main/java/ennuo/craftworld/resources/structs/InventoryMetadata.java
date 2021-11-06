@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.ToolType;

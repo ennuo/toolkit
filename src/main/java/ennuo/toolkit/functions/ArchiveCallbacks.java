@@ -1,9 +1,9 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;

@@ -1,28 +1,21 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-public class CullBone {
-    public float[] invSkinPoseMatrix;
+public class CullBone implements Serializable {
+    public Matrix4f invSkinPoseMatrix;
     public Vector4f boundBoxMin, boundBoxMax;
     
-    public CullBone(Data data) {
-        invSkinPoseMatrix = data.matrix();
-        boundBoxMin = data.v4(); boundBoxMax = data.v4();
-    }
-    
-    public static CullBone[] array(Data data) {
-        int count = data.i32();
-        CullBone[] out = new CullBone[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new CullBone(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.matrix(invSkinPoseMatrix);
-        output.v4(boundBoxMin); output.v4(boundBoxMax);
+    public CullBone serialize(Serializer serializer, Serializable structure) {
+        CullBone bone = (structure == null) ? new CullBone() : (CullBone) structure;
+        
+        bone.invSkinPoseMatrix = serializer.matrix(bone.invSkinPoseMatrix);
+        bone.boundBoxMin = serializer.v4(bone.boundBoxMin);
+        bone.boundBoxMax = serializer.v4(bone.boundBoxMax);
+        
+        return bone;
     }
 }

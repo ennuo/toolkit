@@ -1,8 +1,8 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;

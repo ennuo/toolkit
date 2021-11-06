@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.things.parts;
 
 import ennuo.craftworld.resources.structs.ScriptInstance;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.serializer.Serializer;
 

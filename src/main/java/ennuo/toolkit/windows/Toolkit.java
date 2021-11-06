@@ -1,7 +1,7 @@
 package ennuo.toolkit.windows;
 
 import ennuo.toolkit.windows.editors.*;
-import ennuo.craftworld.memory.*;
+import ennuo.craftworld.serializer.*;
 import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
@@ -25,7 +25,9 @@ import javax.swing.*;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 import ennuo.craftworld.types.*;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.types.mods.Mod;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.*;
 import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;

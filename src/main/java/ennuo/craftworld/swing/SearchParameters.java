@@ -1,8 +1,8 @@
 package ennuo.craftworld.swing;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.utilities.StringUtils;
 
 public class SearchParameters {
    public String path;

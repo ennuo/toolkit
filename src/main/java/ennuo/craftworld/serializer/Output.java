@@ -1,10 +1,13 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.utilities.Bytes;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -194,6 +197,16 @@ public class Output {
     public void i16(short value) { this.bytes(Bytes.toBytes(value)); }
     
     /**
+     * Writes an array of shorts to the stream.
+     * @param values Shorts to write
+     */
+    public void i16a(short[] values) {
+        this.i32(values.length);
+        for (short value : values)
+            this.i16(value);
+    }
+    
+    /**
      * Writes a short to the stream in little endian.
      * @param value Short to write
      */
@@ -250,20 +263,22 @@ public class Output {
      * Writes a Matrix4x4 to the stream, encoded depending on the revision.
      * @param value Matrix to write
      */
-    public void matrix(float[] value) {
+    public void matrix(Matrix4f value) {
         float[] identity = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+        float[] values = new float[16];
+        value.get(values);
         int flags = 0xFFFF;
         if (this.isEncoded()) {
             flags = 0;
             for (int i = 0; i < 16; ++i)
-                if (value[i] != identity[i])
+                if (values[i] != identity[i])
                     flags |= (1 << i);
             this.i16((short) flags);
         }
 
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
-                this.f32(value[i]);
+                this.f32(values[i]);
     }
 
     /**

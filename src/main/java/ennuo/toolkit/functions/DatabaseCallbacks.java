@@ -1,10 +1,10 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileData;

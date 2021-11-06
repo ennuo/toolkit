@@ -1,6 +1,6 @@
 package ennuo.toolkit.windows.editors;
 
-import ennuo.craftworld.memory.Images;
+import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.windows.Toolkit;

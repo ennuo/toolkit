@@ -1,15 +1,13 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.enums.Metadata;
-import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;

@@ -1,12 +1,13 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.RType;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -148,9 +149,20 @@ public class Data {
         byte[] buffer = this.bytes(2);
         return (short)((buffer[0] << 8) | buffer[1] & 0xFF);
     }
+    
+    /**
+     * Reads an array of shorts from the stream.
+     * @return Array of shorts read from the stream
+     */
+    public short[] i16a() {
+        short[] values = new short[this.i32()];
+        for (int i = 0; i < values.length; ++i)
+            values[i] = this.i16();
+        return values;
+    }
 
     /**
-     * Reads a short from the stream in little endian.
+     * Reads an unsigned short from the stream.
      * @return Short read from the stream
      */
     public int u16() {
@@ -255,7 +267,7 @@ public class Data {
      * Reads a Matrix4x4 from the stream, encoded depending on the revision.
      * @return Matrix4x4 read from the stream
      */
-    public float[] matrix() {
+    public Matrix4f matrix() {
         float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         int flags = 0xFFFF;
         if (this.isEncoded()) 
@@ -263,7 +275,10 @@ public class Data {
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
                 matrix[i] = this.f32();
-        return matrix;
+        
+        Matrix4f mat = new Matrix4f();
+        mat.set(matrix);
+        return mat;
     }
 
     /**

@@ -1,9 +1,9 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Images;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Images;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

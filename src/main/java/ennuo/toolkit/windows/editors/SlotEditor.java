@@ -1,11 +1,11 @@
 package ennuo.toolkit.windows.editors;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Compressor;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;

@@ -1,28 +1,19 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.v2.Serializable;
+import ennuo.craftworld.serializer.v2.Serializer;
 
-public class SoftbodySpring {
+public class SoftbodySpring implements Serializable {
     public short A, B;
     public float restLengthSq;
-    
-    public SoftbodySpring(Data data) {
-        A = data.i16();
-        B = data.i16();
-        restLengthSq = data.f32();
-    }
-    
-    public static SoftbodySpring[] array(Data data) {
-        int count = data.i32();
-        SoftbodySpring[] out = new SoftbodySpring[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new SoftbodySpring(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.i16(A); output.i16(B);
-        output.f32(restLengthSq);
+
+    public SoftbodySpring serialize(Serializer serializer, Serializable structure) {
+        SoftbodySpring softbody = (structure == null) ? new SoftbodySpring() : (SoftbodySpring) structure;
+        
+        softbody.A = serializer.i16(softbody.A);
+        softbody.B = serializer.i16(softbody.B);
+        softbody.restLengthSq = serializer.f32(softbody.restLengthSq);
+        
+        return softbody;
     }
 }

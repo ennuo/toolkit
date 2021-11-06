@@ -1,4 +1,4 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.utilities;
 
 public final class StringUtils {
     /**

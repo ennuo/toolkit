@@ -1,8 +1,8 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Compressor;
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;

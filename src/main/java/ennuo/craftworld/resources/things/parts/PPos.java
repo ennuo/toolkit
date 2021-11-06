@@ -2,14 +2,15 @@ package ennuo.craftworld.resources.things.parts;
 
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.resources.things.ThingPtr;
+import org.joml.Matrix4f;
 
 public class PPos implements Part {
     public static long PART_FLAG = 16;
    
     public ThingPtr thingOfWhichIAmABone = null;
     public long animHash = 0;
-    public float[] localPosition;
-    public float[] worldPosition;
+    public Matrix4f localPosition;
+    public Matrix4f worldPosition;
     
 
     @Override

@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.v2;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SerializationMethod;
 

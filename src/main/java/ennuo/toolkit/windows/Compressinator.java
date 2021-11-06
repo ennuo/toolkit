@@ -1,12 +1,12 @@
 package ennuo.toolkit.windows;
 
 import ennuo.craftworld.resources.enums.Magic;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Compressor;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
 import java.util.ArrayList;

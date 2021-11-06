@@ -1,5 +1,7 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.utilities;
 
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourcePtr;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.Deflater;

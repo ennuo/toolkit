@@ -1,9 +1,9 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Compressor;
+import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Images;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.utilities.Images;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;

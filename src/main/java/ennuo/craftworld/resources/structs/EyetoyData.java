@@ -1,10 +1,11 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import java.util.Arrays;
+import org.joml.Matrix4f;
 
 public class EyetoyData {
     public static int MAX_SIZE = 0x8B + ColorCorrection.MAX_SIZE;
@@ -12,7 +13,7 @@ public class EyetoyData {
     public ResourcePtr frame;
     public ResourcePtr alphaMask;
     
-    public float[] colorCorrection = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };;
+    public Matrix4f colorCorrection = new Matrix4f().identity();
     ColorCorrection colorCorrectionSrc = new ColorCorrection();
     
     public ResourcePtr outline;
@@ -45,7 +46,7 @@ public class EyetoyData {
         return (
                 d.frame.equals(frame) &&
                 d.alphaMask.equals(alphaMask) &&
-                Arrays.equals(d.colorCorrection, colorCorrection) &&
+                d.colorCorrection.equals(colorCorrection) &&
                 d.colorCorrectionSrc.equals(colorCorrectionSrc) &&
                 d.outline.equals(outline)
         );

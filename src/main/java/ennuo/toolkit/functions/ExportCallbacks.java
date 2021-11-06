@@ -1,10 +1,10 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;

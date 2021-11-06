@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.structs.animation.AnimatedMorph;
 import ennuo.craftworld.resources.structs.animation.AnimationBone;
 import ennuo.craftworld.resources.structs.animation.Locator;

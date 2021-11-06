@@ -1,4 +1,4 @@
-package ennuo.craftworld.memory;
+package ennuo.craftworld.utilities;
 
 public class Morton2D {
     public static int decodeX(int x) {

@@ -1,10 +1,10 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Images;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.utilities.Images;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;

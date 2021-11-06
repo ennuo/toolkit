@@ -1,10 +1,11 @@
 package ennuo.craftworld.resources.things.parts;
 
 import ennuo.craftworld.resources.structs.ContactCache;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.Polygon;
 import ennuo.craftworld.serializer.Serializer;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class PShape implements Part {
@@ -21,7 +22,7 @@ public class PShape implements Part {
     
     public float bevelSize = 10;
     
-    public float[] COM;
+    public Matrix4f COM;
     
     public int behaviour = 0;
     

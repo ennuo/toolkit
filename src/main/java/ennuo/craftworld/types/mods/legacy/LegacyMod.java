@@ -1,8 +1,8 @@
 package ennuo.craftworld.types.mods.legacy;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Images;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.types.mods.legacy.patches.ModPatch;
 import ennuo.craftworld.resources.enums.ModCompatibility;
 import ennuo.craftworld.resources.enums.RType;

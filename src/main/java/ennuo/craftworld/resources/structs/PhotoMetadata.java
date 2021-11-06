@@ -1,8 +1,8 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import java.util.Date;
 

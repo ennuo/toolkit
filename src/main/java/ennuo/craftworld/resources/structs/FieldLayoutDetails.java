@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.enums.MachineType;
 
 public class FieldLayoutDetails {

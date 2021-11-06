@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 
 public class ColorCorrection {
     public static int MAX_SIZE = 0x18;

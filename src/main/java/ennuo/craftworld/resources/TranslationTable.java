@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import ennuo.toolkit.utilities.Globals;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

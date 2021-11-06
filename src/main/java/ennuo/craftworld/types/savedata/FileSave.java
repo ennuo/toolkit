@@ -1,7 +1,7 @@
 package ennuo.craftworld.types.savedata;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;

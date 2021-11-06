@@ -22,14 +22,15 @@ import de.javagl.jgltf.impl.v2.Skin;
 import de.javagl.jgltf.impl.v2.TextureInfo;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.structs.animation.AnimationBone;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
 import ennuo.craftworld.resources.structs.mesh.Bone;
+import ennuo.craftworld.resources.structs.mesh.Morph;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.awt.Color;
@@ -47,6 +48,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -54,38 +56,22 @@ public class MeshIO {
     public static class OBJ {
         public static void export(String path, ennuo.craftworld.resources.Mesh mesh) { export(path, mesh, 0); }
         public static void export(String path, ennuo.craftworld.resources.Mesh mesh, int channel) {
-            StringBuilder builder = new StringBuilder((mesh.vertices.length * 82) + (mesh.uvCount * 42) + (mesh.faces.length * 40));
-            for (int j = 0; j < mesh.vertices.length; ++j)
-                builder.append("v " + mesh.vertices[j].x + " " + mesh.vertices[j].y + " " + mesh.vertices[j].z + '\n');
-            for (int j = 0; j < mesh.vertices.length; ++j)
-                builder.append("vn " + mesh.weights[j].normal.x + " " + mesh.weights[j].normal.y + " " + mesh.weights[j].normal.z + '\n');
-            for (int i = 0; i < mesh.uvCount; ++i)
-                builder.append("vt " + mesh.attributes[i][channel].x + " " + (1.0f - mesh.attributes[i][channel].y) + '\n');
-            for (int i = -1, j = 1; i < mesh.faces.length; ++i, ++j) {
-                if (i == -1 || mesh.faces[i] == -1) {
-                    String str = "f ";
-                    str += (mesh.faces[i + 1] + 1) + "/" + (mesh.faces[i + 1] + 1) + "/" + (mesh.faces[i + 1] + 1) + " ";
-                    str += (mesh.faces[i + 2] + 1) + "/" + (mesh.faces[i + 2] + 1) + "/" + (mesh.faces[i + 2] + 1) + " ";
-                    str += (mesh.faces[i + 3] + 1) + "/" + (mesh.faces[i + 3] + 1) + "/" + (mesh.faces[i + 3] + 1) + '\n';
-
-                    builder.append(str);
-                    i += 3;
-                    j = 0;
-                } else {
-                    if ((j & 1) == 1) {
-                        String str = "f ";
-                        str += (mesh.faces[i - 2] + 1) + "/" + (mesh.faces[i - 2] + 1) + "/" + (mesh.faces[i - 2] + 1) + " ";
-                        str += (mesh.faces[i] + 1) + "/" + (mesh.faces[i] + 1) + "/" + (mesh.faces[i] + 1) + " ";
-                        str += (mesh.faces[i - 1] + 1) + "/" + (mesh.faces[i - 1] + 1) + "/" + (mesh.faces[i - 1] + 1) + '\n';
-                        builder.append(str);
-                    } else {
-                        String str = "f ";
-                        str += (mesh.faces[i - 2] + 1) + "/" + (mesh.faces[i - 2] + 1) + "/" + (mesh.faces[i - 2] + 1) + " ";
-                        str += (mesh.faces[i - 1] + 1) + "/" + (mesh.faces[i - 1] + 1) + "/" + (mesh.faces[i - 1] + 1) + " ";
-                        str += (mesh.faces[i] + 1) + "/" + (mesh.faces[i] + 1) + "/" + (mesh.faces[i] + 1) + '\n';
-                        builder.append(str);
-                    }
-                }
+            StringBuilder builder = new StringBuilder((mesh.numVerts * 82) + (mesh.numVerts * 42) + (mesh.numIndices * 40));
+            for (Vector3f vertex : mesh.getVertices())
+                builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
+            for (Vector3f vertex : mesh.getNormals())
+                builder.append("vn " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
+            for (Vector2f vertex : mesh.getUVs(channel))
+                builder.append("vt " + vertex.x + " " + (1.0f - vertex.y) + '\n');
+            short[] indices = mesh.getIndices();
+            // NOTE(Abz): Wavefront OBJ has 1-based indices.
+            for (int i = 0; i < indices.length; ++i)
+                indices[i] += 1;
+            for (int i = 0; i < indices.length; i += 3) {
+                builder.append("f ");
+                builder.append(indices[i] + "/" + indices[i] + "/" + indices[i] + " ");
+                builder.append(indices[i + 1] + "/" + indices[i + 1] + "/" + indices[i + 1] + " ");
+                builder.append(indices[i + 2] + "/" + indices[i + 2] + "/" + indices[i + 2] + '\n');
             }
             FileIO.write(builder.toString().getBytes(), path);
         }
@@ -262,9 +248,9 @@ public class MeshIO {
             ennuo.craftworld.resources.structs.mesh.MeshPrimitive[][] subMeshes = mesh.getSubmeshes();
             for (int m = 0; m < subMeshes.length; ++m) {
                 Mesh glMesh = new Mesh();
-                if (mesh.morphs != null && mesh.morphs.length != 0) {
+                if (mesh.morphCount != 0) {
                     HashMap<String, Object> extras = new HashMap<String, Object>();
-                    String[] morphs = new String[mesh.morphs.length];
+                    String[] morphs = new String[mesh.morphCount];
                     for (int i = 0; i < morphs.length; ++i)
                         morphs[i] = mesh.morphNames[i];
                     extras.put("targetNames", morphs);
@@ -303,8 +289,8 @@ public class MeshIO {
                         );
                     }
 
-                    if (mesh.morphs != null) {
-                        for (int j = 0; j < mesh.morphs.length; ++j) {
+                    if (mesh.morphCount != 0) {
+                        for (int j = 0; j < mesh.morphCount; ++j) {
                             HashMap<String, Integer> target = new HashMap<String, Integer>();
                             target.put("POSITION", glb.createAccessor(
                                     "MORPH_" + j,
@@ -440,8 +426,12 @@ public class MeshIO {
             }
         }
         
-        private Matrix4f getMatrix(float[] f) {
-            return new Matrix4f(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14], f[15]);
+        private Matrix4f getMatrix(Matrix4f matrix) {
+            float[] components = new float[16];
+            matrix.get(components);
+            Matrix4f output = new Matrix4f();
+            output.set(components);
+            return output;
         }
         
         private int createChildren(ennuo.craftworld.resources.Mesh mesh, Bone bone) {
@@ -785,9 +775,8 @@ public class MeshIO {
         }
         
         private byte[] getBufferFromMesh(ennuo.craftworld.resources.Mesh mesh) {
-            int morphSize = (mesh.morphs == null) ? 0 : mesh.morphs.length;
-            Output output = new Output( (mesh.vertices.length * 0x40) + (mesh.triangulate().length * 8) + (mesh.attributeCount * mesh.uvCount * 8) + (morphSize * mesh.vertices.length * 0x18) + (mesh.bones.length * 0x40));
-            for (Vector3f vertex : mesh.vertices) {
+            Output output = new Output( (mesh.numVerts * 0x40) + ((mesh.numVerts - 1) * 8) + (mesh.attributeCount * mesh.numVerts * 8) + (mesh.morphCount * mesh.numVerts * 0x18) + (mesh.bones.length * 0x40));
+            for (Vector3f vertex : mesh.getVertices()) {
                 output.f32LE(vertex.x);
                 output.f32LE(vertex.y);
                 output.f32LE(vertex.z);
@@ -800,7 +789,7 @@ public class MeshIO {
                     int triangleStart = output.offset;
                     ennuo.craftworld.resources.structs.mesh.MeshPrimitive primitive
                             = subMeshes[i][j];
-                    short[] triangles = mesh.triangulate(primitive);
+                    short[] triangles = mesh.getIndices(primitive);
                     primitive.minVert = getMin(triangles);
                     primitive.maxVert = getMax(triangles);
                     for (short triangle : triangles)
@@ -810,61 +799,68 @@ public class MeshIO {
             }
             
             int normalStart = output.offset;
-            for (int i = 0; i < mesh.weights.length; ++i) {
-                output.f32LE(mesh.weights[i].normal.x);
-                output.f32LE(mesh.weights[i].normal.y);
-                output.f32LE(mesh.weights[i].normal.z);
+            Vector3f[] normals = mesh.getNormals();
+            for (Vector3f normal : normals) {
+                output.f32LE(normal.x);
+                output.f32LE(normal.y);
+                output.f32LE(normal.z);
             }
             createBufferView("NORMAL", normalStart, output.offset - normalStart);
             for (int i = 0; i < mesh.attributeCount; ++i) {
                 int uvStart = output.offset;
-                for (int j = 0; j < mesh.uvCount; ++j) {
-                    output.f32LE(mesh.attributes[j][i].x);
-                    output.f32LE(mesh.attributes[j][i].y);
+                for (Vector2f texCoord : mesh.getUVs(i)) {
+                    output.f32LE(texCoord.x);
+                    output.f32LE(texCoord.y);
                 }
                 createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.offset - uvStart);
             }
-            if (mesh.morphs != null) {
-                for (int i = 0; i < mesh.morphs.length; ++i) {
+            if (mesh.morphCount != 0) {
+                Morph[] morphs = mesh.getMorphs();
+                for (int i = 0; i < mesh.morphCount; ++i) {
                     int morphStart = output.offset;
-                    for (int j = 0; j < mesh.vertices.length; ++j) {
-                        output.f32LE(mesh.morphs[i].vertices[j].x);
-                        output.f32LE(mesh.morphs[i].vertices[j].y);
-                        output.f32LE(mesh.morphs[i].vertices[j].z);
+                    Morph morph = morphs[i];
+                    for (Vector3f vertex : morph.vertices) {
+                        output.f32LE(vertex.x);
+                        output.f32LE(vertex.y);
+                        output.f32LE(vertex.z);
                     }
                     createBufferView("MORPH_" + String.valueOf(i), morphStart, output.offset - morphStart);
                 }
                 
-                for (int i = 0; i < mesh.morphs.length; ++i) {
+                for (int i = 0; i < mesh.morphCount; ++i) {
                     int morphStart = output.offset;
-                    for (int j = 0; j < mesh.vertices.length; ++j) {
-                        output.f32LE(mesh.morphs[i].normals[j].x  - mesh.weights[j].normal.x);
-                        output.f32LE(mesh.morphs[i].normals[j].y  - mesh.weights[j].normal.y);
-                        output.f32LE(mesh.morphs[i].normals[j].z - mesh.weights[j].normal.z);
+                    Morph morph = morphs[i];
+                    for (int j = 0; j < mesh.numVerts; ++j) {
+                        Vector3f vertex = morph.normals[j];
+                        output.f32LE(vertex.x - normals[j].x);
+                        output.f32LE(vertex.y - normals[j].y);
+                        output.f32LE(vertex.z - normals[j].z);
                     }
+                    
                     createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.offset - morphStart);
                 }
             }
 
             int matrixStart = output.offset;
             for (int i = 0; i < mesh.bones.length; ++i)
-                for (int j = 0; j < 16; ++j)
-                    output.f32LE(mesh.bones[i].invSkinPoseMatrix[j]);
+                for (int x = 0; x < 4; ++x)
+                    for (int y = 0; y < 4; ++y)
+                        output.f32LE(mesh.bones[i].invSkinPoseMatrix.get(x, y));
             createBufferView("MATRIX", matrixStart, output.offset - matrixStart);
 
             int jointStart = output.offset;
-            for (int i = 0; i < mesh.weights.length; ++i)
-                for (int j = 0; j < 4; ++j)
-                    output.i8(mesh.weights[i].boneIndex[j]);
+            for (byte[] joints : mesh.getJoints())
+                for (int i = 0; i < 4; ++i)
+                    output.i8(joints[i]);
             
             createBufferView("JOINTS", jointStart, output.offset - jointStart);
 
             int weightStart = output.offset;
-            for (int i = 0; i < mesh.weights.length; ++i) {
-                output.f32LE(mesh.weights[i].weights.x);
-                output.f32LE(mesh.weights[i].weights.y);
-                output.f32LE(mesh.weights[i].weights.z);
-                output.f32LE(mesh.weights[i].weights.w);
+            for (Vector4f weight : mesh.getWeights()) {
+                output.f32LE(weight.x);
+                output.f32LE(weight.y);
+                output.f32LE(weight.z);
+                output.f32LE(weight.w);
             }
             
             createBufferView("WEIGHTS", weightStart, output.offset - weightStart);

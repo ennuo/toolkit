@@ -1,6 +1,6 @@
 package ennuo.craftworld.types;
 
-import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;

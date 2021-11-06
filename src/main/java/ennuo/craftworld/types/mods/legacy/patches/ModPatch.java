@@ -1,7 +1,7 @@
 package ennuo.craftworld.types.mods.legacy.patches;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.enums.PatchType;
 
 public interface ModPatch {

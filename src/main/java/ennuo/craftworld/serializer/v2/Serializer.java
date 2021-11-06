@@ -1,12 +1,13 @@
 package ennuo.craftworld.serializer.v2;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.FileIO;
 import java.lang.reflect.Array;
 import java.util.HashMap;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -81,6 +82,14 @@ public class Serializer {
             return value;
         }
         return this.input.i16();
+    }
+    
+    public short[] i16a(short[] values) {
+        if (this.isWriting) {
+            this.output.i16a(values);
+            return values;
+        }
+        return this.input.i16a();
     }
     
     public int i32(int value) {
@@ -199,7 +208,7 @@ public class Serializer {
         return this.input.v4();
     }
     
-    public float[] matrix(float[] value) {
+    public Matrix4f matrix(Matrix4f value) {
         if (this.isWriting) {
             this.output.matrix(value);
             return value;
@@ -264,6 +273,10 @@ public class Serializer {
     
     public <T extends Serializable> T[] array(T[] values, Class<T> clazz, boolean isReference) {
         if (this.isWriting) {
+            if (values == null) {
+                this.output.i32(0);
+                return values;
+            }
             this.output.i32(values.length);
             for (T serializable : values) {
                 if (isReference) this.reference(serializable, clazz);

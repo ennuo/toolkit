@@ -1,6 +1,6 @@
 package ennuo.craftworld.types.savedata;
 
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.structs.Slot;
 import java.util.ArrayList;
 

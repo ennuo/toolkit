@@ -1,9 +1,9 @@
 package ennuo.toolkit.windows.editors;
 
 import ennuo.craftworld.types.BigProfile;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.StringUtils;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.RType;
