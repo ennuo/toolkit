@@ -1,4 +1,4 @@
-package ennuo.craftworld.serializer.v2;
+package ennuo.craftworld.serializer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;

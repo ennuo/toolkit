@@ -5,8 +5,8 @@ import ennuo.craftworld.serializer.*;
 import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
-import ennuo.craftworld.resources.InventoryItem;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.types.FileArchive.ArchiveType;
 import ennuo.craftworld.types.savedata.FileSave;
 import ennuo.toolkit.utilities.EasterEgg;
@@ -1507,7 +1507,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.<InventoryItem>getResource("item").metadata;
+        InventoryDetails metadata = Globals.lastSelected.entry.<Plan>getResource("item").details;
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
         locationField.setText("" + metadata.location);
@@ -1515,30 +1515,29 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.<InventoryItem>getResource("item").metadata;
+        InventoryDetails metadata = Globals.lastSelected.entry.<Plan>getResource("item").details;
 
-        if (Globals.LAMS != null) {
-            titleField.setText(Globals.Translate(metadata.titleKey));
-            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
-            locationField.setText(Globals.Translate(metadata.location));
-            categoryField.setText(Globals.Translate(metadata.category));
-        }
-
-        if (metadata.userCreatedDetails.title != null)
-            titleField.setText(metadata.userCreatedDetails.title);
-
-        if (metadata.userCreatedDetails.description != null)
-            descriptionField.setText(metadata.userCreatedDetails.description);
-
-        if (Globals.LAMS != null) return;
-
+        titleField.setText("");
+        categoryField.setText("");
         locationField.setText("");
         categoryField.setText("");
-
-        if (metadata.category == 1737521) categoryField.setText("My Photos");
-        else if (metadata.category == 1598223) categoryField.setText("My Pods");
-        else if (metadata.category == 928006) categoryField.setText("My Objects");
-        else if (metadata.category == 578814) categoryField.setText("My Costumes");
+        
+        if (Globals.LAMS != null) {
+            metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
+            metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.translatedCategory);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.translatedLocation);
+            
+            titleField.setText(metadata.translatedTitle);
+            descriptionField.setText(metadata.translatedDescription);
+            locationField.setText(metadata.translatedDescription);
+            categoryField.setText(metadata.translatedCategory);
+        }
+        
+        if (metadata.userCreatedDetails != null) {
+            titleField.setText(metadata.userCreatedDetails.title);
+            descriptionField.setText(metadata.userCreatedDetails.description);
+        }
     }//GEN-LAST:event_StringMetadataActionPerformed
 
     private void loadBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadBigProfileActionPerformed
@@ -1848,28 +1847,28 @@ public class Toolkit extends javax.swing.JFrame {
         return selected;
     }
 
-    public void populateMetadata(InventoryItem item) {
+    public void populateMetadata(Plan item) {
         if (item == null || !Globals.canExtract()) return;
-        InventoryMetadata metadata = item.metadata;
+        InventoryDetails metadata = item.details;
         if (metadata == null) return;
 
         iconField.setText("");
         if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
             loadImage(metadata.icon, item);
 
-        if (Globals.lastSelected.entry.<InventoryItem>getResource("item") != item) return;
+        if (Globals.lastSelected.entry.<Plan>getResource("item") != item) return;
 
         setPlanDescriptions(metadata);
 
         pageCombo.setSelectedItem(metadata.type);
         subCombo.setSelectedItem(metadata.subType);
-        creatorField.setText(metadata.creator.PSID);
+        creatorField.setText(metadata.creator.handle);
 
         entryModifiers.setEnabledAt(1, true);
         entryModifiers.setSelectedIndex(1);
     }
 
-    public void setPlanDescriptions(InventoryMetadata metadata) {
+    public void setPlanDescriptions(InventoryDetails metadata) {
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
 
@@ -1879,13 +1878,14 @@ public class Toolkit extends javax.swing.JFrame {
         if (Globals.LAMS != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
+            
+            metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
+            metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.translatedCategory);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.translatedLocation);
 
-            titleField.setText(Globals.Translate(metadata.titleKey));
-
-            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
-
-            metadata.translatedLocation = Globals.Translate(metadata.location);
-            metadata.translatedCategory = Globals.Translate(metadata.category);
+            titleField.setText(metadata.translatedTitle);
+            descriptionField.setText(metadata.translatedDescription);
             locationField.setText(metadata.translatedLocation);
             categoryField.setText(metadata.translatedCategory);
         } else {
@@ -1894,7 +1894,7 @@ public class Toolkit extends javax.swing.JFrame {
             StringMetadata.setEnabled(false);
         }
 
-        if (metadata.userCreatedDetails != null) {
+        if (metadata.userCreatedDetails != null && metadata.titleKey == 0 && metadata.descriptionKey == 0) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             if (metadata.userCreatedDetails.title != null)
@@ -1905,40 +1905,26 @@ public class Toolkit extends javax.swing.JFrame {
 
             locationField.setText("");
             categoryField.setText("");
-
-            if (metadata.category == 1737521) categoryField.setText("My Photos");
-            else if (metadata.category == 1598223) categoryField.setText("My Pods");
-            else if (metadata.category == 928006) categoryField.setText("My Objects");
-            else if (metadata.category == 578814) categoryField.setText("My Costumes");
         }
     }
 
-    public void loadImage(ResourcePtr resource, InventoryItem item) {
-        FileEntry entry = null;
-        byte[] hash = null;
+    public void loadImage(ResourcePtr resource, Plan item) {
         if (resource == null) return;
         iconField.setText(resource.toString());
-        if (resource.hash != null)
-            hash = resource.hash;
-        else {
-            entry = Globals.findEntry(resource.GUID);
-            if (entry != null)
-                hash = entry.SHA1;
-        }
-
-        if (hash == null) return;
-        if (entry == null) entry = Globals.findEntry(hash);
+        FileEntry entry = Globals.findEntry(resource);
+        
+        if (entry == null) return;
 
         Texture texture = entry.getResource("texture");
         if (entry != null && texture != null)
             setImage(texture.getImageIcon(320, 320));
         else {
-            byte[] data = Globals.extractFile(hash);
+            byte[] data = Globals.extractFile(resource);
             if (data == null) return;
             texture = new Texture(data);
             if (entry != null) entry.setResource("texture", texture);
             if (texture.parsed == true)
-                if (Globals.lastSelected.entry.<InventoryItem>getResource("item") == item)
+                if (Globals.lastSelected.entry.<Plan>getResource("item") == item)
                     setImage(texture.getImageIcon(320, 320));
         }
     }

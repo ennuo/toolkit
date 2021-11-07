@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.gfxmaterial;
 
-import ennuo.craftworld.serializer.v2.Serializable;
-import ennuo.craftworld.serializer.v2.Serializer;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 import org.joml.Vector4f;
 
 public class ParameterAnimation implements Serializable {

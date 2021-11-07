@@ -7,7 +7,7 @@ import ennuo.craftworld.types.mods.legacy.patches.ModPatch;
 import ennuo.craftworld.resources.enums.ModCompatibility;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import java.awt.image.BufferedImage;
@@ -45,7 +45,7 @@ public class LegacyMod {
     
     public String password;
     
-    public ArrayList<InventoryMetadata> items = new ArrayList<InventoryMetadata>();
+    public ArrayList<InventoryDetails> items = new ArrayList<InventoryDetails>();
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
     public ArrayList<Slot> slots = new ArrayList<Slot>();
     public ArrayList<ModPatch> patches = new ArrayList<ModPatch>();
@@ -120,15 +120,18 @@ public class LegacyMod {
         else itemCount = data.i16();
         System.out.println("Mod has " + itemCount + " inventory patches");
         if (itemCount != 0) {
-            items = new ArrayList<InventoryMetadata>(itemCount);
+            items = new ArrayList<InventoryDetails>(itemCount);
             for (int i = 0; i < itemCount; ++i) {
-                InventoryMetadata item = new Serializer(data).ParseMetadata();
+                InventoryDetails item = new Serializer(data).struct(null, InventoryDetails.class);
+                item.location = data.u32();
+                item.category = data.u32();
                 item.resource = data.resource(RType.PLAN, true);
                 item.translatedLocation = data.str16();
                 item.translatedCategory = data.str16();
                 if (revision > 4) {
-                    item.minRevision = data.i32();
-                    item.maxRevision = data.i32();
+                    // NOTE(Abz): min/max revision has been depreciated.
+                    data.i32();
+                    data.i32();
                 }
                 items.add(item);
             }

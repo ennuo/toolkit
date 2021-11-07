@@ -110,7 +110,7 @@ public class TranslationTable {
     public String translate(long key) {
         if (this.lookup.containsKey(key))
             return this.lookup.get(key);
-        return null;
+        return "";
     }
     
     /**

@@ -1,6 +1,5 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.serializer.Output;

@@ -194,12 +194,4 @@ public class Globals {
         Toolkit.instance.updateWorkspace();
         System.out.println("Added file to queue, make sure to save your workspace!");
     }
-
-    public static String Translate(long key) {
-        String translated = null;
-        if (LAMS != null) translated = LAMS.translate(key);
-        if (translated == null && KEYS != null)
-            translated = KEYS.translate(key);
-        return translated;
-    }
 }

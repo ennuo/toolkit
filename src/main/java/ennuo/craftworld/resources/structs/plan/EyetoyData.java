@@ -1,13 +1,12 @@
-package ennuo.craftworld.resources.structs;
+package ennuo.craftworld.resources.structs.plan;
 
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.enums.RType;
-import java.util.Arrays;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 import org.joml.Matrix4f;
 
-public class EyetoyData {
+public class EyetoyData implements Serializable {
     public static int MAX_SIZE = 0x8B + ColorCorrection.MAX_SIZE;
     
     public ResourcePtr frame;
@@ -18,24 +17,17 @@ public class EyetoyData {
     
     public ResourcePtr outline;
     
-    public EyetoyData() {}
-    public EyetoyData(Data data) {
-        frame = data.resource(RType.TEXTURE);
-        alphaMask = data.resource(RType.TEXTURE);
-        colorCorrection = data.matrix();
-        colorCorrectionSrc = new ColorCorrection(data);
-        if (data.revision > 0x2c3)
-            outline = data.resource(RType.TEXTURE);
-    
-    }
-    
-    public void serialize(Output output) {
-        output.resource(frame);
-        output.resource(alphaMask);
-        output.matrix(colorCorrection);
-        colorCorrectionSrc.serialize(output);
-        if (output.revision > 0x2c3)
-            output.resource(outline);
+    public EyetoyData serialize(Serializer serializer, Serializable structure) {
+        EyetoyData eyetoy = (structure == null) ? new EyetoyData() : (EyetoyData) structure;
+        
+        eyetoy.frame = serializer.resource(eyetoy.frame, RType.TEXTURE);
+        eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, RType.TEXTURE);
+        eyetoy.colorCorrection = serializer.matrix(eyetoy.colorCorrection);
+        eyetoy.colorCorrectionSrc = serializer.struct(eyetoy.colorCorrectionSrc, ColorCorrection.class);
+        if (serializer.revision > 0x2c3)
+            eyetoy.outline = serializer.resource(eyetoy.outline, RType.TEXTURE);
+        
+        return eyetoy;
     }
     
     @Override

@@ -17,13 +17,14 @@ import javax.swing.JFrame;
 import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
-import ennuo.craftworld.resources.structs.EyetoyData;
-import ennuo.craftworld.resources.structs.PhotoData;
-import ennuo.craftworld.resources.structs.PhotoUser;
+import ennuo.craftworld.resources.structs.plan.EyetoyData;
+import ennuo.craftworld.resources.structs.plan.PhotoData;
+import ennuo.craftworld.resources.structs.plan.PhotoUser;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
-import ennuo.craftworld.resources.structs.UserCreatedDetails;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.resources.structs.plan.CreationHistory;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
+import ennuo.craftworld.resources.structs.plan.UserCreatedDetails;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.nio.ByteBuffer;
@@ -70,8 +71,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         itemInstances = profile.inventoryCollection;
         for (int i = 0; i < profile.inventoryCollection.size(); ++i)  {
-            InventoryMetadata metadata = profile.inventoryCollection.get(i).metadata;
-            if (metadata.userCreatedDetails != null)
+            InventoryDetails metadata = profile.inventoryCollection.get(i).metadata;
+            if (metadata.userCreatedDetails != null && !metadata.userCreatedDetails.title.isEmpty())
                 this.items.add(metadata.userCreatedDetails.title + " | " + i);
             else this.items.add("An Item | " + i);
         }
@@ -128,8 +129,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         if (item.metadata.creationHistory != null) {
             creationHistory.setSelected(true);
-            for (int i = 0; i < item.metadata.creationHistory.length; ++i)
-                creatorModel.addElement(item.metadata.creationHistory[i]);
+            for (int i = 0; i < item.metadata.creationHistory.creators.length; ++i)
+                creatorModel.addElement(item.metadata.creationHistory.creators[i]);
         } else creationHistory.setSelected(false);
         
         
@@ -181,7 +182,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             setResource(sticker, item.metadata.photoData.sticker);
             setResource(painting, item.metadata.photoData.painting);
             
-            photoTimestamp.setValue(new Date((item.metadata.photoData.photoMetadata.timestamp / 2 * 1000)));
+            photoTimestamp.setValue(new Date((item.metadata.photoData.photoMetadata.timestamp * 1000)));
             
             setResource(photo, item.metadata.photoData.photoMetadata.photo);
             
@@ -235,7 +236,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         subType.setSelectedItem(item.metadata.subType);
         toolType.setSelectedItem(item.metadata.toolType);
         
-        theCreator.setText(item.metadata.creator.PSID);
+        theCreator.setText(item.metadata.creator.handle);
     }
 
     @SuppressWarnings("unchecked")
@@ -243,7 +244,7 @@ public class MetadataEditor extends javax.swing.JFrame {
     private void initComponents() {
 
         jProgressBar1 = new javax.swing.JProgressBar();
-        inventoryMetadata1 = new ennuo.craftworld.resources.structs.InventoryMetadata();
+        inventoryMetadata1 = new ennuo.craftworld.resources.structs.plan.InventoryDetails();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -1470,10 +1471,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         } else item.metadata.userCreatedDetails = null;
         
         if (creationHistory.isSelected()) {
+            item.metadata.creationHistory = new CreationHistory();
             String[] creators = new String[creatorModel.size()];
             for (int i = 0; i < creators.length; ++i)
                 creators[i] = (String) creatorModel.get(i);
-            item.metadata.creationHistory = creators;
+            item.metadata.creationHistory.creators = creators;
         } else item.metadata.creationHistory = null;
         
         if (photoMetadata.isSelected()) {
@@ -1481,7 +1483,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             data.icon = getResource(photoIcon.getText(), RType.TEXTURE);
             data.sticker = getResource(sticker.getText(), RType.TEXTURE);
             data.painting = getResource(painting.getText(), RType.PAINTING);
-            data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() * 2 / 1000;
+            data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() / 1000;
             data.photoMetadata.photo = getResource(photo.getText(), RType.TEXTURE);
             
             String SHA1 = levelSHA1.getText();
@@ -1543,11 +1545,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.resource = getResource(itemRef.getText(), RType.PLAN);
         item.metadata.icon = getResource(iconRef.getText(), RType.TEXTURE);
         
-        item.metadata.creator.PSID = theCreator.getText();
+        item.metadata.creator.handle = theCreator.getText();
         
         writeColour(item.metadata);
         
-        item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
+        item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() / 1000;
 
         /*
         if (item.resource != null) {
@@ -1572,7 +1574,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         loadItemAt(this.combo.getSelectedIndex());
     }//GEN-LAST:event_saveItemActionPerformed
     
-    private void writeColour(InventoryMetadata metadata) {
+    private void writeColour(InventoryDetails metadata) {
         byte[] colour = new byte[4];
         
         colour[0] = 0;
@@ -1679,7 +1681,7 @@ public class MetadataEditor extends javax.swing.JFrame {
     private javax.swing.JTextField highlightSound;
     private javax.swing.JLabel icon;
     private javax.swing.JTextField iconRef;
-    private ennuo.craftworld.resources.structs.InventoryMetadata inventoryMetadata1;
+    private ennuo.craftworld.resources.structs.plan.InventoryDetails inventoryMetadata1;
     private javax.swing.JTextField itemRef;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

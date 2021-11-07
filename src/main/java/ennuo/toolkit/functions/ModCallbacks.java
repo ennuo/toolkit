@@ -38,8 +38,10 @@ public class ModCallbacks {
             Mod mod = new Mod();
             mod.path = file.getAbsolutePath();
             mod.name = file.getName();
-            for (FileEntry entry : legacyMod.entries)
+            for (FileEntry entry : legacyMod.entries) {
                 mod.add(entry);
+                mod.addNode(entry);
+            }
             mod.config.title = legacyMod.title;
             mod.config.ID = legacyMod.modID;
             mod.config.author = legacyMod.author;

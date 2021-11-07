@@ -327,7 +327,7 @@ public class Data {
      */
     public long varint() {
         long result = 0, i = 0;
-        while (this.offset + i < this.length) {
+        while (true) {
             long b = (long) (this.i8() & 0xFFL);
             result |= (b & 0x7FL) << 7L * i;
             if ((b & 0x80L) == 0L)

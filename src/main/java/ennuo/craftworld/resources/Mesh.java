@@ -1,21 +1,11 @@
 package ennuo.craftworld.resources;
 
-import com.google.gson.Gson;
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.data.ResourcePtr;
-import ennuo.craftworld.resources.structs.mesh.Bone;
-import ennuo.craftworld.resources.structs.mesh.CullBone;
-import ennuo.craftworld.resources.structs.mesh.ImplicitEllipsoid;
-import ennuo.craftworld.resources.structs.mesh.ImplicitPlane;
-import ennuo.craftworld.resources.structs.mesh.MeshPrimitive;
-import ennuo.craftworld.resources.structs.mesh.Morph;
-import ennuo.craftworld.resources.structs.mesh.SoftbodyCluster;
-import ennuo.craftworld.resources.structs.mesh.SoftbodySpring;
-import ennuo.craftworld.resources.structs.mesh.SoftbodyVertEquivalence;
+import ennuo.craftworld.resources.structs.mesh.*;
 import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.v2.Serializable;
-import ennuo.craftworld.serializer.v2.Serializer;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
 import java.util.ArrayList;

@@ -5,9 +5,8 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
@@ -45,26 +44,8 @@ public class Resource extends Data {
     // TODO: Actually finish this function, I can serialize the metadata, yes, but //
     // I also need to make sure no dependencies are duplicated in the dependency table, //
     // but I also need to make sure none are removed if they do exist elsewhere. //
-    public void replaceMetadata(InventoryMetadata data, boolean compressed) {
-        if (!magic.equals("PLNb")) return;
-
-        if (compressed)
-            decompress(true);
-
-        if (revision < 0x272) {
-            System.out.println("lol fuck off");
-            return;
-        }
-
-        InventoryMetadata oldData = new Serializer(this).DeserializeItem().metadata;
-
-        Output output = new Output(InventoryMetadata.MAX_SIZE);
-        Serializer serializer = new Serializer(output);
-
-        if (revision <= 0x272) serializer.serializeLegacyMetadata(data, true);
-        else serializer.serializeMetadata(data, true);
-
-        output.shrink();
+    public void replaceMetadata(InventoryDetails data, boolean compressed) {
+        return;
     }
 
     public void removePlanDescriptors(long GUID, boolean compressed) {

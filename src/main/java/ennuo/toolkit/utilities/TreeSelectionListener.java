@@ -11,7 +11,7 @@ import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.resources.InventoryItem;
+import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import static ennuo.toolkit.utilities.Globals.currentWorkspace;
@@ -43,7 +43,7 @@ public class TreeSelectionListener {
             return;
         }
 
-        toolkit.resourceService.submit(() -> {
+        //toolkit.resourceService.submit(() -> {
             if (!Globals.canExtract()) return;
 
             byte[] entryBuffer = null;
@@ -158,16 +158,16 @@ public class TreeSelectionListener {
                     if (selected.entry.getResource("item") == null) {
                         try {
                             res.decompress(true);
-                            selected.entry.setResource("item", new Serializer(res, Globals.LAMS).DeserializeItem());
+                            selected.entry.setResource("item", new Serializer(res).struct(null, Plan.class));
                         } catch (Exception e) {
-                            System.err.println("There was an error parsing the InventoryItem!");
+                            System.err.println("There was an error parsing the Plan!");
                             return;
                         }
                     }
                     if (Globals.lastSelected.entry == entry) {
-                        InventoryItem item = entry.getResource("item");
+                        Plan item = selected.entry.getResource("item");
                         if (item != null && tree == currentTree) {
-                            if (item.metadata != null)
+                            if (item.details != null)
                                 toolkit.populateMetadata(item);
                             else {
                                 System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
@@ -189,6 +189,6 @@ public class TreeSelectionListener {
                     }
                     break;
             }
-       });
+       //});
     }
 }

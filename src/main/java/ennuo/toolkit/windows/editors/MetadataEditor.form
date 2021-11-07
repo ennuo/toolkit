@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Component class="javax.swing.JProgressBar" name="jProgressBar1">
     </Component>
-    <Component class="ennuo.craftworld.resources.structs.InventoryMetadata" name="inventoryMetadata1">
+    <Component class="ennuo.craftworld.resources.structs.plan.InventoryDetails" name="inventoryMetadata1">
     </Component>
     <Container class="javax.swing.JMenuBar" name="jMenuBar1">
 

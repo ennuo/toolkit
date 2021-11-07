@@ -1,20 +1,13 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
-import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.MeshIO;
-import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.resources.structs.UserCreatedDetails;
-import ennuo.craftworld.resources.InventoryItem;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
-import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
@@ -146,7 +139,7 @@ public class ExportCallbacks {
     public static void exportMod(boolean hashinate) {
         FileEntry entry = Globals.lastSelected.entry;
         String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
-        InventoryItem item = Globals.lastSelected.entry.getResource("item");
+        Plan item = Globals.lastSelected.entry.getResource("item");
         if (item != null)
             name = name.substring(0, name.length() - 5);
         else name = name.substring(0, name.length() - 4);

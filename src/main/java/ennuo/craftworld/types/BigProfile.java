@@ -21,8 +21,8 @@ import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
-import ennuo.craftworld.resources.InventoryItem;
-import ennuo.craftworld.resources.structs.InventoryMetadata;
+import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
 import java.io.File;
 import java.util.ArrayList;
@@ -188,7 +188,7 @@ public class BigProfile extends FileData {
     int stringCount = stringCollection.size();
     int slotCount = slots.size();
 
-    Output output = new Output((InventoryMetadata.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, new Resource(profile.data).revision);
+    Output output = new Output((InventoryDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, new Resource(profile.data).revision);
 
     output.i32(itemCount);
     Serializer serializer = new Serializer(output);
@@ -226,8 +226,7 @@ public class BigProfile extends FileData {
       
       if (output.revision > 0x010503EF) output.i32(0);
 
-      if (output.revision > 0x33a) serializer.serializeMetadata(item.metadata, false);
-      else serializer.serializeLegacyMetadata(item.metadata);
+      item.metadata = serializer.struct(item.metadata, InventoryDetails.class);
 
       if (output.revision == 0x3e2) output.u8(1);
       output.u8(0x80);
@@ -344,8 +343,7 @@ public class BigProfile extends FileData {
       ProfileItem item = new ProfileItem();
       item.resource = profile.resource(RType.PLAN, true);
       if (profile.revision > 0x010503EF) item.GUID = profile.i32();
-      if (profile.revision > 0x33a) item.metadata = serializer.ParseMetadata(false);
-      else item.metadata = serializer.ParseLBP1BPRMetadata();
+      item.metadata = serializer.struct(item.metadata, InventoryDetails.class);
       if (profile.revision == 0x3e2) profile.forward(0x1);
       profile.forward(0x7);
       item.flags = profile.i8();
@@ -485,10 +483,10 @@ public class BigProfile extends FileData {
         if (parse) {
         resource.decompress(true);
         Serializer serializer = new Serializer(resource);
-        InventoryItem item = serializer.DeserializeItem();
-        InventoryMetadata metadata = null;
-        if (item != null) metadata = item.metadata;
-        if (metadata == null) { metadata = new InventoryMetadata(); System.out.println("Metadata is null, using default values..."); }
+        Plan item = serializer.struct(null, Plan.class);
+        InventoryDetails metadata = null;
+        if (item != null) metadata = item.details;
+        if (metadata == null) { metadata = new InventoryDetails(); System.out.println("Metadata is null, using default values..."); }
         addItem(new ResourcePtr(SHA1, RType.PLAN), metadata);
         }
         return;
@@ -559,7 +557,7 @@ public class BigProfile extends FileData {
     shouldSave = true;
   }
 
-  public void addItem(ResourcePtr resource, InventoryMetadata metadata) {
+  public void addItem(ResourcePtr resource, InventoryDetails metadata) {
     ProfileItem item = new ProfileItem();
     item.resource = resource;
     item.metadata = metadata;

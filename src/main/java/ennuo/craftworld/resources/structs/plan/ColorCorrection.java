@@ -1,9 +1,9 @@
-package ennuo.craftworld.resources.structs;
+package ennuo.craftworld.resources.structs.plan;
 
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.serializer.Serializable;
 
-public class ColorCorrection {
+public class ColorCorrection implements Serializable {
     public static int MAX_SIZE = 0x18;
     
     public float saturation = 1;
@@ -13,23 +13,17 @@ public class ColorCorrection {
     public float tintHue = 0;
     public float tintAmount = 0;
     
-    public ColorCorrection() {}
-    public ColorCorrection(Data data) {
-        saturation = data.f32();
-        hueShift = data.f32();
-        brightness = data.f32();
-        contrast = data.f32();
-        tintHue = data.f32();
-        tintAmount = data.f32();
-    }
-    
-    public void serialize(Output output) {
-        output.f32(saturation);
-        output.f32(hueShift);
-        output.f32(brightness);
-        output.f32(contrast);
-        output.f32(tintHue);
-        output.f32(tintAmount);
+    public ColorCorrection serialize(Serializer serializer, Serializable structure) {
+        ColorCorrection cc = (structure == null) ? new ColorCorrection() : (ColorCorrection) structure;
+        
+        cc.saturation = serializer.f32(cc.saturation);
+        cc.hueShift = serializer.f32(cc.hueShift);
+        cc.brightness = serializer.f32(cc.brightness);
+        cc.contrast = serializer.f32(cc.contrast);
+        cc.tintHue = serializer.f32(cc.tintHue);
+        cc.tintAmount = serializer.f32(cc.tintAmount);
+        
+        return cc;
     }
     
     @Override
