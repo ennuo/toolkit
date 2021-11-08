@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -8,8 +8,8 @@ import ennuo.craftworld.serializer.Serializer;
 public class MeshPrimitive implements Serializable {
     public static int MAX_SIZE = 0x4B;
     
-    public ResourcePtr material;
-    public ResourcePtr textureAlternatives;
+    public ResourceDescriptor material;
+    public ResourceDescriptor textureAlternatives;
     public int minVert;
     public int maxVert;
     public int firstIndex;

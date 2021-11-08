@@ -1,7 +1,7 @@
 package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.utilities.Bytes;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
@@ -56,7 +56,7 @@ public class Globals {
         return false;
     }
 
-    public static FileEntry findEntry(ResourcePtr res) {
+    public static FileEntry findEntry(ResourceDescriptor res) {
         if (res.GUID != -1) return findEntry(res.GUID);
         else if (res.hash != null) return findEntry(res.hash);
         return null;
@@ -102,7 +102,7 @@ public class Globals {
         return null;
     }
 
-    public static byte[] extractFile(ResourcePtr ptr) {
+    public static byte[] extractFile(ResourceDescriptor ptr) {
         if (ptr == null) return null;
         if (ptr.hash != null) return extractFile(ptr.hash);
         else if (ptr.GUID != -1) return extractFile(ptr.GUID);

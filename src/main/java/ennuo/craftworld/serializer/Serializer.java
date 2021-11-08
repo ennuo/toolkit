@@ -1,6 +1,6 @@
 package ennuo.craftworld.serializer;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.io.FileIO;
 import java.lang.reflect.Array;
@@ -220,7 +220,7 @@ public class Serializer {
         return this.input.matrix();
     }
     
-    public ResourcePtr resource(ResourcePtr value, RType type) {
+    public ResourceDescriptor resource(ResourceDescriptor value, RType type) {
         if (this.isWriting) {
             this.output.resource(value);
             return value;
@@ -228,7 +228,7 @@ public class Serializer {
         return this.input.resource(type);
     }
     
-    public ResourcePtr resource(ResourcePtr value, RType type, boolean useSingleByteFlag) {
+    public ResourceDescriptor resource(ResourceDescriptor value, RType type, boolean useSingleByteFlag) {
         if (this.isWriting) {
             this.output.resource(value, useSingleByteFlag);
             return value;

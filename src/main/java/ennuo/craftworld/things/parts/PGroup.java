@@ -5,12 +5,12 @@ import ennuo.craftworld.resources.structs.SceNpId;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.things.Thing;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 
 public class PGroup implements Serializable {
     public boolean copyright;
     public SceNpId creator;
-    public ResourcePtr planDescriptor;
+    public ResourceDescriptor planDescriptor;
     public boolean editable;
     public Thing emitter;
     public int lifetime, aliveFrames;

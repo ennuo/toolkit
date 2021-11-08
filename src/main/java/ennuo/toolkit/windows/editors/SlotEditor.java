@@ -4,7 +4,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.enums.ContentsType;
@@ -105,7 +105,7 @@ public class SlotEditor extends javax.swing.JFrame {
                         output.bool(false);
                     output.shrink();
                 
-                    ResourcePtr[] dependencies = new ResourcePtr[slotInstances.size()];
+                    ResourceDescriptor[] dependencies = new ResourceDescriptor[slotInstances.size()];
                     dependencies = output.dependencies.toArray(dependencies);
                 
                     byte[] compressed = Compressor.Compress(output.buffer, "SLTb", entry.revision, dependencies);
@@ -1211,17 +1211,17 @@ public class SlotEditor extends javax.swing.JFrame {
 
     int loop = 0;
     
-    private ResourcePtr getResource(String root, RType type) {
+    private ResourceDescriptor getResource(String root, RType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
-            return new ResourcePtr(StringUtils.getLong(root), type);
+            return new ResourceDescriptor(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
-            return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
+            return new ResourceDescriptor(Bytes.toBytes(root.substring(1)), type);
         else
-            return new ResourcePtr(Bytes.toBytes(root), type);
+            return new ResourceDescriptor(Bytes.toBytes(root), type);
     }
     
-    private void setResource(JTextField field, ResourcePtr res) {
+    private void setResource(JTextField field, ResourceDescriptor res) {
         if (res != null) field.setText(res.toString());
         else field.setText("");
     }

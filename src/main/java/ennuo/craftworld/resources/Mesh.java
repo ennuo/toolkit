@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources;
 
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.mesh.*;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Serializable;
@@ -59,7 +59,7 @@ public class Mesh implements Serializable {
     public Matrix4f[] clusterImplicitEllipsoids;
     public ImplicitEllipsoid[] insideImplicitEllipsoids;
     public ImplicitPlane[] implicitPlanes;
-    public ResourcePtr softPhysSettings;
+    public ResourceDescriptor softPhysSettings;
     public int minSpringVert, maxSpringVert;
     public int minUnalignedSpringVert;
     public short[] springyTriIndices;
@@ -223,7 +223,7 @@ public class Mesh implements Serializable {
         Serializer serializer = new Serializer(dataSize, revision);
         this.serialize(serializer, this);
         return Compressor.Compress(serializer.getBuffer(), "MSHb", revision, 
-                    serializer.output.dependencies.toArray(new ResourcePtr[serializer.output.dependencies.size()]));      
+                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
     }
     
     public MeshPrimitive[][] getSubmeshes() {

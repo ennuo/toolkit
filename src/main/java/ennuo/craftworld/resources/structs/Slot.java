@@ -4,7 +4,7 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
@@ -23,9 +23,9 @@ public class Slot {
     public SlotID slot = new SlotID();
     public SlotID group = new SlotID();
     
-    public ResourcePtr root;
-    public ResourcePtr adventure;
-    public ResourcePtr icon = null;
+    public ResourceDescriptor root;
+    public ResourceDescriptor adventure;
+    public ResourceDescriptor icon = null;
     
     public ImageIcon renderedIcon;
     
@@ -46,7 +46,7 @@ public class Slot {
     public boolean copyable = false;
     
     public long backgroundGUID = 0;
-    public ResourcePtr planetDecorations = null;
+    public ResourceDescriptor planetDecorations = null;
     
     public LevelType developerLevelType = LevelType.COOPERATIVE;
     
@@ -94,7 +94,7 @@ public class Slot {
     public long sizeOfSubLevels;
     
     public SlotID[] subLevels;
-    public ResourcePtr slotList;
+    public ResourceDescriptor slotList;
     public int vitaRevision = 0;
     
     public Slot() {};

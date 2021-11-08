@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.plan;
 
 import ennuo.craftworld.resources.TranslationTable;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.RType;
@@ -17,7 +17,7 @@ import java.util.Date;
 public class InventoryDetails implements Serializable {
     public static int MAX_SIZE = 0x800;
     
-    public ResourcePtr resource;
+    public ResourceDescriptor resource;
     
     public String translationTag = "";
     public String categoryTag = "";
@@ -36,7 +36,7 @@ public class InventoryDetails implements Serializable {
     public UserCreatedDetails userCreatedDetails;
     
     public CreationHistory creationHistory;
-    public ResourcePtr icon;
+    public ResourceDescriptor icon;
     
     public PhotoData photoData;
     public EyetoyData eyetoyData;

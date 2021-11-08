@@ -2,7 +2,7 @@ package ennuo.toolkit.windows.editors;
 
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.utilities.Bytes;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
@@ -1560,7 +1560,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                     Resource resource = new Resource(data);
                     //resource.replaceMetadata(item.metadata);
                     Globals.replaceEntry(entry, resource.data);
-                    item.metadata.resource = new ResourcePtr(Bytes.SHA1(resource.data), RType.PLAN);
+                    item.metadata.resource = new ResourceDescriptor(Bytes.SHA1(resource.data), RType.PLAN);
                 }
                 
             }
@@ -1585,17 +1585,17 @@ public class MetadataEditor extends javax.swing.JFrame {
         metadata.colour = ByteBuffer.wrap(colour).order(ByteOrder.BIG_ENDIAN).getInt() & 0xFFFFFFFFL;
     }
     
-    private ResourcePtr getResource(String root, RType type) {
+    private ResourceDescriptor getResource(String root, RType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
-            return new ResourcePtr(StringUtils.getLong(root), type);
+            return new ResourceDescriptor(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
-            return new ResourcePtr(Bytes.toBytes(root.substring(1)), type);
+            return new ResourceDescriptor(Bytes.toBytes(root.substring(1)), type);
         else
-            return new ResourcePtr(Bytes.toBytes(root), type);
+            return new ResourceDescriptor(Bytes.toBytes(root), type);
     }
     
-    private void setResource(JTextField field, ResourcePtr res) {
+    private void setResource(JTextField field, ResourceDescriptor res) {
         if (res != null) field.setText(res.toString());
         else field.setText("");
     }

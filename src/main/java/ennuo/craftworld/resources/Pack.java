@@ -3,7 +3,7 @@ package ennuo.craftworld.resources;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.PackItem;
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ public class Pack {
             item.serialize(output);
         output.shrink();
         if (compressed) {
-            ResourcePtr[] dependencies = new ResourcePtr[output.dependencies.size()];
+            ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
             dependencies = output.dependencies.toArray(dependencies);
             return Compressor.Compress(output.buffer, "PCKb", revision, dependencies);
         } else return output.buffer;

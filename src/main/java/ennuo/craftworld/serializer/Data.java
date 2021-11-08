@@ -1,6 +1,6 @@
 package ennuo.craftworld.serializer;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.RType;
 import java.nio.ByteBuffer;
@@ -286,7 +286,7 @@ public class Data {
      * @param type Type of resource reference
      * @return Resource reference read from the stream
      */
-    public ResourcePtr resource(RType type) { return this.resource(type, false); }
+    public ResourceDescriptor resource(RType type) { return this.resource(type, false); }
 
     /**
      * Reads a resource reference from the stream
@@ -294,7 +294,7 @@ public class Data {
      * @param useSingleByteFlag Whether the resource reference should be read with a byte or a short flag
      * @return Resource reference read from the stream
      */
-    public ResourcePtr resource(RType rType, boolean useSingleByteFlag) {
+    public ResourceDescriptor resource(RType rType, boolean useSingleByteFlag) {
         byte HASH = 1, GUID = 2;
         if (this.revision <= 0x18B) {
             HASH = 2;
@@ -311,7 +311,7 @@ public class Data {
         else if (this.isEncoded()) type = (byte) this.i16();
         else type = (byte) this.i32();
 
-        ResourcePtr resource = new ResourcePtr();
+        ResourceDescriptor resource = new ResourceDescriptor();
         resource.type = rType;
 
         if (type == GUID) resource.GUID = this.u32();

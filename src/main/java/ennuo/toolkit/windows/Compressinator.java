@@ -6,7 +6,7 @@ import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import javax.swing.JFrame;
 public class Compressinator extends javax.swing.JFrame {
     
     
-    ArrayList<ResourcePtr> dependencies = new ArrayList<ResourcePtr>();
+    ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
     DefaultListModel model = new DefaultListModel();
     
     FileChooser fileChooser;
@@ -307,7 +307,7 @@ public class Compressinator extends javax.swing.JFrame {
         int index = dependencyList.getSelectedIndex();
         if (index != -1) {
 
-            ResourcePtr ptr = dependencies.get(index);
+            ResourceDescriptor ptr = dependencies.get(index);
             String str = (String) model.get(index);
 
             System.out.println(String.format("Removing dependency of type %s with value %s", ptr.type, str));
@@ -319,7 +319,7 @@ public class Compressinator extends javax.swing.JFrame {
 
     private void addEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEntryActionPerformed
         String value = ref.getText();
-        ResourcePtr resource = new ResourcePtr();
+        ResourceDescriptor resource = new ResourceDescriptor();
         if (guidButton.isSelected()) {
             int GUID;
             if (value.startsWith("0x"))
@@ -357,7 +357,7 @@ public class Compressinator extends javax.swing.JFrame {
 
         String header = ((Magic) resourceCombo.getSelectedItem()).value;
 
-        ResourcePtr[] dependencies = new ResourcePtr[this.dependencies.size()];
+        ResourceDescriptor[] dependencies = new ResourceDescriptor[this.dependencies.size()];
         dependencies = this.dependencies.toArray(dependencies);
 
         if (file == null) {
@@ -383,7 +383,7 @@ public class Compressinator extends javax.swing.JFrame {
 
     
     private boolean GUIDExists(int GUID) {
-        for (ResourcePtr ptr : dependencies)
+        for (ResourceDescriptor ptr : dependencies)
             if (ptr.GUID == GUID) return true;
         return false;
     }

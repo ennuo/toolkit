@@ -2,14 +2,14 @@ package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 
 public class Collectable {
     public static int MAX_SIZE = 0x15;
     
     
-    public ResourcePtr item = new ResourcePtr();
+    public ResourceDescriptor item = new ResourceDescriptor();
     public int count = 0;
     
     public Collectable() {}

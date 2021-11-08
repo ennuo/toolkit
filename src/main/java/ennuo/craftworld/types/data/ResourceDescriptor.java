@@ -3,10 +3,10 @@ package ennuo.craftworld.types.data;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.utilities.Bytes;
 
-public class ResourcePtr {
+public class ResourceDescriptor {
 
-    public ResourcePtr() {}
-    public ResourcePtr(RType type, String str) {
+    public ResourceDescriptor() {}
+    public ResourceDescriptor(RType type, String str) {
         long number = -1;
         byte[] bytes = null;
 
@@ -24,11 +24,11 @@ public class ResourcePtr {
         else if (number != -1) GUID = number;
 
     }
-    public ResourcePtr(long GUID, RType type) {
+    public ResourceDescriptor(long GUID, RType type) {
         this.GUID = GUID;
         this.type = type;
     }
-    public ResourcePtr(byte[] SHA1, RType type) {
+    public ResourceDescriptor(byte[] SHA1, RType type) {
         this.hash = SHA1;
         this.type = type;
     }
@@ -40,7 +40,7 @@ public class ResourcePtr {
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
-        return ((ResourcePtr) o).toString().equals(toString());
+        return ((ResourceDescriptor) o).toString().equals(toString());
     }
 
     @Override

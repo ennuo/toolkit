@@ -3,7 +3,7 @@ package ennuo.craftworld.resources;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.toolkit.utilities.Globals;
 
@@ -64,6 +64,6 @@ public class Plan implements Serializable {
         Serializer serializer = new Serializer(dataSize, revision);
         this.serialize(serializer, this);
         return Compressor.Compress(serializer.getBuffer(), "PLNb", revision, 
-                    serializer.output.dependencies.toArray(new ResourcePtr[serializer.output.dependencies.size()]));      
+                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
     }
 }

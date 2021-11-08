@@ -2,7 +2,7 @@ package ennuo.toolkit.functions;
 
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class DependencyCallbacks {
         output.i32f(offset);
         output.bytes(resource.bytes(offset - resource.offset));
 
-        ArrayList < ResourcePtr > dependencies = new ArrayList < ResourcePtr > (resource.dependencies.length);
+        ArrayList < ResourceDescriptor > dependencies = new ArrayList < ResourceDescriptor > (resource.dependencies.length);
         for (int i = 0; i < resource.dependencies.length; ++i) {
             if (resource.dependencies[i] != null) {
                 if (Globals.extractFile(resource.dependencies[i].SHA1) != null)
@@ -52,7 +52,7 @@ public class DependencyCallbacks {
         }
 
         output.i32f(dependencies.size());
-        for (ResourcePtr ptr: dependencies) {
+        for (ResourceDescriptor ptr: dependencies) {
             output.resource(ptr, true);
             output.i32f(ptr.type.value);
         }

@@ -5,12 +5,12 @@ import ennuo.craftworld.resources.structs.Color;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.things.Thing;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 
 public class PRenderMesh implements Serializable {
-    public ResourcePtr mesh;
+    public ResourceDescriptor mesh;
     public Thing[] boneThings;
-    public ResourcePtr anim;
+    public ResourceDescriptor anim;
     public float animPos, animSpeed = 1.0f;
     public boolean animLoop = true;
     public float loopStart, loopEnd = 1.0f;

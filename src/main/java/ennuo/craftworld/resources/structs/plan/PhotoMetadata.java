@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs.plan;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Serializable;
@@ -10,7 +10,7 @@ import java.util.Date;
 public class PhotoMetadata implements Serializable {
     public static int MAX_SIZE = 0x22c + SlotID.MAX_SIZE + (4 * PhotoUser.MAX_SIZE);
     
-    public ResourcePtr photo = new ResourcePtr(0, RType.TEXTURE);
+    public ResourceDescriptor photo = new ResourceDescriptor(0, RType.TEXTURE);
     public SlotID level = new SlotID();
     public String levelName;
     public byte[] levelHash = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

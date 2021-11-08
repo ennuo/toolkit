@@ -2,7 +2,7 @@ package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.Animation;
 import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Mesh;
@@ -174,7 +174,7 @@ public class TreeSelectionListener {
                                 try {
                                     for (FileEntry e: entry.dependencies) {
                                         if (e.path.contains(".tex")) {
-                                            ResourcePtr ptr = new ResourcePtr();
+                                            ResourceDescriptor ptr = new ResourceDescriptor();
                                             ptr.hash = e.SHA1;
                                             toolkit.loadImage(ptr, item);
                                             return;

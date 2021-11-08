@@ -7,7 +7,7 @@ import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
@@ -26,7 +26,7 @@ public class Resource extends Data {
     public String magic;
     public CompressionType type;
 
-    public ResourcePtr[] resources = null;
+    public ResourceDescriptor[] resources = null;
     public FileEntry[] dependencies = null;
 
     public Resource(byte[] data) {
@@ -72,7 +72,7 @@ public class Resource extends Data {
         output.u32(GUID);
         output.shrink();
 
-        Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourcePtr(GUID, RType.PLAN), revision), new byte[] { 00 });
+        Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourceDescriptor(GUID, RType.PLAN), revision), new byte[] { 00 });
         Bytes.ReplaceAll(thingData, output.buffer, new byte[] { 00 });
 
         Output sb = new Output(6, revision);
@@ -90,8 +90,8 @@ public class Resource extends Data {
             setData(Compressor.Compress(data, magic, revision, resources));
     }
 
-    public void replaceDependency(int index, ResourcePtr replacement, boolean compressed) {
-        ResourcePtr dependency = resources[index];
+    public void replaceDependency(int index, ResourceDescriptor replacement, boolean compressed) {
+        ResourceDescriptor dependency = resources[index];
         if (dependency == null || (dependency.GUID == -1 && dependency.hash == null) || dependencies.length == 0) return;
 
         int tRevision = revision;
@@ -169,7 +169,7 @@ public class Resource extends Data {
         if (type != CompressionType.CUSTOM_COMPRESSION && type != CompressionType.CUSTOM_COMPRESSION_LEGACY && type != CompressionType.STATIC_MESH)
             return 0;
 
-        ResourcePtr self = new ResourcePtr();
+        ResourceDescriptor self = new ResourceDescriptor();
         if (entry.GUID != -1) self.GUID = entry.GUID;
         else self.hash = entry.SHA1;
 
@@ -181,9 +181,9 @@ public class Resource extends Data {
         int dependencyCount = i32f();
         if (dependencies == null || dependencyCount != dependencies.length)
             dependencies = new FileEntry[dependencyCount];
-        resources = new ResourcePtr[dependencyCount];
+        resources = new ResourceDescriptor[dependencyCount];
         for (int i = 0; i < dependencyCount; i++) {
-            resources[i] = new ResourcePtr();
+            resources[i] = new ResourceDescriptor();
             switch (i8()) {
                 case 1:
                     byte[] hash = bytes(20);

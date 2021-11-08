@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources.structs.plan;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -8,10 +8,10 @@ import ennuo.craftworld.serializer.Serializer;
 public class PhotoData implements Serializable {
     public static int MAX_SIZE = 0x69 + PhotoMetadata.MAX_SIZE + (PhotoUser.MAX_SIZE * 4);
     
-    public ResourcePtr icon;
-    public ResourcePtr sticker;
+    public ResourceDescriptor icon;
+    public ResourceDescriptor sticker;
     public PhotoMetadata photoMetadata = new PhotoMetadata();
-    public ResourcePtr painting;
+    public ResourceDescriptor painting;
 
     public PhotoData serialize(Serializer serializer, Serializable structure) {
         PhotoData data = (structure == null) ? new PhotoData() : (PhotoData) structure;

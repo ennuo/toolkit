@@ -1,6 +1,6 @@
 package ennuo.craftworld.serializer;
 
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,7 +22,7 @@ public class Output {
     public int revision = 0x271;
     public byte[] buffer;
 
-    public ArrayList<ResourcePtr> dependencies = new ArrayList<ResourcePtr>();
+    public ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
 
     /**
      * Creates a memory output stream with specified size.
@@ -53,8 +53,8 @@ public class Output {
      * @param dependency Dependency
      * @return True if the dependency already exists
      */
-    private boolean hasDependency(ResourcePtr dependency) {
-        for (ResourcePtr ptr: this.dependencies)
+    private boolean hasDependency(ResourceDescriptor dependency) {
+        for (ResourceDescriptor ptr: this.dependencies)
             if (ptr.equals(dependency))
                 return true;
         return false;
@@ -285,14 +285,14 @@ public class Output {
      * Writes a resource reference to the stream with a short flag.
      * @param value Resource reference to write
      */
-    public void resource(ResourcePtr value) { this.resource(value, false); }
+    public void resource(ResourceDescriptor value) { this.resource(value, false); }
     
     /**
      * Writes a resource reference to the stream with either a byte or short flag.
      * @param value Resource reference to write
      * @param useSingleByteFlag Whether a byte or a short flag should be written
      */
-    public void resource(ResourcePtr value, boolean useSingleByteFlag) {
+    public void resource(ResourceDescriptor value, boolean useSingleByteFlag) {
         byte HASH = 1, GUID = 2;
         if (this.revision <= 0x18B) {
             HASH = 2;

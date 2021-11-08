@@ -1,7 +1,7 @@
 package ennuo.craftworld.utilities;
 
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.Deflater;
@@ -59,7 +59,7 @@ public class Compressor {
         });
     }
 
-    public static byte[] CompressStaticMesh(byte[] data, int revision, ResourcePtr[] dependencies) {
+    public static byte[] CompressStaticMesh(byte[] data, int revision, ResourceDescriptor[] dependencies) {
         Output output = new Output(0xD);
         output.str("SMHb");
         output.i32f(revision);
@@ -70,7 +70,7 @@ public class Compressor {
 
     }
 
-    public static byte[] Compress(byte[] data, String magic, int revision, ResourcePtr[] dependencies) {
+    public static byte[] Compress(byte[] data, String magic, int revision, ResourceDescriptor[] dependencies) {
         if (magic.equals("SMHb")) return CompressStaticMesh(data, revision, dependencies);
         byte[] compressed = CompressRaw(data);
 
@@ -94,11 +94,11 @@ public class Compressor {
         });
     }
 
-    private static byte[] Dependinate(ResourcePtr[] resources) {
+    private static byte[] Dependinate(ResourceDescriptor[] resources) {
         Output output = new Output(0x1C * resources.length + 4);
 
         output.i32(resources.length);
-        for (ResourcePtr resource: resources) {
+        for (ResourceDescriptor resource: resources) {
             output.resource(resource, true);
             output.i32(resource.type.value);
         }

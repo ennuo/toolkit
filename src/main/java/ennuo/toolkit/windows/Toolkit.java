@@ -25,7 +25,7 @@ import javax.swing.*;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 import ennuo.craftworld.types.*;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.*;
@@ -1908,7 +1908,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
     }
 
-    public void loadImage(ResourcePtr resource, Plan item) {
+    public void loadImage(ResourceDescriptor resource, Plan item) {
         if (resource == null) return;
         iconField.setText(resource.toString());
         FileEntry entry = Globals.findEntry(resource);

@@ -2,7 +2,7 @@ package ennuo.craftworld.utilities;
 
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.resources.enums.RType;
@@ -119,7 +119,7 @@ public class Bytes {
         data[offset + 2] = temp;
     }
 
-    public static byte[] createResourceReference(ResourcePtr res, int revision) {
+    public static byte[] createResourceReference(ResourceDescriptor res, int revision) {
         Output output = new Output(0x1C + 0x4, revision);
         output.resource(res, true);
         output.shrink();
@@ -308,7 +308,7 @@ public class Bytes {
         plan.isStreamingChunk = true;
         if (plan.resources != null) {
             for (int i = 0; i < plan.resources.length; ++i) {
-                ResourcePtr res = plan.resources[i];
+                ResourceDescriptor res = plan.resources[i];
                 plan.seek(0x12);
                 if (res == null) continue;
                 if (plan.dependencies[i] == null)
@@ -319,7 +319,7 @@ public class Bytes {
                 else data = Globals.extractFile(res.GUID);
                 if (data == null) continue;
                 Resource dependency = new Resource(data);
-                plan.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, plan.dependencies[i]), res.type), false);
+                plan.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, plan.dependencies[i]), res.type), false);
             }
         }
 
@@ -346,7 +346,7 @@ public class Bytes {
             resource.getDependencies(entry);
         if (resource.resources != null)
             for (int i = 0; i < resource.resources.length; ++i) {
-                ResourcePtr res = resource.resources[i];
+                ResourceDescriptor res = resource.resources[i];
                 if (res == null || res.type == RType.SCRIPT) continue;
                 byte[] data = Globals.extractFile(res);
                 if (data == null) continue;
@@ -362,7 +362,7 @@ public class Bytes {
         if (resource.resources != null && resource.resources.length != 0) {
             resource.decompress(true);
             for (int i = 0; i < resource.resources.length; ++i) {
-                ResourcePtr res = resource.resources[i];
+                ResourceDescriptor res = resource.resources[i];
                 if (res == null) continue;
                 if (res.type == RType.SCRIPT) continue;
                 if (res.type == RType.PLAN && res.GUID != -1) resource.removePlanDescriptors(res.GUID, false);
@@ -382,9 +382,9 @@ public class Bytes {
                             }
                         }
                         if (index != -1)
-                            resource.replaceDependency(index, new ResourcePtr(hashinateStreamingChunk(mod, new Resource(e.data), e), RType.STREAMING_CHUNK), false);
+                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), RType.STREAMING_CHUNK), false);
                     }
-                    resource.replaceDependency(i, new ResourcePtr(null, RType.STREAMING_CHUNK), false);
+                    resource.replaceDependency(i, new ResourceDescriptor(null, RType.STREAMING_CHUNK), false);
                     continue;
                 }
                 byte[] data;
@@ -392,7 +392,7 @@ public class Bytes {
                 else data = Globals.extractFile(res.GUID);
                 if (data == null) continue;
                 Resource dependency = new Resource(data);
-                resource.replaceDependency(i, new ResourcePtr(hashinate(mod, dependency, resource.dependencies[i]), res.type), false);
+                resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, resource.dependencies[i]), res.type), false);
             }
             resource.removePlanDescriptors(entry.GUID, false);
             resource.setData(Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));

@@ -2,7 +2,7 @@ package ennuo.craftworld.resources;
 
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.RType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;
@@ -30,7 +30,7 @@ public class GfxMaterial implements Serializable {
     fuzzLightingScale, iridescenceRoughness;
 
     byte[][] shaders;
-    public ResourcePtr[] textures;
+    public ResourceDescriptor[] textures;
 
     public byte[] wrapS, wrapT;
 
@@ -107,7 +107,7 @@ public class GfxMaterial implements Serializable {
             for (int i = 1; i <= shaderCount; ++i)
                 gfxMaterial.shaders[i - 1] = serializer.input.bytes(offsets[i] - offsets[i - 1]);
             
-            gfxMaterial.textures = new ResourcePtr[8];
+            gfxMaterial.textures = new ResourceDescriptor[8];
             for (int i = 0; i < 8; ++i)
                 gfxMaterial.textures[i] = serializer.input.resource(RType.TEXTURE);
         }
@@ -134,7 +134,7 @@ public class GfxMaterial implements Serializable {
         Serializer serializer = new Serializer(dataSize, revision);
         this.serialize(serializer, this);
         return Compressor.Compress(serializer.getBuffer(), "GMTb", revision, 
-                    serializer.output.dependencies.toArray(new ResourcePtr[serializer.output.dependencies.size()]));      
+                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
     }
     
     public Wire findWireFrom(int box) {

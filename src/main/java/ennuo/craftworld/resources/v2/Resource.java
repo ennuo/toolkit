@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.v2;
 
 import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SerializationMethod;
 
@@ -14,7 +14,7 @@ public class Resource {
     private boolean unknownFlag = true;
     private byte compressionFlags = 0x7;
     public Data handle = null;
-    public ResourcePtr[] dependencies = new ResourcePtr[0];
+    public ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     
     public Resource(String path) {
         this.handle = new Data(path);

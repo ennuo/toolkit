@@ -4,7 +4,7 @@ package ennuo.toolkit.windows;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.types.data.ResourcePtr;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.Globals;
 import java.nio.file.Paths;
 import javax.swing.DefaultListModel;
@@ -18,7 +18,7 @@ public class Dependinator extends javax.swing.JFrame {
     
     private FileEntry entry;
     
-    private ResourcePtr[] modifications;
+    private ResourceDescriptor[] modifications;
     
     DefaultListModel model = new DefaultListModel();
     
@@ -32,7 +32,7 @@ public class Dependinator extends javax.swing.JFrame {
         list.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                ResourcePtr ptr;
+                ResourceDescriptor ptr;
                 int index = list.getSelectedIndex();
                 if (modifications[index] != null)
                     ptr = modifications[index];
@@ -57,10 +57,10 @@ public class Dependinator extends javax.swing.JFrame {
         resource = new Resource(data);
         resource.getDependencies(entry, false);
         
-        modifications = new ResourcePtr[resource.resources.length];
+        modifications = new ResourceDescriptor[resource.resources.length];
         
         for (int i = 0; i < resource.resources.length; ++i) {
-            ResourcePtr ptr = resource.resources[i];
+            ResourceDescriptor ptr = resource.resources[i];
             modifications[i] = ptr;
             FileEntry dependency = resource.dependencies[i];
             if (dependency == null) model.addElement(ptr.toString());
@@ -141,7 +141,7 @@ public class Dependinator extends javax.swing.JFrame {
     private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
         int index = list.getSelectedIndex();
         
-        ResourcePtr newRes = new ResourcePtr(resource.resources[index].type, pointer.getText());
+        ResourceDescriptor newRes = new ResourceDescriptor(resource.resources[index].type, pointer.getText());
         
         if (newRes.equals(resource.resources[index])) return;
         if (modifications[index] != null)
