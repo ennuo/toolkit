@@ -78,6 +78,10 @@ public class GfxMaterial implements Serializable {
                 gfxMaterial.iridescenceRoughness = serializer.i8(gfxMaterial.iridescenceRoughness);
             }
         }
+       
+        // NOTE(Abz): RGfxMaterial still had 3 shaders at 0x272 branch (0x4c440009)
+        // current Resource class doesn't hold branch information yet, so nothing I
+        // can do about that here at the moment.
         
         int shaderCount = 3;
         if (serializer.revision == 0x3e2) shaderCount = 25;
@@ -117,7 +121,7 @@ public class GfxMaterial implements Serializable {
         gfxMaterial.boxes = serializer.array(gfxMaterial.boxes, Box.class);
         gfxMaterial.wires = serializer.array(gfxMaterial.wires, Wire.class);
         
-        if (serializer.revision >= 0x129)
+        if (serializer.revision > 0x148)
             gfxMaterial.soundEnum = serializer.i32(gfxMaterial.soundEnum);
         
         if (serializer.revision >= 0x2a2)
