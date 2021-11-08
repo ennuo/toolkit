@@ -197,14 +197,17 @@ public class Resource extends Data {
                     break;
             }
             if (dependencies[i] == null) missingDependencies++;
-            resources[i].type = ResourceType.fromType(i32f());
-            if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
-                byte[] data = Globals.extractFile(dependencies[i].SHA1);
-                if (data != null) {
-                    Resource resource = new Resource(data);
-                    if (resource.magic.equals("FSHb")) continue;
-                    resource.getDependencies(dependencies[i]);
-                    dependencies[i].dependencies = resource.dependencies;
+            ResourceType type = ResourceType.fromType(i32f());
+            resources[i].type = type;
+            if (type != ResourceType.SCRIPT && type != ResourceType.FILENAME && type != ResourceType.FILE_OF_BYTES) {
+                if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
+                    byte[] data = Globals.extractFile(dependencies[i].SHA1);
+                    if (data != null) {
+                        Resource resource = new Resource(data);
+                        if (resource.magic.equals("FSHb")) continue;
+                        resource.getDependencies(dependencies[i]);
+                        dependencies[i].dependencies = resource.dependencies;
+                    }
                 }
             }
         }

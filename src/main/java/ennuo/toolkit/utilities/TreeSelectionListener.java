@@ -61,7 +61,7 @@ public class TreeSelectionListener {
             }
             toolkit.setHexEditor(entryBuffer);
             if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
-                FileModel model = new FileModel(new FileNode("x", null, null));
+                FileModel model = new FileModel(new FileNode("x", null, entry));
                 Resource resource = new Resource(entryBuffer);
                 boolean recursive = !(resource.magic.equals("PCKb") || resource.magic.equals("SLTb") || resource.magic.equals("LVLb") || resource.magic.equals("ADCb") || resource.magic.equals("PALb"));
                 entry.hasMissingDependencies = resource.getDependencies(entry, recursive) != 0;

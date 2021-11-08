@@ -1818,7 +1818,7 @@ public class Toolkit extends javax.swing.JFrame {
             for (int i = 0; i < entry.dependencies.length; ++i) {
                 if (entry.dependencies[i] == null || entry.dependencies[i].path == null) continue;
                 Nodes.addNode(root, entry.dependencies[i]);
-                if (entry.dependencies[i].dependencies != null) // These files have way too many dependencies
+                if (entry.dependencies[i].dependencies != null && entry.dependencies[i] != entry) // These files have way too many dependencies
                     generateDependencyTree(entry.dependencies[i], model);
             }
         }
