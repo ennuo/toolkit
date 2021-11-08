@@ -4,7 +4,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.enums.Metadata;
 import ennuo.craftworld.resources.enums.Metadata.CompressionType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
@@ -72,7 +72,7 @@ public class Resource extends Data {
         output.u32(GUID);
         output.shrink();
 
-        Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourceDescriptor(GUID, RType.PLAN), revision), new byte[] { 00 });
+        Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourceDescriptor(GUID, ResourceType.PLAN), revision), new byte[] { 00 });
         Bytes.ReplaceAll(thingData, output.buffer, new byte[] { 00 });
 
         Output sb = new Output(6, revision);
@@ -197,7 +197,7 @@ public class Resource extends Data {
                     break;
             }
             if (dependencies[i] == null) missingDependencies++;
-            resources[i].type = RType.getValue(i32f());
+            resources[i].type = ResourceType.fromType(i32f());
             if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
                 byte[] data = Globals.extractFile(dependencies[i].SHA1);
                 if (data != null) {

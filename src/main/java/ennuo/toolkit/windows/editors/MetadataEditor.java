@@ -6,7 +6,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.ItemSubType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -1480,11 +1480,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         if (photoMetadata.isSelected()) {
             PhotoData data = new PhotoData();
-            data.icon = getResource(photoIcon.getText(), RType.TEXTURE);
-            data.sticker = getResource(sticker.getText(), RType.TEXTURE);
-            data.painting = getResource(painting.getText(), RType.PAINTING);
+            data.icon = getResource(photoIcon.getText(), ResourceType.TEXTURE);
+            data.sticker = getResource(sticker.getText(), ResourceType.TEXTURE);
+            data.painting = getResource(painting.getText(), ResourceType.PAINTING);
             data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() / 1000;
-            data.photoMetadata.photo = getResource(photo.getText(), RType.TEXTURE);
+            data.photoMetadata.photo = getResource(photo.getText(), ResourceType.TEXTURE);
             
             String SHA1 = levelSHA1.getText();
             if (SHA1.toLowerCase().startsWith("h")) SHA1 = SHA1.substring(1);
@@ -1504,9 +1504,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         if (eyetoyData.isSelected()) {
             EyetoyData eyetoy = new EyetoyData();
-            eyetoy.alphaMask = getResource(alphaMask.getText(), RType.TEXTURE);
-            eyetoy.frame = getResource(frame.getText(), RType.TEXTURE);
-            eyetoy.outline = getResource(outline.getText(), RType.TEXTURE);
+            eyetoy.alphaMask = getResource(alphaMask.getText(), ResourceType.TEXTURE);
+            eyetoy.frame = getResource(frame.getText(), ResourceType.TEXTURE);
+            eyetoy.outline = getResource(outline.getText(), ResourceType.TEXTURE);
         } else item.metadata.eyetoyData = null;
         
         
@@ -1542,8 +1542,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.flags = flags;
         
         
-        item.resource = getResource(itemRef.getText(), RType.PLAN);
-        item.metadata.icon = getResource(iconRef.getText(), RType.TEXTURE);
+        item.resource = getResource(itemRef.getText(), ResourceType.PLAN);
+        item.metadata.icon = getResource(iconRef.getText(), ResourceType.TEXTURE);
         
         item.metadata.creator.handle = theCreator.getText();
         
@@ -1560,7 +1560,7 @@ public class MetadataEditor extends javax.swing.JFrame {
                     Resource resource = new Resource(data);
                     //resource.replaceMetadata(item.metadata);
                     Globals.replaceEntry(entry, resource.data);
-                    item.metadata.resource = new ResourceDescriptor(Bytes.SHA1(resource.data), RType.PLAN);
+                    item.metadata.resource = new ResourceDescriptor(Bytes.SHA1(resource.data), ResourceType.PLAN);
                 }
                 
             }
@@ -1585,7 +1585,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         metadata.colour = ByteBuffer.wrap(colour).order(ByteOrder.BIG_ENDIAN).getInt() & 0xFFFFFFFFL;
     }
     
-    private ResourceDescriptor getResource(String root, RType type) {
+    private ResourceDescriptor getResource(String root, ResourceType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
             return new ResourceDescriptor(StringUtils.getLong(root), type);

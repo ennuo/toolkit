@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.plan;
 
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import org.joml.Matrix4f;
@@ -20,12 +20,12 @@ public class EyetoyData implements Serializable {
     public EyetoyData serialize(Serializer serializer, Serializable structure) {
         EyetoyData eyetoy = (structure == null) ? new EyetoyData() : (EyetoyData) structure;
         
-        eyetoy.frame = serializer.resource(eyetoy.frame, RType.TEXTURE);
-        eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, RType.TEXTURE);
+        eyetoy.frame = serializer.resource(eyetoy.frame, ResourceType.TEXTURE);
+        eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, ResourceType.TEXTURE);
         eyetoy.colorCorrection = serializer.matrix(eyetoy.colorCorrection);
         eyetoy.colorCorrectionSrc = serializer.struct(eyetoy.colorCorrectionSrc, ColorCorrection.class);
         if (serializer.revision > 0x2c3)
-            eyetoy.outline = serializer.resource(eyetoy.outline, RType.TEXTURE);
+            eyetoy.outline = serializer.resource(eyetoy.outline, ResourceType.TEXTURE);
         
         return eyetoy;
     }

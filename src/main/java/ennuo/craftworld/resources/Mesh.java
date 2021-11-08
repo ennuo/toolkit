@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.mesh.*;
 import ennuo.craftworld.serializer.Data;
@@ -157,7 +157,7 @@ public class Mesh implements Serializable {
         
         mesh.insideImplicitEllipsoids = serializer.array(mesh.insideImplicitEllipsoids, ImplicitEllipsoid.class);
         mesh.implicitPlanes = serializer.array(mesh.implicitPlanes, ImplicitPlane.class);
-        mesh.softPhysSettings = serializer.resource(mesh.softPhysSettings, RType.SETTINGS_SOFT_PHYS);
+        mesh.softPhysSettings = serializer.resource(mesh.softPhysSettings, ResourceType.SETTINGS_SOFT_PHYS);
         mesh.minSpringVert = serializer.i32(mesh.minSpringVert);
         mesh.maxSpringVert = serializer.i32(mesh.maxSpringVert);
         mesh.minUnalignedSpringVert = serializer.i32(mesh.minUnalignedSpringVert);

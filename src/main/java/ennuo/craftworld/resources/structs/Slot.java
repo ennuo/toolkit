@@ -8,7 +8,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
@@ -133,18 +133,18 @@ public class Slot {
         if (parseGroup)
             group = new SlotID(data);
         
-        root = data.resource(RType.LEVEL, true);
+        root = data.resource(ResourceType.LEVEL, true);
         
         if (root != null)
             System.out.println("slot has root = " + root.toString());
         
         if (data.revision > 0x010503EF) {
-            adventure = data.resource(RType.ADVENTURE_CREATE_PROFILE, true);
+            adventure = data.resource(ResourceType.ADVENTURE_CREATE_PROFILE, true);
             if (adventure != null)
                 System.out.println("slot has adventure = " + adventure.toString());
         }
         
-        icon = data.resource(RType.TEXTURE, true);
+        icon = data.resource(ResourceType.TEXTURE, true);
         
         if (icon != null)
             System.out.println("slot has icon = " + icon.toString());
@@ -183,7 +183,7 @@ public class Slot {
         backgroundGUID = data.u32();
         
         if (data.revision > 0x2c3)
-            planetDecorations = data.resource(RType.PLAN, true);
+            planetDecorations = data.resource(ResourceType.PLAN, true);
         
         developerLevelType = LevelType.getValue(data.i32());
         
@@ -277,7 +277,7 @@ public class Slot {
             for (int i = 0; i < subLevelCount; ++i)
                 subLevels[i] = new SlotID(data);
             
-            slotList = data.resource(RType.SLOT_LIST);
+            slotList = data.resource(ResourceType.SLOT_LIST);
             vitaRevision = data.i32();
         }
         

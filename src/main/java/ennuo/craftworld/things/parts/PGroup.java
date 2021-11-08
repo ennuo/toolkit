@@ -1,6 +1,6 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.SceNpId;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -21,7 +21,7 @@ public class PGroup implements Serializable {
         
         group.copyright = serializer.bool(group.copyright);
         group.creator = serializer.struct(group.creator, SceNpId.class);
-        group.planDescriptor = serializer.resource(group.planDescriptor, RType.PLAN, true);
+        group.planDescriptor = serializer.resource(group.planDescriptor, ResourceType.PLAN, true);
         group.editable = serializer.bool(group.editable);
         group.emitter = serializer.reference(group.emitter, Thing.class);
         group.lifetime = serializer.i32(group.lifetime);

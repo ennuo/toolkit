@@ -5,7 +5,7 @@ import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.mods.Mod;
@@ -313,7 +313,7 @@ public class Bytes {
                 if (res == null) continue;
                 if (plan.dependencies[i] == null)
                     continue;
-                if (res.type == RType.SCRIPT) continue;
+                if (res.type == ResourceType.SCRIPT) continue;
                 byte[] data;
                 if (res.hash != null && res.GUID == -1) data = Globals.extractFile(res.hash);
                 else data = Globals.extractFile(res.GUID);
@@ -347,7 +347,7 @@ public class Bytes {
         if (resource.resources != null)
             for (int i = 0; i < resource.resources.length; ++i) {
                 ResourceDescriptor res = resource.resources[i];
-                if (res == null || res.type == RType.SCRIPT) continue;
+                if (res == null || res.type == ResourceType.SCRIPT) continue;
                 byte[] data = Globals.extractFile(res);
                 if (data == null) continue;
                 recurse(mod, new Resource(data), resource.dependencies[i]);
@@ -364,9 +364,9 @@ public class Bytes {
             for (int i = 0; i < resource.resources.length; ++i) {
                 ResourceDescriptor res = resource.resources[i];
                 if (res == null) continue;
-                if (res.type == RType.SCRIPT) continue;
-                if (res.type == RType.PLAN && res.GUID != -1) resource.removePlanDescriptors(res.GUID, false);
-                if (res.type == RType.STREAMING_CHUNK) {
+                if (res.type == ResourceType.SCRIPT) continue;
+                if (res.type == ResourceType.PLAN && res.GUID != -1) resource.removePlanDescriptors(res.GUID, false);
+                if (res.type == ResourceType.STREAMING_CHUNK) {
                     if (res.GUID == -1) continue;
                     String name = new File(resource.dependencies[i].path).getName();
                     File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
@@ -382,9 +382,9 @@ public class Bytes {
                             }
                         }
                         if (index != -1)
-                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), RType.STREAMING_CHUNK), false);
+                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK), false);
                     }
-                    resource.replaceDependency(i, new ResourceDescriptor(null, RType.STREAMING_CHUNK), false);
+                    resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK), false);
                     continue;
                 }
                 byte[] data;

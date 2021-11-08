@@ -5,7 +5,7 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.types.mods.legacy.patches.ModPatch;
 import ennuo.craftworld.resources.enums.ModCompatibility;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
@@ -125,7 +125,7 @@ public class LegacyMod {
                 InventoryDetails item = new Serializer(data).struct(null, InventoryDetails.class);
                 item.location = data.u32();
                 item.category = data.u32();
-                item.resource = data.resource(RType.PLAN, true);
+                item.resource = data.resource(ResourceType.PLAN, true);
                 item.translatedLocation = data.str16();
                 item.translatedCategory = data.str16();
                 if (revision > 4) {

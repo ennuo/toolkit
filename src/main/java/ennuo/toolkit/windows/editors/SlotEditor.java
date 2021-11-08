@@ -10,7 +10,7 @@ import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Slot;
 import java.awt.event.ActionEvent;
@@ -1144,16 +1144,16 @@ public class SlotEditor extends javax.swing.JFrame {
             
             pack.contentsType = (ContentsType) contentsType.getSelectedItem();
             pack.contentID = contentID.getText();
-            pack.mesh = getResource(badgeMesh.getText(), RType.MESH);
+            pack.mesh = getResource(badgeMesh.getText(), ResourceType.MESH);
             pack.timestamp = ((Date)timestamp.getValue()).getTime() * 2 / 1000;
         }
         
         slot.backgroundGUID = (long) backgroundGUID.getValue();   
         
-        slot.planetDecorations = getResource(planetDecoration.getText(), RType.LEVEL);
-        slot.root = getResource(rootLevel.getText(), RType.LEVEL);
-        slot.adventure = getResource(adventure.getText(), RType.ADVENTURE_CREATE_PROFILE);
-        slot.icon = getResource(iconPtr.getText(), RType.TEXTURE);
+        slot.planetDecorations = getResource(planetDecoration.getText(), ResourceType.LEVEL);
+        slot.root = getResource(rootLevel.getText(), ResourceType.LEVEL);
+        slot.adventure = getResource(adventure.getText(), ResourceType.ADVENTURE_CREATE_PROFILE);
+        slot.icon = getResource(iconPtr.getText(), ResourceType.TEXTURE);
         
         
         slot.developerLevelType = (LevelType) levelType.getSelectedItem();
@@ -1211,7 +1211,7 @@ public class SlotEditor extends javax.swing.JFrame {
 
     int loop = 0;
     
-    private ResourceDescriptor getResource(String root, RType type) {
+    private ResourceDescriptor getResource(String root, ResourceType type) {
         if (root == null || root.equals("")) return null;
         else if (root.startsWith("g"))
             return new ResourceDescriptor(StringUtils.getLong(root), type);

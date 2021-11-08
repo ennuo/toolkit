@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.plan;
 
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 
@@ -16,11 +16,11 @@ public class PhotoData implements Serializable {
     public PhotoData serialize(Serializer serializer, Serializable structure) {
         PhotoData data = (structure == null) ? new PhotoData() : (PhotoData) structure;
         
-        data.icon = serializer.resource(data.icon, RType.TEXTURE, true);
-        data.sticker = serializer.resource(data.sticker, RType.TEXTURE, true);
+        data.icon = serializer.resource(data.icon, ResourceType.TEXTURE, true);
+        data.sticker = serializer.resource(data.sticker, ResourceType.TEXTURE, true);
         data.photoMetadata = serializer.struct(data.photoMetadata, PhotoMetadata.class);
         if (serializer.revision > 0x395)
-            data.painting = serializer.resource(data.painting, RType.PAINTING, true);
+            data.painting = serializer.resource(data.painting, ResourceType.PAINTING, true);
         
         return data;
     }

@@ -4,7 +4,7 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ContentsType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import java.util.Date;
 
 public class PackItem {
@@ -12,7 +12,7 @@ public class PackItem {
     public static int MAX_SIZE = 0x125 + Slot.MAX_SIZE;
     
     public ContentsType contentsType = ContentsType.LEVEL;
-    public ResourceDescriptor mesh = new ResourceDescriptor(16006, RType.MESH);
+    public ResourceDescriptor mesh = new ResourceDescriptor(16006, ResourceType.MESH);
     public Slot slot = new Slot();
     public String contentID = "";
     public long timestamp = new Date().getTime() * 2 / 1000;
@@ -21,7 +21,7 @@ public class PackItem {
     public PackItem() {}
     public PackItem(Data data) {
         contentsType = ContentsType.getValue(data.i32());
-        mesh = data.resource(RType.MESH, true);
+        mesh = data.resource(ResourceType.MESH, true);
         slot = new Slot(data, true, false);
         contentID = data.str8();
         timestamp = data.u32();

@@ -2,7 +2,7 @@ package ennuo.craftworld.serializer;
 
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -286,7 +286,7 @@ public class Data {
      * @param type Type of resource reference
      * @return Resource reference read from the stream
      */
-    public ResourceDescriptor resource(RType type) { return this.resource(type, false); }
+    public ResourceDescriptor resource(ResourceType type) { return this.resource(type, false); }
 
     /**
      * Reads a resource reference from the stream
@@ -294,7 +294,7 @@ public class Data {
      * @param useSingleByteFlag Whether the resource reference should be read with a byte or a short flag
      * @return Resource reference read from the stream
      */
-    public ResourceDescriptor resource(RType rType, boolean useSingleByteFlag) {
+    public ResourceDescriptor resource(ResourceType rType, boolean useSingleByteFlag) {
         byte HASH = 1, GUID = 2;
         if (this.revision <= 0x18B) {
             HASH = 2;

@@ -4,7 +4,7 @@ import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ItemSubType;
 import ennuo.craftworld.resources.enums.ItemType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.SceNpId;
@@ -82,7 +82,7 @@ public class InventoryDetails implements Serializable {
             }
             
             details.creationHistory = serializer.reference(details.creationHistory, CreationHistory.class);
-            details.icon = serializer.resource(details.icon, RType.TEXTURE, true);
+            details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
             details.userCreatedDetails = serializer.reference(details.userCreatedDetails, UserCreatedDetails.class);
             details.photoData = serializer.reference(details.photoData, PhotoData.class);
             details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
@@ -128,7 +128,7 @@ public class InventoryDetails implements Serializable {
             details.subType = ItemSubType.getValue(serializer.u32f(details.subType.value), details.type);
             if (serializer.revision > 0x196) {
                 details.toolType = ToolType.getValue((byte) (serializer.i32f(details.toolType.value) & 0xFF));
-                details.icon = serializer.resource(details.icon, RType.TEXTURE, true);
+                details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
             }
         }
         
@@ -211,7 +211,7 @@ public class InventoryDetails implements Serializable {
         }
         
         if (serializer.revision > 0x233) {
-            details.icon = serializer.resource(details.icon, RType.TEXTURE, true);
+            details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
 
             details.photoData = serializer.reference(details.photoData, PhotoData.class);
             details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);

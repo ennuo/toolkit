@@ -1,6 +1,6 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.things.Thing;
@@ -33,7 +33,7 @@ public class PSpriteLight implements Serializable {
         spriteLight.glowRadius = serializer.f32(spriteLight.glowRadius);
         spriteLight.farDist = serializer.f32(spriteLight.farDist);
         spriteLight.sourceSize = serializer.f32(spriteLight.sourceSize);
-        spriteLight.falloffTexture = serializer.resource(spriteLight.falloffTexture, RType.TEXTURE);
+        spriteLight.falloffTexture = serializer.resource(spriteLight.falloffTexture, ResourceType.TEXTURE);
         spriteLight.lookAt = serializer.reference(spriteLight.lookAt, Thing.class);
         spriteLight.spotlight = serializer.bool(spriteLight.spotlight);
         spriteLight.enableFogShadows = serializer.bool(spriteLight.enableFogShadows);

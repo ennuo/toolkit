@@ -3,7 +3,7 @@ package ennuo.craftworld.resources;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
@@ -113,7 +113,7 @@ public class GfxMaterial implements Serializable {
             
             gfxMaterial.textures = new ResourceDescriptor[8];
             for (int i = 0; i < 8; ++i)
-                gfxMaterial.textures[i] = serializer.input.resource(RType.TEXTURE);
+                gfxMaterial.textures[i] = serializer.input.resource(ResourceType.TEXTURE);
         }
         
         gfxMaterial.wrapS = serializer.i8a(gfxMaterial.wrapS);

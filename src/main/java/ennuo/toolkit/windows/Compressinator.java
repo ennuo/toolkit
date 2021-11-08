@@ -5,7 +5,7 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.StringUtils;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
@@ -55,7 +55,7 @@ public class Compressinator extends javax.swing.JFrame {
         hashButton = new javax.swing.JRadioButton();
         guidButton = new javax.swing.JRadioButton();
         ref = new javax.swing.JTextField();
-        typeCombo = new javax.swing.JComboBox(RType.values());
+        typeCombo = new javax.swing.JComboBox(ResourceType.values());
         addEntry = new javax.swing.JButton();
         removeEntry = new javax.swing.JButton();
         compress = new javax.swing.JButton();
@@ -331,7 +331,7 @@ public class Compressinator extends javax.swing.JFrame {
                 return;
             }
 
-            resource.type = (RType) typeCombo.getSelectedItem();
+            resource.type = (ResourceType) typeCombo.getSelectedItem();
             resource.GUID = GUID;
 
             model.add(model.size(), "g" + GUID);

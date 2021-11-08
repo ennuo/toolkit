@@ -5,7 +5,7 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.enums.Magic;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
@@ -180,7 +180,7 @@ public class ScanCallback {
                                 data.forward(dependencyOffset - 12);
                                 int count = data.i32f();
                                 for (int j = 0; j < count; ++j) {
-                                    data.resource(RType.FILE_OF_BYTES, true);
+                                    data.resource(ResourceType.FILE_OF_BYTES, true);
                                     data.i32f();
                                 }
 

@@ -1,6 +1,6 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.Color;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -24,10 +24,10 @@ public class PRenderMesh implements Serializable {
     public PRenderMesh serialize(Serializer serializer, Serializable structure) {
         PRenderMesh renderMesh = (structure == null) ? new PRenderMesh() : (PRenderMesh) structure;
         
-        renderMesh.mesh = serializer.resource(renderMesh.mesh, RType.MESH);
+        renderMesh.mesh = serializer.resource(renderMesh.mesh, ResourceType.MESH);
         renderMesh.boneThings = serializer.array(renderMesh.boneThings, Thing.class, true);
         
-        renderMesh.anim = serializer.resource(renderMesh.anim, RType.ANIM);
+        renderMesh.anim = serializer.resource(renderMesh.anim, ResourceType.ANIMATION);
         renderMesh.animPos = serializer.f32(renderMesh.animPos);
         renderMesh.animSpeed = serializer.f32(renderMesh.animSpeed);
         renderMesh.animLoop = serializer.bool(renderMesh.animLoop);

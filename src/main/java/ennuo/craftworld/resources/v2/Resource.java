@@ -1,8 +1,8 @@
 package ennuo.craftworld.resources.v2;
 
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SerializationMethod;
 
 public class Resource {

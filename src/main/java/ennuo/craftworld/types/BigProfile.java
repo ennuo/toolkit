@@ -12,7 +12,7 @@ import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.ItemType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SlotID;
@@ -341,7 +341,7 @@ public class BigProfile extends FileData {
     Serializer serializer = new Serializer(profile);
     for (int i = 0; i < itemCount; ++i) {
       ProfileItem item = new ProfileItem();
-      item.resource = profile.resource(RType.PLAN, true);
+      item.resource = profile.resource(ResourceType.PLAN, true);
       if (profile.revision > 0x010503EF) item.GUID = profile.i32();
       item.metadata = serializer.struct(item.metadata, InventoryDetails.class);
       if (profile.revision == 0x3e2) profile.forward(0x1);
@@ -433,7 +433,7 @@ public class BigProfile extends FileData {
         for (int i = 0; i < downloadedSlots.length; ++i)
             downloadedSlots[i] = new SlotID(profile);
         
-        planets = profile.resource(RType.LEVEL, true);
+        planets = profile.resource(ResourceType.LEVEL, true);
     }
     
     this.profile.setResource("slots", slots);
@@ -487,7 +487,7 @@ public class BigProfile extends FileData {
         InventoryDetails metadata = null;
         if (item != null) metadata = item.details;
         if (metadata == null) { metadata = new InventoryDetails(); System.out.println("Metadata is null, using default values..."); }
-        addItem(new ResourceDescriptor(SHA1, RType.PLAN), metadata);
+        addItem(new ResourceDescriptor(SHA1, ResourceType.PLAN), metadata);
         }
         return;
     }
@@ -510,7 +510,7 @@ public class BigProfile extends FileData {
         
         slot.location = crater.value;
         
-        slot.root = new ResourceDescriptor(SHA1, RType.LEVEL);
+        slot.root = new ResourceDescriptor(SHA1, ResourceType.LEVEL);
         
         addSlotNode(slot);
         }
@@ -529,14 +529,14 @@ public class BigProfile extends FileData {
     ProfileItem item = entry.getResource("profileItem");
     
     if (item != null) {
-        ResourceDescriptor newRes = new ResourceDescriptor(hash, RType.PLAN);
+        ResourceDescriptor newRes = new ResourceDescriptor(hash, ResourceType.PLAN);
         item.resource = newRes;
         item.metadata.resource = newRes;
     }
     
     
     if (slot != null)
-        slot.root = new ResourceDescriptor(hash, RType.LEVEL);
+        slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
     
     entry.SHA1 = hash;
     entry.data = data;
