@@ -43,7 +43,7 @@ public class TreeSelectionListener {
             return;
         }
 
-        //toolkit.resourceService.submit(() -> {
+        toolkit.resourceService.submit(() -> {
             if (!Globals.canExtract()) return;
 
             byte[] entryBuffer = null;
@@ -189,6 +189,6 @@ public class TreeSelectionListener {
                     }
                     break;
             }
-       //});
+       });
     }
 }
