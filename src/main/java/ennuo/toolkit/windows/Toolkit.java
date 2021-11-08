@@ -6,6 +6,7 @@ import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.types.FileArchive.ArchiveType;
 import ennuo.craftworld.types.savedata.FileSave;
@@ -338,8 +339,20 @@ public class Toolkit extends javax.swing.JFrame {
                     exportTextureGroupContext.setVisible(true);
                     replaceImage.setVisible(true);
                 }
-
-                if ((Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE) || (Globals.lastSelected.header.endsWith(".slt")) || (Globals.lastSelected.header.endsWith(".pck")))
+                
+                if (Globals.lastSelected.header.endsWith(".slt")) {
+                    ArrayList<Slot> slots = Globals.lastSelected.entry.getResource("slots");
+                    if (slots != null)
+                        editSlotContext.setVisible(true);
+                }
+                
+                if (Globals.lastSelected.header.endsWith(".pck")) {
+                    Pack pack = Globals.lastSelected.entry.getResource("pack");
+                    if (pack != null)
+                        editSlotContext.setVisible(true);
+                }
+                
+                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE)
                     editSlotContext.setVisible(true);
 
                 if (Globals.lastSelected.header.endsWith(".trans")) {
