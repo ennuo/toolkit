@@ -193,7 +193,7 @@ public class Mesh implements Serializable {
                 for (int i = 0; i < regionIDs.length; ++i)
                     regionIDs[i] = new byte[packSize];
                 for (int i = 0; i < packSize; ++i)
-                    for (int j = 0; j < regionIDs.length; ++i)
+                    for (int j = 0; j < regionIDs.length; ++j)
                         regionIDs[j][i] = serializer.input.i8();
                 for (int i = 0; i < regionIDs.length; ++i)
                     mesh.regionIDsToHide[i] = Bytes.toIntegerLE(regionIDs[i]);
