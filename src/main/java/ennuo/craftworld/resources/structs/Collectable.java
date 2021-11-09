@@ -1,26 +1,24 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.types.data.ResourceDescriptor;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class Collectable {
+public class Collectable implements Serializable {
     public static int MAX_SIZE = 0x15;
     
-    
-    public ResourceDescriptor item = new ResourceDescriptor();
-    public int count = 0;
-    
-    public Collectable() {}
-    public Collectable(Data data) {
-        item = data.resource(ResourceType.PLAN, true);
-        count = data.i32();
-    }
-    
-    public void serialize(Output output) {
-        output.resource(item, true);
-        output.i32(count);
+    public ResourceDescriptor item;
+    public int count;
+
+    @Override
+    public Collectable serialize(Serializer serializer, Serializable structure) {
+        Collectable collectable = (structure == null) ? new Collectable() : (Collectable) structure;
+        
+        collectable.item = serializer.resource(collectable.item, ResourceType.PLAN, true);
+        collectable.count = serializer.i32(collectable.count);
+        
+        return collectable;
     }
     
 }

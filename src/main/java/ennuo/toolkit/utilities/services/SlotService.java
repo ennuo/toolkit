@@ -3,6 +3,7 @@ package ennuo.toolkit.utilities.services;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;
@@ -19,8 +20,9 @@ public class SlotService implements ResourceService  {
             try { 
                 int count = resource.i32();
                 slots = new ArrayList<Slot>(count);
+                Serializer serializer = new Serializer(resource);
                 for (int i = 0; i < count; ++i) {
-                    Slot slot = new Slot(resource, true, false);
+                    Slot slot = serializer.struct(null, Slot.class);
                     slots.add(slot);
                     if (slot.root != null) {
                         FileEntry levelEntry = Globals.findEntry(slot.root);

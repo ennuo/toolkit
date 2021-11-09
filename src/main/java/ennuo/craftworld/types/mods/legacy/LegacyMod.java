@@ -143,7 +143,7 @@ public class LegacyMod {
             if (slotCount != 0) {
                 slots = new ArrayList<Slot>(slotCount);
                 for (int i = 0; i < slotCount; ++i)
-                    slots.add(new Slot(data, true, false));
+                    slots.add(new Serializer(data).struct(null, Slot.class));
             }
         }
         

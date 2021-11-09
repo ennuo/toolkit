@@ -13,7 +13,7 @@ public class PackPresets {
         item.contentsType = ContentsType.THEME;
         item.mesh = new ResourceDescriptor(0x6a1a, ResourceType.MESH);
         
-        item.slot.slot = new SlotID(SlotType.DLC_PACK, 0x340);
+        item.slot.id = new SlotID(SlotType.DLC_PACK, 0x340);
         
         item.slot.title = name;
         item.slot.description = description;
@@ -32,7 +32,7 @@ public class PackPresets {
         item.contentsType = ContentsType.LEVEL;
         item.mesh = new ResourceDescriptor(0x3e86, ResourceType.MESH);
         
-        item.slot.slot = new SlotID(SlotType.DLC_LEVEL, 0x66062);
+        item.slot.id = new SlotID(SlotType.DLC_LEVEL, 0x66062);
         item.slot.primaryLinkGroup = new SlotID(SlotType.DLC_PACK, 0x340);
         
         item.slot.title = name;

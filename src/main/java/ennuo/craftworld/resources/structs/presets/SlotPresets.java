@@ -16,8 +16,7 @@ public class SlotPresets {
         slotID.ID = ID;
         
         
-        slot.slot = slotID;
-        slot.group = slotID;
+        slot.id = slotID;
         slot.location = Crater.valueOf("SLOT_" + ID).value;
         
         slot.root = level;

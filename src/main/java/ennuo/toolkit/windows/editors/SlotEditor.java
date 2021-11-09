@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.structs.PackItem;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.util.Date;
@@ -100,8 +101,9 @@ public class SlotEditor extends javax.swing.JFrame {
                 if (type == EditorType.SLOTS) {
                     Output output = new Output(0x5 + Slot.MAX_SIZE * (slotInstances.size() + 1),  entry.revision);
                     output.i32(slotInstances.size());
+                    Serializer serializer = new Serializer(output);
                     for (Slot slot : slotInstances)
-                        slot.serialize(output, true, false);
+                        serializer.struct(slot, Slot.class);
                     if (output.revision == 0x3e2)
                         output.bool(false);
                     output.shrink();
@@ -206,8 +208,8 @@ public class SlotEditor extends javax.swing.JFrame {
         name.setText(slot.title);
         description.setText(slot.description);
         
-        slotID.setValue(slot.slot.ID);
-        slotTypeCombo.setSelectedItem(slot.slot.type);
+        slotID.setValue(slot.id.ID);
+        slotTypeCombo.setSelectedItem(slot.id.type);
         
         linkSlotID.setValue(slot.primaryLinkLevel.ID);
         linkSlot.setSelectedItem(slot.primaryLinkLevel.type);
@@ -1085,10 +1087,8 @@ public class SlotEditor extends javax.swing.JFrame {
         combo.setEnabled(true);
         remove.setEnabled(true);
         Slot slot = new Slot();
-        slot.slot.ID = internalCount;
-        slot.slot.type = SlotType.USER_CREATED_STORED_LOCAL;
-        slot.group.ID = internalCount;
-        slot.group.type = SlotType.USER_CREATED_STORED_LOCAL;
+        slot.id.ID = internalCount;
+        slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
         if (internalCount < 82)
             slot.location = Crater.valueOf("SLOT_" + internalCount + "_LBP" + revision).value;
         else {
@@ -1160,8 +1160,8 @@ public class SlotEditor extends javax.swing.JFrame {
         slot.developerLevelType = (LevelType) levelType.getSelectedItem();
         slot.gameMode = (GameMode) gameMode.getSelectedItem();
         
-        slot.minPlayers = (int) minPlayer.getValue();
-        slot.maxPlayers = (int) maxPlayer.getValue();
+        slot.minPlayers = (byte) minPlayer.getValue();
+        slot.maxPlayers = (byte) maxPlayer.getValue();
         slot.enforceMinMaxPlayers = enforce.isSelected();
         
         slot.authorName = author.getText();
@@ -1169,11 +1169,8 @@ public class SlotEditor extends javax.swing.JFrame {
         slot.title = name.getText();
         slot.description = description.getText();
         
-        slot.slot.type = (SlotType) slotTypeCombo.getSelectedItem();
-        slot.slot.ID = (long) slotID.getValue();
-        
-        slot.group.type = slot.slot.type;
-        slot.group.ID = slot.slot.ID;
+        slot.id.type = (SlotType) slotTypeCombo.getSelectedItem();
+        slot.id.ID = (long) slotID.getValue();
         
         slot.primaryLinkLevel.type = (SlotType) linkSlot.getSelectedItem();
         slot.primaryLinkLevel.ID = (long) linkSlotID.getValue();
@@ -1200,7 +1197,7 @@ public class SlotEditor extends javax.swing.JFrame {
         slot.isLocked = isLocked.isSelected();
         slot.copyable = isCopyable.isSelected();
         
-        slot.customBadgeSize = (int) badgeSize.getValue();
+        slot.customBadgeSize = (byte) badgeSize.getValue();
         
         if (editor == EditorType.BIG_PROFILE_SLOT) {
             dispose();

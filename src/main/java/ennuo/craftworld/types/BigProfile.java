@@ -289,8 +289,10 @@ public class BigProfile extends FileData {
     if (profile.revision > 0x33a) output.bool(fromProductionBuild);
 
     output.i32(slotCount);
-    for (Slot slot: slots)
-        slot.serialize(output, true, true);
+    for (Slot slot: slots) {
+        serializer.struct(slot.id, SlotID.class);
+        serializer.struct(slot, Slot.class);
+    }
     
     if (output.revision == 0x3e2) {
         output.i32(0); // labels
@@ -411,8 +413,10 @@ public class BigProfile extends FileData {
     
     int slotCount = profile.i32();
     slots = new ArrayList<Slot>(slotCount);
-    for (int i = 0; i < slotCount; ++i)
-      addSlotNode(new Slot(profile, true, true));
+    for (int i = 0; i < slotCount; ++i) {
+        serializer.struct(null, SlotID.class);
+        addSlotNode(serializer.struct(null, Slot.class));
+    }
     checkForSlotChanges();
 
     for (ProfileItem item : inventoryCollection) {
@@ -448,9 +452,9 @@ public class BigProfile extends FileData {
   public void checkForSlotChanges() {
       usedSlots = new boolean[82];
       for (Slot slot : slots) {
-        if (slot.slot.type == SlotType.USER_CREATED_STORED_LOCAL) {
-            if (!(slot.slot.ID > 81) && !(slot.slot.ID < 0))
-              usedSlots[(int) slot.slot.ID] = true;
+        if (slot.id.type == SlotType.USER_CREATED_STORED_LOCAL) {
+            if (!(slot.id.ID > 81) && !(slot.id.ID < 0))
+              usedSlots[(int) slot.id.ID] = true;
         }
       }
   }
@@ -508,9 +512,8 @@ public class BigProfile extends FileData {
         Crater crater = getCrater(index);
         
         Slot slot = new Slot();
-        slot.slot.ID = index;
-        slot.slot.type = SlotType.USER_CREATED_STORED_LOCAL;
-        slot.group = slot.slot;
+        slot.id.ID = index;
+        slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
         
         slot.location = crater.value;
         
@@ -584,8 +587,7 @@ public class BigProfile extends FileData {
       
       SlotID id = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, index);
       
-      slot.slot = id;
-      slot.group = id;
+      slot.id = id;
       
       slot.location = crater.value;
       

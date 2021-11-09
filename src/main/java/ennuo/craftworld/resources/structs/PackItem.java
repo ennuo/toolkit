@@ -5,6 +5,7 @@ import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.serializer.Serializer;
 import java.util.Date;
 
 public class PackItem {
@@ -22,7 +23,7 @@ public class PackItem {
     public PackItem(Data data) {
         contentsType = ContentsType.getValue(data.i32());
         mesh = data.resource(ResourceType.MESH, true);
-        slot = new Slot(data, true, false);
+        slot = new Serializer(data).struct(null, Slot.class);
         contentID = data.str8();
         timestamp = data.u32();
         if (data.revision == 0x3e2)
@@ -32,7 +33,7 @@ public class PackItem {
     public void serialize(Output output) {
         output.u8(contentsType.value);
         output.resource(mesh, true);
-        slot.serialize(output, true, false);
+        new Serializer(output).struct(slot, Slot.class);
         output.str8(contentID);
         output.u32(timestamp);
         if (output.revision == 0x3e2)
