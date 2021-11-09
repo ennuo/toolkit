@@ -164,7 +164,11 @@ public class ArchiveCallbacks {
                 FileNode node = Globals.entries.get(i);
                 if (node.entry != null) {
                     total++;
-                    byte[] data = Globals.extractFile(node.entry.SHA1);
+                    byte[] data;
+                    if (node.entry.data == null)
+                        data = Globals.extractFile(node.entry.SHA1);
+                    else
+                        data = node.entry.data;
                     if (data != null) {
                         data = (decompress) ? new Resource(data).handle.data : data;
                         String output = Paths.get(path, node.path, node.header).toString();
@@ -180,7 +184,9 @@ public class ArchiveCallbacks {
         } else {
             FileNode node = Globals.entries.get(0);
             if (node.entry != null) {
-                byte[] data = Globals.extractFile(node.entry.SHA1);
+                byte[] data = node.entry.data;
+                if (data == null)
+                    data = Globals.extractFile(node.entry.SHA1);
                 if (data != null) {
                     data = (decompress) ? new Resource(data).handle.data : data;
                     File file = Toolkit.instance.fileChooser.openFile(node.header, "", "", true);

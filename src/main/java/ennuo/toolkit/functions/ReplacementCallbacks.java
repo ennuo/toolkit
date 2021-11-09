@@ -27,7 +27,10 @@ public class ReplacementCallbacks {
             return;
         }
         
-        byte[] data = Globals.extractFile(entry.SHA1);
+        byte[] data = entry.data;
+        if (data == null)
+            data = Globals.extractFile(entry.SHA1);
+        
         byte[] newImage = null;
         if (data != null) {
             Data oldImage = new Data(Globals.extractFile(entry.SHA1));
@@ -51,7 +54,8 @@ public class ReplacementCallbacks {
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) {
-            byte[] original = Globals.extractFile(Globals.lastSelected.entry.GUID);
+            byte[] original = Globals.lastSelected.entry.data;
+            if (original == null) Globals.extractFile(Globals.lastSelected.entry.GUID);
             if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.SHA1);
             if (original == null) {
                 System.out.println("Couldn't find entry, can't replace.");
