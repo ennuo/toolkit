@@ -4,6 +4,7 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import java.util.HashMap;
 
 public class FileEntry {
@@ -17,7 +18,7 @@ public class FileEntry {
     public byte[] data = null;
 
     public FileModel dependencyModel;
-    public FileEntry[] dependencies;
+    public ResourceDescriptor[] dependencies;
     
     public boolean hasMissingDependencies = true;
     public boolean canReplaceDecompressed = false;

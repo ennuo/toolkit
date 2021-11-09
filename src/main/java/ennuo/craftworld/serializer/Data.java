@@ -25,6 +25,7 @@ public class Data {
     public int length;
     
     public int revision = 0x271;
+    public int branchDescription;
     
     /**
      * Checks if the revision of the output indicates that it should use variable length types.
@@ -50,6 +51,18 @@ public class Data {
         this.revision = revision;
     }
 
+    /**
+     * Creates a memory input stream from byte array with specified revision.
+     * @param data Byte array to use as source
+     * @param revision Revision of the stream
+     * @param branch Branch descriptor of the stream.
+     */
+    public Data(byte[] data, int revision, int branch) {
+        this.setData(data);
+        this.revision = revision;
+        this.branchDescription = branch;
+    }
+    
     /**
      * Creates a memory input stream from file at path.
      * @param path Path of the file to read

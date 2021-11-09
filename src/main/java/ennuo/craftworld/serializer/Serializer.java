@@ -12,22 +12,29 @@ import org.joml.Vector4f;
 
 public class Serializer {
     public boolean isWriting = false;
+    
     public Data input;
     public Output output;
+    
     public int revision;
+    public int branchDescription;
+    
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
+    
     private int nextReference = 1;
     
     public Serializer(Data data) {
         this.input = data;
         this.revision = data.revision;
+        this.branchDescription = data.branchDescription;
         this.isWriting = false;
     }
     
     public Serializer(Output data) {
         this.output = data;
         this.revision = data.revision;
+        this.branchDescription = data.branchDescription;
         this.isWriting = true;
     }
     

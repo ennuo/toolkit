@@ -345,11 +345,8 @@ public class MeshIO {
                         if (entry != null) {
                             materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
                             byte[] data = Globals.extractFile(entry.SHA1);
-                            if (data != null) {
-                                Resource res = new Resource(data);
-                                res.decompress(true);
-                                glPrimitive.setMaterial(glb.createMaterial(materialName, new GfxMaterial(res)));   
-                            }
+                            if (data != null) 
+                                glPrimitive.setMaterial(glb.createMaterial(materialName, new GfxMaterial(new Resource(data))));   
                             else glPrimitive.setMaterial(glb.createMaterial(materialName));
                         }
                         else  {

@@ -166,13 +166,12 @@ public class ArchiveCallbacks {
                     total++;
                     byte[] data = Globals.extractFile(node.entry.SHA1);
                     if (data != null) {
-                        Resource resource = new Resource(data);
-                        if (decompress) resource.decompress(true);
+                        data = (decompress) ? new Resource(data).handle.data : data;
                         String output = Paths.get(path, node.path, node.header).toString();
                         File file = new File(output);
                         if (file.getParentFile() != null)
                             file.getParentFile().mkdirs();
-                        if (FileIO.write(resource.data, output))
+                        if (FileIO.write(data, output))
                             success++;
                     }
                 }
@@ -183,11 +182,10 @@ public class ArchiveCallbacks {
             if (node.entry != null) {
                 byte[] data = Globals.extractFile(node.entry.SHA1);
                 if (data != null) {
-                    Resource resource = new Resource(data);
-                    if (decompress) resource.decompress(true);
+                    data = (decompress) ? new Resource(data).handle.data : data;
                     File file = Toolkit.instance.fileChooser.openFile(node.header, "", "", true);
                     if (file != null)
-                        if (FileIO.write(resource.data, file.getAbsolutePath()))
+                        if (FileIO.write(data, file.getAbsolutePath()))
                             System.out.println("Successfully extracted entry!");
                         else System.err.println("Failed to extract entry.");
                 } else System.err.println("Could not extract! Entry is missing data!");

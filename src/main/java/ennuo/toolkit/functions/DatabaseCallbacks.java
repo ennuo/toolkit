@@ -1,9 +1,11 @@
 package ennuo.toolkit.functions;
 
+import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
@@ -298,11 +300,11 @@ public class DatabaseCallbacks {
         byte[] data = Globals.extractFile(entry.GUID);
         if (data != null) {
             Resource resource = new Resource(data);
-            if (resource.magic.equals("PLNb")) {
-                resource.getDependencies(entry);
-                resource.removePlanDescriptors(entry.GUID, true);
-                Globals.addFile(resource.data);
-                duplicate.SHA1 = Bytes.SHA1(resource.data);
+            if (resource.type == ResourceType.PLAN) {
+                Plan.removePlanDescriptors(resource, entry.GUID);
+                data = resource.compressToResource();
+                Globals.addFile(data);
+                duplicate.SHA1 = Bytes.SHA1(data);
             }
         }
 

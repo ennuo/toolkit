@@ -1,299 +1,233 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.resources.enums.Metadata;
-import ennuo.craftworld.resources.enums.Metadata.CompressionType;
 import ennuo.craftworld.resources.enums.ResourceType;
-import ennuo.craftworld.resources.structs.plan.InventoryDetails;
-import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.types.mods.Mod;
+import ennuo.craftworld.resources.enums.SerializationMethod;
+import ennuo.craftworld.resources.structs.TextureInfo;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.utilities.TEA;
 import ennuo.toolkit.utilities.Globals;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.Inflater;
 
-public class Resource extends Data {
-
-    public boolean isStreamingChunk = false;
-
-    public String magic;
-    public CompressionType type;
-
-    public ResourceDescriptor[] resources = null;
-    public FileEntry[] dependencies = null;
-
-    public Resource(byte[] data) {
-        super(data);
-        if (data != null) {
-            this.magic = this.str(4);
-            if (this.magic.length() == 4 && this.magic.charAt(3) == 'b')
-                this.revision = this.i32f();
-            this.type = Metadata.getType(this.magic, this.revision);   
-            this.seek(0);
-        }
-    }
-
-
-    // TODO: Actually finish this function, I can serialize the metadata, yes, but //
-    // I also need to make sure no dependencies are duplicated in the dependency table, //
-    // but I also need to make sure none are removed if they do exist elsewhere. //
-    public void replaceMetadata(InventoryDetails data, boolean compressed) {
-        return;
-    }
-
-    public void removePlanDescriptors(long GUID, boolean compressed) {
-        if (!magic.equals("PLNb")) return;
-        if (compressed)
-            decompress(true);
-
-
-        if (peek() == 1 || peek() == 0) bool();
-        i32();
-
-        int start = offset;
-        seek(0);
-
-        byte[] left = bytes(start);
-
-        int size = i32();
-
-        Data thingData = new Data(bytes(size), revision);
-
-        byte[] right = bytes(length - offset);
-
-        Output output = new Output(0x8, revision);
-        output.u32(GUID);
+public class Resource {
+    public ResourceType type = ResourceType.INVALID;
+    public SerializationMethod method = SerializationMethod.UNKNOWN;
+    public TextureInfo textureInfo;
+    public int revision = 0x132;
+    public int branchDescription = 0;
+    private boolean unknownFlag = true;
+    public byte compressionFlags = 0x7;
+    public Data handle = null;
+    public ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
+    
+    public Resource(){}
+    
+    public Resource(Output output) {
         output.shrink();
-
-        Bytes.ReplaceAll(thingData, Bytes.createResourceReference(new ResourceDescriptor(GUID, ResourceType.PLAN), revision), new byte[] { 00 });
-        Bytes.ReplaceAll(thingData, output.buffer, new byte[] { 00 });
-
-        Output sb = new Output(6, revision);
-        sb.i32(thingData.data.length);
-        sb.shrink();
-
-        setData(Bytes.Combine(
-            left,
-            sb.buffer,
-            thingData.data,
-            right
-        ));
-
-        if (compressed)
-            setData(Compressor.Compress(data, magic, revision, resources));
-    }
-
-    public void replaceDependency(int index, ResourceDescriptor replacement, boolean compressed) {
-        ResourceDescriptor dependency = resources[index];
-        if (dependency == null || (dependency.GUID == -1 && dependency.hash == null) || dependencies.length == 0) return;
-
-        int tRevision = revision;
-        if (magic.equals("SMHb")) tRevision = 0x271;
-
-        byte[] oldRes = Bytes.createResourceReference(dependency, tRevision);
-        byte[] newRes = Bytes.createResourceReference(replacement, tRevision);
-
-        if (Arrays.equals(oldRes, newRes)) return;
-
-
-        if (compressed)
-            decompress(true);
-
-        Data data = this;
-
-        if (magic.equals("PLNb")) {
-
-            if (data.peek() == 1 || data.peek() == 0 || isStreamingChunk) data.bool();
-            data.i32();
-
-            int start = data.offset;
-
-            data.seek(0);
-
-            byte[] left = data.bytes(start);
-
-            int size = data.i32();
-
-            Data thingData = new Data(data.bytes(size), revision);
-
-            byte[] right = data.bytes(data.length - data.offset);
-
-
-            Bytes.ReplaceAll(thingData, oldRes, newRes);
-
-            Output output = new Output(6, revision);
-            output.i32(thingData.data.length);
-            output.shrink();
-
-
-            setData(Bytes.Combine(
-                left,
-                output.buffer,
-                thingData.data,
-                right
-            ));
-
-        }
-
-        Bytes.ReplaceAll(data, oldRes, newRes);
-
-        resources[index] = replacement;
-
-        if (compressed)
-            setData(Compressor.Compress(data.data, magic, revision, resources));
+        this.revision = output.revision;
+        this.branchDescription = output.branchDescription;
+        this.dependencies = output.dependencies.toArray(
+                new ResourceDescriptor[output.dependencies.size()]);
+        this.method = SerializationMethod.BINARY;
+        this.handle = new Data(output.buffer, output.revision, output.branchDescription);
     }
     
-    public Mod recurse(FileEntry entry) {
-        Mod mod = new Mod();
-        Bytes.recurse(mod, this, entry);
-        return mod;
+    public Resource(String path) {
+        this.handle = new Data(path);
+        this.process();
     }
-
-    public Mod hashinate(FileEntry entry) {
-        Mod mod = new Mod();
-        Bytes.hashinate(mod, this, entry);
-        return mod;
+    
+    public Resource(byte[] data) {
+        this.handle = new Data(data);
+        this.process();
     }
-
-    public int getDependencies(FileEntry entry) {
-        return getDependencies(entry, true);
+    
+    private void process() {
+        if (this.handle == null || this.handle.length < 0xb) return;
+        this.type = ResourceType.fromMagic(this.handle.str(3));
+        if (this.type == ResourceType.INVALID || this.type == ResourceType.STATIC_MESH) { this.handle.seek(0); return; }
+        this.method = SerializationMethod.getValue(this.handle.str(1));
+        if (this.method == SerializationMethod.UNKNOWN) { this.handle.seek(0); return; }
+        switch (this.method) {
+            case BINARY:
+            case ENCRYPTED_BINARY:
+                this.revision = this.handle.i32f();
+                this.handle.revision = this.revision;
+                if (this.revision >= 0x109) {
+                    this.getDependencies();
+                    if (this.revision >= 0x189) {
+                        if (this.revision >= 0x271) { 
+                            // NOTE(Abz): Were they actually added on 0x27a, but how can it be on 0x272 then?!
+                            // Damn you Alex Evans!
+                            this.branchDescription = this.handle.i32f();
+                            this.handle.branchDescription = this.branchDescription;
+                        }
+                        if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0))
+                            this.compressionFlags = this.handle.i8();
+                        this.unknownFlag = this.handle.bool();
+                    }
+                }
+                if (this.method == SerializationMethod.ENCRYPTED_BINARY) {
+                    int size = this.handle.i32f();
+                    this.handle.setData(TEA.decrypt(this.handle.bytes(size)));
+                }
+                Compressor.decompressData(this.handle);
+                break;
+            case TEXT:
+                this.handle.setData(this.handle.bytes(this.handle.length - 4));
+                break;
+            case TEXTURE:
+            case GXT_SIMPLE:
+            case GXT_EXTENDED:
+                if (this.type != ResourceType.TEXTURE)
+                    this.textureInfo = new TextureInfo(this.handle, this.method);
+                Compressor.decompressData(this.handle);
+                break;
+        }
     }
-    public int getDependencies(FileEntry entry, boolean recursive) {
-        if (type != CompressionType.CUSTOM_COMPRESSION && type != CompressionType.CUSTOM_COMPRESSION_LEGACY && type != CompressionType.STATIC_MESH)
-            return 0;
-
-        ResourceDescriptor self = new ResourceDescriptor();
-        if (entry.GUID != -1) self.GUID = entry.GUID;
-        else self.hash = entry.SHA1;
-
-        entry.canReplaceDecompressed = true;
+    
+    public int registerDependencies(boolean recursive) {
+        if (this.method != SerializationMethod.BINARY) return 0;
         int missingDependencies = 0;
-        seek(8);
-        int tableOffset = i32f();
-        seek(tableOffset);
-        int dependencyCount = i32f();
-        if (dependencies == null || dependencyCount != dependencies.length)
-            dependencies = new FileEntry[dependencyCount];
-        resources = new ResourceDescriptor[dependencyCount];
-        for (int i = 0; i < dependencyCount; i++) {
-            resources[i] = new ResourceDescriptor();
-            switch (i8()) {
-                case 1:
-                    byte[] hash = bytes(20);
-                    resources[i].hash = hash;
-                    dependencies[i] = Globals.findEntry(hash);
-                    break;
-                case 2:
-                    long GUID = u32f();
-                    resources[i].GUID = GUID;
-                    dependencies[i] = Globals.findEntry(GUID);
-                    break;
+        for (ResourceDescriptor dependency : this.dependencies) {
+            FileEntry entry = Globals.findEntry(dependency);
+            if (entry == null) {
+                missingDependencies++;
+                continue;
             }
-            if (dependencies[i] == null) missingDependencies++;
-            ResourceType type = ResourceType.fromType(i32f());
-            resources[i].type = type;
-            if (type != ResourceType.SCRIPT && type != ResourceType.FILENAME && type != ResourceType.FILE_OF_BYTES) {
-                if (dependencies[i] != null && entry != null && recursive && !self.equals(resources[i])) {
-                    byte[] data = Globals.extractFile(dependencies[i].SHA1);
-                    if (data != null) {
-                        Resource resource = new Resource(data);
-                        if (resource.magic.equals("FSHb")) continue;
-                        resource.getDependencies(dependencies[i]);
-                        dependencies[i].dependencies = resource.dependencies;
+            if (recursive && this.type != ResourceType.SCRIPT) {
+                byte[] data = Globals.extractFile(dependency);
+                if (data != null) {
+                    Resource resource = new Resource(data);
+                    if (resource.method == SerializationMethod.BINARY) {
+                        entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
+                        entry.canReplaceDecompressed = true;
+                        entry.dependencies = resource.dependencies; 
                     }
                 }
             }
         }
-        seek(0);
         return missingDependencies;
     }
-
-    public byte[] decompress() {
-        return decompress(false);
+    
+    public void replaceDependency(int index, ResourceDescriptor newDescriptor) {
+        ResourceDescriptor oldDescriptor = this.dependencies[index];
+        
+        byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision);
+        byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision);
+        
+        if (Arrays.equals(oldDescBuffer, newDescBuffer)) return;
+        
+        if (this.type == ResourceType.PLAN) {
+            Plan plan = new Plan(this);
+            Data thingData = new Data(plan.thingData, this.revision, this.branchDescription);
+            Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
+            plan.thingData = thingData.data;
+            this.handle.setData(plan.build(false));
+        }
+        Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
+        
+        this.dependencies[index] = newDescriptor;
     }
     
-    public byte[] decompress(boolean set) {
-        if (type == CompressionType.STATIC_MESH) {
-            seek(0x8);
-            int dep = i32f();
-            i8();
-            byte[] data = bytes(dep - offset);
-            if (set)
-                this.setData(data);
-            return data;
-        }
-
-        switch (type) {
-            case LEGACY_TEXTURE:
-                seek(6);
-                break;
-            case GTF_TEXTURE:
-            case GXT_SIMPLE_TEXTURE:
-                seek(30);
-                break;
-            case GXT_EXTENDED_TEXTURE:
-                seek(50);
-                break;
-            case CUSTOM_COMPRESSION:
-                if (data[16] == 1) seek(19);
-                else seek(20);
-                break;
-            case CUSTOM_COMPRESSION_LEGACY:
-                if (revision <= 0x188) seek(14);
-                else seek(15);
-                break;
-            default:
-                return null;
-        }
-
-        short chunks = i16();
-
-        if (chunks == 0) {
-            int old = offset;
-            seek(8);
-            int tableOffset = i32f();
-            seek(old);
-            byte[] data = bytes(tableOffset - offset);
-            if (set) setData(data);
-            return data;
-        }
-
-        int[] compressed = new int[chunks];
-        int[] decompressed = new int[chunks];
-        int decompressedSize = 0;
-        for (int i = 0; i < chunks; i++) {
-            compressed[i] = u16();
-            decompressed[i] = u16();
-            decompressedSize += decompressed[i];
-        }
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(decompressedSize);
-        try {
-            for (int j = 0; j < chunks; j++) {
-                if (compressed[j] == decompressed[j]) {
-                    stream.write(bytes(compressed[j]));
-                    continue;
-                }
-                Inflater decompressor = new Inflater();
-                decompressor.setInput(bytes(compressed[j]));
-                byte[] chunk = new byte[decompressed[j]];
-                decompressor.inflate(chunk);
-                decompressor.end();
-                stream.write(chunk);
+    private void getDependencies() {
+        int dependencyTableOffset = this.handle.i32f();
+        int originalOffset = this.handle.offset;
+        this.handle.offset = dependencyTableOffset;
+        
+        this.dependencies = new ResourceDescriptor[this.handle.i32f()];
+        for (int i = 0; i < this.dependencies.length; ++i) {
+            ResourceDescriptor descriptor = new ResourceDescriptor();
+            switch (this.handle.i8()) {
+                case 1:
+                    descriptor.hash = this.handle.bytes(0x14);
+                    break;
+                case 2:
+                    descriptor.GUID = this.handle.u32f();
+                    break;
             }
-        } catch (IOException | java.util.zip.DataFormatException ex) {
-            Logger.getLogger(Data.class.getName()).log(Level.SEVERE, (String) null, ex);
-            setData(null);
-            return null;
+            descriptor.type = ResourceType.fromType(this.handle.i32f());
+            this.dependencies[i] = descriptor;
         }
-        byte[] data = stream.toByteArray();
-        if (set) setData(stream.toByteArray());
-        return data;
+        
+        this.handle.offset = originalOffset;
+    }
+    
+    public static byte[] compressToResource(byte[] data, int revision, int branch, ResourceType type, ResourceDescriptor[] dependencies) {
+        Resource resource = new Resource();
+        resource.handle = new Data(data, revision, branch);
+        resource.revision = revision;
+        resource.branchDescription = branch;
+        resource.type = type;
+        if (resource.type == ResourceType.LOCAL_PROFILE)
+            resource.method = SerializationMethod.ENCRYPTED_BINARY;
+        else resource.method = SerializationMethod.BINARY;
+        resource.dependencies = dependencies;
+        return resource.compressToResource();
+    }
+    
+    public static byte[] compressToResource(Output data, ResourceType type) {
+        Resource resource = new Resource(data);
+        resource.type = type;
+        if (type == ResourceType.LOCAL_PROFILE)
+            resource.method = SerializationMethod.ENCRYPTED_BINARY;
+        return resource.compressToResource();
+    }
+    
+    public byte[] compressToResource() {
+        if (this.type == ResourceType.STATIC_MESH) return this.handle.data;
+        Output output = new Output(this.dependencies.length * 0x1c + this.handle.length + 0x20);
+        
+        if (this.method == SerializationMethod.TEXT) {
+            output.str(this.type.header + this.method.value + '\n');
+            output.bytes(this.handle.data);
+            output.shrink();
+            return output.buffer;
+        }
+        
+        output.str(this.type.header + this.method.value);
+        output.i32f(this.revision);
+        if (this.revision >= 0x109) {
+            output.i32f(0); // Dummy value for dependency table offset.
+            if (this.revision >= 0x189) {
+                if (this.revision >= 0x271) output.i32f(this.branchDescription);
+                if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0))
+                    output.i8(this.compressionFlags);
+                output.bool(this.unknownFlag);
+            }
+            
+            byte[] compressedStream = Compressor.getCompressedStream(this.handle.data);
+            if (this.method != SerializationMethod.ENCRYPTED_BINARY)
+                output.bytes(compressedStream);
+            else {
+                byte[] encryptedStream = TEA.encrypt(compressedStream);
+                output.i32f(encryptedStream.length);
+                output.bytes(encryptedStream);
+            }
+            
+            int dependencyTableOffset = output.offset;
+            output.offset = 0x8;
+            output.i32f(dependencyTableOffset);
+            output.offset = dependencyTableOffset;
+            
+            output.i32f(this.dependencies.length);
+            for (ResourceDescriptor dependency : this.dependencies) {
+                if (dependency.GUID != -1) {
+                    output.i8((byte) 2);
+                    output.u32f(dependency.GUID);
+                } else if (dependency.hash != null) {
+                    output.i8((byte) 1);
+                    output.bytes(dependency.hash);
+                }
+                output.i32f(dependency.type.value);
+            }
+        }
+        
+        output.shrink();
+        return output.buffer;
     }
 }

@@ -1,11 +1,13 @@
 package ennuo.craftworld.utilities;
 
+import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.mods.Mod;
@@ -298,6 +300,7 @@ public class Bytes {
         }
     }
 
+    /*
     public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, FileEntry entry) {
         byte[] left = resource.bytes(0x36);
         int planSize = resource.i32f();
@@ -319,7 +322,7 @@ public class Bytes {
                 else data = Globals.extractFile(res.GUID);
                 if (data == null) continue;
                 Resource dependency = new Resource(data);
-                plan.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, plan.dependencies[i]), res.type), false);
+                plan.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, plan.dependencies[i]), res.type));
             }
         }
 
@@ -340,65 +343,69 @@ public class Bytes {
         mod.add("streaming/" + Bytes.toHex(SHA1).toLowerCase(), result);
         return SHA1;
     }
+    */
     
     public static void recurse(Mod mod, Resource resource, FileEntry entry) {
-        if (resource.dependencies == null || resource.resources == null)
-            resource.getDependencies(entry);
-        if (resource.resources != null)
-            for (int i = 0; i < resource.resources.length; ++i) {
-                ResourceDescriptor res = resource.resources[i];
-                if (res == null || res.type == ResourceType.SCRIPT) continue;
-                byte[] data = Globals.extractFile(res);
-                if (data == null) continue;
-                recurse(mod, new Resource(data), resource.dependencies[i]);
-            }
-        mod.add(entry.path, resource.data, entry.GUID);
+        for (int i = 0; i < resource.dependencies.length; ++i) {
+            ResourceDescriptor res = resource.dependencies[i];
+            if (res == null || res.type == ResourceType.SCRIPT) continue;
+            byte[] data = Globals.extractFile(res);
+            if (data == null) continue;
+            Resource dependency = new Resource(data);
+            if (dependency.method != SerializationMethod.BINARY)
+                mod.add(entry.path, data, entry.GUID);
+            else recurse(mod, new Resource(data), Globals.findEntry(res));
+        }
+        if (resource.method == SerializationMethod.BINARY)
+            mod.add(entry.path, resource.compressToResource(), entry.GUID);
     }
 
     public static byte[] hashinate(Mod mod, Resource resource, FileEntry entry) {
-        boolean isBin = entry.path.toLowerCase().contains(".bin");
-        if (resource.dependencies == null || resource.resources == null)
-            resource.getDependencies(entry);
-        if (resource.resources != null && resource.resources.length != 0) {
-            resource.decompress(true);
-            for (int i = 0; i < resource.resources.length; ++i) {
-                ResourceDescriptor res = resource.resources[i];
+        if (resource.method == SerializationMethod.BINARY) {
+            for (int i = 0; i < resource.dependencies.length; ++i) {
+                ResourceDescriptor res = resource.dependencies[i];
+                FileEntry dependencyEntry = Globals.findEntry(res);
                 if (res == null) continue;
                 if (res.type == ResourceType.SCRIPT) continue;
-                if (res.type == ResourceType.PLAN && res.GUID != -1) resource.removePlanDescriptors(res.GUID, false);
+                if (res.type == ResourceType.PLAN && res.GUID != -1) Plan.removePlanDescriptors(resource, res.GUID);
+                /*
                 if (res.type == ResourceType.STREAMING_CHUNK) {
                     if (res.GUID == -1) continue;
-                    String name = new File(resource.dependencies[i].path).getName();
+                    String name = new File(dependencyEntry.path).getName();
                     File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
                     if (file == null) continue;
                     byte[] data = FileIO.read(file.getAbsolutePath());
                     BigProfile profile = new BigProfile(new Data(data), true);
                     for (FileEntry e: profile.entries) {
                         int index = -1;
-                        for (int j = 0; j < resource.resources.length; ++j) {
-                            if (Arrays.equals(resource.resources[j].hash, e.SHA1)) {
+                        for (int j = 0; j < resource.dependencies.length; ++j) {
+                            if (Arrays.equals(resource.dependencies[j].hash, e.SHA1)) {
                                 index = j;
                                 break;
                             }
                         }
                         if (index != -1)
-                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK), false);
+                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK));
                     }
-                    resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK), false);
+                    resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK));
                     continue;
                 }
-                byte[] data;
-                if (res.hash != null) data = Globals.extractFile(res.hash);
-                else data = Globals.extractFile(res.GUID);
+                */
+                
+                byte[] data = Globals.extractFile(res);
                 if (data == null) continue;
                 Resource dependency = new Resource(data);
-                resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, resource.dependencies[i]), res.type), false);
+                
+                if (dependency.method == SerializationMethod.BINARY)
+                    resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
+                else mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
             }
-            resource.removePlanDescriptors(entry.GUID, false);
-            resource.setData(Compressor.Compress(resource.data, resource.magic, resource.revision, resource.resources));
+            Plan.removePlanDescriptors(resource, entry.GUID);
+            byte[] data = resource.compressToResource();
+            mod.add(entry.path, data, entry.GUID);
+            return Bytes.SHA1(data);
         }
-        mod.add(entry.path, resource.data, entry.GUID);
-        return Bytes.SHA1(resource.data);
+        return new byte[0x14];
     }
 
     public static Vector3f decodeI32(long value) {

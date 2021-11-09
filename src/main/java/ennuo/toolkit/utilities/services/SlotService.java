@@ -2,6 +2,7 @@ package ennuo.toolkit.utilities.services;
 
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.util.ArrayList;
@@ -14,8 +15,7 @@ public class SlotService implements ResourceService  {
     public void process(JTree tree, FileEntry entry, byte[] data) {
         ArrayList<Slot> slots = entry.getResource("slots");
         if (slots == null) {
-            Resource resource = new Resource(data);
-            resource.decompress(true);
+            Data resource = new Resource(data).handle;
             try { 
                 int count = resource.i32();
                 slots = new ArrayList<Slot>(count);

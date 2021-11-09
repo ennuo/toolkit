@@ -2,6 +2,8 @@ package ennuo.toolkit.utilities;
 
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.FileEntry;
@@ -74,18 +76,20 @@ public class TreeSelectionListener {
                         (extractedData[3] & 0xFF) << 0;
             
             Resource resource = new Resource(extractedData);
+            if (resource.method == SerializationMethod.BINARY && resource.type != ResourceType.STATIC_MESH)
+                entry.canReplaceDecompressed = true;
             entry.revision = resource.revision;
+            entry.dependencies = resource.dependencies;
             
             if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
                 FileModel model = new FileModel(new FileNode("x", null, entry));
-                boolean recursive = !(resource.magic.equals("PCKb") || 
-                                    resource.magic.equals("SLTb") || 
-                                    resource.magic.equals("LVLb") || 
-                                    resource.magic.equals("ADCb") || 
-                                    resource.magic.equals("PALb"));
+                boolean recursive = !(resource.type == ResourceType.PACKS || 
+                                    resource.type == ResourceType.SLOT_LIST || 
+                                    resource.type == ResourceType.LEVEL || 
+                                    resource.type == ResourceType.ADVENTURE_CREATE_PROFILE || 
+                                    resource.type == ResourceType.PALETTE);
                 
-                entry.hasMissingDependencies = resource.getDependencies(entry, recursive) != 0;
-                entry.dependencies = resource.dependencies;
+                entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
                 
                 toolkit.generateDependencyTree(entry, model);
                 entry.dependencyModel = model;

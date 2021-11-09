@@ -81,9 +81,7 @@ public class Mesh implements Serializable {
     public Mesh(){}
     public Mesh(String name, byte[] data) {
         this.name = name;
-        Resource resource = new Resource(data);
-        resource.decompress(true);
-        Serializer serializer = new Serializer(resource);
+        Serializer serializer = new Serializer(new Resource(data).handle);
         this.serialize(serializer, this);
     }
 
@@ -222,8 +220,7 @@ public class Mesh implements Serializable {
         if (this.triangles != null) dataSize += this.triangles.length;
         Serializer serializer = new Serializer(dataSize, revision);
         this.serialize(serializer, this);
-        return Compressor.Compress(serializer.getBuffer(), "MSHb", revision, 
-                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
+        return Resource.compressToResource(serializer.output, ResourceType.MESH);    
     }
     
     public MeshPrimitive[][] getSubmeshes() {

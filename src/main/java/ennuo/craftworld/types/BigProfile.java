@@ -1,7 +1,6 @@
 package ennuo.craftworld.types;
 
 import ennuo.craftworld.utilities.Bytes;
-import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.Images;
@@ -31,6 +30,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
+// I really want to burn this class.
+// It's so messy! Why is it reimplementing a FAR4/5!
 public class BigProfile extends FileData {
   public boolean isParsed = false;
   public FileEntry profile;
@@ -122,11 +123,15 @@ public class BigProfile extends FileData {
       int size = data.i32f();
       lastOffset += size;
       data.seek(offset);
-      Resource resource = new Resource(data.bytes(size));
-      FileEntry entry = new FileEntry(resource.data, sha1); entry.timestamp = 0;
+      byte[] dataBuffer  = data.bytes(size);
+      int resMagic = (dataBuffer[0] & 0xFF) << 24 | 
+            (dataBuffer[1] & 0xFF) << 16 | 
+            (dataBuffer[2] & 0xFF) << 8 | 
+            (dataBuffer[3] & 0xFF) << 0;
+      FileEntry entry = new FileEntry(dataBuffer, sha1); entry.timestamp = 0;
       entry.offset = offset;
       entry.size = size;
-      if (resource.magic.equals("BPRb")) { profile = entry; } 
+      if (resMagic == 0x42505262) { profile = entry; } 
       else { entries.add(entry); if (!isStreamingChunk) addNode(entry); }
     }
     if (!isStreamingChunk) {
@@ -138,8 +143,7 @@ public class BigProfile extends FileData {
   }
 
   public FileNode addNode(FileEntry entry) {
-    Resource resource = new Resource(entry.data);
-    String extension = resource.magic.substring(0, 3).toLowerCase();
+    String extension = new String(new byte[] { entry.data[0], entry.data[1], entry.data[2] });
     switch (extension) {
     case "ÿøÿ":
     case "jfi":
@@ -187,8 +191,10 @@ public class BigProfile extends FileData {
     int itemCount = inventoryCollection.size();
     int stringCount = stringCollection.size();
     int slotCount = slots.size();
-
-    Output output = new Output((InventoryDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, new Resource(profile.data).revision);
+    Resource biggestProfile = new Resource(profile.data);
+    
+    
+    Output output = new Output((InventoryDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, biggestProfile.revision, biggestProfile.branchDescription);
 
     output.i32(itemCount);
     Serializer serializer = new Serializer(output);
@@ -303,7 +309,7 @@ public class BigProfile extends FileData {
     ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
     dependencies = output.dependencies.toArray(dependencies);
 
-    profile.data = Compressor.Compress(output.buffer, "BPRb", output.revision, dependencies);
+    profile.data = Resource.compressToResource(output, ResourceType.BIG_PROFILE);
     profile.size = profile.data.length;
     profile.SHA1 = Bytes.SHA1(profile.data);
 
@@ -329,8 +335,7 @@ public class BigProfile extends FileData {
   }
 
   private void parseProfile() {
-    Resource profile = new Resource(this.profile.data);
-    profile.decompress(true);
+    Data profile = new Resource(this.profile.data).handle;
     this.profile.revision = profile.revision;
     
     if (profile.revision > 0x010503EF) revision = 3;
@@ -479,10 +484,9 @@ public class BigProfile extends FileData {
     
     shouldSave = true;
     
-    if (resource.magic.equals("PLNb")) {
+    if (resource.type == ResourceType.PLAN) {
         if (parse) {
-        resource.decompress(true);
-        Serializer serializer = new Serializer(resource);
+        Serializer serializer = new Serializer(resource.handle);
         Plan item = serializer.struct(null, Plan.class);
         InventoryDetails metadata = null;
         if (item != null) metadata = item.details;
@@ -492,7 +496,7 @@ public class BigProfile extends FileData {
         return;
     }
     
-    if (resource.magic.equals("LVLb")) {
+    if (resource.type == ResourceType.LEVEL) {
         if (parse) {
         checkForSlotChanges();
         int index = getNextSlot(); 

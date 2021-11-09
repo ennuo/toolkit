@@ -1,10 +1,9 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.resources.enums.Metadata;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
@@ -27,17 +26,20 @@ public class ReplacementCallbacks {
             System.err.println("Image was null, cancelling replacement operation.");
             return;
         }
-
-        Resource oldImage = new Resource(Globals.extractFile(entry.SHA1));
-
-        Resource newImage = null;
-        if (oldImage.type == Metadata.CompressionType.GTF_TEXTURE)
-            newImage = Images.toGTF(image);
-        else if ((oldImage.type == null && oldImage.data == null) || oldImage.type == Metadata.CompressionType.LEGACY_TEXTURE)
-            newImage = Images.toTEX(image);
+        
+        byte[] data = Globals.extractFile(entry.SHA1);
+        byte[] newImage = null;
+        if (data != null) {
+            Data oldImage = new Data(Globals.extractFile(entry.SHA1));
+            String magic = oldImage.str(3);
+            if (magic == "GTF")
+                newImage = Images.toGTF(image);
+            else if (magic == "TEX")
+                newImage = Images.toTEX(image);
+        } else newImage = Images.toTEX(image);
 
         if (newImage != null) {
-            Globals.replaceEntry(entry, newImage.data);
+            Globals.replaceEntry(entry, newImage);
             return;
         }
 
@@ -56,8 +58,8 @@ public class ReplacementCallbacks {
                 return;
             }
             Resource resource = new Resource(original);
-            resource.getDependencies(Globals.lastSelected.entry);
-            byte[] out = Compressor.Compress(data, resource.magic, resource.revision, resource.resources);
+            resource.handle.setData(data);
+            byte[] out = resource.compressToResource();
             if (out == null) {
                 System.err.println("Error occurred when compressing data.");
                 return;

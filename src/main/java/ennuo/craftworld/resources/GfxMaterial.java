@@ -42,8 +42,8 @@ public class GfxMaterial implements Serializable {
     public ParameterAnimation[] parameterAnimations;
     
     public GfxMaterial() {}
-    public GfxMaterial(Data data) {
-        Serializer serializer = new Serializer(data);
+    public GfxMaterial(Resource resource) {
+        Serializer serializer = new Serializer(resource.handle);
         this.serialize(serializer, this);
     }
     
@@ -137,8 +137,7 @@ public class GfxMaterial implements Serializable {
             dataSize += shader.length;
         Serializer serializer = new Serializer(dataSize, revision);
         this.serialize(serializer, this);
-        return Compressor.Compress(serializer.getBuffer(), "GMTb", revision, 
-                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
+        return Resource.compressToResource(serializer.output, ResourceType.GFX_MATERIAL);      
     }
     
     public Wire findWireFrom(int box) {

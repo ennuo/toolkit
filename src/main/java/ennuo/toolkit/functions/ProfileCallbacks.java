@@ -23,7 +23,7 @@ public class ProfileCallbacks {
         File file = Toolkit.instance.fileChooser.openFile("profile.bpr", "bpr", "Big Profile", true);
         if (file == null) return;
         BigProfile save = (BigProfile) Toolkit.instance.getCurrentDB();
-        FileIO.write(new Resource(save.profile.data).decompress(), file.getAbsolutePath());
+        FileIO.write(new Resource(save.profile.data).handle.data, file.getAbsolutePath());
     }
     
     public static void addKey() {                                       

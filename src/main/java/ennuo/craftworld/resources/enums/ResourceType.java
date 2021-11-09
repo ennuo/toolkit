@@ -81,6 +81,8 @@ public enum ResourceType {
     }
     
     public static ResourceType fromMagic(String value) {
+        if (value.length() > 3)
+            value = value.substring(0, 3);
         for (ResourceType type : ResourceType.values()) {
             if (type.header == null) continue;
             if (type.header.equals(value)) 

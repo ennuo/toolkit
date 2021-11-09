@@ -12,9 +12,7 @@ public class AnimationService implements ResourceService  {
     public void process(JTree tree, FileEntry entry, byte[] data) {
         Animation animation = entry.getResource("animation");
         if (animation == null) {
-            Resource resource = new Resource(data);
-            resource.decompress(true);
-            try { animation = new Animation(resource); entry.setResource("animation", animation); }
+            try { animation = new Animation(new Resource(data).handle); entry.setResource("animation", animation); }
             catch (Exception e) { System.err.println("There was an error processing RAnimation file."); }
         }
     }

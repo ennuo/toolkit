@@ -3,7 +3,8 @@ package ennuo.craftworld.resources;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.resources.enums.Metadata.CompressionType;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.TextureInfo;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class Texture {
     public static int[] DDSPF_B8 = { 0x20, DDS_LUMINANCE, 0, 8, 0, 0, 0x000000ff, 0 };
     public static int[] DDSPF_A1R5G5B5 = { 0x20, DDS_RGBA, 0, 16, 0x00007c00, 0x000003e0, 0x0000001f, 0x00008000 };
     
-    private int type, width, height, mipCount;
+    public TextureInfo info;
     public byte[] data;
 
     public BufferedImage cached;
@@ -49,12 +50,14 @@ public class Texture {
             return;
         }
         
-        Resource resource = new Resource(data);
-        int magic = resource.i24();
-        resource.offset = 0;
+        int magic = (data[0] & 0xFF) << 24 | 
+                    (data[1] & 0xFF) << 16 | 
+                    (data[2] & 0xFF) << 8 | 
+                    (data[3] & 0xFF) << 0;
+        
         switch (magic) {
-            case 0xffd8ff:
-            case 0x89504e:
+            case 0xffd8ffe0:
+            case 0x89504e47:
                 InputStream stream = new ByteArrayInputStream(data);
                 try {
                     this.cached = ImageIO.read(stream);
@@ -65,25 +68,26 @@ public class Texture {
                     this.parsed = false;
                 }
                 return;
-            case 0x444453:
+            case 0x44445320:
                 this.cached = Images.fromDDS(data);
                 this.parsed = true;
                 return;
         }
 
-        if (resource.type == null) this.parsed = false;
+        Resource resource = new Resource(data);
+        this.info = resource.textureInfo;
+        if (resource.type == ResourceType.INVALID) this.parsed = false;
         else switch (resource.type) {
-            case LEGACY_TEXTURE:
+            case TEXTURE:
                 System.out.println("Decompressing TEX to DDS");
-                this.data = resource.decompress(true);
+                this.data = resource.handle.data;
                 this.cached = Images.fromDDS(this.data);
                 break;
             case GTF_TEXTURE:
                 System.out.println("Converting GTF texture to DDS");
                 this.parseGTF(resource);
                 break;
-            case GXT_SIMPLE_TEXTURE:
-            case GXT_EXTENDED_TEXTURE:
+            case GXT_TEXTURE:
                 System.out.println("Converting GXT texture to DDS.");
                 System.out.println("Unswizzling isn't correctly implemented, so this will probably be broken!");
                 this.parseGXT(resource);
@@ -99,26 +103,11 @@ public class Texture {
      * @param gxt GXT resource instance
      */
     public void parseGXT(Resource gxt) {
-        if (gxt.type == CompressionType.GXT_SIMPLE_TEXTURE) {
-            gxt.seek(0x4); // Skip magic
-            this.type = gxt.i8() & 0xFF;
-            this.mipCount = gxt.i8() & 0xFF;
-            gxt.seek(0xC); // Skip to W/H
-        } else {
-            gxt.seek(0x18); // Skip non-necessary information
-            this.type = gxt.i8() & 0xFF;
-            this.mipCount = gxt.i8() & 0xFF;
-            gxt.seek(0x20); // Skip to W/H
-        }
-        this.width = gxt.i16();
-        this.height = gxt.i16();
         byte[] header = this.getDDSHeader();
         
-        gxt.decompress(true);
-        
-        byte[] DDS = new byte[gxt.data.length + header.length];
+        byte[] DDS = new byte[gxt.handle.data.length + header.length];
         System.arraycopy(header, 0, DDS, 0, header.length);
-        System.arraycopy(gxt.data, 0, DDS, header.length, gxt.length);
+        System.arraycopy(gxt.handle.data, 0, DDS, header.length, gxt.handle.length);
         
         this.data = DDS;
         
@@ -134,22 +123,14 @@ public class Texture {
      * @param gtf GTF resource instance
      */
     public void parseGTF(Resource gtf) {
-        gtf.seek(4); // Skip the magic header.
-        this.type = gtf.i8() & 0xFF;
-        this.mipCount = gtf.i8() & 0xFF;
-        gtf.forward(6); // We don't need either dimension or remap fields
-        this.width = gtf.i16();
-        this.height = gtf.i16();
         byte[] header = this.getDDSHeader();
         
-        gtf.decompress(true);
-        
-        byte[] DDS = new byte[gtf.data.length + header.length];
+        byte[] DDS = new byte[gtf.handle.data.length + header.length];
         System.arraycopy(header, 0, DDS, 0, header.length);
-        System.arraycopy(gtf.data, 0, DDS, header.length, gtf.length);
+        System.arraycopy(gtf.handle.data, 0, DDS, header.length, gtf.handle.length);
         
         this.data = DDS;
-        if (this.type == 0x85 || this.type == 0x81) 
+        if (this.info.format == 0x85 || this.info.format == 0x81) 
             this.unswizzle();
         else this.cached = this.getImage();
     }
@@ -160,9 +141,9 @@ public class Texture {
     public void unswizzle() {
         int[] pixels = DDSReader.read(this.data, DDSReader.ARGB, 0);
         pixels = this.unswizzleData(pixels);
-        this.cached = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+        this.cached = new BufferedImage(this.info.width, this.info.height, BufferedImage.TYPE_INT_ARGB);
         if (this.cached != null)
-            this.cached.setRGB(0, 0, this.width, this.height, pixels, 0, this.width);
+            this.cached.setRGB(0, 0, this.info.width, this.info.height, pixels, 0, this.info.width);
     }
 
     /**
@@ -177,8 +158,8 @@ public class Texture {
         
         int[] unswizzled = new int[swizzled.length];
         
-        int log2width = (int) (Math.log(this.width) / Math.log(2));
-        int log2height = (int) (Math.log(this.height) / Math.log(2));
+        int log2width = (int) (Math.log(this.info.width) / Math.log(2));
+        int log2height = (int) (Math.log(this.info.height) / Math.log(2));
         
         int xMask = 0x55555555;
 	int yMask = 0xAAAAAAAA;
@@ -190,11 +171,11 @@ public class Texture {
         xMask = (xMask | ~(limitMask - 1));
         yMask = (yMask & (limitMask - 1));
         
-        int offsetY = 0, offsetX = 0, offsetX0 = 0, yIncr = limitMask, adv = this.width;
+        int offsetY = 0, offsetX = 0, offsetX0 = 0, yIncr = limitMask, adv = this.info.width;
         
-        for (int y = 0; y < this.height; ++y) {
+        for (int y = 0; y < this.info.height; ++y) {
             offsetX = offsetX0;
-            for (int x = 0; x < this.width; ++x) {
+            for (int x = 0; x < this.info.width; ++x) {
                 unswizzled[(y * adv) + x] = swizzled[offsetY + offsetX];
                 offsetX = (offsetX - xMask) & xMask;
             }
@@ -292,10 +273,10 @@ public class Texture {
      * @return Generated DDS header
      */
     public byte[] getDDSHeader() {
-        System.out.println(String.format("DDS Type: %s (%s)", Bytes.toHex(this.type), this.getDDSType()));
-        System.out.println(String.format("Image Width: %spx", this.width));
-        System.out.println(String.format("Image Height: %spx", this.height));
-        return this.getDDSHeader(this.type, this.width, this.height, this.mipCount);
+        System.out.println(String.format("DDS Type: %s (%s)", Bytes.toHex(this.info.format), this.getDDSType()));
+        System.out.println(String.format("Image Width: %spx", this.info.width));
+        System.out.println(String.format("Image Height: %spx", this.info.height));
+        return this.getDDSHeader(this.info.format, this.info.width, this.info.height, this.info.mipmap);
     }
 
     /**
@@ -303,7 +284,7 @@ public class Texture {
      * @return Name of texture type
      */
     public String getDDSType() {
-        switch (this.type) {
+        switch (this.info.format) {
             case 0x81: return "B8";
             case 0x82: return "A1R5G5B5";
             case 0x83: return "A4R4G4B4";

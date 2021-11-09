@@ -1,10 +1,8 @@
 package ennuo.toolkit.utilities;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.io.File;
 import java.nio.file.Paths;
-import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import jnafilechooser.api.JnaFileChooser;
 import jnafilechooser.api.JnaFileChooser.Mode;

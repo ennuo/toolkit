@@ -12,9 +12,7 @@ public class GfxMaterialService implements ResourceService  {
     public void process(JTree tree, FileEntry entry, byte[] data) {
         GfxMaterial gfxMaterial = entry.getResource("gfxMaterial");
         if (gfxMaterial == null) {
-            Resource resource = new Resource(data);
-            resource.decompress(true);
-            try { gfxMaterial = new GfxMaterial(resource); entry.setResource("gfxMaterial", gfxMaterial); }
+            try { gfxMaterial = new GfxMaterial(new Resource(data)); entry.setResource("gfxMaterial", gfxMaterial); }
             catch (Exception e) { System.err.println("There was an error processing RGfxMaterial file."); }
         }
     }

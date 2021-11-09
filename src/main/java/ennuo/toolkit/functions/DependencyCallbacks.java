@@ -1,6 +1,5 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.FileEntry;
@@ -15,16 +14,9 @@ public class DependencyCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-        Output output = new Output(resource.length);
+        resource.dependencies = new ResourceDescriptor[0];
 
-        output.bytes(resource.bytes(0x8));
-        int offset = resource.i32f();
-        output.i32f(offset);
-        output.bytes(resource.bytes(offset - resource.offset));
-        output.i32f(0);
-        output.shrink();
-
-        Globals.replaceEntry(entry, output.buffer);
+        Globals.replaceEntry(entry, resource.compressToResource());
     }
 
     public static void removeMissingDependencies() {
@@ -34,31 +26,13 @@ public class DependencyCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-        resource.getDependencies(entry);
-        resource.seek(0);
-        Output output = new Output(resource.length);
-
-        output.bytes(resource.bytes(0x8));
-        int offset = resource.i32f();
-        output.i32f(offset);
-        output.bytes(resource.bytes(offset - resource.offset));
-
-        ArrayList < ResourceDescriptor > dependencies = new ArrayList < ResourceDescriptor > (resource.dependencies.length);
-        for (int i = 0; i < resource.dependencies.length; ++i) {
-            if (resource.dependencies[i] != null) {
-                if (Globals.extractFile(resource.dependencies[i].SHA1) != null)
-                    dependencies.add(resource.resources[i]);
-            }
-        }
-
-        output.i32f(dependencies.size());
-        for (ResourceDescriptor ptr: dependencies) {
-            output.resource(ptr, true);
-            output.i32f(ptr.type.value);
-        }
-
-        output.shrink();
-
-        Globals.replaceEntry(entry, output.buffer);
+        
+        ArrayList<ResourceDescriptor> dependencies = new ArrayList<>(resource.dependencies.length);
+        for (ResourceDescriptor descriptor : dependencies)
+            if (Globals.findEntry(descriptor) != null)
+                dependencies.add(descriptor);
+        resource.dependencies = dependencies.toArray(new ResourceDescriptor[dependencies.size()]);
+        
+        Globals.replaceEntry(entry, resource.compressToResource());
     }
 }

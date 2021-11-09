@@ -7,6 +7,7 @@ import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.Pack;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
@@ -108,7 +109,7 @@ public class SlotEditor extends javax.swing.JFrame {
                     ResourceDescriptor[] dependencies = new ResourceDescriptor[slotInstances.size()];
                     dependencies = output.dependencies.toArray(dependencies);
                 
-                    byte[] compressed = Compressor.Compress(output.buffer, "SLTb", entry.revision, dependencies);
+                    byte[] compressed = Resource.compressToResource(output, ResourceType.SLOT_LIST);
                 
                     Globals.replaceEntry(entry, compressed);
                 }

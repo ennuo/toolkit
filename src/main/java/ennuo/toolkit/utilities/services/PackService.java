@@ -12,9 +12,7 @@ public class PackService implements ResourceService  {
     public void process(JTree tree, FileEntry entry, byte[] data) {
         Pack pack = entry.getResource("pack");
         if (pack == null) {
-            Resource resource = new Resource(data);
-            resource.decompress(true);
-            try { pack = new Pack(resource); entry.setResource("pack", pack); }
+            try { pack = new Pack(new Resource(data).handle); entry.setResource("pack", pack); }
             catch (Exception e) { System.err.println("There was an error processing RPack file."); }
         }
     }

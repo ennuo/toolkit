@@ -1,6 +1,6 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
@@ -28,7 +28,7 @@ public class Pack {
         if (compressed) {
             ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
             dependencies = output.dependencies.toArray(dependencies);
-            return Compressor.Compress(output.buffer, "PCKb", revision, dependencies);
+            return Resource.compressToResource(output, ResourceType.PACKS);
         } else return output.buffer;
     }
 }

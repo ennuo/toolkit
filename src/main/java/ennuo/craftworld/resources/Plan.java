@@ -1,10 +1,13 @@
 package ennuo.craftworld.resources;
 
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.utilities.Compressor;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.Globals;
 
 public class Plan implements Serializable {
@@ -12,6 +15,11 @@ public class Plan implements Serializable {
     public int revision;
     public byte[] thingData;
     public InventoryDetails details = new InventoryDetails();
+    
+    public Plan(){}
+    public Plan(Resource resource) {
+        this.serialize(new Serializer(resource.handle), this);
+    }
 
     public Plan serialize(Serializer serializer, Serializable structure) {
         Plan plan = (structure == null) ? new Plan() : (Plan) structure;
@@ -59,11 +67,33 @@ public class Plan implements Serializable {
         return plan;
     }
     
-    public byte[] build(int revision) {
+    public static void removePlanDescriptors(Resource resource, long GUID) {
+        if (resource.type != ResourceType.PLAN) return;
+        Plan plan = new Plan(resource);
+        plan.removePlanDescriptors(GUID);
+        resource.handle.setData(plan.build(false));
+    }
+    
+    public void removePlanDescriptors(long GUID) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(GUID, ResourceType.PLAN);
+        
+        Data thingData = new Data(this.thingData);
+        
+        byte[] descriptorBuffer = Bytes.createResourceReference(descriptor, this.revision);
+        byte[] guidBuffer = new Output(0x8, this.revision).u32(GUID).shrink().buffer;
+        
+        Bytes.ReplaceAll(thingData, descriptorBuffer, new byte[] { 00 });
+        Bytes.ReplaceAll(thingData, guidBuffer, new byte[] { 00 });
+        
+        this.thingData = thingData.data;
+    }
+    
+    public byte[] build(boolean compress) {
         int dataSize = InventoryDetails.MAX_SIZE + this.thingData.length;
-        Serializer serializer = new Serializer(dataSize, revision);
+        Serializer serializer = new Serializer(dataSize, this.revision);
         this.serialize(serializer, this);
-        return Compressor.Compress(serializer.getBuffer(), "PLNb", revision, 
-                    serializer.output.dependencies.toArray(new ResourceDescriptor[serializer.output.dependencies.size()]));      
+        if (compress)
+            return Resource.compressToResource(serializer.output, ResourceType.PLAN);
+        return serializer.getBuffer();
     }
 }

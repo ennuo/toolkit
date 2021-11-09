@@ -10,6 +10,7 @@ import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -148,10 +149,10 @@ public class ExportCallbacks {
         if (file == null) return;
 
         Resource resource = new Resource(Globals.extractFile(entry.SHA1));
-        Mod mod;
+        Mod mod = new Mod();
         if (hashinate)
-            mod = resource.hashinate(entry);
-        else mod = resource.recurse(entry);
+            Bytes.hashinate(mod, resource, entry);
+        else Bytes.recurse(mod, resource, entry);;
 
         mod.config.title = name;
         

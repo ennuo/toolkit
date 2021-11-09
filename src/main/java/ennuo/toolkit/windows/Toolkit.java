@@ -1829,10 +1829,11 @@ public class Toolkit extends javax.swing.JFrame {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
             for (int i = 0; i < entry.dependencies.length; ++i) {
-                if (entry.dependencies[i] == null || entry.dependencies[i].path == null) continue;
-                Nodes.addNode(root, entry.dependencies[i]);
-                if (entry.dependencies[i].dependencies != null && entry.dependencies[i] != entry) // These files have way too many dependencies
-                    generateDependencyTree(entry.dependencies[i], model);
+                FileEntry dependencyEntry = Globals.findEntry(entry.dependencies[i]);
+                if (dependencyEntry == null|| dependencyEntry.path == null) continue;
+                Nodes.addNode(root, dependencyEntry);
+                if (dependencyEntry.dependencies != null && dependencyEntry != entry)
+                    generateDependencyTree(dependencyEntry, model);
             }
         }
     }
@@ -1875,8 +1876,10 @@ public class Toolkit extends javax.swing.JFrame {
 
         pageCombo.setSelectedItem(metadata.type);
         subCombo.setSelectedItem(metadata.subType);
-        creatorField.setText(metadata.creator.handle);
-
+        if (metadata.creator != null)
+            creatorField.setText(metadata.creator.handle);
+        else creatorField.setText("");
+        
         entryModifiers.setEnabledAt(1, true);
         entryModifiers.setSelectedIndex(1);
     }

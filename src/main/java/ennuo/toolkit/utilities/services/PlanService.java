@@ -2,6 +2,7 @@ package ennuo.toolkit.utilities.services;
 
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
@@ -16,10 +17,8 @@ public class PlanService implements ResourceService  {
     public void process(JTree tree, FileEntry entry, byte[] data) {
         Plan plan = entry.getResource("item");
         if (plan == null) {
-            Resource resource = new Resource(data);
-            resource.decompress(true);
             try { 
-                plan = new Serializer(resource).struct(null, Plan.class); 
+                plan = new Serializer(new Resource(data).handle).struct(null, Plan.class); 
                 entry.setResource("item", plan); 
             }
             catch (Exception e) { 
@@ -35,12 +34,9 @@ public class PlanService implements ResourceService  {
         else {
             System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
             try {
-                for (FileEntry dependency : entry.dependencies) {
-                    if (dependency.path.contains(".tex")) {
-                        ResourceDescriptor descriptor = new ResourceDescriptor();
-                        descriptor.hash = dependency.SHA1;
-                        Toolkit.instance.loadImage(descriptor, plan);
-                    }
+                for (ResourceDescriptor dependency : entry.dependencies) {
+                    if (dependency.type == ResourceType.TEXTURE)
+                        Toolkit.instance.loadImage(dependency, plan);
                 }
             } catch (Exception e) { System.err.println("An error occurred processing texture."); }
             System.out.println("Couldn't find any texture file to display as icon.");

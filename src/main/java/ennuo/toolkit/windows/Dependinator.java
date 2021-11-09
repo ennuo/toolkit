@@ -36,7 +36,7 @@ public class Dependinator extends javax.swing.JFrame {
                 int index = list.getSelectedIndex();
                 if (modifications[index] != null)
                     ptr = modifications[index];
-                else ptr = resource.resources[index];
+                else ptr = resource.dependencies[index];
                 pointer.setText(ptr.toString());
                 pointer.setEnabled(true);
                 update.setEnabled(true);
@@ -55,14 +55,12 @@ public class Dependinator extends javax.swing.JFrame {
         }
         
         resource = new Resource(data);
-        resource.getDependencies(entry, false);
+        modifications = new ResourceDescriptor[resource.dependencies.length];
         
-        modifications = new ResourceDescriptor[resource.resources.length];
-        
-        for (int i = 0; i < resource.resources.length; ++i) {
-            ResourceDescriptor ptr = resource.resources[i];
+        for (int i = 0; i < resource.dependencies.length; ++i) {
+            ResourceDescriptor ptr = resource.dependencies[i];
             modifications[i] = ptr;
-            FileEntry dependency = resource.dependencies[i];
+            FileEntry dependency = Globals.findEntry(ptr);
             if (dependency == null) model.addElement(ptr.toString());
             else {
                 if (dependency.path == null) model.addElement(ptr.toString());
@@ -141,15 +139,15 @@ public class Dependinator extends javax.swing.JFrame {
     private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
         int index = list.getSelectedIndex();
         
-        ResourceDescriptor newRes = new ResourceDescriptor(resource.resources[index].type, pointer.getText());
+        ResourceDescriptor newRes = new ResourceDescriptor(resource.dependencies[index].type, pointer.getText());
         
-        if (newRes.equals(resource.resources[index])) return;
+        if (newRes.equals(resource.dependencies[index])) return;
         if (modifications[index] != null)
             if (newRes.equals(modifications[index])) return;
         
         modifications[index] = newRes;
         
-        System.out.println("Set " + resource.resources[index].toString() + " -> " + newRes.toString());
+        System.out.println("Set " + resource.dependencies[index].toString() + " -> " + newRes.toString());
         
         FileEntry entry = Globals.findEntry(newRes);
         if (entry == null || entry.path == null)
@@ -163,17 +161,14 @@ public class Dependinator extends javax.swing.JFrame {
     }//GEN-LAST:event_updateActionPerformed
 
     private void replaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceActionPerformed
-        resource.decompress(true);
-        
+
         for (int i = 0; i < modifications.length; ++i) {
-            System.out.println(modifications[i].toString() + " : " + resource.resources[i].toString());
-            if (modifications[i].equals(resource.resources[i])) continue;
-            resource.replaceDependency(i, modifications[i], false);
+            System.out.println(modifications[i].toString() + " : " + resource.dependencies[i].toString());
+            if (modifications[i].equals(resource.dependencies[i])) continue;
+            resource.replaceDependency(i, modifications[i]);
         }
         
-        resource.setData(Compressor.Compress(resource.data, resource.magic, resource.revision, modifications));
-        
-        Globals.replaceEntry(entry, resource.data);
+        Globals.replaceEntry(entry, resource.compressToResource());
         
         dispose();
     }//GEN-LAST:event_replaceActionPerformed

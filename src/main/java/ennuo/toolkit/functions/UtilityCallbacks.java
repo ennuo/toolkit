@@ -5,7 +5,7 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.Mesh;
-import ennuo.craftworld.resources.enums.Metadata;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;
@@ -45,16 +45,15 @@ public class UtilityCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-        byte[] decompressed = resource.decompress();
 
-        if (decompressed == null) {
+        if (resource.handle.data == null) {
             System.err.println("Failed to decompress resource.");
             return;
         }
 
         File out = Toolkit.instance.fileChooser.openFile(file.getName() + ".dec", "", "", true);
         if (out != null)
-            FileIO.write(decompressed, out.getAbsolutePath());
+            FileIO.write(resource.handle.data, out.getAbsolutePath());
     }
     
     public static void mergeFileArchives() {         
@@ -225,29 +224,29 @@ public class UtilityCallbacks {
                 for (FileEntry match : matches)
                     out.add(match);
             } else {
-                Resource resource = new Resource(archive.extract(entry.SHA1));
+                byte[] data = archive.extract(entry.SHA1);
+                String magic = new Data(data).str(4);
                 entry.GUID = Bytes.toHex(entry.SHA1).hashCode();
                 
                 String name = "" + entry.offset;
-                switch (resource.magic) {
+                switch (magic) {
                     
                     case "PLNb": name += ".plan"; break;
                     case "LVLb": name += ".bin"; break;
                     default: 
-                        if (resource.magic.startsWith("#")) resource.magic = "txt";
-                        else if (!(resource.magic.length() == 4 && resource.magic.charAt(3) == 't') && (Metadata.getType(resource.magic, 0) == Metadata.CompressionType.UNKNOWN))
-                            resource.magic = "raw";
+                        if (magic.startsWith("#")) magic = "txt";
+                        else magic = "raw";
                         
-                        name += "." + resource.magic.substring(0, 3).toLowerCase();
+                        name += "." + magic.substring(0, 3).toLowerCase();
                         break;
                 }
                 
                 try {
-                    if (resource.magic.equals("MSHb"))
-                        name = (new Mesh("mesh", resource.data)).bones[0].name + ".mol";   
+                    if (magic.equals("MSHb"))
+                        name = (new Mesh("mesh", data)).bones[0].name + ".mol";   
                 } catch (Exception e) { System.err.println("Error parsing mesh, defaulting to offset name."); } 
                 
-                entry.path = "resources/" + resource.magic.substring(0, 3).toLowerCase() + "/" + name;
+                entry.path = "resources/" + magic.substring(0, 3).toLowerCase() + "/" + name;
                 
                 out.add(entry);
             }

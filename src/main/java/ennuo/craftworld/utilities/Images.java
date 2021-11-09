@@ -25,7 +25,7 @@ import net.npe.dds.DDSReader;
 import org.imgscalr.Scalr;
 
 public class Images {
-    public static Resource toGTF(BufferedImage image) {
+    public static byte[] toGTF(BufferedImage image) {
         Data data = new Data(toDDS(image));
         if (data.data == null) return null;
 
@@ -36,7 +36,7 @@ public class Images {
         if (DDS == null)
             return null;
 
-        DDS = Compressor.CompressRaw(DDS);
+        DDS = Compressor.deflateData(DDS);
 
         if (DDS == null) {
             System.err.println("Failed to compress DDS!");
@@ -53,11 +53,11 @@ public class Images {
         output.i16((short) image.getWidth());
         output.i16((short) image.getHeight());
 
-        output.bytes(new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 });
+        output.bytes(new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
         output.bytes(DDS);
 
-        return new Resource(output.buffer);
+        return output.buffer;
     }
 
     private static int toNextNearest(int x) {
@@ -100,7 +100,7 @@ public class Images {
         return data;
     }
 
-    public static Resource toTEX(BufferedImage image) {
+    public static byte[] toTEX(BufferedImage image) {
         byte[] DDS = toDDS(image);
 
         if (DDS == null) {
@@ -108,7 +108,7 @@ public class Images {
             return null;
         }
 
-        DDS = Compressor.CompressRaw(DDS);
+        DDS = Compressor.deflateData(DDS);
 
         if (DDS == null) {
             System.err.println("Failed to compress DDS!");
@@ -117,10 +117,9 @@ public class Images {
 
         Output output = new Output(0x6 + DDS.length);
         output.str("TEX ");
-        output.i16((short) 1);
         output.bytes(DDS);
 
-        return new Resource(output.buffer);
+        return output.buffer;
     }
 
     public static BufferedImage fromDDS(byte[] DDS) {
