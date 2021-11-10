@@ -13,10 +13,9 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Data {
-    /**
-     * Max revision before starting to use variable length integers and matrices.
-     */
-    public static int ENCODED_REVISION = 0x271;
+    public static final byte USE_COMPRESSED_INTEGERS = 1; // Also uses compressed parts
+    public static final byte USE_COMPRESSED_VECTORS = 2;
+    public static final byte USE_COMPRESSED_MATRICES = 4;
 
     public String path;
 
@@ -26,20 +25,15 @@ public class Data {
     
     public int revision = 0x271;
     public int branchDescription;
-    
-    /**
-     * Checks if the revision of the output indicates that it should use variable length types.
-     * @return True if the resource is encoded
-     */
-    public boolean isEncoded() {
-        return this.revision > Output.ENCODED_REVISION && !(this.revision >= 0x273 && this.revision <= 0x297);
-    }
+    public byte compressionFlags = 0;
 
     /**
      * Creates a memory input stream from byte array
      * @param data Byte array to use as source
      */
-    public Data(byte[] data) { this.setData(data); }
+    public Data(byte[] data) { 
+        this.setData(data);
+    }
     
     /**
      * Creates a memory input stream from byte array with specified revision.
@@ -49,6 +43,10 @@ public class Data {
     public Data(byte[] data, int revision) {
         this.setData(data);
         this.revision = revision;
+        
+        // NOTE(Abz): For legacy reasons.
+        if (this.revision == 0x272 || this.revision > 0x297)
+            this.compressionFlags = 0x7;
     }
 
     /**
@@ -61,6 +59,10 @@ public class Data {
         this.setData(data);
         this.revision = revision;
         this.branchDescription = branch;
+        
+        // NOTE(Abz): For legacy reasons.
+        if ((this.revision == 0x272 && this.branchDescription != 0) || this.revision > 0x297)
+            this.compressionFlags = 0x7;
     }
     
     /**
@@ -83,6 +85,10 @@ public class Data {
         this.revision = revision;
         byte[] data = FileIO.read(path);
         this.setData(data);
+        
+        // NOTE(Abz): For legacy reasons.
+        if (this.revision == 0x272 || this.revision > 0x297)
+            this.compressionFlags = 0x7;
     }
 
     /**
@@ -197,9 +203,20 @@ public class Data {
      * @return Integer read from the stream
      */
     public int i32() {
-        if (this.isEncoded()) 
-            return (int) (this.varint() & 0xFFFFFFFF);
-        return this.i32f();
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0)
+            return this.i32f();
+        return (int) (this.varint() & 0xFFFFFFFF);
+    }
+    
+    /**
+     * Reads an array of 32-bit integers from the stream, encoded depending on the revision.
+     * @return Array of integers read from the stream
+     */
+    public int[] i32a() {
+        int[] values = new int[this.i32()];
+        for (int i = 0; i < values.length; ++i)
+            values[i] = this.i32();
+        return values;
     }
     
     /**
@@ -218,8 +235,9 @@ public class Data {
      * @return Unsigned integer read from the stream
      */
     public long u32() {
-        if (this.isEncoded()) return this.varint();
-        return this.u32f();
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0)
+            return this.u32f();
+        return this.varint();
     }
 
     /**
@@ -283,7 +301,7 @@ public class Data {
     public Matrix4f matrix() {
         float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         int flags = 0xFFFF;
-        if (this.isEncoded()) 
+        if ((this.compressionFlags & Data.USE_COMPRESSED_MATRICES) != 0)
             flags = this.i16();
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
@@ -303,29 +321,25 @@ public class Data {
 
     /**
      * Reads a resource reference from the stream
-     * @param rType Type of resource reference
-     * @param useSingleByteFlag Whether the resource reference should be read with a byte or a short flag
+     * @param resourceType Type of resource reference
+     * @param skipFlags Whether or not to skip resource flags in parsing
      * @return Resource reference read from the stream
      */
-    public ResourceDescriptor resource(ResourceType rType, boolean useSingleByteFlag) {
+    public ResourceDescriptor resource(ResourceType resourceType, boolean skipFlags) {
         byte HASH = 1, GUID = 2;
         if (this.revision <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
 
-        byte type;
-
-        if (this.revision < 0x230) useSingleByteFlag = true;
-        if (((this.revision >= 0x230 && this.revision <= 0x26e) || (this.revision >= 0x273 && this.revision <= 0x297)) && !useSingleByteFlag) 
-            this.i8();
-
-        if (useSingleByteFlag) type = this.i8();
-        else if (this.isEncoded()) type = (byte) this.i16();
-        else type = (byte) this.i32();
-
+        byte type = 0; int flags = 0;
+        
+        if (this.revision > 0x22e && !skipFlags) flags = this.i32();
+        type = this.i8();
+        
         ResourceDescriptor resource = new ResourceDescriptor();
-        resource.type = rType;
+        resource.type = resourceType;
+        resource.flags = flags;
 
         if (type == GUID) resource.GUID = this.u32();
         else if (type == HASH) resource.hash = this.bytes(0x14);
@@ -366,7 +380,7 @@ public class Data {
      */
     public String str16() {
         int size = this.i32();
-        if (!this.isEncoded()) size *= 2;
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0) size *= 2;
         byte[] data = this.bytes(size);
         return new String(data, Charset.forName("UTF-16BE"));
     }
@@ -377,7 +391,7 @@ public class Data {
      */
     public String str8() {
         int size = this.i32();
-        if (this.isEncoded()) size /= 2;
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size /= 2;
         return this.str(size);
     }
 

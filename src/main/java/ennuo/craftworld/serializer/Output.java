@@ -13,17 +13,13 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Output {
-    /**
-     * Max revision before starting to use variable length integers and matrices.
-     */
-    public static int ENCODED_REVISION = 0x271;
-    
     public byte[] buffer;
     public int offset;
     public int length;
     
     public int revision = 0x271;
     public int branchDescription;
+    public byte compressionFlags = 0;
 
     public ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
 
@@ -45,6 +41,10 @@ public class Output {
         this.buffer = new byte[size];
         this.revision = revision;
         this.length = size;
+        
+        // NOTE(Abz): For legacy reasons.
+        if (this.revision == 0x272 || this.revision > 0x297)
+            this.compressionFlags = 0x7;
     }
     
     /**
@@ -58,14 +58,10 @@ public class Output {
         this.revision = revision;
         this.length = size;
         this.branchDescription = branch;
-    }
-    
-    /**
-     * Checks if the revision of the output indicates that it should use variable length types.
-     * @return True if the resource is encoded
-     */
-    public boolean isEncoded() {
-        return this.revision > Output.ENCODED_REVISION && !(this.revision >= 0x273 && this.revision <= 0x297);
+        
+        // NOTE(Abz): For legacy reasons.
+        if ((this.revision == 0x272 && this.branchDescription != 0) || this.revision > 0x297)
+            this.compressionFlags = 0x7;
     }
 
     /**
@@ -88,7 +84,7 @@ public class Output {
     public Output str16(String value) {
         if (value == null || value.equals("")) { this.i32(0); return this; }
         int size = value.length();
-        if (this.isEncoded()) size *= 2;
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
         this.i32(size);
         this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
         return this;
@@ -102,7 +98,7 @@ public class Output {
     public Output str8(String value) {
         if (value == null || value.equals("")) { this.i32(0); return this; }
         int size = value.length();
-        if (this.isEncoded()) size *= 2;
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
         this.i32(size);
         this.str(value);
         return this;
@@ -193,9 +189,21 @@ public class Output {
      * @return This output stream
      */
     public Output i32(int value) {
-        if (this.isEncoded())
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.i32f(value);
+    }
+    
+    /**
+     * Writes an array of 32-bit integers to the stream, encoded depending on the revision.
+     * @param values Integers to write
+     * @return This output stream
+     */
+    public Output i32a(int[] values) {
+        this.i32(values.length);
+        for (int value : values)
+            this.i32(value);
+        return this;
     }
     
     /**
@@ -216,7 +224,7 @@ public class Output {
      * @return This output stream
      */
     public Output u32(long value) {
-        if (this.isEncoded())
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.u32f(value);
     }
@@ -227,7 +235,7 @@ public class Output {
      * @return This output stream
      */
     public Output u32LE(long value) {
-        if (this.isEncoded())
+        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.u32LEf(value);
     }
@@ -322,7 +330,7 @@ public class Output {
         float[] values = new float[16];
         value.get(values);
         int flags = 0xFFFF;
-        if (this.isEncoded()) {
+        if ((this.compressionFlags & Data.USE_COMPRESSED_MATRICES) != 0) {
             flags = 0;
             for (int i = 0; i < 16; ++i)
                 if (values[i] != identity[i])
@@ -347,39 +355,27 @@ public class Output {
     /**
      * Writes a resource reference to the stream with either a byte or short flag.
      * @param value Resource reference to write
-     * @param useSingleByteFlag Whether a byte or a short flag should be written
+     * @param skipFlags Whether resource flags should be written
      * @return This output stream
      */
-    public Output resource(ResourceDescriptor value, boolean useSingleByteFlag) {
+    public Output resource(ResourceDescriptor value, boolean skipFlags) {
         byte HASH = 1, GUID = 2;
         if (this.revision <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
         
-        if (this.revision < 0x230) useSingleByteFlag = true;
-        if (((this.revision >= 0x230 && this.revision <= 0x26e) || (this.revision >= 0x273 && this.revision <= 0x297)) && !useSingleByteFlag) 
-            this.u8(0);
-        if (useSingleByteFlag) {
-            if (value == null) this.u8(0);
-            else if (value.hash != null) this.i8(HASH);
-            else if (value.GUID != -1) this.i8(GUID);
-            else this.u8(0);
-        } else if (this.isEncoded()) {
-            if (value == null) this.i16((short) 0);
-            else if (value.hash != null) this.i16((short) HASH);
-            else if (value.GUID != -1) this.i16((short) GUID);
-            else this.i16((short) 0);
-        } else {
-            if (value == null) this.i32(0);
-            else if (value.hash != null) this.i32(HASH);
-            else if (value.GUID != -1) this.i32(GUID);
-            else this.i32(0);
-        }
-        if (value == null) return this;
-        if (value.hash != null) this.bytes(value.hash);
-        else if (value.GUID != -1) this.u32(value.GUID);
-
+        if (this.revision > 0x22e && !skipFlags)
+            this.i32(value.flags);
+        
+        if (value.hash != null) {
+            this.i8(HASH);
+            this.bytes(value.hash);
+        } else if (value.GUID != -1) {
+            this.i8(GUID);
+            this.u32(value.GUID);
+        } else this.i8((byte) 0);
+        
         if (!this.hasDependency(value))
             this.dependencies.add(value);
         

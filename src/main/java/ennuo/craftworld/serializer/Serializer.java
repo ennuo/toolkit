@@ -4,6 +4,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.io.FileIO;
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -18,6 +19,7 @@ public class Serializer {
     
     public int revision;
     public int branchDescription;
+    public int compressionFlags;
     
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
@@ -28,6 +30,7 @@ public class Serializer {
         this.input = data;
         this.revision = data.revision;
         this.branchDescription = data.branchDescription;
+        this.compressionFlags = data.compressionFlags;
         this.isWriting = false;
     }
     
@@ -35,6 +38,7 @@ public class Serializer {
         this.output = data;
         this.revision = data.revision;
         this.branchDescription = data.branchDescription;
+        this.compressionFlags = data.compressionFlags;
         this.isWriting = true;
     }
     
@@ -42,12 +46,14 @@ public class Serializer {
         this.isWriting = true;
         this.output = new Output(size, revision);
         this.revision = revision;
+        this.compressionFlags = this.output.compressionFlags;
     }
     
     public Serializer(byte[] data, int revision) {
         this.isWriting = false;
         this.input = new Data(data, revision);
         this.revision = revision;
+        this.compressionFlags = this.input.compressionFlags;
     }
     
     public void pad(int size) {
@@ -111,16 +117,27 @@ public class Serializer {
         return this.input.i32();
     }
     
+    public int[] i32a(int[] values) {
+        if (this.isWriting) {
+            this.output.i32a(values);
+            return values;
+        }
+        return this.input.i32a();
+    }
+    
     public long u32d(long value) {
         // NOTE(Abz): I'm not actually sure what this type is
         // but for some reason in the "encoded" revisions, it's
         // doubled for some reason? Well, whatever
         
+        int multiplier = 
+                ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) ? 2 : 1;
+        
         if (this.isWriting) {
-            this.output.u32(value * ((this.revision > 0x271) ? 2 : 1));
+            this.output.u32(value * multiplier);
             return value;
         }
-        return this.input.u32() / ((this.revision > 0x271) ? 2 : 1);
+        return this.input.u32() / multiplier;
     }
     
     public long u32(long value) {
@@ -225,6 +242,64 @@ public class Serializer {
             return value;
         }
         return this.input.matrix();
+    }
+    
+    public int[] table(int[] values) {
+        if ((this.compressionFlags & Data.USE_COMPRESSED_VECTORS) == 0) 
+            return this.i32a(values);
+        if (this.isWriting) {
+            if (values == null || values.length == 0) {
+                this.output.i32(0);
+                return values;
+            }
+            
+            boolean overflow = 
+                    Arrays.stream(values).anyMatch(x -> x > 0xFF);
+            
+            this.output.i32(values.length);
+            if (values.length == 1 && values[0] == 0) {
+                this.output.i32(0);
+                return values;
+            }
+            
+            if (overflow) this.output.i32(2);
+            else this.output.i32(1);
+            
+            int[] indices = new int[values.length];
+            int[] overflowIndices = new int[values.length];
+            int loop = 0;
+            
+            for (int i = 0; i < values.length; ++i) {
+                int value = values[i];
+                if (value - (loop * 0x100) >= 0x100) loop++;
+                indices[i] = value - (loop * 0x100);
+                if (overflow)
+                    overflowIndices[i] = loop;
+            }
+            
+            for (int index : indices)
+                this.output.i8((byte) index);
+            if (overflow)
+                for (int index : overflowIndices)
+                    this.output.i8((byte) index);
+            
+            return values;
+        }
+        
+        int indexCount = this.input.i32();
+        if (indexCount == 0) return null;
+        int tableCount = this.input.i32();
+        if (tableCount == 0) return null;
+        
+        int[] indices = new int[indexCount];
+        for (int i = 0; i < indexCount; ++i)
+            indices[i] = this.input.i8() & 0xFF;
+        
+        for (int i = 1; i < tableCount; ++i)
+            for (int j = 0; j < indexCount; ++j)
+                indices[j] += (this.input.i8() & 0xFF) * 0x100;
+        
+        return indices;
     }
     
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {

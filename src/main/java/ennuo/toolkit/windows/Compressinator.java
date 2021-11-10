@@ -369,7 +369,7 @@ public class Compressinator extends javax.swing.JFrame {
         int branch = 0;
         if (revision == 0x272) branch = 0x4c440017;
         else if (revision == 0x3e2) branch = 0x44310087;
-        byte[] compressed = Resource.compressToResource(file, revision, branch, ResourceType.fromMagic(header), dependencies);
+        byte[] compressed = Resource.compressToResource(file, revision, branch, 7, ResourceType.fromMagic(header), dependencies);
 
         File output = fileChooser.openFile("output." + header, "", "", true);
         if (output != null)

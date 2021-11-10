@@ -4,7 +4,11 @@ import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.Bytes;
 
 public class ResourceDescriptor {
-
+    public ResourceType type = ResourceType.FILE_OF_BYTES;
+    public long GUID = -1;
+    public byte[] hash = null;
+    public int flags;
+    
     public ResourceDescriptor() {}
     public ResourceDescriptor(ResourceType type, String str) {
         long number = -1;
@@ -32,10 +36,6 @@ public class ResourceDescriptor {
         this.hash = SHA1;
         this.type = type;
     }
-
-    public ResourceType type = ResourceType.FILE_OF_BYTES;
-    public long GUID = -1;
-    public byte[] hash = null;
 
     @Override
     public boolean equals(Object o) {

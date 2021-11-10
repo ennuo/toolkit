@@ -19,8 +19,8 @@ public class Resource {
     public TextureInfo textureInfo;
     public int revision = 0x132;
     public int branchDescription = 0;
-    private boolean unknownFlag = true;
-    public byte compressionFlags = 0x7;
+    private boolean isCompressed = true;
+    public byte compressionFlags = 0;
     public Data handle = null;
     public ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     
@@ -33,7 +33,9 @@ public class Resource {
         this.dependencies = output.dependencies.toArray(
                 new ResourceDescriptor[output.dependencies.size()]);
         this.method = SerializationMethod.BINARY;
+        this.compressionFlags = output.compressionFlags;
         this.handle = new Data(output.buffer, output.revision, output.branchDescription);
+        this.handle.compressionFlags = output.compressionFlags;
     }
     
     public Resource(String path) {
@@ -57,8 +59,9 @@ public class Resource {
             case ENCRYPTED_BINARY:
                 this.revision = this.handle.i32f();
                 this.handle.revision = this.revision;
+                int dependencyTableOffset = -1;
                 if (this.revision >= 0x109) {
-                    this.getDependencies();
+                    dependencyTableOffset = this.getDependencies();
                     if (this.revision >= 0x189) {
                         if (this.revision >= 0x271) { 
                             // NOTE(Abz): Were they actually added on 0x27a, but how can it be on 0x272 then?!
@@ -66,16 +69,25 @@ public class Resource {
                             this.branchDescription = this.handle.i32f();
                             this.handle.branchDescription = this.branchDescription;
                         }
-                        if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0))
+                        if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0)) {
                             this.compressionFlags = this.handle.i8();
-                        this.unknownFlag = this.handle.bool();
+                            this.handle.compressionFlags = this.compressionFlags;
+                        }
+                        this.isCompressed = this.handle.bool();
                     }
                 }
+                
                 if (this.method == SerializationMethod.ENCRYPTED_BINARY) {
                     int size = this.handle.i32f();
                     this.handle.setData(TEA.decrypt(this.handle.bytes(size)));
                 }
-                Compressor.decompressData(this.handle);
+                
+                if (this.isCompressed)
+                    Compressor.decompressData(this.handle);
+                else if (dependencyTableOffset != -1)
+                    this.handle.setData(this.handle.bytes(dependencyTableOffset - this.handle.offset));
+                else this.handle.setData(this.handle.bytes(this.handle.length - this.handle.offset));
+                
                 break;
             case TEXT:
                 this.handle.setData(this.handle.bytes(this.handle.length - 4));
@@ -134,7 +146,7 @@ public class Resource {
         this.dependencies[index] = newDescriptor;
     }
     
-    private void getDependencies() {
+    private int getDependencies() {
         int dependencyTableOffset = this.handle.i32f();
         int originalOffset = this.handle.offset;
         this.handle.offset = dependencyTableOffset;
@@ -155,9 +167,11 @@ public class Resource {
         }
         
         this.handle.offset = originalOffset;
+        
+        return dependencyTableOffset;
     }
     
-    public static byte[] compressToResource(byte[] data, int revision, int branch, ResourceType type, ResourceDescriptor[] dependencies) {
+    public static byte[] compressToResource(byte[] data, int revision, int branch, int compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
         Resource resource = new Resource();
         resource.handle = new Data(data, revision, branch);
         resource.revision = revision;
@@ -197,17 +211,16 @@ public class Resource {
                 if (this.revision >= 0x271) output.i32f(this.branchDescription);
                 if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0))
                     output.i8(this.compressionFlags);
-                output.bool(this.unknownFlag);
+                output.bool(this.isCompressed);
             }
             
-            byte[] compressedStream = Compressor.getCompressedStream(this.handle.data);
-            if (this.method != SerializationMethod.ENCRYPTED_BINARY)
-                output.bytes(compressedStream);
-            else {
-                byte[] encryptedStream = TEA.encrypt(compressedStream);
-                output.i32f(encryptedStream.length);
-                output.bytes(encryptedStream);
+            byte[] data = this.handle.data;
+            if (this.isCompressed) data = Compressor.getCompressedStream(this.handle.data);
+            if (this.method == SerializationMethod.ENCRYPTED_BINARY) {
+                data = TEA.encrypt(data);
+                output.i32f(data.length);
             }
+            output.bytes(data);
             
             int dependencyTableOffset = output.offset;
             output.offset = 0x8;

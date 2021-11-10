@@ -166,10 +166,12 @@ public class Mesh implements Serializable {
         
         mesh.cullBones = serializer.array(mesh.cullBones, CullBone.class);
         
-        // NOTE(Abz): I have no idea whatsoever why region IDs are encoded like this,
-        // is there some benefit to it?
+
+        // NOTE(Abz): So this is what a compressed int vector looks like apparently,
+        // the fact that this is different than the other ones, probably means that
+        // I messed something up, will fix it later.
         
-        if (serializer.revision < 0x272)
+        if ((serializer.compressionFlags & Data.USE_COMPRESSED_VECTORS) == 0)
             mesh.regionIDsToHide = serializer.u32a(mesh.regionIDsToHide);
         else if (serializer.isWriting) {
             if (mesh.regionIDsToHide != null && mesh.regionIDsToHide.length != 0) {

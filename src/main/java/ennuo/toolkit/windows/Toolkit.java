@@ -1971,7 +1971,8 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
         entryTable.setValueAt(Bytes.toHex(entry.SHA1), 2, 1);
-        entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
+        if (entry.size != -1)
+            entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
         if (entry.GUID != -1) {
             entryTable.setValueAt("g" + Long.valueOf(entry.GUID), 4, 1);
             entryTable.setValueAt(Bytes.toHex(entry.GUID), 5, 1);
