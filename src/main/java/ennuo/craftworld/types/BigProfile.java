@@ -143,7 +143,7 @@ public class BigProfile extends FileData {
   }
 
   public FileNode addNode(FileEntry entry) {
-    String extension = new String(new byte[] { entry.data[0], entry.data[1], entry.data[2] });
+    String extension = new String(new byte[] { entry.data[0], entry.data[1], entry.data[2] }).toLowerCase();
     switch (extension) {
     case "ÿøÿ":
     case "jfi":
@@ -618,7 +618,7 @@ public class BigProfile extends FileData {
         else title = "Some kind of object";
     }
     
-    entry.path += title + ".plan";
+    entry.path += title;
     
     StringEntry location = findString(item.metadata.locationIndex);
     StringEntry category = findString(item.metadata.categoryIndex);
@@ -646,7 +646,10 @@ public class BigProfile extends FileData {
 
           if (slot.renderedIcon == null) slot.renderedIcon = Images.getSlotIcon(null, revision);
 
-          entry.path = "slots/" + slot.title + ".bin";
+          String title = slot.title;
+          if (title.isEmpty())
+              title = "Unnamed Level";
+          entry.path = "slots/" + title;
           Nodes.addNode(root, entry);
         }
       }
