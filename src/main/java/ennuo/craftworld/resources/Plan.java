@@ -33,10 +33,10 @@ public class Plan implements Serializable {
         // there are, so wrapping it in an try/catch block just in case.
         
         try {
-            if (serializer.revision > 0x18a) {
+            if (serializer.revision > 0x18b) {
                 plan.details = serializer.struct(plan.details, InventoryDetails.class);
 
-                if (serializer.revision == 0x272 || serializer.revision > 0x2ba) {
+                if ((serializer.revision == 0x272 && serializer.branchDescription != 0) || serializer.revision > 0x2ba) {
                     plan.details.location = serializer.u32(plan.details.location);
                     plan.details.category = serializer.u32(plan.details.category);
                 } else {

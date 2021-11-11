@@ -1538,12 +1538,12 @@ public class Toolkit extends javax.swing.JFrame {
         if (Globals.LAMS != null) {
             metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
             metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
-            metadata.translatedCategory = Globals.LAMS.translate(metadata.translatedCategory);
-            metadata.translatedLocation = Globals.LAMS.translate(metadata.translatedLocation);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.category);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.location);
             
             titleField.setText(metadata.translatedTitle);
             descriptionField.setText(metadata.translatedDescription);
-            locationField.setText(metadata.translatedDescription);
+            locationField.setText(metadata.translatedLocation);
             categoryField.setText(metadata.translatedCategory);
         }
         
@@ -1897,8 +1897,8 @@ public class Toolkit extends javax.swing.JFrame {
             
             metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
             metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
-            metadata.translatedCategory = Globals.LAMS.translate(metadata.translatedCategory);
-            metadata.translatedLocation = Globals.LAMS.translate(metadata.translatedLocation);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.category);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.location);
 
             titleField.setText(metadata.translatedTitle);
             descriptionField.setText(metadata.translatedDescription);
