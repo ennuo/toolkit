@@ -1,6 +1,7 @@
 package ennuo.craftworld.resources;
 
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
@@ -24,7 +25,7 @@ public class Plan implements Serializable {
     public Plan serialize(Serializer serializer, Serializable structure) {
         Plan plan = (structure == null) ? new Plan() : (Plan) structure;
         
-        if (serializer.revision >= 0x00D003E7)
+        if (serializer.revision.head >= 0x00D003E7)
             plan.isUsedForStreaming = serializer.bool(plan.isUsedForStreaming);
         plan.revision = serializer.i32(plan.revision);
         plan.thingData = serializer.i8a(plan.thingData);
@@ -33,10 +34,10 @@ public class Plan implements Serializable {
         // there are, so wrapping it in an try/catch block just in case.
         
         try {
-            if (serializer.revision > 0x18b) {
+            if (serializer.revision.head > 0x18b) {
                 plan.details = serializer.struct(plan.details, InventoryDetails.class);
 
-                if ((serializer.revision == 0x272 && serializer.branchDescription != 0) || serializer.revision > 0x2ba) {
+                if ((serializer.revision.head == 0x272 && serializer.revision.branchID != 0) || serializer.revision.head > 0x2ba) {
                     plan.details.location = serializer.u32(plan.details.location);
                     plan.details.category = serializer.u32(plan.details.category);
                 } else {
@@ -70,16 +71,16 @@ public class Plan implements Serializable {
     public static void removePlanDescriptors(Resource resource, long GUID) {
         if (resource.type != ResourceType.PLAN) return;
         Plan plan = new Plan(resource);
-        plan.removePlanDescriptors(GUID);
+        plan.removePlanDescriptors(GUID, resource.revision, resource.compressionFlags);
         resource.handle.setData(plan.build(false));
     }
     
-    public void removePlanDescriptors(long GUID) {
+    public void removePlanDescriptors(long GUID, Revision revision, byte compressionFlags) {
         ResourceDescriptor descriptor = new ResourceDescriptor(GUID, ResourceType.PLAN);
         
         Data thingData = new Data(this.thingData);
         
-        byte[] descriptorBuffer = Bytes.createResourceReference(descriptor, this.revision);
+        byte[] descriptorBuffer = Bytes.createResourceReference(descriptor, revision, compressionFlags);
         byte[] guidBuffer = new Output(0x8, this.revision).u32(GUID).shrink().buffer;
         
         Bytes.ReplaceAll(thingData, descriptorBuffer, new byte[] { 00 });

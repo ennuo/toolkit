@@ -7,6 +7,7 @@ import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
@@ -351,10 +352,10 @@ public class Compressinator extends javax.swing.JFrame {
 
     private void compressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressActionPerformed
         String revisionString = revision.getText();
-        int revision;
+        int headRevision;
         if (revisionString.startsWith("0x"))
-        revision = Integer.parseInt(revisionString.substring(2), 16);
-        else revision = Integer.parseInt(revisionString);
+        headRevision = Integer.parseInt(revisionString.substring(2), 16);
+        else headRevision = Integer.parseInt(revisionString);
 
         String header = ((Magic) resourceCombo.getSelectedItem()).value;
 
@@ -365,11 +366,16 @@ public class Compressinator extends javax.swing.JFrame {
             System.err.println("You need to specify a file to compress!");
             return;
         }
-
-        int branch = 0;
-        if (revision == 0x272) branch = 0x4c440017;
-        else if (revision == 0x3e2) branch = 0x44310087;
-        byte[] compressed = Resource.compressToResource(file, revision, branch, 7, ResourceType.fromMagic(header), dependencies);
+        
+        Revision revision = new Revision(headRevision);
+        if (revision.head == 0x272) {
+            revision.branchID = 0x4c44;
+            revision.branchRevision = 0x0017;
+        } else if (revision.head == 0x3e2) {
+            revision.branchID = 0x4431;
+            revision.branchRevision = 0x0087;
+        }
+        byte[] compressed = Resource.compressToResource(file, revision, 7, ResourceType.fromMagic(header), dependencies);
 
         File output = fileChooser.openFile("output." + header, "", "", true);
         if (output != null)

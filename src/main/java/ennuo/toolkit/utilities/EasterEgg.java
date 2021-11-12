@@ -23,8 +23,8 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("abz")) {
-            toolkit.setTitle("Ib'Box");
+        if (username.equals("aidan")) {
+            toolkit.setTitle("Overture");
             toolkit.debugMenu.setVisible(true);
         }
 

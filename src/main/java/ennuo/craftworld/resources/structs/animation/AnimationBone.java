@@ -28,7 +28,7 @@ public class AnimationBone {
     
     public AnimationBone(Data data) {
         animHash = data.u32f();
-        if (data.revision > 0x272) {
+        if (data.revision.head > 0x272) {
             parent = data.i8();
             firstChild = data.i8();
             nextSibling = data.i8();
@@ -50,7 +50,7 @@ public class AnimationBone {
     
     public void serialize(Output output) {
         output.u32f(animHash);
-        if (output.revision > 0x272) {
+        if (output.revision.head > 0x272) {
             output.u8(parent);
             output.u8(firstChild);
             output.u8(nextSibling);

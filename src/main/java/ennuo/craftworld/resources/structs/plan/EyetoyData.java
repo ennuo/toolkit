@@ -24,7 +24,7 @@ public class EyetoyData implements Serializable {
         eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, ResourceType.TEXTURE);
         eyetoy.colorCorrection = serializer.matrix(eyetoy.colorCorrection);
         eyetoy.colorCorrectionSrc = serializer.struct(eyetoy.colorCorrectionSrc, ColorCorrection.class);
-        if (serializer.revision > 0x2c3)
+        if (serializer.revision.head > 0x2c3)
             eyetoy.outline = serializer.resource(eyetoy.outline, ResourceType.TEXTURE);
         
         return eyetoy;

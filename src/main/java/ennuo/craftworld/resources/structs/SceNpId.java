@@ -13,7 +13,7 @@ public class SceNpId implements Serializable {
     public SceNpId serialize(Serializer serializer, Serializable structure) {
         SceNpId id = (structure == null) ? new SceNpId() : (SceNpId) structure;
        
-        if (serializer.revision < 0x234) {
+        if (serializer.revision.head < 0x234) {
             int size = serializer.i32(0x10);
             id.handle = serializer.str(id.handle, size);
             serializer.i8((byte) 0);

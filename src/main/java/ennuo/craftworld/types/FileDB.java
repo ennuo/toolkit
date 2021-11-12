@@ -425,20 +425,20 @@ public class FileDB extends FileData {
         switch (extension.toLowerCase()) {
             case ".slt": return "slots/";
             case ".tex": return "textures/";
-            case ".bpr": case "ipr":
+            case ".bpr": case ".ipr":
                 return "profiles/";
-            case ".mol": return "models/";
-            case ".gmat": return "gfx/";
+            case ".mol": case ".msh": return "models/";
+            case ".gmat": case ".gmt": return "gfx/";
             case ".mat": return "materials/";
-            case ".ff": return "scripts/";
-            case ".plan": return "plans/";
+            case ".ff": case ".fsh": return "scripts/";
+            case ".plan": case ".pln": return "plans/";
             case ".pal": return "palettes/";
             case ".oft": return "outfits/";
             case ".sph": return "skeletons/";
-            case ".bin": return "levels/";
+            case ".bin": case ".lvl": return "levels/";
             case ".vpo": return "shaders/vertex/";
             case ".fpo": return "shaders/fragment/";
-            case ".anim": return "animations/";
+            case ".anim": case ".anm": return "animations/";
             case ".bev": return "bevels/";
             case ".smh": return "static_meshes/";
             case ".mus": return "audio/settings/";

@@ -194,7 +194,7 @@ public class BigProfile extends FileData {
     Resource biggestProfile = new Resource(profile.data);
     
     
-    Output output = new Output((InventoryDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, biggestProfile.revision, biggestProfile.branchDescription);
+    Output output = new Output((InventoryDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1) + (stringCount * StringEntry.MAX_SIZE + (StringEntry.MAX_SIZE * itemCount)) + 0xFFFF, biggestProfile.revision);
 
     output.i32(itemCount);
     Serializer serializer = new Serializer(output);
@@ -230,16 +230,16 @@ public class BigProfile extends FileData {
 
       output.resource(item.resource, true);
       
-      if (output.revision > 0x010503EF) output.i32(0);
+      if (output.revision.head > 0x010503EF) output.i32(0);
 
       item.metadata = serializer.struct(item.metadata, InventoryDetails.class);
 
-      if (output.revision == 0x3e2) output.u8(1);
+      if (output.revision.head == 0x3e2) output.u8(1);
       output.u8(0x80);
       output.i32(0);
       output.i16((short)(i + 1));
       output.pad(0x3);
-      if (output.revision > 0x33a) {
+      if (output.revision.head > 0x33a) {
         output.u8(item.flags);
         output.pad(0x4);
       } else {
@@ -294,7 +294,7 @@ public class BigProfile extends FileData {
         serializer.struct(slot, Slot.class);
     }
     
-    if (output.revision == 0x3e2) {
+    if (output.revision.head == 0x3e2) {
         output.i32(0); // labels
         output.i32(0); output.i32(0); // challenges
         output.i32(0); // treasures
@@ -338,9 +338,9 @@ public class BigProfile extends FileData {
 
   private void parseProfile() {
     Data profile = new Resource(this.profile.data).handle;
-    this.profile.revision = profile.revision;
+    this.profile.revision = profile.revision.head;
     
-    if (profile.revision > 0x010503EF) revision = 3;
+    if (profile.revision.head > 0x010503EF) revision = 3;
     else revision = 1;
     
     int itemCount = profile.i32();
@@ -349,12 +349,12 @@ public class BigProfile extends FileData {
     for (int i = 0; i < itemCount; ++i) {
       ProfileItem item = new ProfileItem();
       item.resource = profile.resource(ResourceType.PLAN, true);
-      if (profile.revision > 0x010503EF) item.GUID = profile.i32();
+      if (profile.revision.head > 0x010503EF) item.GUID = profile.i32();
       item.metadata = serializer.struct(item.metadata, InventoryDetails.class);
-      if (profile.revision == 0x3e2) profile.forward(0x1);
+      if (profile.revision.head == 0x3e2) profile.forward(0x1);
       profile.forward(0x7);
       item.flags = profile.i8();
-      if (profile.revision > 0x33a) profile.forward(0x4);
+      if (profile.revision.head > 0x33a) profile.forward(0x4);
       else {
         profile.forward(0x7);
         item.flags = profile.i8();
@@ -365,7 +365,7 @@ public class BigProfile extends FileData {
     
     System.out.println("vita hashes offset = 0x" + Bytes.toHex(profile.offset));
 
-    if (profile.revision >= 0x3e6) {
+    if (profile.revision.head >= 0x3e6) {
         int hashCount = profile.i32();
         for (int i = 0; i < hashCount; ++i)
             profile.bytes(0x14);
@@ -373,7 +373,7 @@ public class BigProfile extends FileData {
     
     System.out.println("data labels offset = 0x" + Bytes.toHex(profile.offset));
     
-    if (profile.revision >= 0x3f6 && profile.revision != 0x3e2) {
+    if (profile.revision.head >= 0x3f6 && profile.revision.head != 0x3e2) {
         int labelCount = profile.i32();
         for (int i = 0; i < labelCount; ++i) {
             profile.i32();
@@ -407,7 +407,7 @@ public class BigProfile extends FileData {
       nextIndex++;
     }
 
-    if (profile.revision > 0x33a) fromProductionBuild = profile.bool();
+    if (profile.revision.head > 0x33a) fromProductionBuild = profile.bool();
 
     System.out.println("slots offset = 0x" + Bytes.toHex(profile.offset));
     
@@ -426,7 +426,7 @@ public class BigProfile extends FileData {
       if (category != null) item.metadata.translatedCategory = category.string;
     }
     
-    if (profile.revision == 0x3e2) {
+    if (profile.revision.head == 0x3e2) {
         
         // labels
         int labelCount = profile.i32();
@@ -635,12 +635,12 @@ public class BigProfile extends FileData {
         FileEntry entry = find(slot.root.hash);
         if (entry != null) {
           entry.setResource("slot", slot);
-          int revision = new Resource(extract(entry.SHA1)).revision;
+          int revision = new Resource(extract(entry.SHA1)).revision.head;
           if (slot.icon != null && slot.icon.hash != null) {
             FileEntry iconEntry = find(slot.icon.hash);
             if (iconEntry != null) {
                 Texture texture = iconEntry.getResource("texture");
-              if (texture != null) slot.renderedIcon = Images.getSlotIcon(texture.getImage(), new Resource(extract(entry.SHA1)).revision);
+              if (texture != null) slot.renderedIcon = Images.getSlotIcon(texture.getImage(), new Resource(extract(entry.SHA1)).revision.head);
             }
           }
 

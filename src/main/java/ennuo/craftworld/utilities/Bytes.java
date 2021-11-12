@@ -8,6 +8,7 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SerializationMethod;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.mods.Mod;
@@ -121,8 +122,9 @@ public class Bytes {
         data[offset + 2] = temp;
     }
 
-    public static byte[] createResourceReference(ResourceDescriptor res, int revision) {
+    public static byte[] createResourceReference(ResourceDescriptor res, Revision revision, byte compressionFlags) {
         Output output = new Output(0x1C + 0x4, revision);
+        output.compressionFlags = compressionFlags;
         output.resource(res, true);
         output.shrink();
         return output.buffer;
@@ -367,7 +369,8 @@ public class Bytes {
                 FileEntry dependencyEntry = Globals.findEntry(res);
                 if (res == null) continue;
                 if (res.type == ResourceType.SCRIPT) continue;
-                if (res.type == ResourceType.PLAN && res.GUID != -1) Plan.removePlanDescriptors(resource, res.GUID);
+                if (res.type == ResourceType.PLAN && res.GUID != -1) 
+                    Plan.removePlanDescriptors(resource, res.GUID);
                 /*
                 if (res.type == ResourceType.STREAMING_CHUNK) {
                     if (res.GUID == -1) continue;

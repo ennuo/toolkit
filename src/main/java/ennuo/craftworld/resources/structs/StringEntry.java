@@ -2,14 +2,25 @@ package ennuo.craftworld.resources.structs;
 
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
-import java.util.Random;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class StringEntry {
+public class StringEntry implements Serializable {
     public static int MAX_SIZE = 0x200;
     
-    public long key = 0;
-    public String string = "";
-    public int index = 0;
+    public long key;
+    public String string;
+    public int index;
+    
+    public StringEntry serialize(Serializer serializer, Serializable structure) {
+        StringEntry entry = (structure == null) ? new StringEntry() : (StringEntry) structure;
+        
+        entry.key = serializer.u32(entry.key);
+        entry.string = serializer.str16(entry.string);
+        entry.index = serializer.i32(entry.index);
+        
+        return entry;
+    }
     
     public StringEntry() {}
     

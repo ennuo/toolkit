@@ -45,4 +45,11 @@ public class SlotID implements Serializable {
         SlotID d = (SlotID)o;
         return (type.equals(d.type) && ID == d.ID);
     }
+    
+    @Override
+    public int hashCode() {
+        int result = (int) (this.ID ^ (this.ID >>> 32));
+        result = 31 * result + (this.type != null ? this.type.hashCode() : 0);
+        return result;
+    }
 }

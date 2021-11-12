@@ -1,8 +1,10 @@
 package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -13,18 +15,13 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Data {
-    public static final byte USE_COMPRESSED_INTEGERS = 1; // Also uses compressed parts
-    public static final byte USE_COMPRESSED_VECTORS = 2;
-    public static final byte USE_COMPRESSED_MATRICES = 4;
-
     public String path;
 
     public byte[] data;
     public int offset;
     public int length;
     
-    public int revision = 0x271;
-    public int branchDescription;
+    public Revision revision = new Revision(0x271);
     public byte compressionFlags = 0;
 
     /**
@@ -42,10 +39,10 @@ public class Data {
      */
     public Data(byte[] data, int revision) {
         this.setData(data);
-        this.revision = revision;
+        this.revision = new Revision(revision);
         
         // NOTE(Abz): For legacy reasons.
-        if (this.revision == 0x272 || this.revision > 0x297)
+        if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
 
@@ -57,11 +54,40 @@ public class Data {
      */
     public Data(byte[] data, int revision, int branch) {
         this.setData(data);
-        this.revision = revision;
-        this.branchDescription = branch;
+        this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
         
         // NOTE(Abz): For legacy reasons.
-        if ((this.revision == 0x272 && this.branchDescription != 0) || this.revision > 0x297)
+        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
+            this.compressionFlags = 0x7;
+    }
+    
+    /**
+     * Creates a memory input stream from byte array with specified revision.
+     * @param data Byte array to use as source
+     * @param revision Revision of the stream
+     * @param branchID ID of branch of this stream.
+     * @param branchRevision Revision of the branch.
+     */
+    public Data(byte[] data, int revision, int branchID, int branchRevision) {
+        this.setData(data);
+        this.revision = new Revision(revision, branchID, branchRevision);
+        
+        // NOTE(Abz): For legacy reasons.
+        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
+            this.compressionFlags = 0x7;
+    }
+    
+    /**
+     * Creates a memory input stream from byte array with specified revision.
+     * @param data Byte array to use as source
+     * @param revision Revision of the stream
+     */
+    public Data(byte[] data, Revision revision) {
+        this.setData(data);
+        this.revision = revision;
+        
+        // NOTE(Abz): For legacy reasons.
+        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
     
@@ -82,12 +108,12 @@ public class Data {
      */
     public Data(String path, int revision) {
         this.path = path;
-        this.revision = revision;
+        this.revision = new Revision(revision);
         byte[] data = FileIO.read(path);
         this.setData(data);
         
         // NOTE(Abz): For legacy reasons.
-        if (this.revision == 0x272 || this.revision > 0x297)
+        if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
 
@@ -203,9 +229,35 @@ public class Data {
      * @return Integer read from the stream
      */
     public int i32() {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
             return this.i32f();
         return (int) (this.varint() & 0xFFFFFFFF);
+    }
+    
+    /**
+     * Reads a 64-bit long from the stream, encoded depending on the revision.
+     * @return Long read from the stream
+     */
+    public long i64() {
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
+            return this.i64f();
+        return this.varint();
+    }
+    
+    /**
+     * Reads a long from the stream.
+     * @return Long read from the stream
+     */
+    public long i64f() {
+        byte[] buffer = this.bytes(8);
+        return (buffer[0] & 0xFFL) << 56L |
+               (buffer[1] & 0xFFL) << 48L |
+               (buffer[2] & 0xFFL) << 40L |
+               (buffer[3] & 0xFFL) << 32L |
+               (buffer[4] & 0xFFL) << 24L |
+               (buffer[5] & 0xFFL) << 16L |
+               (buffer[6] & 0xFFL) << 8L |
+               (buffer[7] & 0xFFL) << 0L;
     }
     
     /**
@@ -235,14 +287,14 @@ public class Data {
      * @return Unsigned integer read from the stream
      */
     public long u32() {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
             return this.u32f();
         return this.varint();
     }
 
     /**
-     * Reads an integer as an unsigned short from the stream.
-     * @return Unsigned short read from the stream
+     * Reads an integer from the stream.
+     * @return Integer read from the stream
      */
     public int i32f() {
         byte[] buffer = this.bytes(4);
@@ -301,7 +353,7 @@ public class Data {
     public Matrix4f matrix() {
         float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         int flags = 0xFFFF;
-        if ((this.compressionFlags & Data.USE_COMPRESSED_MATRICES) != 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)
             flags = this.i16();
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
@@ -327,14 +379,14 @@ public class Data {
      */
     public ResourceDescriptor resource(ResourceType resourceType, boolean skipFlags) {
         byte HASH = 1, GUID = 2;
-        if (this.revision <= 0x18B) {
+        if (this.revision.head <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
 
         byte type = 0; int flags = 0;
         
-        if (this.revision > 0x22e && !skipFlags) flags = this.i32();
+        if (this.revision.head > 0x22e && !skipFlags) flags = this.i32();
         type = this.i8();
         
         ResourceDescriptor resource = new ResourceDescriptor();
@@ -380,7 +432,7 @@ public class Data {
      */
     public String str16() {
         int size = this.i32();
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) == 0) size *= 2;
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0) size *= 2;
         byte[] data = this.bytes(size);
         return new String(data, Charset.forName("UTF-16BE"));
     }
@@ -391,7 +443,7 @@ public class Data {
      */
     public String str8() {
         int size = this.i32();
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size /= 2;
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size /= 2;
         return this.str(size);
     }
 

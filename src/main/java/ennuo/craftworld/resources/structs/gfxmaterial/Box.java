@@ -27,7 +27,7 @@ public class Box implements Serializable {
         
         box.type = serializer.i32(box.type);
         
-        if (serializer.revision >= 0x2b2)
+        if (serializer.revision.head >= 0x2b2)
             box.params = serializer.u32a(box.params);
         else {
             if (!serializer.isWriting) box.params = new long[6];
@@ -40,7 +40,7 @@ public class Box implements Serializable {
         box.z = serializer.f32(box.z);
         box.w = serializer.f32(box.w);
         
-        if (serializer.revision >= 0x2a2) {
+        if (serializer.revision.head >= 0x2a2) {
             box.subType = serializer.i32(box.subType);
             box.anim = serializer.struct(box.anim, ParameterAnimation.class);
             box.anim2 = serializer.struct(box.anim2, ParameterAnimation.class);

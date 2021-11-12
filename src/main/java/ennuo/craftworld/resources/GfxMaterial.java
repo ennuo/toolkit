@@ -1,7 +1,5 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.utilities.Compressor;
-import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
@@ -56,20 +54,20 @@ public class GfxMaterial implements Serializable {
         gfxMaterial.flags = serializer.i32(gfxMaterial.flags);
         gfxMaterial.alphaTestLevel = serializer.f32(gfxMaterial.alphaTestLevel);
         gfxMaterial.alphaLayer = serializer.i8(gfxMaterial.alphaLayer);
-        if (serializer.revision > 0x331)
+        if (serializer.revision.head > 0x331)
             gfxMaterial.alphaMode = serializer.i8(gfxMaterial.alphaMode);
         gfxMaterial.shadowCastMode = serializer.i8(gfxMaterial.shadowCastMode);
         gfxMaterial.bumpLevel = serializer.f32(gfxMaterial.bumpLevel);
         gfxMaterial.cosinePower = serializer.f32(gfxMaterial.cosinePower);
         gfxMaterial.reflectionBlur = serializer.f32(gfxMaterial.reflectionBlur);
         gfxMaterial.refractiveIndex = serializer.f32(gfxMaterial.refractiveIndex);
-        if (serializer.revision > 0x13003ef) {
+        if (serializer.revision.head > 0x13003ef) {
             gfxMaterial.refractiveFresnelFalloffPower = serializer.f32(gfxMaterial.refractiveFresnelFalloffPower);
             gfxMaterial.refractiveFresnelMultiplier = serializer.f32(gfxMaterial.refractiveFresnelMultiplier);
             gfxMaterial.refractiveFresnelOffset = serializer.f32(gfxMaterial.refractiveFresnelOffset);
             gfxMaterial.refractiveFresnelShift = serializer.f32(gfxMaterial.refractiveFresnelShift);
             gfxMaterial.fuzzLengthAndRefractiveFlag = serializer.i8(gfxMaterial.fuzzLengthAndRefractiveFlag);
-            if (serializer.revision > 0x17703ef) {
+            if (serializer.revision.head > 0x17703ef) {
                 gfxMaterial.translucencyDensity = serializer.i8(gfxMaterial.translucencyDensity);
                 gfxMaterial.fuzzSwirlAngle = serializer.i8(gfxMaterial.fuzzSwirlAngle);
                 gfxMaterial.fuzzSwirlAmplitude = serializer.i8(gfxMaterial.fuzzSwirlAmplitude);
@@ -84,14 +82,14 @@ public class GfxMaterial implements Serializable {
         // can do about that here at the moment.
         
         int shaderCount = 3;
-        if (serializer.revision == 0x3e2) shaderCount = 25;
-        else if (serializer.revision >= 0x398) shaderCount = 11;
-        else if (serializer.revision >= 0x353) shaderCount = 8;
-        else if (serializer.revision == 0x272 || serializer.revision >= 0x336) shaderCount = 4;
+        if (serializer.revision.isVita()) shaderCount = 25;
+        else if (serializer.revision.head >= 0x398) shaderCount = 11;
+        else if (serializer.revision.head >= 0x353) shaderCount = 8;
+        else if (serializer.revision.head == 0x272 || serializer.revision.head >= 0x336) shaderCount = 4;
         
         if (serializer.isWriting) {
             int offset = 0;
-            if (serializer.revision < 0x398) 
+            if (serializer.revision.head < 0x398) 
                 serializer.output.i32(0);
             for (int i = 0; i < shaderCount; ++i) {
                 byte[] shader = gfxMaterial.shaders[i];
@@ -106,7 +104,7 @@ public class GfxMaterial implements Serializable {
             gfxMaterial.shaders = new byte[shaderCount][];
             
             int[] offsets = new int[shaderCount + 1];
-            for (int i = (serializer.revision >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i)
+            for (int i = (serializer.revision.head >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i)
                 offsets[i] = serializer.input.i32();
             for (int i = 1; i <= shaderCount; ++i)
                 gfxMaterial.shaders[i - 1] = serializer.input.bytes(offsets[i] - offsets[i - 1]);
@@ -121,10 +119,10 @@ public class GfxMaterial implements Serializable {
         gfxMaterial.boxes = serializer.array(gfxMaterial.boxes, Box.class);
         gfxMaterial.wires = serializer.array(gfxMaterial.wires, Wire.class);
         
-        if (serializer.revision > 0x148)
+        if (serializer.revision.head > 0x148)
             gfxMaterial.soundEnum = serializer.i32(gfxMaterial.soundEnum);
         
-        if (serializer.revision >= 0x2a2)
+        if (serializer.revision.head >= 0x2a2)
             gfxMaterial.parameterAnimations = 
                         serializer.array(gfxMaterial.parameterAnimations, ParameterAnimation.class);
         

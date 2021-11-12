@@ -1,5 +1,7 @@
 package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.resources.enums.CompressionFlags;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import java.nio.ByteBuffer;
@@ -17,8 +19,7 @@ public class Output {
     public int offset;
     public int length;
     
-    public int revision = 0x271;
-    public int branchDescription;
+    public Revision revision = new Revision(0x271);
     public byte compressionFlags = 0;
 
     public ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
@@ -39,11 +40,26 @@ public class Output {
      */
     public Output(int size, int revision) {
         this.buffer = new byte[size];
+        this.revision = new Revision(revision);
+        this.length = size;
+        
+        // NOTE(Abz): For legacy reasons.
+        if (this.revision.head == 0x272 || this.revision.head > 0x297)
+            this.compressionFlags = 0x7;
+    }
+    
+    /**
+     * Creates a memory output stream with specified size and revision.
+     * @param size Size of buffer to create
+     * @param revision Revision of stream
+     */
+    public Output(int size, Revision revision) {
+        this.buffer = new byte[size];
         this.revision = revision;
         this.length = size;
         
         // NOTE(Abz): For legacy reasons.
-        if (this.revision == 0x272 || this.revision > 0x297)
+        if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
     
@@ -55,12 +71,28 @@ public class Output {
      */
     public Output(int size, int revision, int branch) {
         this.buffer = new byte[size];
-        this.revision = revision;
+        this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
         this.length = size;
-        this.branchDescription = branch;
         
         // NOTE(Abz): For legacy reasons.
-        if ((this.revision == 0x272 && this.branchDescription != 0) || this.revision > 0x297)
+        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
+            this.compressionFlags = 0x7;
+    }
+    
+    /**
+     * Creates a memory output stream with specified size and revision.
+     * @param size Size of buffer to create
+     * @param revision Revision of stream
+     * @param branchID ID of branch of this stream.
+     * @param branchRevision Revision of the branch.
+     */
+    public Output(int size, int revision, int branchID, int branchRevision) {
+        this.buffer = new byte[size];
+        this.revision = new Revision(revision, branchID, branchRevision);
+        this.length = size;
+        
+        // NOTE(Abz): For legacy reasons.
+        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
 
@@ -84,7 +116,7 @@ public class Output {
     public Output str16(String value) {
         if (value == null || value.equals("")) { this.i32(0); return this; }
         int size = value.length();
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
         this.i32(size);
         this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
         return this;
@@ -98,7 +130,7 @@ public class Output {
     public Output str8(String value) {
         if (value == null || value.equals("")) { this.i32(0); return this; }
         int size = value.length();
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
         this.i32(size);
         this.str(value);
         return this;
@@ -189,7 +221,7 @@ public class Output {
      * @return This output stream
      */
     public Output i32(int value) {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.i32f(value);
     }
@@ -224,9 +256,38 @@ public class Output {
      * @return This output stream
      */
     public Output u32(long value) {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.u32f(value);
+    }
+    
+    /**
+     * Writes a long to the stream, encoded depending on the revision.
+     * @param value Long to write
+     * @return This output stream
+     */
+    public Output i64(long value) {
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
+            return this.varint(value);
+        else return this.i64f(value);
+    }
+    
+    /**
+     * Writes a long to the stream as 64-bit regardless of revision.
+     * @param value Long to write
+     * @return This output stream
+     */
+    public Output i64f(long value) { 
+        return this.bytes(new byte[] {
+            (byte) (value >>> 56),
+            (byte) (value >>> 48),
+            (byte) (value >>> 40),
+            (byte) (value >>> 32),
+            (byte) (value >>> 24),
+            (byte) (value >>> 16),
+            (byte) (value >>> 8),
+            (byte) (value)
+        });
     }
     
     /**
@@ -235,7 +296,7 @@ public class Output {
      * @return This output stream
      */
     public Output u32LE(long value) {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0)
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
             return this.varint(value);
         else return this.u32LEf(value);
     }
@@ -330,7 +391,7 @@ public class Output {
         float[] values = new float[16];
         value.get(values);
         int flags = 0xFFFF;
-        if ((this.compressionFlags & Data.USE_COMPRESSED_MATRICES) != 0) {
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0) {
             flags = 0;
             for (int i = 0; i < 16; ++i)
                 if (values[i] != identity[i])
@@ -360,12 +421,12 @@ public class Output {
      */
     public Output resource(ResourceDescriptor value, boolean skipFlags) {
         byte HASH = 1, GUID = 2;
-        if (this.revision <= 0x18B) {
+        if (this.revision.head <= 0x18B) {
             HASH = 2;
             GUID = 1;
         }
         
-        if (this.revision > 0x22e && !skipFlags)
+        if (this.revision.head > 0x22e && !skipFlags)
             this.i32(value.flags);
         
         if (value.hash != null) {

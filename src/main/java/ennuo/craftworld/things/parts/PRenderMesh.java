@@ -42,7 +42,7 @@ public class PRenderMesh implements Serializable {
         
         renderMesh.poppetRenderScale = serializer.f32(renderMesh.poppetRenderScale);
         
-        if (serializer.revision >= 0x25b) {
+        if (serializer.revision.head >= 0x25b) {
             renderMesh.parentDistanceFront = serializer.f32(renderMesh.parentDistanceFront);
             renderMesh.parentDistanceSide = serializer.f32(renderMesh.parentDistanceFront);
         }

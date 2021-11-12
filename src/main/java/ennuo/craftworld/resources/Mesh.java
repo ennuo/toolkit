@@ -1,5 +1,6 @@
 package ennuo.craftworld.resources;
 
+import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.mesh.*;
@@ -101,7 +102,7 @@ public class Mesh implements Serializable {
         for (int i = 0; i < 0x20; ++i)
             mesh.morphNames[i] = serializer.str(mesh.morphNames[i], 0x10);
         
-        if (serializer.revision >= 0x239) {
+        if (serializer.revision.head >= 0x239) {
             mesh.minUV = serializer.f32a(mesh.minUV);
             mesh.maxUV = serializer.f32a(mesh.maxUV);
             mesh.areaScaleFactor = serializer.f32(mesh.areaScaleFactor);
@@ -130,7 +131,7 @@ public class Mesh implements Serializable {
         
         mesh.attributes = serializer.i8a(mesh.attributes);
         mesh.indices = serializer.i8a(mesh.indices);
-        if (serializer.revision >= 0x016b03f0)
+        if (serializer.revision.head >= 0x016b03f0)
             mesh.triangles = serializer.i8a(mesh.triangles);
         
         mesh.meshPrimitives = serializer.array(mesh.meshPrimitives, MeshPrimitive.class);
@@ -171,7 +172,7 @@ public class Mesh implements Serializable {
         // the fact that this is different than the other ones, probably means that
         // I messed something up, will fix it later.
         
-        if ((serializer.compressionFlags & Data.USE_COMPRESSED_VECTORS) == 0)
+        if ((serializer.compressionFlags & CompressionFlags.USE_COMPRESSED_VECTORS) == 0)
             mesh.regionIDsToHide = serializer.u32a(mesh.regionIDsToHide);
         else if (serializer.isWriting) {
             if (mesh.regionIDsToHide != null && mesh.regionIDsToHide.length != 0) {
@@ -207,7 +208,7 @@ public class Mesh implements Serializable {
         mesh.bevelVertexCount = serializer.i32(mesh.bevelVertexCount);
         mesh.implicitBevelSprings = serializer.bool(mesh.implicitBevelSprings);
         
-        if (serializer.revision >= 0x015f03ef)
+        if (serializer.revision.head >= 0x015f03ef)
             mesh.skeletonType = serializer.i8(mesh.skeletonType);
         
         return mesh;

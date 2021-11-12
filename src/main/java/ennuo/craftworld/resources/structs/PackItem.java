@@ -26,7 +26,7 @@ public class PackItem {
         slot = new Serializer(data).struct(null, Slot.class);
         contentID = data.str8();
         timestamp = data.u32();
-        if (data.revision == 0x3e2)
+        if (data.revision.isVita())
             crossBuyCompatible = data.bool();
     }
     
@@ -36,7 +36,7 @@ public class PackItem {
         new Serializer(output).struct(slot, Slot.class);
         output.str8(contentID);
         output.u32(timestamp);
-        if (output.revision == 0x3e2)
+        if (output.revision.isVita())
             output.bool(crossBuyCompatible);
     }
 }

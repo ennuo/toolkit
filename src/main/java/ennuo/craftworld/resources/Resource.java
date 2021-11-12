@@ -4,6 +4,7 @@ import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.SerializationMethod;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.TextureInfo;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.FileEntry;
@@ -17,8 +18,7 @@ public class Resource {
     public ResourceType type = ResourceType.INVALID;
     public SerializationMethod method = SerializationMethod.UNKNOWN;
     public TextureInfo textureInfo;
-    public int revision = 0x132;
-    public int branchDescription = 0;
+    public Revision revision = new Revision(0x132, 0x0000, 0x0000);
     private boolean isCompressed = true;
     public byte compressionFlags = 0;
     public Data handle = null;
@@ -29,12 +29,11 @@ public class Resource {
     public Resource(Output output) {
         output.shrink();
         this.revision = output.revision;
-        this.branchDescription = output.branchDescription;
         this.dependencies = output.dependencies.toArray(
                 new ResourceDescriptor[output.dependencies.size()]);
         this.method = SerializationMethod.BINARY;
         this.compressionFlags = output.compressionFlags;
-        this.handle = new Data(output.buffer, output.revision, output.branchDescription);
+        this.handle = new Data(output.buffer, output.revision);
         this.handle.compressionFlags = output.compressionFlags;
     }
     
@@ -57,19 +56,19 @@ public class Resource {
         switch (this.method) {
             case BINARY:
             case ENCRYPTED_BINARY:
-                this.revision = this.handle.i32f();
+                this.revision = new Revision(this.handle.i32f());
                 this.handle.revision = this.revision;
                 int dependencyTableOffset = -1;
-                if (this.revision >= 0x109) {
+                if (this.revision.head >= 0x109) {
                     dependencyTableOffset = this.getDependencies();
-                    if (this.revision >= 0x189) {
-                        if (this.revision >= 0x271) { 
+                    if (this.revision.head >= 0x189) {
+                        if (this.revision.head >= 0x271) { 
                             // NOTE(Abz): Were they actually added on 0x27a, but how can it be on 0x272 then?!
-                            // Damn you Alex Evans!
-                            this.branchDescription = this.handle.i32f();
-                            this.handle.branchDescription = this.branchDescription;
+                            this.revision.branchID = this.handle.i16();
+                            this.revision.branchRevision = this.handle.i16();
+                            this.handle.revision = revision;
                         }
-                        if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0)) {
+                        if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0)) {
                             this.compressionFlags = this.handle.i8();
                             this.handle.compressionFlags = this.compressionFlags;
                         }
@@ -129,14 +128,14 @@ public class Resource {
     public void replaceDependency(int index, ResourceDescriptor newDescriptor) {
         ResourceDescriptor oldDescriptor = this.dependencies[index];
         
-        byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision);
-        byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision);
+        byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
+        byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
         
         if (Arrays.equals(oldDescBuffer, newDescBuffer)) return;
         
         if (this.type == ResourceType.PLAN) {
             Plan plan = new Plan(this);
-            Data thingData = new Data(plan.thingData, this.revision, this.branchDescription);
+            Data thingData = new Data(plan.thingData, this.revision);
             Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
             plan.thingData = thingData.data;
             this.handle.setData(plan.build(false));
@@ -171,11 +170,10 @@ public class Resource {
         return dependencyTableOffset;
     }
     
-    public static byte[] compressToResource(byte[] data, int revision, int branch, int compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
+    public static byte[] compressToResource(byte[] data, Revision revision, int compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
         Resource resource = new Resource();
-        resource.handle = new Data(data, revision, branch);
+        resource.handle = new Data(data, revision);
         resource.revision = revision;
-        resource.branchDescription = branch;
         resource.type = type;
         if (resource.type == ResourceType.LOCAL_PROFILE)
             resource.method = SerializationMethod.ENCRYPTED_BINARY;
@@ -204,12 +202,15 @@ public class Resource {
         }
         
         output.str(this.type.header + this.method.value);
-        output.i32f(this.revision);
-        if (this.revision >= 0x109) {
+        output.i32f(this.revision.head);
+        if (this.revision.head >= 0x109) {
             output.i32f(0); // Dummy value for dependency table offset.
-            if (this.revision >= 0x189) {
-                if (this.revision >= 0x271) output.i32f(this.branchDescription);
-                if (this.revision >= 0x297 || (this.revision == 0x272 && this.branchDescription != 0))
+            if (this.revision.head >= 0x189) {
+                if (this.revision.head >= 0x271) {
+                    output.i16(this.revision.branchID);
+                    output.i16(this.revision.branchRevision);
+                }
+                if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0))
                     output.i8(this.compressionFlags);
                 output.bool(this.isCompressed);
             }

@@ -1,8 +1,10 @@
 package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.resources.structs.Revision;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,8 +19,7 @@ public class Serializer {
     public Data input;
     public Output output;
     
-    public int revision;
-    public int branchDescription;
+    public Revision revision;
     public int compressionFlags;
     
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
@@ -29,7 +30,6 @@ public class Serializer {
     public Serializer(Data data) {
         this.input = data;
         this.revision = data.revision;
-        this.branchDescription = data.branchDescription;
         this.compressionFlags = data.compressionFlags;
         this.isWriting = false;
     }
@@ -37,7 +37,6 @@ public class Serializer {
     public Serializer(Output data) {
         this.output = data;
         this.revision = data.revision;
-        this.branchDescription = data.branchDescription;
         this.compressionFlags = data.compressionFlags;
         this.isWriting = true;
     }
@@ -45,14 +44,14 @@ public class Serializer {
     public Serializer(int size, int revision) {
         this.isWriting = true;
         this.output = new Output(size, revision);
-        this.revision = revision;
+        this.revision = new Revision(revision);
         this.compressionFlags = this.output.compressionFlags;
     }
     
     public Serializer(byte[] data, int revision) {
         this.isWriting = false;
         this.input = new Data(data, revision);
-        this.revision = revision;
+        this.revision = new Revision(revision);
         this.compressionFlags = this.input.compressionFlags;
     }
     
@@ -117,6 +116,14 @@ public class Serializer {
         return this.input.i32();
     }
     
+    public long i64(long value) {
+        if (this.isWriting) {
+            this.output.i64(value);
+            return value;
+        }
+        return this.input.i64();
+    }
+    
     public int[] i32a(int[] values) {
         if (this.isWriting) {
             this.output.i32a(values);
@@ -131,7 +138,7 @@ public class Serializer {
         // doubled for some reason? Well, whatever
         
         int multiplier = 
-                ((this.compressionFlags & Data.USE_COMPRESSED_INTEGERS) != 0) ? 2 : 1;
+                ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) ? 2 : 1;
         
         if (this.isWriting) {
             this.output.u32(value * multiplier);
@@ -245,7 +252,7 @@ public class Serializer {
     }
     
     public int[] table(int[] values) {
-        if ((this.compressionFlags & Data.USE_COMPRESSED_VECTORS) == 0) 
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_VECTORS) == 0) 
             return this.i32a(values);
         if (this.isWriting) {
             if (values == null || values.length == 0) {

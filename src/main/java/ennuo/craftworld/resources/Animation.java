@@ -32,7 +32,7 @@ public class Animation {
     public AnimatedMorph[] morphs;
     
     public Animation(Data data) {
-        if (data.revision > 0x2ae) 
+        if (data.revision.head > 0x2ae) 
             processLBP3(data);
         else processLBP1(data);
         
@@ -161,7 +161,7 @@ public class Animation {
         morphsAnimatedCount = data.i8();
         locatorKeysCount = data.i16();
         
-        if (data.revision >= 0x3d9) {
+        if (data.revision.head >= 0x3d9) {
             posOffset = data.v4();
             posScale = data.v4();
         

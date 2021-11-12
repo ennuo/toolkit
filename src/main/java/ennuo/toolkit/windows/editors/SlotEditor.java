@@ -104,7 +104,7 @@ public class SlotEditor extends javax.swing.JFrame {
                     Serializer serializer = new Serializer(output);
                     for (Slot slot : slotInstances)
                         serializer.struct(slot, Slot.class);
-                    if (output.revision == 0x3e2)
+                    if (output.revision.isVita())
                         output.bool(false);
                     output.shrink();
                 

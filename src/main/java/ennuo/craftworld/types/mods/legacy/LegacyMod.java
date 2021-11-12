@@ -74,8 +74,8 @@ public class LegacyMod {
 
         revision = data.i8();
         
-        if (revision > 5) data.revision = 0x01ae03fa;
-        else data.revision = 0xFFFF;
+        if (revision > 5) data.revision.head = 0x01ae03fa;
+        else data.revision.head = 0xFFFF;
         
         if (revision > LegacyMod.MAX_REVISION) {
             System.err.println(String.format("This mod file (v%s) isn't supported with your version of Craftworld Toolkit (v%s), are you out of date?", String.valueOf(revision), String.valueOf(LegacyMod.MAX_REVISION)));

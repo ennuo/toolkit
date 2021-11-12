@@ -26,7 +26,7 @@ public class Color implements Serializable {
         Color color = (structure == null) ? new Color() : (Color) structure;
         
         if (serializer.isWriting) {
-            if (serializer.revision > 0x37b)
+            if (serializer.revision.head > 0x37b)
                 serializer.output.i32(Bytes.toInteger(new byte[] { 
                     (byte) (color.r * 255),
                     (byte) (color.g * 255),
@@ -36,7 +36,7 @@ public class Color implements Serializable {
             else
                 serializer.output.v4(new Vector4f(color.r, color.g, color.b, color.a));
         } else {
-            if (serializer.revision > 0x37b) {
+            if (serializer.revision.head > 0x37b) {
                 int bits = serializer.input.i32();
                 color.r = ((bits >> 24) & 0xFF) / 255.0f;
                 color.g = ((bits >> 16) & 0xFF) / 255.0f;

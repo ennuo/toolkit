@@ -104,7 +104,7 @@ public class Slot implements Serializable {
         slot.id = serializer.struct(slot.id, SlotID.class);
         
         slot.root = serializer.resource(slot.root, ResourceType.LEVEL, true);
-        if (serializer.revision > 0x010503ef)
+        if (serializer.revision.head > 0x010503ef)
             slot.adventure = serializer.resource(slot.adventure, ResourceType.ADVENTURE_CREATE_PROFILE, true);
         slot.icon = serializer.resource(slot.icon, ResourceType.TEXTURE, true);
         
@@ -126,45 +126,45 @@ public class Slot implements Serializable {
         
         slot.backgroundGUID = serializer.u32(slot.backgroundGUID);
         
-        if (serializer.revision > 0x2c3)
+        if (serializer.revision.head > 0x2c3)
             slot.planetDecorations = serializer.resource(slot.planetDecorations, ResourceType.PLAN, true);
         
         slot.developerLevelType = LevelType.getValue(serializer.i32(slot.developerLevelType.value));
         
-        if (serializer.revision <= 0x33a)
+        if (serializer.revision.head <= 0x33a)
             slot.gameProgressionState = serializer.i32(slot.gameProgressionState);
         
-        if (serializer.revision <= 0x2c3) return slot;
+        if (serializer.revision.head <= 0x2c3) return slot;
         
-        if (serializer.revision > 0x33a)
+        if (serializer.revision.head > 0x33a)
             slot.authorLabels = serializer.array(slot.authorLabels, Label.class);
         
         slot.requiredCollectables = serializer.array(slot.requiredCollectables, Collectable.class);
         slot.containedCollectables = serializer.array(slot.containedCollectables, Collectable.class);
         
-        if (serializer.revision <= 0x33a) return slot;
+        if (serializer.revision.head <= 0x33a) return slot;
         
         slot.isSubLevel = serializer.bool(slot.isSubLevel);
         
-        if (serializer.revision <= 0x3af) return slot;
+        if (serializer.revision.head <= 0x3af) return slot;
         
         slot.minPlayers = serializer.i8(slot.minPlayers);
         slot.maxPlayers = serializer.i8(slot.maxPlayers);
         
-        if (serializer.revision >= 0x021803F9)
+        if (serializer.revision.head >= 0x021803F9)
             slot.enforceMinMaxPlayers = serializer.bool(slot.enforceMinMaxPlayers);
         
-        if (serializer.revision >= 0x3b7)
+        if (serializer.revision.head >= 0x3b7)
             slot.moveRecommended = serializer.bool(slot.moveRecommended);
         
-        if (serializer.revision >= 0x3e6)
+        if (serializer.revision.head >= 0x3e6)
             slot.crossCompatible = serializer.bool(slot.crossCompatible);
         
         slot.showOnPlanet = serializer.bool(slot.showOnPlanet);
         
         slot.livesOverride = serializer.i8(slot.livesOverride);
         
-        if (serializer.revision == 0x3e2 && serializer.branchDescription != 0) {
+        if (serializer.revision.isVita()) {
             slot.acingEnabled = serializer.bool(slot.acingEnabled);
             slot.customRewardEnabled = serializer.u32a(slot.customRewardEnabled);
             
@@ -198,22 +198,22 @@ public class Slot implements Serializable {
             slot.vitaRevision = serializer.i32(slot.vitaRevision);
         }
         
-        if (serializer.revision <= 0x3f8) return slot;
+        if (serializer.revision.head <= 0x3f8) return slot;
         
         slot.gameMode = GameMode.getValue(serializer.i32(slot.gameMode.value));
         slot.isGameKit = serializer.bool(slot.isGameKit);
         
-        if (serializer.revision <= 0x010503EF) return slot;
+        if (serializer.revision.head <= 0x010503EF) return slot;
         
         slot.entranceName = serializer.str16(slot.entranceName);
         slot.originalSlotID = serializer.struct(slot.originalSlotID, SlotID.class);
         
-        if (serializer.revision <= 0x014703ef) return slot;
+        if (serializer.revision.head <= 0x014703ef) return slot;
         
         slot.customBadgeSize = serializer.i8(slot.customBadgeSize);
         
         slot.trailerLocal = serializer.str8(slot.trailerLocal);
-        if (serializer.revision > 0x01ae03f9)
+        if (serializer.revision.head > 0x01ae03f9)
             slot.trailerWeb = serializer.str8(slot.trailerWeb);
         
         return slot;
@@ -231,7 +231,7 @@ public class Slot implements Serializable {
         if (root != null) {
             byte[] root = Globals.extractFile(this.root);
             if (root != null)
-                revision = new Resource(root).revision;
+                revision = new Resource(root).revision.head;
         }    
             
         if (id.type.equals(SlotType.DEVELOPER_GROUP) || id.type.equals(SlotType.DLC_PACK))

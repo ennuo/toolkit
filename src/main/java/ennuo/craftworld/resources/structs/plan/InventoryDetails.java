@@ -70,13 +70,13 @@ public class InventoryDetails implements Serializable {
         InventoryDetails details = 
                 (structure == null) ? new InventoryDetails() : (InventoryDetails) structure;
         
-        if (serializer.revision > 0x377) {
+        if (serializer.revision.head > 0x377) {
             details.dateAdded = serializer.u32d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
             details.highlightSound = serializer.u32(details.highlightSound);
             details.colour = serializer.u32(details.colour);
             
-            details.type = ItemType.getValue(serializer.u32(details.type.value), serializer.revision);
+            details.type = ItemType.getValue(serializer.u32(details.type.value), serializer.revision.head);
             details.subType = ItemSubType.getValue(serializer.u32(details.subType.value), details.type);
             
             details.titleKey = serializer.u32(details.titleKey);
@@ -107,7 +107,7 @@ public class InventoryDetails implements Serializable {
             return details;
         }
         
-        if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x233) {
             details.highlightSound = serializer.u32f(details.highlightSound);
             
             // NOTE(Abz): In these older versions of the inventory details,
@@ -125,46 +125,46 @@ public class InventoryDetails implements Serializable {
         details.categoryIndex = (short) serializer.i32f(details.locationIndex);
         details.primaryIndex = (short) serializer.i32f(details.primaryIndex);
         
-        if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x233) {
             details.lastUsed = serializer.i32f(details.lastUsed);
             details.numUses = serializer.i32f(details.numUses);
             serializer.i32f(0); // PAD
         } else {
             serializer.i32f(0); // PAD
-            details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision);
+            details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision.head);
             details.subType = ItemSubType.getValue(serializer.u32f(details.subType.value), details.type);
-            if (serializer.revision > 0x196) {
+            if (serializer.revision.head > 0x196) {
                 details.toolType = ToolType.getValue((byte) (serializer.i32f(details.toolType.value) & 0xFF));
                 details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
             }
         }
         
-        if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x233) {
             // Fake long!
             serializer.u32f(0);
             details.dateAdded = serializer.u32f(details.dateAdded);
             
             details.fluffCost = serializer.i32f(details.fluffCost);
-        } else if (serializer.revision > 0x1c0) {
+        } else if (serializer.revision.head > 0x1c0) {
             details.numUses = serializer.i32f(details.numUses);
             details.lastUsed = serializer.i32f(details.lastUsed);
         }
         
-        if (serializer.revision > 0x14e) {
-            if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x14e) {
+            if (serializer.revision.head > 0x233) {
                 details.colour = serializer.u32f(details.colour);
-                details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision);
+                details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision.head);
                 details.subType = ItemSubType.getValue(serializer.u32f(details.subType.value), details.type);
                 details.toolType = ToolType.getValue((byte) (serializer.i32f(details.toolType.value) & 0xFF));
             }
             else {
                 details.highlightSound = serializer.u32f(details.highlightSound);
-                if (serializer.revision > 0x156) {
+                if (serializer.revision.head > 0x156) {
                     details.colour = serializer.u32f(details.colour);
                     details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
                 }
-                if (serializer.revision > 0x176) {
-                    if (serializer.revision > 0x181)
+                if (serializer.revision.head > 0x176) {
+                    if (serializer.revision.head > 0x181)
                         details.photoData = serializer.reference(details.photoData, PhotoData.class);
                     if (details.levelUnlockSlotID == null)
                         details.levelUnlockSlotID = new SlotID();
@@ -172,26 +172,26 @@ public class InventoryDetails implements Serializable {
                     details.levelUnlockSlotID.type = SlotType.getValue(serializer.i32f(details.levelUnlockSlotID.type.value));
                     details.levelUnlockSlotID.ID = serializer.u32f(details.levelUnlockSlotID.ID);
                 }
-                if (serializer.revision > 0x181)
+                if (serializer.revision.head > 0x181)
                     details.copyright = serializer.bool(details.copyright);
             }
         }
         
-        if (serializer.revision > 0x181)
+        if (serializer.revision.head > 0x181)
             details.creator = serializer.struct(details.creator, SceNpId.class);
         
-        if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x233) {
             details.allowEmit = serializer.bool(details.allowEmit);
             details.shareable = serializer.bool(details.shareable);
             details.copyright = serializer.bool(details.copyright);
-            if (serializer.revision >= 0x336) 
+            if (serializer.revision.head >= 0x336) 
                 serializer.pad(1);
         }
         
-        if ((serializer.revision == 0x272 && serializer.branchDescription != 0) || serializer.revision > 0x2ba) {
+        if ((serializer.revision.head == 0x272 && serializer.revision.branchID != 0) || serializer.revision.head > 0x2ba) {
             details.titleKey = serializer.u32(details.titleKey);
             details.descriptionKey = serializer.u32(details.descriptionKey);
-        } else if (serializer.revision > 0x233)
+        } else if (serializer.revision.head > 0x233)
             details.translationTag = serializer.str8(details.translationTag);
         
         if (!serializer.isWriting && !details.translationTag.isEmpty()) {
@@ -208,13 +208,13 @@ public class InventoryDetails implements Serializable {
                 details.translatedDescription = Globals.LAMS.translate(details.descriptionKey);
         }
         
-        if (serializer.revision > 0x1aa) {
+        if (serializer.revision.head > 0x1aa) {
             details.userCreatedDetails = serializer.struct(details.userCreatedDetails, UserCreatedDetails.class);
             if (details.userCreatedDetails != null && 
                     details.userCreatedDetails.title.isEmpty() && 
                     details.userCreatedDetails.description.isEmpty())
                 details.userCreatedDetails = null;
-            if (serializer.revision > 0x1b0) {
+            if (serializer.revision.head > 0x1b0) {
                 if (!serializer.isWriting) {
                     details.creationHistory = new CreationHistory();
                     details.creationHistory.creators = new String[serializer.input.i32()];
@@ -225,14 +225,14 @@ public class InventoryDetails implements Serializable {
             }
         }
         
-        if (serializer.revision > 0x233) {
+        if (serializer.revision.head > 0x233) {
             details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
 
             details.photoData = serializer.reference(details.photoData, PhotoData.class);
             details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
-        } else if (serializer.revision > 0x204) {
+        } else if (serializer.revision.head > 0x204) {
             details.allowEmit = serializer.bool(details.allowEmit);
-            if (serializer.revision > 0x221) {
+            if (serializer.revision.head > 0x221) {
                 // Fake long!
                 serializer.u32f(0);
                 details.dateAdded = serializer.u32f(details.dateAdded);
