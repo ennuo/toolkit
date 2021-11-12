@@ -170,9 +170,10 @@ public class Resource {
         return dependencyTableOffset;
     }
     
-    public static byte[] compressToResource(byte[] data, Revision revision, int compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
+    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
         Resource resource = new Resource();
         resource.handle = new Data(data, revision);
+        resource.compressionFlags = compressionFlags;
         resource.revision = revision;
         resource.type = type;
         if (resource.type == ResourceType.LOCAL_PROFILE)
@@ -192,7 +193,7 @@ public class Resource {
     
     public byte[] compressToResource() {
         if (this.type == ResourceType.STATIC_MESH) return this.handle.data;
-        Output output = new Output(this.dependencies.length * 0x1c + this.handle.length + 0x20);
+        Output output = new Output(this.dependencies.length * 0x1c + this.handle.length + 0x50);
         
         if (this.method == SerializationMethod.TEXT) {
             output.str(this.type.header + this.method.value + '\n');
