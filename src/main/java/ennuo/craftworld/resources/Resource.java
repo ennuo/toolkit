@@ -77,8 +77,11 @@ public class Resource {
                 }
                 
                 if (this.method == SerializationMethod.ENCRYPTED_BINARY) {
-                    int size = this.handle.i32f();
-                    this.handle.setData(TEA.decrypt(this.handle.bytes(size)));
+                    int size = this.handle.i32f(), padding = 0;
+                    if (size % 4 != 0)
+                        padding = 4 - (size % 4);
+                    this.handle.setData(TEA.decrypt(this.handle.bytes(size + padding)));
+                    this.handle.offset += padding;
                 }
                 
                 if (this.isCompressed)
@@ -219,8 +222,15 @@ public class Resource {
             byte[] data = this.handle.data;
             if (this.isCompressed) data = Compressor.getCompressedStream(this.handle.data);
             if (this.method == SerializationMethod.ENCRYPTED_BINARY) {
+                int size = data.length;
+                if (size % 4 != 0) {
+                    int padding = 4 - (size % 4);
+                    byte[] paddedData = new byte[padding + size];
+                    System.arraycopy(data, 0, paddedData, padding, size);
+                    data = paddedData;
+                }
                 data = TEA.encrypt(data);
-                output.i32f(data.length);
+                output.i32f(size);
             }
             output.bytes(data);
             
