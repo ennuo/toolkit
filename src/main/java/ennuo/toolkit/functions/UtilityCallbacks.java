@@ -243,7 +243,7 @@ public class UtilityCallbacks {
                 
                 try {
                     if (magic.equals("MSHb"))
-                        name = (new Mesh("mesh", data)).bones[0].name + ".mol";   
+                        name = (new Mesh("mesh", new Resource(data))).bones[0].name + ".mol";   
                 } catch (Exception e) { System.err.println("Error parsing mesh, defaulting to offset name."); } 
                 
                 entry.path = "resources/" + magic.substring(0, 3).toLowerCase() + "/" + name;

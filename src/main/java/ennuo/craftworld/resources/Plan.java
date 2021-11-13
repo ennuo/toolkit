@@ -72,7 +72,7 @@ public class Plan implements Serializable {
         if (resource.type != ResourceType.PLAN) return;
         Plan plan = new Plan(resource);
         plan.removePlanDescriptors(GUID, resource.revision, resource.compressionFlags);
-        resource.handle.setData(plan.build(false));
+        resource.handle.setData(plan.build(resource.revision, resource.compressionFlags, false));
     }
     
     public void removePlanDescriptors(long GUID, Revision revision, byte compressionFlags) {
@@ -89,11 +89,11 @@ public class Plan implements Serializable {
         this.thingData = thingData.data;
     }
     
-    public byte[] build(boolean compress) {
+    public byte[] build(Revision revision, byte compressionFlags, boolean shouldCompress) {
         int dataSize = InventoryDetails.MAX_SIZE + this.thingData.length;
-        Serializer serializer = new Serializer(dataSize, this.revision);
+        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
-        if (compress)
+        if (shouldCompress)
             return Resource.compressToResource(serializer.output, ResourceType.PLAN);
         return serializer.getBuffer();
     }

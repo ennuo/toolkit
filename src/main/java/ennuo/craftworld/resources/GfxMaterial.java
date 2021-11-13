@@ -2,6 +2,7 @@ package ennuo.craftworld.resources;
 
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.ParameterAnimation;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
@@ -129,11 +130,11 @@ public class GfxMaterial implements Serializable {
         return gfxMaterial;
     }
     
-    public byte[] build(int revision) {
+    public byte[] build(Revision revision, byte compressionFlags) {
         int dataSize = 0x1000;
         for (byte[] shader : this.shaders)
             dataSize += shader.length;
-        Serializer serializer = new Serializer(dataSize, revision);
+        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
         return Resource.compressToResource(serializer.output, ResourceType.GFX_MATERIAL);      
     }

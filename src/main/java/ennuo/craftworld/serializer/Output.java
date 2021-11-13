@@ -426,19 +426,25 @@ public class Output {
             GUID = 1;
         }
         
-        if (this.revision.head > 0x22e && !skipFlags)
-            this.i32(value.flags);
+        if (this.revision.head > 0x22e && !skipFlags) {
+            if (value == null) this.i32(0);
+            else this.i32(value.flags);
+        }
         
-        if (value.hash != null) {
-            this.i8(HASH);
-            this.bytes(value.hash);
-        } else if (value.GUID != -1) {
-            this.i8(GUID);
-            this.u32(value.GUID);
+        if (value != null) {
+            if (value.hash != null) {
+                this.i8(HASH);
+                this.bytes(value.hash);
+                if (!this.hasDependency(value))
+                    this.dependencies.add(value);
+            } else if (value.GUID != -1) {
+                this.i8(GUID);
+                this.u32(value.GUID);
+                if (!this.hasDependency(value))
+                    this.dependencies.add(value);
+            }
+            else this.i8((byte) 0);
         } else this.i8((byte) 0);
-        
-        if (!this.hasDependency(value))
-            this.dependencies.add(value);
         
         return this;
     }

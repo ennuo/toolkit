@@ -78,7 +78,7 @@ public class ExportCallbacks {
             byte[] data = Globals.extractFile(integer);
             if (data == null) System.err.println("Couldn't find data for model in any archives.");
             else
-                mesh = new Mesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), data);
+                mesh = new Mesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
         }
         
         if (file != null)

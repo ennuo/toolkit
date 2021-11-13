@@ -2,6 +2,7 @@ package ennuo.craftworld.resources;
 
 import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.mesh.*;
 import ennuo.craftworld.serializer.Data;
@@ -80,9 +81,9 @@ public class Mesh implements Serializable {
     public byte skeletonType;
     
     public Mesh(){}
-    public Mesh(String name, byte[] data) {
+    public Mesh(String name, Resource resource) {
         this.name = name;
-        Serializer serializer = new Serializer(new Resource(data).handle);
+        Serializer serializer = new Serializer(resource.handle);
         this.serialize(serializer, this);
     }
 
@@ -214,14 +215,14 @@ public class Mesh implements Serializable {
         return mesh;
     }
     
-    public byte[] build(int revision) {
+    public byte[] build(Revision revision, byte compressionFlags) {
         int dataSize = 1024 * 500;
         for (byte[] stream : this.streams)
             dataSize += stream.length;
         if (this.attributes != null) dataSize += this.attributes.length;
         if (this.indices != null) dataSize += this.indices.length;
         if (this.triangles != null) dataSize += this.triangles.length;
-        Serializer serializer = new Serializer(dataSize, revision);
+        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
         return Resource.compressToResource(serializer.output, ResourceType.MESH);    
     }

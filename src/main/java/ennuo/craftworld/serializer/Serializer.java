@@ -41,18 +41,20 @@ public class Serializer {
         this.isWriting = true;
     }
     
-    public Serializer(int size, int revision) {
+    public Serializer(int size, Revision revision, byte compressionFlags) {
         this.isWriting = true;
         this.output = new Output(size, revision);
-        this.revision = new Revision(revision);
-        this.compressionFlags = this.output.compressionFlags;
+        this.revision = revision;
+        this.output.compressionFlags = compressionFlags;
+        this.compressionFlags = compressionFlags;
     }
     
-    public Serializer(byte[] data, int revision) {
+    public Serializer(byte[] data, Revision revision, byte compressionFlags) {
         this.isWriting = false;
         this.input = new Data(data, revision);
-        this.revision = new Revision(revision);
-        this.compressionFlags = this.input.compressionFlags;
+        this.input.compressionFlags = compressionFlags;
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
     }
     
     public void pad(int size) {

@@ -141,7 +141,7 @@ public class Resource {
             Data thingData = new Data(plan.thingData, this.revision);
             Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
             plan.thingData = thingData.data;
-            this.handle.setData(plan.build(false));
+            this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
         }
         Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
         
