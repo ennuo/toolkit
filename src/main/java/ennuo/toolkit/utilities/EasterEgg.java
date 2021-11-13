@@ -1,5 +1,6 @@
 package ennuo.toolkit.utilities;
 
+import ennuo.toolkit.configurations.Flags;
 import ennuo.toolkit.windows.Toolkit;
 
 public class EasterEgg {

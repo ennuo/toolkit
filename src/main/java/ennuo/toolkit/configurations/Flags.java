@@ -1,4 +1,4 @@
-package ennuo.toolkit.utilities;
+package ennuo.toolkit.configurations;
 
 public class Flags {
     public static boolean USE_APEX_UI = false;

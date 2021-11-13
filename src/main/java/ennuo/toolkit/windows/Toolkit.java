@@ -1,5 +1,7 @@
 package ennuo.toolkit.windows;
 
+import ennuo.toolkit.configurations.Flags;
+import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.editors.*;
 import ennuo.craftworld.serializer.*;
 import ennuo.craftworld.resources.*;
@@ -29,9 +31,13 @@ import ennuo.craftworld.types.*;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.toolkit.configurations.Config;
+import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.*;
 import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
@@ -147,6 +153,21 @@ public class Toolkit extends javax.swing.JFrame {
                 checkForChanges();
             }
         });
+        
+        Profile profile = Config.instance.getCurrentProfile();
+        if (profile == null) return;
+        if (profile.archives != null) {
+            for (String path : profile.archives) {
+                if (Files.exists(Paths.get(path)))
+                    ArchiveCallbacks.loadFileArchive(new File(path));
+            }
+        }
+        if (profile.databases != null) {
+            for (String path : profile.databases) {
+                if (Files.exists(Paths.get(path)))
+                    DatabaseCallbacks.loadFileDB(new File(path));
+            }
+        }        
     }
 
     private void checkForChanges() {

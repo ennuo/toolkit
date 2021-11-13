@@ -5,10 +5,12 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -16,6 +18,8 @@ import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
+import ennuo.toolkit.configurations.Config;
+import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.Color;
@@ -54,8 +58,17 @@ public class DatabaseCallbacks {
                     toolkit.search.setText("Search...");
                     toolkit.search.setForeground(Color.GRAY);
                 } else toolkit.addTab(db);
-
+                
                 toolkit.updateWorkspace();
+                
+                if (Globals.archives.size() != 0) {
+                    Profile profile = Config.instance.getCurrentProfile();
+                    if (profile != null) {
+                        byte[] data = Globals.extractFile(profile.language);
+                        if (data != null)
+                            Globals.LAMS = new TranslationTable(new Data(data));
+                    }
+                }
             }
 
             toolkit.savedataMenu.setEnabled(true);
