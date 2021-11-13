@@ -30,9 +30,9 @@ public class Slot implements Serializable {
     public Vector4f location = new Vector4f(0.75f, 0.67f, 0.06f, 0);
     public int revision = 1;
     
-    public String authorID = "";
+    public SceNpOnlineId authorID;
     public String authorName = "";
-    public String translationKey = "";
+    public String translationTag = "";
     
     public String title;
     public String description;
@@ -91,8 +91,8 @@ public class Slot implements Serializable {
     public long sizeOfResources;
     public long sizeOfSubLevels;
     
-    public String trailerLocal;
-    public String trailerWeb;
+    public String localPath;
+    public String thumbPath;
     
     public SlotID[] subLevels;
     public ResourceDescriptor slotList;
@@ -104,60 +104,69 @@ public class Slot implements Serializable {
         slot.id = serializer.struct(slot.id, SlotID.class);
         
         slot.root = serializer.resource(slot.root, ResourceType.LEVEL, true);
-        if (serializer.revision.head > 0x010503ef)
+        if (serializer.revision.isAfterLBP3Revision(0x144))
             slot.adventure = serializer.resource(slot.adventure, ResourceType.ADVENTURE_CREATE_PROFILE, true);
         slot.icon = serializer.resource(slot.icon, ResourceType.TEXTURE, true);
         
         slot.location = serializer.v4(slot.location);
         
-        slot.authorID = serializer.str(slot.authorID, 0x14);
-        slot.authorName = serializer.str16(slot.authorName);
+        slot.authorID = serializer.struct(slot.authorID, SceNpOnlineId.class);
         
-        slot.translationKey = serializer.str8(slot.translationKey);
+        if (serializer.revision.head >= 0x13b)
+            slot.authorName = serializer.str16(slot.authorName);
+        
+        if (serializer.revision.head >= 0x183)
+            slot.translationTag = serializer.str8(slot.translationTag);
         
         slot.title = serializer.str16(slot.title);
         slot.description = serializer.str16(slot.description);
         
         slot.primaryLinkLevel = serializer.struct(slot.primaryLinkLevel, SlotID.class);
-        slot.primaryLinkGroup = serializer.struct(slot.primaryLinkGroup, SlotID.class);
+        if (serializer.revision.head >= 0x134)
+            slot.primaryLinkGroup = serializer.struct(slot.primaryLinkGroup, SlotID.class);
         
         slot.isLocked = serializer.bool(slot.isLocked);
-        slot.copyable = serializer.bool(slot.copyable);
         
-        slot.backgroundGUID = serializer.u32(slot.backgroundGUID);
+        if (serializer.revision.head >= 0x238) {
+            slot.copyable = serializer.bool(slot.copyable);
+            slot.backgroundGUID = serializer.u32(slot.backgroundGUID);
+        }
         
-        if (serializer.revision.head > 0x2c3)
+        if (serializer.revision.head >= 0x333)
             slot.planetDecorations = serializer.resource(slot.planetDecorations, ResourceType.PLAN, true);
         
-        slot.developerLevelType = LevelType.getValue(serializer.i32(slot.developerLevelType.value));
+        if (serializer.revision.head >= 0x1df)
+            slot.developerLevelType = LevelType.getValue(serializer.i32(slot.developerLevelType.value));
         
-        if (serializer.revision.head <= 0x33a)
+        if (serializer.revision.head <= 0x36c)
             slot.gameProgressionState = serializer.i32(slot.gameProgressionState);
         
         if (serializer.revision.head <= 0x2c3) return slot;
         
-        if (serializer.revision.head > 0x33a)
+        if (serializer.revision.head > 0x33c)
             slot.authorLabels = serializer.array(slot.authorLabels, Label.class);
         
-        slot.requiredCollectables = serializer.array(slot.requiredCollectables, Collectable.class);
-        slot.containedCollectables = serializer.array(slot.containedCollectables, Collectable.class);
+        if (serializer.revision.head >= 0x2ea)
+            slot.requiredCollectables = serializer.array(slot.requiredCollectables, Collectable.class);
+        if (serializer.revision.head >= 0x2f4)
+            slot.containedCollectables = serializer.array(slot.containedCollectables, Collectable.class);
         
-        if (serializer.revision.head <= 0x33a) return slot;
+        if (serializer.revision.head < 0x352) return slot;
         
         slot.isSubLevel = serializer.bool(slot.isSubLevel);
         
-        if (serializer.revision.head <= 0x3af) return slot;
+        if (serializer.revision.head < 0x3d0) return slot;
         
         slot.minPlayers = serializer.i8(slot.minPlayers);
         slot.maxPlayers = serializer.i8(slot.maxPlayers);
         
-        if (serializer.revision.head >= 0x021803F9)
+        if (serializer.revision.isAfterLBP3Revision(0x214))
             slot.enforceMinMaxPlayers = serializer.bool(slot.enforceMinMaxPlayers);
         
-        if (serializer.revision.head >= 0x3b7)
+        if (serializer.revision.head >= 0x3d0)
             slot.moveRecommended = serializer.bool(slot.moveRecommended);
         
-        if (serializer.revision.head >= 0x3e6)
+        if (serializer.revision.head >= 0x3e9)
             slot.crossCompatible = serializer.bool(slot.crossCompatible);
         
         slot.showOnPlanet = serializer.bool(slot.showOnPlanet);
@@ -198,23 +207,27 @@ public class Slot implements Serializable {
             slot.vitaRevision = serializer.i32(slot.vitaRevision);
         }
         
-        if (serializer.revision.head <= 0x3f8) return slot;
+        if (!serializer.revision.isLBP3()) return slot;
         
-        slot.gameMode = GameMode.getValue(serializer.i32(slot.gameMode.value));
-        slot.isGameKit = serializer.bool(slot.isGameKit);
+        if (serializer.revision.isAfterLBP3Revision(0x11))
+            slot.gameMode = GameMode.getValue(serializer.i32(slot.gameMode.value));
         
-        if (serializer.revision.head <= 0x010503EF) return slot;
+        if (serializer.revision.isAfterLBP3Revision(0xd1))
+            slot.isGameKit = serializer.bool(slot.isGameKit);
         
-        slot.entranceName = serializer.str16(slot.entranceName);
-        slot.originalSlotID = serializer.struct(slot.originalSlotID, SlotID.class);
+        if (serializer.revision.isAfterLBP3Revision(0x11a)) {
+            slot.entranceName = serializer.str16(slot.entranceName);
+            slot.originalSlotID = serializer.struct(slot.originalSlotID, SlotID.class);
+        }
         
-        if (serializer.revision.head <= 0x014703ef) return slot;
+        if (serializer.revision.isAfterLBP3Revision(0x152))
+            slot.customBadgeSize = serializer.i8(slot.customBadgeSize);
         
-        slot.customBadgeSize = serializer.i8(slot.customBadgeSize);
-        
-        slot.trailerLocal = serializer.str8(slot.trailerLocal);
-        if (serializer.revision.head > 0x01ae03f9)
-            slot.trailerWeb = serializer.str8(slot.trailerWeb);
+        if (serializer.revision.isAfterLBP3Revision(0x191)) {
+            slot.localPath = serializer.str8(slot.localPath);
+            if (serializer.revision.isAfterLBP3Revision(0x205))
+                slot.thumbPath = serializer.str8(slot.thumbPath);
+        }
         
         return slot;
     }

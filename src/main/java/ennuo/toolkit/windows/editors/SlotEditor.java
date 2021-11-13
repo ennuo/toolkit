@@ -141,8 +141,8 @@ public class SlotEditor extends javax.swing.JFrame {
         for (int i = 0; i < slotInstances.size(); ++i) {
             Slot slot = slotInstances.get(i);
             String title = slot.title;
-            if (title.equals("Unnamed Level") && slot.translationKey != null && !slot.translationKey.equals(""))
-                title = slot.translationKey;
+            if (title.equals("Unnamed Level") && slot.translationTag != null && !slot.translationTag.equals(""))
+                title = slot.translationTag;
             this.slots.add(title + " | " + i);   
         }
         
@@ -214,8 +214,8 @@ public class SlotEditor extends javax.swing.JFrame {
         linkSlotID.setValue(slot.primaryLinkLevel.ID);
         linkSlot.setSelectedItem(slot.primaryLinkLevel.type);
         
-        if (slot.translationKey != null && !slot.translationKey.equals(""))
-            translationKey.setText(slot.translationKey);
+        if (slot.translationTag != null && !slot.translationTag.equals(""))
+            translationKey.setText(slot.translationTag);
         else translationKey.setText("TRANSLATION_KEY_NONE");
         
         X.setValue(slot.location.x);
@@ -1176,8 +1176,8 @@ public class SlotEditor extends javax.swing.JFrame {
         slot.primaryLinkLevel.ID = (long) linkSlotID.getValue();
         
         String key = translationKey.getText();
-        if (key.equals("TRANSLATION_KEY_NONE")) { slot.translationKey = null; }
-        else slot.translationKey = key;
+        if (key.equals("TRANSLATION_KEY_NONE")) { slot.translationTag = null; }
+        else slot.translationTag = key;
         
         
         slot.location.x = (float) X.getValue();
