@@ -82,7 +82,7 @@ public class FileSave extends FileData {
         // descriptor is not equal to 0, but the current resource base does not support
         // that, I will have to remake that later.
         
-        if (localProfile.revision == 0x3e2)
+        if (localProfile.revision.head == 0x3e2)
             this.isVita = true;
         
         
