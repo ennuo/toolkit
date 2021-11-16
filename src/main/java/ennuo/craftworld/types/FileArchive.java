@@ -1,5 +1,7 @@
 package ennuo.craftworld.types;
 
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
@@ -108,7 +110,10 @@ public class FileArchive {
                 case FAR5:
                     this.tableOffset = this.file.length() - 0x20 - (entryCount * 0x1C);
                     shouldPreload = true;
-                    break;
+                    System.out.println("FAR5 has been temporarily diabled.");
+                    fishArchive.close();
+                    this.isParsed = false;
+                    return;
             }
            
             if (shouldPreload) {
@@ -241,6 +246,21 @@ public class FileArchive {
                 entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
     }
     
+    public void setFatResourceType(ResourceType type) {
+        if (this.fat == null) this.setFatDataSource(new byte[0x14]);
+        System.arraycopy(Bytes.toBytes(type.value), 0, this.fat, this.fat.length - 0x4c, 4);
+    }
+    
+    public void setFatRevision(Revision revision) {
+        if (this.fat == null) this.setFatDataSource(new byte[0x14]);
+        boolean isVita = revision.isVita();
+        byte[] head = (isVita) ? Bytes.toBytesLE(revision.head) : Bytes.toBytes(revision.head);
+        int branchDescription = revision.branchID << 0x10 | revision.branchRevision;
+        byte[] branch = (isVita) ? Bytes.toBytesLE(branchDescription) : Bytes.toBytes(branchDescription);
+        System.arraycopy(head, 0, this.fat, 0, 4);
+        System.arraycopy(branch, 0, this.fat, 4, 4);
+    }
+    
     public void setFatDataSource(byte[] hash) {
         if (this.archiveType == ArchiveType.FARC || hash == null || hash.length != 0x14) return;
         if (this.fat == null)
@@ -365,7 +385,7 @@ public class FileArchive {
                 output.bytes(this.hashinate);
 
             if (this.archiveType == ArchiveType.FAR5)
-                output.i32(0); // unsure what this is
+                output.i32(8); // unsure what this is
 
             output.i32(this.entries.size());
             output.str(this.archiveType.toString());
