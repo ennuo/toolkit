@@ -1,8 +1,9 @@
 package ennuo.craftworld.swing;
 
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.FileEntry;
 
-public class FileData {
+public abstract class FileData {
     public String path;
     public String name;
 
@@ -22,7 +23,7 @@ public class FileData {
     public FileNode addNode(String string) { return Nodes.addNode(this.root, null, string); }
     public boolean save(String path) { return false; }
     public boolean edit(FileEntry entry, byte[] buffer) { System.out.println("Not implemented!"); return false; };
-    public FileEntry find(byte[] hash) { return null; }
+    public FileEntry find(SHA1 hash) { return null; }
     public long getNextGUID() { lastGUID++; return lastGUID; }
   
 }

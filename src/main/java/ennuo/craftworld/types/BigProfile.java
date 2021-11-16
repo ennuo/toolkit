@@ -21,6 +21,7 @@ import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
 import java.io.File;
@@ -118,7 +119,7 @@ public class BigProfile extends FileData {
     entries = new ArrayList < FileEntry > (count - 1);
     for (int i = 0; i < count; ++i) {
       data.seek(tableOffset + (0x1C * i));
-      byte[] sha1 = data.bytes(0x14);
+      SHA1 hash = data.sha1();
       int offset = data.i32f();
       int size = data.i32f();
       lastOffset += size;
@@ -128,7 +129,7 @@ public class BigProfile extends FileData {
             (dataBuffer[1] & 0xFF) << 16 | 
             (dataBuffer[2] & 0xFF) << 8 | 
             (dataBuffer[3] & 0xFF) << 0;
-      FileEntry entry = new FileEntry(dataBuffer, sha1); entry.timestamp = 0;
+      FileEntry entry = new FileEntry(dataBuffer, hash); entry.timestamp = 0;
       entry.offset = offset;
       entry.size = size;
       if (resMagic == 0x42505262) { profile = entry; } 
@@ -313,9 +314,9 @@ public class BigProfile extends FileData {
 
     profile.data = Resource.compressToResource(output, ResourceType.BIG_PROFILE);
     profile.size = profile.data.length;
-    profile.SHA1 = Bytes.SHA1(profile.data);
+    profile.hash = SHA1.fromBuffer(profile.data);
 
-    setIntegrityHash(profile.SHA1);
+    setIntegrityHash(profile.hash);
   }
 
   private StringEntry findString(String string) {
@@ -459,15 +460,18 @@ public class BigProfile extends FileData {
       }
   }
 
-  public FileEntry find(byte[] hash) {
+  public FileEntry find(SHA1 hash) {
     if (hash == null) return null;
-    for (int i = 0; i < entries.size(); i++)
-    if (Arrays.equals(hash, entries.get(i).SHA1)) return entries.get(i);
+    for (int i = 0; i < entries.size(); i++) {
+        FileEntry entry = entries.get(i);
+        if (entry.hash.equals(hash))
+            return entry;
+    }
     return null;
   }
 
-  public byte[] extract(byte[] sha1) {
-    FileEntry entry = find(sha1);
+  public byte[] extract(SHA1 hash) {
+    FileEntry entry = find(hash);
     if (entry == null) return null;
     return entry.data;
   }
@@ -475,11 +479,11 @@ public class BigProfile extends FileData {
   public void add(byte[] data) { add(data, true); }
   public void add(byte[] data, boolean parse) {
     Resource resource = new Resource(data);
-    byte[] SHA1 = Bytes.SHA1(data);
+    SHA1 hash = SHA1.fromBuffer(data);
     
-    if (find(SHA1) != null) return;
+    if (find(hash) != null) return;
     
-    FileEntry entry = new FileEntry(data, SHA1);
+    FileEntry entry = new FileEntry(data, hash);
     
     entry.offset = lastOffset;
     lastOffset += data.length;
@@ -495,7 +499,7 @@ public class BigProfile extends FileData {
         InventoryDetails metadata = null;
         if (item != null) metadata = item.details;
         if (metadata == null) { metadata = new InventoryDetails(); System.out.println("Metadata is null, using default values..."); }
-        addItem(new ResourceDescriptor(SHA1, ResourceType.PLAN), metadata);
+        addItem(new ResourceDescriptor(hash, ResourceType.PLAN), metadata);
         }
         return;
     }
@@ -517,7 +521,7 @@ public class BigProfile extends FileData {
         
         slot.location = crater.value;
         
-        slot.root = new ResourceDescriptor(SHA1, ResourceType.LEVEL);
+        slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
         
         addSlotNode(slot);
         }
@@ -530,7 +534,7 @@ public class BigProfile extends FileData {
 
   public boolean edit(FileEntry entry, byte[] data) {
     shouldSave = true;
-    byte[] hash = Bytes.SHA1(data);
+    SHA1 hash = SHA1.fromBuffer(data);
     
     Slot slot = entry.getResource("slot");
     ProfileItem item = entry.getResource("profileItem");
@@ -545,7 +549,7 @@ public class BigProfile extends FileData {
     if (slot != null)
         slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
     
-    entry.SHA1 = hash;
+    entry.hash = hash;
     entry.data = data;
     entry.size = data.length;
     
@@ -635,12 +639,12 @@ public class BigProfile extends FileData {
         FileEntry entry = find(slot.root.hash);
         if (entry != null) {
           entry.setResource("slot", slot);
-          int revision = new Resource(extract(entry.SHA1)).revision.head;
+          int revision = new Resource(extract(entry.hash)).revision.head;
           if (slot.icon != null && slot.icon.hash != null) {
             FileEntry iconEntry = find(slot.icon.hash);
             if (iconEntry != null) {
                 Texture texture = iconEntry.getResource("texture");
-              if (texture != null) slot.renderedIcon = Images.getSlotIcon(texture.getImage(), new Resource(extract(entry.SHA1)).revision.head);
+              if (texture != null) slot.renderedIcon = Images.getSlotIcon(texture.getImage(), new Resource(extract(entry.hash)).revision.head);
             }
           }
 
@@ -655,7 +659,7 @@ public class BigProfile extends FileData {
       }
   }
 
-  public void setIntegrityHash(byte[] hash) {
+  public void setIntegrityHash(SHA1 hash) {
     int start = integrity.length - 0x3C;
 
     integrity[(start - 0x14)] = 0;
@@ -668,8 +672,9 @@ public class BigProfile extends FileData {
     integrity[6] = 0;
     integrity[7] = 0;
 
+    byte[] hashBuffer = hash.getHash();
     for (int i = start; i < start + 0x14; ++i)
-    integrity[i] = hash[i - start];
+        integrity[i] = hashBuffer[i - start];
   }
 
   @Override
@@ -683,7 +688,7 @@ public class BigProfile extends FileData {
 
     Arrays.sort(entries, new Comparator < FileEntry > () {@Override
       public int compare(FileEntry e1, FileEntry e2) {
-        return Bytes.toHex(e1.SHA1).compareTo(Bytes.toHex(e2.SHA1));
+        return e1.hash.toString().compareTo(e2.hash.toString());
       }
     });
 
@@ -701,7 +706,7 @@ public class BigProfile extends FileData {
 
     int offset = 0;
     for (FileEntry entry: entries) {
-      output.bytes(entry.SHA1);
+      output.sha1(entry.hash);
       output.i32(offset);
       output.i32(entry.size);
       offset += entry.size;

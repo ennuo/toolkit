@@ -29,11 +29,11 @@ public class ReplacementCallbacks {
         
         byte[] data = entry.data;
         if (data == null)
-            data = Globals.extractFile(entry.SHA1);
+            data = Globals.extractFile(entry.hash);
         
         byte[] newImage = null;
         if (data != null) {
-            Data oldImage = new Data(Globals.extractFile(entry.SHA1));
+            Data oldImage = new Data(Globals.extractFile(entry.hash));
             String magic = oldImage.str(3);
             if (magic == "GTF")
                 newImage = Images.toGTF(image);
@@ -56,7 +56,7 @@ public class ReplacementCallbacks {
         if (data != null) {
             byte[] original = Globals.lastSelected.entry.data;
             if (original == null) Globals.extractFile(Globals.lastSelected.entry.GUID);
-            if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.SHA1);
+            if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.hash);
             if (original == null) {
                 System.out.println("Couldn't find entry, can't replace.");
                 return;

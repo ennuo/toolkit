@@ -1,9 +1,9 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;
@@ -65,10 +65,10 @@ public class ArchiveCallbacks {
             FileEntry entry = archive.entries.get(i);
             byte[] data = archive.extract(entry);
             if (data == null) continue;
-            String realSHA1 = Bytes.toHex(Bytes.SHA1(data));
-            String storedSHA1 = Bytes.toHex(entry.SHA1);
+            String realSHA1 = SHA1.fromBuffer(data).toString();
+            String storedSHA1 = entry.hash.toString();
             if (realSHA1.equals(storedSHA1)) {
-                table.bytes(entry.SHA1);
+                table.sha1(entry.hash);
                 table.i32f((int) entry.offset);
                 table.i32f(entry.size);
             } else {
@@ -166,7 +166,7 @@ public class ArchiveCallbacks {
                     total++;
                     byte[] data;
                     if (node.entry.data == null)
-                        data = Globals.extractFile(node.entry.SHA1);
+                        data = Globals.extractFile(node.entry.hash);
                     else
                         data = node.entry.data;
                     if (data != null) {
@@ -186,7 +186,7 @@ public class ArchiveCallbacks {
             if (node.entry != null) {
                 byte[] data = node.entry.data;
                 if (data == null)
-                    data = Globals.extractFile(node.entry.SHA1);
+                    data = Globals.extractFile(node.entry.hash);
                 if (data != null) {
                     data = (decompress) ? new Resource(data).handle.data : data;
                     File file = Toolkit.instance.fileChooser.openFile(node.header, "", "", true);

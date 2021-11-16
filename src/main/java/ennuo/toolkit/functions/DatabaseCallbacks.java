@@ -9,6 +9,7 @@ import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileData;
@@ -110,7 +111,7 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         StringBuilder builder = new StringBuilder(0x100 * db.entries.size());
         for (FileEntry entry: db.entries)
-            builder.append(Bytes.toHex(entry.SHA1) + '\n');
+            builder.append(entry.hash.toString() + '\n');
         FileIO.write(builder.toString().getBytes(), file.getAbsolutePath());
     }
     
@@ -211,17 +212,12 @@ public class DatabaseCallbacks {
         FileNode node = Globals.lastSelected;
         FileEntry entry = node.entry;
         
-        String SHA1 = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + Bytes.toHex(entry.SHA1).toLowerCase());
-        if (SHA1 == null) return;
-        SHA1 = SHA1.replaceAll("\\s", "");
-        
-        byte[] hash;
-        
-        if (SHA1.startsWith("h"))
-            SHA1 = SHA1.substring(1);
-        hash = Bytes.toBytes(StringUtils.leftPad(SHA1, 40));
-        
-        entry.SHA1 = hash;
+        String hash = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + entry.hash.toString().toLowerCase());
+        if (hash == null) return;
+        hash = hash.replaceAll("\\s", "");
+        if (hash.startsWith("h"))
+            hash = hash.substring(1);
+        entry.hash = new SHA1(hash);
         
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         db.shouldSave = true;
@@ -317,7 +313,7 @@ public class DatabaseCallbacks {
                 Plan.removePlanDescriptors(resource, entry.GUID);
                 data = resource.compressToResource();
                 Globals.addFile(data);
-                duplicate.SHA1 = Bytes.SHA1(data);
+                duplicate.hash = SHA1.fromBuffer(data);
             }
         }
 

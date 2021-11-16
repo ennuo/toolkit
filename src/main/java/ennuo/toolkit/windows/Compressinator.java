@@ -8,6 +8,7 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
@@ -372,11 +373,10 @@ public class Compressinator extends javax.swing.JFrame {
             descriptor.type = (ResourceType) this.descriptorResourceType.getSelectedItem();
             descriptor.GUID = GUID;
 
-            this.model.add(this.model.size(), "g" + GUID);
+            this.model.add(this.model.size(), descriptor.toString());
         } else {
-            value = StringUtils.leftPad(value, 40);
-            descriptor.hash = Bytes.toBytes(value);
-            this.model.add(this.model.size(), "h" + Bytes.toHex(descriptor.hash));
+            descriptor.hash = new SHA1(value);
+            this.model.add(this.model.size(), descriptor.toString());
         }
         System.out.println(String.format("Adding dependency of type %s with value %s", descriptor.type, this.model.get(this.dependencies.size())));
         this.dependencies.add(this.dependencies.size(), descriptor);

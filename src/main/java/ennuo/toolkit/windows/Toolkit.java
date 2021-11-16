@@ -8,6 +8,7 @@ import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.types.FileArchive.ArchiveType;
@@ -1991,7 +1992,7 @@ public class Toolkit extends javax.swing.JFrame {
             Timestamp timestamp = new Timestamp(entry.timestamp * 1000L);
             entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
-        entryTable.setValueAt(Bytes.toHex(entry.SHA1), 2, 1);
+        entryTable.setValueAt(entry.hash, 2, 1);
         if (entry.size != -1)
             entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
         if (entry.GUID != -1) {

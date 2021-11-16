@@ -2,6 +2,7 @@ package ennuo.craftworld.resources.structs.plan;
 
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -13,7 +14,7 @@ public class PhotoMetadata implements Serializable {
     public ResourceDescriptor photo = new ResourceDescriptor(0, ResourceType.TEXTURE);
     public SlotID level = new SlotID();
     public String levelName;
-    public byte[] levelHash = new byte[0x14];
+    public SHA1 levelHash = new SHA1();
     public PhotoUser[] users;
     public long timestamp = new Date().getTime() / 1000;
     
@@ -24,7 +25,7 @@ public class PhotoMetadata implements Serializable {
         metadata.photo = serializer.resource(metadata.photo, ResourceType.TEXTURE, true);
         metadata.level = serializer.struct(metadata.level, SlotID.class);
         metadata.levelName = serializer.str16(metadata.levelName);
-        metadata.levelHash = serializer.bytes(metadata.levelHash, 0x14);
+        metadata.levelHash = serializer.sha1(metadata.levelHash);
         metadata.timestamp = serializer.u32d(metadata.timestamp);
         metadata.users = serializer.array(metadata.users, PhotoUser.class);
         

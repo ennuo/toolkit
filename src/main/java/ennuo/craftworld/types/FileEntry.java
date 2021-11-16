@@ -1,7 +1,7 @@
 package ennuo.craftworld.types;
 
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.types.data.ResourceDescriptor;
@@ -13,8 +13,9 @@ public class FileEntry {
     public long timestamp = 0;
     public int size = 0;
     public long offset = -1;
-    public byte[] SHA1 = new byte[20];
+    public SHA1 hash = new SHA1();
     public long GUID = -1;
+    
     public byte[] data = null;
 
     public FileModel dependencyModel;
@@ -71,32 +72,32 @@ public class FileEntry {
         this.updateTimestamp();
     }
   
-    public FileEntry(byte[] data, byte[] hash) {
+    public FileEntry(byte[] data, SHA1 hash) {
         this.data = data;
         this.size = data.length;
-        this.SHA1 = hash;
+        this.hash = hash;
         this.updateTimestamp();
     }
   
-    public FileEntry(String path, int timestamp, int size, byte[] hash, long guid, byte[] data) {
+    public FileEntry(String path, int timestamp, int size, SHA1 hash, long guid, byte[] data) {
         this.path = path;
         this.timestamp = timestamp;
         this.size = size;
-        this.SHA1 = hash;
+        this.hash = hash;
         this.GUID = guid;
         this.data = data;
     }
   
-    public FileEntry(String path, int timestamp, int size, byte[] hash, long guid) {
+    public FileEntry(String path, int timestamp, int size, SHA1 hash, long guid) {
         this.path = path;
         this.timestamp = timestamp;
         this.size = size;
-        this.SHA1 = hash;
+        this.hash = hash;
         this.GUID = guid;
     }
   
-    public FileEntry(byte[] hash, long offset, int size, byte[] data) {
-        this.SHA1 = hash;
+    public FileEntry(SHA1 hash, long offset, int size, byte[] data) {
+        this.hash = hash;
         this.offset = offset;
         this.size = size;
         this.data = data;
@@ -105,8 +106,7 @@ public class FileEntry {
   
     public FileEntry(FileEntry entry) {
         this.path = entry.path;
-        if (entry.SHA1 != null)
-          this.SHA1 = entry.SHA1.clone();
+        this.hash = entry.hash;
         this.offset = entry.offset;
         this.size = entry.size;
         if (entry.data != null)
@@ -116,7 +116,7 @@ public class FileEntry {
     }
   
     public void setData(FileEntry entry) {
-        this.SHA1 = entry.SHA1.clone();
+        this.hash = entry.hash;
         this.size = entry.size;
         this.data = entry.data;
         this.timestamp = entry.timestamp;
@@ -126,7 +126,7 @@ public class FileEntry {
     
     public void setData(byte[] buffer) {
         if (buffer == null) {
-            this.SHA1 = new byte[20];
+            this.hash = new SHA1();
             this.size = 0;
             this.data = null;
             this.updateTimestamp();
@@ -136,7 +136,7 @@ public class FileEntry {
         
         this.updateTimestamp();
         this.resetResources();
-        this.SHA1 = Bytes.SHA1(buffer);
+        this.hash = SHA1.fromBuffer(buffer);
         this.size = buffer.length;
         this.data = buffer;
     }

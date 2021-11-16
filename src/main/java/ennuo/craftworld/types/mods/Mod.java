@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -41,7 +42,7 @@ import javax.swing.ImageIcon;
 public class Mod extends FileData {
     public boolean isParsed = false;
     private HashMap<Long, FileEntry> GUIDLookup = new HashMap<>();
-    private HashMap<String, byte[]> SHA1Lookup = new HashMap<>();
+    private HashMap<SHA1, byte[]> SHA1Lookup = new HashMap<>();
     public ArrayList<FileEntry> entries = new ArrayList<>();
     public ModInfo config = new ModInfo();
     public ArrayList<ModPatch> patches = new ArrayList<>();
@@ -115,7 +116,7 @@ public class Mod extends FileData {
             for (FileEntry entry : database.entries) {
                 if (entry.GUID > this.lastGUID)
                     this.lastGUID = entry.GUID + 1;
-                if (archive != null) entry.data = archive.extract(entry.SHA1);
+                if (archive != null) entry.data = archive.extract(entry.hash);
                 if (entry.data == null) {
                     Path filePath = fileSystem.getPath(entry.path);
                     if (Files.exists(filePath))
@@ -142,11 +143,10 @@ public class Mod extends FileData {
     public boolean add(FileEntry entry) {
         if (entry == null) return false;
         FileEntry existing = this.find(entry.GUID);
-        String SHA1 = Bytes.toHex(entry.SHA1);
         if (existing == null) {
             entry.updateTimestamp();
             this.entries.add(entry);
-            this.SHA1Lookup.put(SHA1, entry.data);
+            this.SHA1Lookup.put(entry.hash, entry.data);
             this.GUIDLookup.put(entry.GUID, entry);
             this.shouldSave = true;
             return true;
@@ -154,7 +154,7 @@ public class Mod extends FileData {
         existing.setData(entry);
         if (existing.data == null) {
             existing.data = entry.data;
-            this.SHA1Lookup.put(SHA1, entry.data);
+            this.SHA1Lookup.put(entry.hash, entry.data);
         }
         this.shouldSave = true;
         return false;
@@ -169,7 +169,7 @@ public class Mod extends FileData {
             this.add(new FileEntry(path, GUID));
             return;
         }
-        FileEntry entry = new FileEntry(data, Bytes.SHA1(data));
+        FileEntry entry = new FileEntry(data, SHA1.fromBuffer(data));
         entry.path = path; entry.GUID = GUID;
         if (this.add(entry) && this.model != null)
             this.addNode(entry);
@@ -193,15 +193,14 @@ public class Mod extends FileData {
         entry = this.find(entry.GUID);
         if (entry == null) return false;
         entry.setData(buffer);
-        this.SHA1Lookup.put(Bytes.toHex(Bytes.SHA1(buffer)), buffer);
+        this.SHA1Lookup.put(SHA1.fromBuffer(buffer), buffer);
         this.shouldSave = true;
         return true;
     }
     
-    public byte[] extract(byte[] hash) { 
-        String SHA1 = Bytes.toHex(hash);
-        if (this.SHA1Lookup.containsKey(SHA1))
-            return this.SHA1Lookup.get(SHA1);
+    public byte[] extract(SHA1 hash) { 
+        if (this.SHA1Lookup.containsKey(hash))
+            return this.SHA1Lookup.get(hash);
         return null;
     }
     
@@ -213,7 +212,7 @@ public class Mod extends FileData {
         FileArchive archive = new FileArchive();
         archive.entries = new ArrayList<FileEntry>(this.entries.size());
         for (FileEntry entry : this.entries)
-            if (entry.data != null && archive.find(entry.SHA1) == null)
+            if (entry.data != null && archive.find(entry.hash) == null)
                 archive.entries.add(entry);
         
         byte[] serializedDatabase = database.build();

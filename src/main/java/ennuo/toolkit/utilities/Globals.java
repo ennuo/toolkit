@@ -3,6 +3,7 @@ package ennuo.toolkit.utilities;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.TranslationTable;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -84,17 +85,17 @@ public class Globals {
         return null;
     }
 
-    public static FileEntry findEntry(byte[] sha1) {
+    public static FileEntry findEntry(SHA1 hash) {
         if (Globals.databases.size() == 0) return null;
         FileData db = Toolkit.instance.getCurrentDB();
 
-        FileEntry e = db.find(sha1);
+        FileEntry e = db.find(hash);
         if (e != null)
             return e;
 
         for (FileData data: Globals.databases) {
             if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(sha1);
+                FileEntry entry = ((FileDB) data).find(hash);
                 if (entry != null)
                     return entry;
             }
@@ -116,7 +117,7 @@ public class Globals {
         if (currentWorkspace == WorkspaceType.MAP) {
             FileEntry entry = ((FileDB) db).find(GUID);
             if (entry != null)
-                return extractFile(entry.SHA1);
+                return extractFile(entry.hash);
         } else if (currentWorkspace == WorkspaceType.MOD) {
             FileEntry entry = ((Mod) db).find(GUID);
             if (entry != null)
@@ -127,7 +128,7 @@ public class Globals {
             if (data.type.equals("FileDB")) {
                 FileEntry entry = ((FileDB) data).find(GUID);
                 if (entry != null) {
-                    byte[] buffer = extractFile(entry.SHA1);
+                    byte[] buffer = extractFile(entry.hash);
                     if (buffer != null) return buffer;
                 }
 
@@ -139,21 +140,21 @@ public class Globals {
         return null;
     }
 
-    public static byte[] extractFile(byte[] sha1) {
+    public static byte[] extractFile(SHA1 hash) {
         FileData db = Toolkit.instance.getCurrentDB();
         if (currentWorkspace == WorkspaceType.PROFILE) {
-            byte[] data = ((BigProfile) db).extract(sha1);
+            byte[] data = ((BigProfile) db).extract(hash);
             if (data != null) return data;
         } else if (currentWorkspace == WorkspaceType.MOD) {
-            byte[] data = ((Mod) db).extract(sha1);
+            byte[] data = ((Mod) db).extract(hash);
             if (data != null) return data;
         }
         for (FileArchive archive: Globals.archives) {
-            byte[] data = archive.extract(sha1);
+            byte[] data = archive.extract(hash);
             if (data != null) return data;
         }
         
-        System.out.println("Could not extract h" + Bytes.toHex(sha1));
+        System.out.println("Could not extract h" + hash.toString());
         
         return null;
     }

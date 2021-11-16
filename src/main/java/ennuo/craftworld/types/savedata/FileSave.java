@@ -2,6 +2,7 @@ package ennuo.craftworld.types.savedata;
 
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;
@@ -20,7 +21,7 @@ public class FileSave extends FileData {
     public BigProfile bigProfile;
     public LocalProfile localProfile;
     
-    public HashMap<String, byte[]> resources = new HashMap<String, byte[]>();
+    public HashMap<SHA1, byte[]> resources = new HashMap<SHA1, byte[]>();
     
     public FileSave(File folder) {
         this.name = "Savedata";
@@ -50,8 +51,8 @@ public class FileSave extends FileData {
         FileArchive archive = new FileArchive(save);
         if (archive.isParsed) {
             for (FileEntry entry : archive.entries)
-                this.resources.put(Bytes.toHex(entry.SHA1), entry.data);
-            String dataSourceHash = archive.getFatDataSource();
+                this.resources.put(entry.hash, entry.data);
+            SHA1 dataSourceHash = archive.getFatDataSource();
             if (this.resources.containsKey(dataSourceHash))
                 return new Resource(this.resources.get(dataSourceHash));
         }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class DependencyCallbacks {
     public static void removeDependencies() {
         FileEntry entry = Globals.lastSelected.entry;
-        byte[] data = Globals.extractFile(entry.SHA1);
+        byte[] data = Globals.extractFile(entry.hash);
 
         if (data == null) return;
 
@@ -21,7 +21,7 @@ public class DependencyCallbacks {
 
     public static void removeMissingDependencies() {
         FileEntry entry = Globals.lastSelected.entry;
-        byte[] data = Globals.extractFile(entry.SHA1);
+        byte[] data = Globals.extractFile(entry.hash);
 
         if (data == null) return;
 

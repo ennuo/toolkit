@@ -158,7 +158,7 @@ public class Resource {
             ResourceDescriptor descriptor = new ResourceDescriptor();
             switch (this.handle.i8()) {
                 case 1:
-                    descriptor.hash = this.handle.bytes(0x14);
+                    descriptor.hash = this.handle.sha1();
                     break;
                 case 2:
                     descriptor.GUID = this.handle.u32f();
@@ -246,7 +246,7 @@ public class Resource {
                     output.u32f(dependency.GUID);
                 } else if (dependency.hash != null) {
                     output.i8((byte) 1);
-                    output.bytes(dependency.hash);
+                    output.sha1(dependency.hash);
                 }
                 output.i32f(dependency.type.value);
             }

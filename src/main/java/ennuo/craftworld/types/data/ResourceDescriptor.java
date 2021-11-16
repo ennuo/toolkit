@@ -1,12 +1,13 @@
 package ennuo.craftworld.types.data;
 
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.utilities.Bytes;
 
 public class ResourceDescriptor {
     public ResourceType type = ResourceType.FILE_OF_BYTES;
     public long GUID = -1;
-    public byte[] hash = null;
+    public SHA1 hash = null;
     public int flags;
     
     public ResourceDescriptor() {}
@@ -24,7 +25,7 @@ public class ResourceDescriptor {
 
         this.type = type;
 
-        if (bytes != null) hash = bytes;
+        if (bytes != null) hash = new SHA1(bytes);
         else if (number != -1) GUID = number;
 
     }
@@ -32,8 +33,8 @@ public class ResourceDescriptor {
         this.GUID = GUID;
         this.type = type;
     }
-    public ResourceDescriptor(byte[] SHA1, ResourceType type) {
-        this.hash = SHA1;
+    public ResourceDescriptor(SHA1 hash, ResourceType type) {
+        this.hash = hash;
         this.type = type;
     }
 
@@ -45,7 +46,7 @@ public class ResourceDescriptor {
 
     @Override
     public String toString() {
-        if (hash != null) return "h" + Bytes.toHex(hash);
+        if (hash != null) return "h" + this.hash.toString();
         else if (GUID != -1) return "g" + GUID;
         return "null";
     }

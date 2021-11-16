@@ -56,7 +56,7 @@ public class TreeSelectionListener {
         toolkit.resourceService.submit(() -> {
             if (!Globals.canExtract()) return;
 
-            byte[] extractedData = Globals.extractFile(entry.SHA1);
+            byte[] extractedData = Globals.extractFile(entry.hash);
             if (extractedData == null && 
                     toolkit.getCurrentDB().USRDIR != null && 
                     Globals.currentWorkspace == Globals.WorkspaceType.MAP) {

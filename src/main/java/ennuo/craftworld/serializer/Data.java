@@ -5,6 +5,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -363,6 +364,12 @@ public class Data {
         mat.set(matrix);
         return mat;
     }
+    
+    /**
+     * Reads a SHA1 hash from the stream.
+     * @return SHA1 hash read from the stream
+     */
+    public SHA1 sha1() { return new SHA1(this.bytes(0x14)); }
 
     /**
      * Reads a resource reference from the stream with a short flag.
@@ -394,7 +401,7 @@ public class Data {
         resource.flags = flags;
 
         if (type == GUID) resource.GUID = this.u32();
-        else if (type == HASH) resource.hash = this.bytes(0x14);
+        else if (type == HASH) resource.hash = this.sha1();
         else return null;
 
         return resource;

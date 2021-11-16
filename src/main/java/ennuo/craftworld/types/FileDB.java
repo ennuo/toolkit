@@ -1,15 +1,14 @@
 package ennuo.craftworld.types;
 
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JProgressBar;
 
@@ -21,7 +20,7 @@ public class FileDB extends FileData {
   
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
   
-    public HashMap<String, FileEntry> SHA1Lookup = new HashMap<>();
+    public HashMap<SHA1, FileEntry> SHA1Lookup = new HashMap<>();
     public HashMap<Long, FileEntry> GUIDLookup = new HashMap<>();
     
     /**
@@ -106,7 +105,7 @@ public class FileDB extends FileData {
         System.out.println("Entry Count: " + count);
 
         this.entries = new ArrayList<FileEntry>(count);
-        this.SHA1Lookup = new HashMap<String, FileEntry>(count);
+        this.SHA1Lookup = new HashMap<SHA1, FileEntry>(count);
         this.GUIDLookup = new HashMap<Long, FileEntry>(count);
 
         if (bar != null) {
@@ -121,17 +120,17 @@ public class FileDB extends FileData {
             if (!this.isLBP3) data.forward(4); 
             int timestamp = data.i32();
             int size = data.i32();
-            byte[] SHA1 = data.bytes(20);
+            SHA1 hash = data.sha1();
             long GUID = data.u32();
             
             if (path.startsWith(".")) 
-                path = "data/" + FileDB.getFolderFromExtension(path + Bytes.toHex(SHA1).toLowerCase()) + path;
+                path = "data/" + FileDB.getFolderFromExtension(path + hash.toString().toLowerCase()) + path;
             if (GUID > lastGUID && GUID < 0x00180000)
                 this.lastGUID = GUID;
             
-            FileEntry entry = new FileEntry(path, timestamp, size, SHA1, GUID);
+            FileEntry entry = new FileEntry(path, timestamp, size, hash, GUID);
             this.GUIDLookup.put(GUID, entry);
-            this.SHA1Lookup.put(Bytes.toHex(SHA1), entry);
+            this.SHA1Lookup.put(hash, entry);
             this.entries.add(entry);
             
             if (bar != null && !FileDB.isHidden(path))
@@ -164,34 +163,27 @@ public class FileDB extends FileData {
             return this.GUIDLookup.get(GUID);
         return null;
     }
-  
-    /**
-     * Finds FileEntry via SHA1.
-     * @param SHA1 SHA1 to find in the FileDB
-     * @return Entry found in FileDB
-     */
-    public FileEntry find(byte[] SHA1) { return this.find(Bytes.toHex(SHA1)); }
     
     /**
      * Finds FileEntry via SHA1.
      * @param SHA1 SHA1 to find in the FileDB
      * @return Entry found in FileDB
      */
-    public FileEntry find(String SHA1) {
-        if (this.SHA1Lookup.containsKey(SHA1))
-            return this.SHA1Lookup.get(SHA1);
+    public FileEntry find(SHA1 hash) {
+        if (this.SHA1Lookup.containsKey(hash))
+            return this.SHA1Lookup.get(hash);
         return null;
     }
     
     /**
      * Finds all entries in the FileDB that have specified SHA1.
-     * @param SHA1 SHA1 to find in the FileDB
+     * @param hash SHA1 to find in the FileDB
      * @return Array of FileEntrys that match SHA1
      */
-    public FileEntry[] findAll(byte[] SHA1) {
+    public FileEntry[] findAll(SHA1 hash) {
         ArrayList<FileEntry> results = new ArrayList<FileEntry>(this.entries.size());
         for (FileEntry entry : this.entries)
-            if (Arrays.equals(entry.SHA1, SHA1))
+            if (entry.hash.equals(hash))
                 results.add(entry);
         return (FileEntry[]) results.toArray(new FileEntry[results.size()]);
     }
@@ -214,7 +206,7 @@ public class FileDB extends FileData {
         if (existing == null) {
             entry.updateTimestamp();
             this.entries.add(entry);
-            this.SHA1Lookup.put(Bytes.toHex(entry.SHA1), entry);
+            this.SHA1Lookup.put(entry.hash, entry);
             this.GUIDLookup.put(entry.GUID, entry);
             return true;
         }
@@ -240,7 +232,7 @@ public class FileDB extends FileData {
         if (entry == null) return false;
         this.entries.remove(entry);
         this.GUIDLookup.remove(entry.GUID);
-        this.SHA1Lookup.remove(Bytes.toHex(entry.SHA1));
+        this.SHA1Lookup.remove(entry.hash);
         this.shouldSave = true;
         return true;
     }
@@ -353,7 +345,7 @@ public class FileDB extends FileData {
             if (!this.isLBP3) output.i32(0);
             output.u32(entry.timestamp);
             output.i32(entry.size);
-            output.bytes(entry.SHA1);
+            output.sha1(entry.hash);
             output.u32(entry.GUID);
         }
         output.shrink();

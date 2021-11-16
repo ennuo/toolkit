@@ -5,6 +5,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -309,6 +310,14 @@ public class Serializer {
                 indices[j] += (this.input.i8() & 0xFF) * 0x100;
         
         return indices;
+    }
+    
+    public SHA1 sha1(SHA1 value) {
+        if (this.isWriting) {
+            this.output.sha1(value);
+            return value;
+        }
+        return this.input.sha1();
     }
     
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {

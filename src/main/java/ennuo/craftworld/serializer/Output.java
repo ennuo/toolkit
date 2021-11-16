@@ -2,6 +2,7 @@ package ennuo.craftworld.serializer;
 
 import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import java.nio.ByteBuffer;
@@ -405,6 +406,16 @@ public class Output {
         
         return this;
     }
+    
+    /**
+     * Writes a SHA1 hash to the stream.
+     * @param hash SHA1 hash to write
+     * @return This output stream
+     */
+    public Output sha1(SHA1 hash) { 
+        if (hash == null) return this.bytes(new byte[0x14]);
+        return this.bytes(hash.getHash()); 
+    }
 
     /**
      * Writes a resource reference to the stream with a short flag.
@@ -434,7 +445,7 @@ public class Output {
         if (value != null) {
             if (value.hash != null) {
                 this.i8(HASH);
-                this.bytes(value.hash);
+                this.sha1(value.hash);
                 if (!this.hasDependency(value))
                     this.dependencies.add(value);
             } else if (value.GUID != -1) {

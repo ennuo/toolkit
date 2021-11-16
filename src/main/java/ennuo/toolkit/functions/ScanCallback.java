@@ -7,6 +7,7 @@ import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.Magic;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
@@ -232,7 +233,7 @@ public class ScanCallback {
                         resourceCount++;
                         farc.add(buffer);
 
-                        byte[] sha1 = Bytes.SHA1(buffer);
+                        SHA1 sha1 = SHA1.fromBuffer(buffer);
                         FileEntry entry = Globals.findEntry(sha1);
                         if (entry != null) {
                             System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
@@ -241,7 +242,7 @@ public class ScanCallback {
                         //System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
                         else {
                           
-                            FileEntry e = new FileEntry(buffer, Bytes.SHA1(buffer));
+                            FileEntry e = new FileEntry(buffer, SHA1.fromBuffer(buffer));
 
                             String name = "" + begin;
 

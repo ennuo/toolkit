@@ -6,6 +6,7 @@ import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.types.mods.legacy.patches.ModPatch;
 import ennuo.craftworld.resources.enums.ModCompatibility;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
@@ -154,7 +155,7 @@ public class LegacyMod {
         
         for (int i = 0; i < entryCount; ++i) {
             entries.get(i).data = data.bytes(entries.get(i).size);
-            entries.get(i).SHA1 = Bytes.SHA1(entries.get(i).data);
+            entries.get(i).hash = SHA1.fromBuffer(entries.get(i).data);
         }
         
         int imageSize = data.i32();

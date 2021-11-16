@@ -4,17 +4,14 @@ import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.windows.Toolkit;
-import java.io.File;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -362,7 +359,7 @@ public class Bytes {
             mod.add(entry.path, resource.compressToResource(), entry.GUID);
     }
 
-    public static byte[] hashinate(Mod mod, Resource resource, FileEntry entry) {
+    public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry) {
         if (resource.method == SerializationMethod.BINARY) {
             for (int i = 0; i < resource.dependencies.length; ++i) {
                 ResourceDescriptor res = resource.dependencies[i];
@@ -406,9 +403,9 @@ public class Bytes {
             Plan.removePlanDescriptors(resource, entry.GUID);
             byte[] data = resource.compressToResource();
             mod.add(entry.path, data, entry.GUID);
-            return Bytes.SHA1(data);
+            return SHA1.fromBuffer(data);
         }
-        return new byte[0x14];
+        return new SHA1();
     }
 
     public static Vector3f decodeI32(long value) {

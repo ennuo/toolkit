@@ -21,6 +21,7 @@ import ennuo.craftworld.resources.structs.plan.EyetoyData;
 import ennuo.craftworld.resources.structs.plan.PhotoData;
 import ennuo.craftworld.resources.structs.plan.PhotoUser;
 import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.CreationHistory;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
@@ -186,7 +187,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             
             setResource(photo, item.metadata.photoData.photoMetadata.photo);
             
-            levelSHA1.setText("h" + Bytes.toHex(item.metadata.photoData.photoMetadata.levelHash));
+            levelSHA1.setText("h" + item.metadata.photoData.photoMetadata.levelHash.toString());
             
             photoSlotType.setSelectedItem(item.metadata.photoData.photoMetadata.level.type);
             photoSlotID.setText("" + item.metadata.photoData.photoMetadata.level.ID);
@@ -1486,10 +1487,9 @@ public class MetadataEditor extends javax.swing.JFrame {
             data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() / 1000;
             data.photoMetadata.photo = getResource(photo.getText(), ResourceType.TEXTURE);
             
-            String SHA1 = levelSHA1.getText();
-            if (SHA1.toLowerCase().startsWith("h")) SHA1 = SHA1.substring(1);
-            SHA1 = StringUtils.leftPad(SHA1, 40);
-            data.photoMetadata.levelHash = Bytes.toBytes(SHA1);
+            String hash = levelSHA1.getText();
+            if (hash.toLowerCase().startsWith("h")) hash = hash.substring(1);
+            data.photoMetadata.levelHash = new SHA1(hash);
             
             data.photoMetadata.level.type = (SlotType) photoSlotType.getSelectedItem();
             data.photoMetadata.level.ID = StringUtils.getLong(photoSlotID.getText());
@@ -1590,9 +1590,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         else if (root.startsWith("g"))
             return new ResourceDescriptor(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
-            return new ResourceDescriptor(Bytes.toBytes(root.substring(1)), type);
+            return new ResourceDescriptor(new SHA1(root.substring(1)), type);
         else
-            return new ResourceDescriptor(Bytes.toBytes(root), type);
+            return new ResourceDescriptor(new SHA1(root), type);
     }
     
     private void setResource(JTextField field, ResourceDescriptor res) {

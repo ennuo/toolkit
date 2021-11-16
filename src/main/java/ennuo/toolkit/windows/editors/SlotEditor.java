@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.structs.PackItem;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
@@ -176,7 +177,7 @@ public class SlotEditor extends javax.swing.JFrame {
             badgeMesh.setEnabled(true);
             if (pack.mesh != null) {
                 if (pack.mesh.hash != null) 
-                    badgeMesh.setText(Bytes.toHex(pack.mesh.hash));
+                    badgeMesh.setText(pack.mesh.hash.toString());
                 else if (pack.mesh.GUID != -1) 
                     badgeMesh.setText("g" + pack.mesh.GUID);
             } else badgeMesh.setText("");
@@ -1214,9 +1215,9 @@ public class SlotEditor extends javax.swing.JFrame {
         else if (root.startsWith("g"))
             return new ResourceDescriptor(StringUtils.getLong(root), type);
         else if (root.startsWith("h"))
-            return new ResourceDescriptor(Bytes.toBytes(root.substring(1)), type);
+            return new ResourceDescriptor(new SHA1(root.substring(1)), type);
         else
-            return new ResourceDescriptor(Bytes.toBytes(root), type);
+            return new ResourceDescriptor(new SHA1(root), type);
     }
     
     private void setResource(JTextField field, ResourceDescriptor res) {

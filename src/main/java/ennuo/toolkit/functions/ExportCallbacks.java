@@ -148,7 +148,7 @@ public class ExportCallbacks {
         File file = Toolkit.instance.fileChooser.openFile(name + ".mod", "mod", "Mod", true);
         if (file == null) return;
 
-        Resource resource = new Resource(Globals.extractFile(entry.SHA1));
+        Resource resource = new Resource(Globals.extractFile(entry.hash));
         Mod mod = new Mod();
         if (hashinate)
             Bytes.hashinate(mod, resource, entry);

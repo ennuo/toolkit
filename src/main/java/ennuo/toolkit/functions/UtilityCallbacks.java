@@ -133,9 +133,9 @@ public class UtilityCallbacks {
         for (FileEntry entry: updateDB.entries) {
             FileEntry baseEntry = baseDB.find(entry.GUID);
             if (baseEntry == null)
-                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.SHA1) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
             else if (baseEntry.size != entry.size) {
-                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.SHA1) + " -> " + Bytes.toHex(entry.SHA1) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + baseEntry.hash.toString() + " -> " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
             }
 
         }
@@ -219,14 +219,14 @@ public class UtilityCallbacks {
         
         FileArchive archive = new FileArchive(dumpFARC);
         for (FileEntry entry : archive.entries) {
-            FileEntry[] matches = db.findAll(entry.SHA1);
+            FileEntry[] matches = db.findAll(entry.hash);
             if (matches.length != 0) {
                 for (FileEntry match : matches)
                     out.add(match);
             } else {
-                byte[] data = archive.extract(entry.SHA1);
+                byte[] data = archive.extract(entry.hash);
                 String magic = new Data(data).str(4);
-                entry.GUID = Bytes.toHex(entry.SHA1).hashCode();
+                entry.GUID = entry.hash.hashCode();
                 
                 String name = "" + entry.offset;
                 switch (magic) {

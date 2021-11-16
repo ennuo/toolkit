@@ -39,11 +39,9 @@
               <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="compress" pref="384" max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                      <Component id="dependencyManagerPanel" alignment="0" max="32767" attributes="0"/>
-                      <Component id="headerPanel" alignment="0" max="32767" attributes="0"/>
-                      <Component id="dataPanel" alignment="0" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="dependencyManagerPanel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="headerPanel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="dataPanel" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
