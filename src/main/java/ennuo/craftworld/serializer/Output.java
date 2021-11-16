@@ -142,7 +142,10 @@ public class Output {
      * @param value String value to write
      * @return This output stream
      */
-    public Output str(String value) { return this.bytes(value.getBytes()); }
+    public Output str(String value) { 
+        if (value == null) return this;
+        return this.bytes(value.getBytes()); 
+    }
     
     /**
      * Writes a fixed string with padded size to the stream.
@@ -151,6 +154,7 @@ public class Output {
      * @return This output stream
      */
     public Output str(String value, int size) {
+        if (value == null) return this.bytes(new byte[size]);
         this.str(value);
         this.pad(size - value.length());
         return this;
