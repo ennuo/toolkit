@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -455,5 +456,17 @@ public class Bytes {
           output.z = -output.z;
         
         return output;
+    }
+    
+    public static byte[] computeSignature(byte[] data, byte[] key) {
+        SecretKey secretKey = new SecretKeySpec(key, "HmacSHA1");
+        try {
+            Mac mac = Mac.getInstance("HmacSHA1");
+            mac.init(secretKey);
+            return mac.doFinal(data);
+        } catch (NoSuchAlgorithmException | InvalidKeyException ex) {
+            System.err.println("An error occurred computing signature.");
+        }
+        return new byte[14];
     }
 }

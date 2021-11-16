@@ -19,7 +19,13 @@ import java.util.logging.Logger;
 import javax.swing.JProgressBar;
 
 public class FileArchive {
-
+    public static byte[] HASHINATE_KEY = {
+        0x2A, (byte) 0xFD, (byte) 0xA3, (byte) 0xCA, (byte) 0x86, 0x02, 0x19, (byte) 0xB3, (byte) 0xE6, (byte) 0x8A, (byte) 0xFF, (byte) 0xCC, (byte) 0x82, (byte) 0xC7, 0x6B, (byte) 0x8A,
+        (byte) 0xFE, 0x0A, (byte) 0xD8, 0x13, 0x5F, 0x60, 0x47, 0x5B, (byte) 0xDF, 0x5D, 0x37, (byte) 0xBC, 0x57, 0x1C, (byte) 0xB5, (byte) 0xE7, 
+        (byte) 0x96, (byte) 0x75, (byte) 0xD5, 0x28, (byte) 0xA2, (byte) 0xFA, (byte) 0x90, (byte) 0xED, (byte) 0xDF, (byte) 0xA3, 0x45, (byte) 0xB4, 0x1F, (byte) 0xF9, 0x1F, 0x25,
+        (byte) 0xE7, 0x42, 0x45, 0x3B, 0x2B, (byte) 0xB5, 0x3E, 0x16, (byte) 0xC9, 0x58, 0x19, 0x7B, (byte) 0xE7, 0x18, (byte) 0xC0, (byte) 0x80
+    };
+    
     public static enum ArchiveType {
         FARC,
         FAR4,
@@ -34,7 +40,6 @@ public class FileArchive {
     public boolean shouldSave = false;
 
     public byte[] fat;
-    public SHA1 hashinate = new SHA1();
 
     public byte[] hashTable;
     public long tableOffset;
@@ -139,10 +144,6 @@ public class FileArchive {
                     fishArchive.seek(this.file.length() - 0x1c);
                 else
                     fishArchive.seek(this.file.length() - 0x20);
-
-                byte[] hashinate = new byte[0x14];
-                fishArchive.read(hashinate);
-                this.hashinate = new SHA1(hashinate);
             }
 
             fishArchive.close();
@@ -326,7 +327,8 @@ public class FileArchive {
             lastBufferOffset += entry.size;
         }
         
-        output.sha1(this.hashinate);
+        int hashinateOffset = output.offset;
+        output.bytes(new byte[0x14]); // Leaving this hash null until we calculate it
         if (this.archiveType == ArchiveType.FAR5)
             output.i32(0); // no idea what this is
         
@@ -337,6 +339,10 @@ public class FileArchive {
         this.queueSize = 0;
         
         output.shrink();
+        
+        byte[] SHA1 = Bytes.computeSignature(output.buffer, FileArchive.HASHINATE_KEY);
+        System.arraycopy(SHA1, 0, output.buffer, hashinateOffset, 0x14);
+        
         return output.buffer;
     }
     
@@ -387,7 +393,7 @@ public class FileArchive {
             output.bytes(this.hashTable);
 
             if (this.archiveType != ArchiveType.FARC)
-                output.sha1(this.hashinate);
+                output.bytes(new byte[0x14]); // Hashinate, the profiles generally only need this when they call build
 
             if (this.archiveType == ArchiveType.FAR5)
                 output.i32(8); // unsure what this is
