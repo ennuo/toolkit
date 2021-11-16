@@ -13,7 +13,7 @@ public class PhotoMetadata implements Serializable {
     public ResourceDescriptor photo = new ResourceDescriptor(0, ResourceType.TEXTURE);
     public SlotID level = new SlotID();
     public String levelName;
-    public byte[] levelHash = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    public byte[] levelHash = new byte[0x14];
     public PhotoUser[] users;
     public long timestamp = new Date().getTime() / 1000;
     
