@@ -62,7 +62,7 @@ public class DatabaseCallbacks {
                 
                 toolkit.updateWorkspace();
                 
-                if (Globals.archives.size() != 0) {
+                if (Globals.archives.size() != 0 && Globals.LAMS == null) {
                     Profile profile = Config.instance.getCurrentProfile();
                     if (profile != null) {
                         byte[] data = Globals.extractFile(profile.language);
