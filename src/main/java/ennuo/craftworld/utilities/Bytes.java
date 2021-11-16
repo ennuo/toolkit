@@ -123,7 +123,7 @@ public class Bytes {
     public static byte[] createResourceReference(ResourceDescriptor res, Revision revision, byte compressionFlags) {
         Output output = new Output(0x1C + 0x4, revision);
         output.compressionFlags = compressionFlags;
-        output.resource(res, true);
+        output.resource(res);
         output.shrink();
         return output.buffer;
     }
@@ -399,7 +399,10 @@ public class Bytes {
                 
                 if (dependency.method == SerializationMethod.BINARY)
                     resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
-                else mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
+                else {
+                    mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
+                    resource.replaceDependency(i, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
+                }
             }
             Plan.removePlanDescriptors(resource, entry.GUID);
             byte[] data = resource.compressToResource();
