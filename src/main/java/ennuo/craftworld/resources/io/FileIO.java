@@ -3,6 +3,7 @@ package ennuo.craftworld.resources.io;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
 public class FileIO {
-    static String getResourceFileAsString(String fileName) throws IOException {
+    public static String getResourceFileAsString(String fileName) throws IOException {
         System.out.println("Reading " + fileName + " from class path...");
         try (InputStream is = Toolkit.class.getResourceAsStream(fileName)) {
             if (is == null) return null;
@@ -25,6 +26,19 @@ public class FileIO {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         }
+    }
+    
+    public static byte[] getResourceFile(String fileName) {
+        System.out.println("Reading " + fileName + " from class path...");
+        try (InputStream is = Toolkit.class.getResourceAsStream(fileName)) {
+            int length;
+            if (is == null) return null;
+            byte[] buffer = new byte[1024];
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            while ((length = is.read(buffer, 0, 1024)) != -1)
+                outputStream.write(buffer, 0, 1024);
+            return outputStream.toByteArray();
+        } catch (IOException ex) { return null; }
     }
 
     public static boolean write(byte[] data, String path) {
