@@ -21,6 +21,7 @@ public class FileChooser {
     }
 
     public File openFile(String name, String ext, String desc, boolean saveFile) {
+        if (ext.isBlank()) ext = "*";
         return this.openFile(name, new String[] { ext }, desc, saveFile);
     }
     
