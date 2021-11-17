@@ -1,25 +1,24 @@
 package ennuo.craftworld.utilities;
 
+import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Data;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
+import gr.zdimensions.jsquish.Squish;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import me.nallar.jdds.JDDS;
-import me.nallar.jdds.internal.jogl.DDSImage;
 import net.npe.dds.DDSReader;
 import org.imgscalr.Scalr;
 
@@ -58,45 +57,55 @@ public class Images {
 
         return output.buffer;
     }
-
-    private static int toNextNearest(int x) {
-        if (x < 0) return 0;
-        --x;
+    
+    private static int toNearest(int x) {
         x |= x >> 1;
         x |= x >> 2;
         x |= x >> 4;
         x |= x >> 8;
         x |= x >> 16;
-        return x + 1;
+        return x ^ (x >> 1);
     }
-
-    private static int toNearest(int x) {
-        int next = toNextNearest(x);
-        int prev = next >> 1;
-        return next - x < x - prev ? next : prev;
+    
+    private static byte[] getRGBA(BufferedImage image) {
+        int[] ARGB = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        byte[] RGBA = new byte[ARGB.length * 4];
+        for (int i = 0; i < ARGB.length; ++i) {
+            RGBA[(4 * i) + 0] = (byte) ((ARGB[i] >> 16) & 0xff);
+            RGBA[(4 * i) + 1] = (byte) ((ARGB[i] >> 8) & 0xff);
+            RGBA[(4 * i) + 2] = (byte) ((ARGB[i]) & 0xff);
+            RGBA[(4 * i) + 3] = (byte) ((ARGB[i] >> 24) & 0xff);
+        }
+        return RGBA;
     }
 
 
     private static byte[] toDDS(BufferedImage image) {
         int width = toNearest(image.getWidth());
         int height = toNearest(image.getHeight());
-
-        if (image.getWidth() != width || image.getHeight() != height)
-            image = Scalr.resize(image, Scalr.Method.BALANCED, width, height);
-
-        int type = DDSImage.D3DFMT_DXT1;
-        if (image.getColorModel().hasAlpha())
-            type = DDSImage.D3DFMT_DXT5;
-        byte[] data = null;
-        try {
-            File file = new File(Globals.workingDirectory, "tmp.dds");
-            JDDS.write(file, image, type, true);
-            data = FileIO.read(file.getAbsolutePath());
-            file.delete();
-        } catch (IOException ex) {
-            System.err.println("Failed to convert BufferedImage to DDS");
+        
+        int originalWidth = width, originalHeight = height;
+        
+        Squish.CompressionType type = Squish.CompressionType.DXT1;
+        int format = 0x86;
+        if (image.getColorModel().hasAlpha()) {
+            format = 0x88;
+            type = Squish.CompressionType.DXT5;
         }
-        return data;
+
+        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, height);
+        byte[] DDS = Squish.compressImage(getRGBA(image), width, height, null, type);
+        int mipCount = 0;
+        while (true) {
+            width = toNearest(width - 1);
+            height = toNearest(height - 1);
+            image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
+            DDS = Bytes.Combine(DDS, Squish.compressImage(getRGBA(image), width, height, null, type));
+            mipCount += 1;
+            if (width == 1|| height == 1) break;
+        }
+        
+        return Bytes.Combine(Texture.getDDSHeader(format, originalWidth, originalHeight, mipCount), DDS);
     }
 
     public static byte[] toTEX(BufferedImage image) {
