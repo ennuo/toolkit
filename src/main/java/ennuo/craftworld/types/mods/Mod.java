@@ -176,6 +176,14 @@ public class Mod extends FileData {
             this.addNode(entry);
     }
     
+    public FileEntry find(SHA1 hash) {
+        for (FileEntry entry : this.entries) {
+            if (entry.hash.equals(hash))
+                return entry;
+        }
+        return null;
+    }
+    
     public FileEntry find(long GUID) {
         if (this.GUIDLookup.containsKey(GUID))
             return this.GUIDLookup.get(GUID);
