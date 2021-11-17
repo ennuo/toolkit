@@ -21,6 +21,10 @@ public class FileChooser {
     }
 
     public File openFile(String name, String ext, String desc, boolean saveFile) {
+        return this.openFile(name, new String[] { ext }, desc, saveFile);
+    }
+    
+    public File openFile(String name, String[] ext, String desc, boolean saveFile) {
         this.fileDialogue = new JnaFileChooser();
         System.out.println("Waiting for user to select file...");
         if (setupFilter(name, ext, desc, false, false) && (
@@ -31,6 +35,10 @@ public class FileChooser {
     }
 
     public File[] openFiles(String ext, String desc) {
+        return this.openFiles(new String[] { ext }, desc);
+    }
+    
+    public File[] openFiles(String[] ext, String desc) {
         this.fileDialogue = new JnaFileChooser();
         System.out.println("Waiting for user to select files...");
         if (setupFilter("", ext, desc, true, false) &&
@@ -51,6 +59,10 @@ public class FileChooser {
     }
 
     private boolean setupFilter(String name, final String ext, final String desc, boolean mult, boolean dirs) {
+        return this.setupFilter(name, new String[] { ext }, desc, mult, dirs);
+    }
+    
+    private boolean setupFilter(String name, final String[] ext, final String desc, boolean mult, boolean dirs) {
         if (dirs)
             this.fileDialogue.setMode(Mode.Directories);
         if (!name.equals("") && name != null)
