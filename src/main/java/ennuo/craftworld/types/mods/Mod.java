@@ -165,6 +165,7 @@ public class Mod extends FileData {
     }
     
     public void add(String path, byte[] data, long GUID) {
+        if (GUID == -1) GUID = this.getNextGUID();
         if (data == null) {
             this.add(new FileEntry(path, GUID));
             return;
