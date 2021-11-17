@@ -14,7 +14,8 @@ public class ReplacementCallbacks {
     public static void replaceImage() {
         FileEntry entry = Globals.lastSelected.entry;
 
-        File file = Toolkit.instance.fileChooser.openFile("image.png", "png", "Portable Network Graphics (PNG)", false);
+        final String[] types = { "png", "jpg", "jpeg", "dds" };
+        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
         if (file == null) return;
 
         BufferedImage image;
@@ -27,20 +28,7 @@ public class ReplacementCallbacks {
             return;
         }
         
-        byte[] data = entry.data;
-        if (data == null)
-            data = Globals.extractFile(entry.hash);
-        
-        byte[] newImage = null;
-        if (data != null) {
-            Data oldImage = new Data(Globals.extractFile(entry.hash));
-            String magic = oldImage.str(3);
-            if (magic == "GTF")
-                newImage = Images.toGTF(image);
-            else if (magic == "TEX")
-                newImage = Images.toTEX(image);
-        } else newImage = Images.toTEX(image);
-
+        byte[] newImage = Images.toTEX(image);
         if (newImage != null) {
             Globals.replaceEntry(entry, newImage);
             return;

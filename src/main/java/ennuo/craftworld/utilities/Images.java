@@ -1,7 +1,6 @@
 package ennuo.craftworld.utilities;
 
 import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Data;
 import ennuo.toolkit.utilities.Globals;
@@ -43,7 +42,7 @@ public class Images {
             return null;
         }
 
-        Output output = new Output(0x1E + DDS.length);
+        Output output = new Output(0x1C + DDS.length);
         output.str("GTF ");
         if (image.getColorModel().hasAlpha()) output.u8(0x88);
         else output.u8(0x86);
@@ -108,14 +107,14 @@ public class Images {
             return null;
         }
 
-        DDS = Compressor.deflateData(DDS);
+        DDS = Compressor.getCompressedStream(DDS);
 
         if (DDS == null) {
             System.err.println("Failed to compress DDS!");
             return null;
         }
 
-        Output output = new Output(0x6 + DDS.length);
+        Output output = new Output(0x4 + DDS.length);
         output.str("TEX ");
         output.bytes(DDS);
 
