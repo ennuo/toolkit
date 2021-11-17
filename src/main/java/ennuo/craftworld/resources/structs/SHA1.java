@@ -9,13 +9,13 @@ public class SHA1 {
     
     public SHA1() {
         this.hashBytes = new byte[0x14];
-        this.hashString = Bytes.toHex(this.hashBytes);
+        this.hashString = Bytes.toHex(this.hashBytes).toLowerCase();
     }
     
     public SHA1(String hash) {
         if (hash.length() != 40) 
             hash = StringUtils.leftPad(hash, 40);
-        this.hashString = hashString;
+        this.hashString = hash.toLowerCase();
         this.hashBytes = Bytes.toBytes(this.hashString);
     }
     
@@ -24,7 +24,7 @@ public class SHA1 {
             this.hashBytes = new byte[0x14];
             System.arraycopy(hash, 0, this.hashBytes, 0, hash.length);
         } else this.hashBytes = hash;
-        this.hashString = Bytes.toHex(this.hashBytes);
+        this.hashString = Bytes.toHex(this.hashBytes).toLowerCase();
     }
     
     public static SHA1 fromBuffer(byte[] buffer) {
