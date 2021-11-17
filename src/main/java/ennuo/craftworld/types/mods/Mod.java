@@ -51,14 +51,14 @@ public class Mod extends FileData {
     public Mod() {
         this.isParsed = true;
         this.type = "Mod";
-        this.model = new FileModel(new FileNode("MOD", null, null)); 
-        this.root = (FileNode) this.model.getRoot();
     }
     
     public Mod(File file) {
         this();
         this.path = file.getAbsolutePath();
         this.name = file.getName();
+        this.model = new FileModel(new FileNode("MOD", null, null)); 
+        this.root = (FileNode) this.model.getRoot();
         this.process(file);
     }
     

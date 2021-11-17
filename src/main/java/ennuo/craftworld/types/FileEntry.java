@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class FileEntry {
     public int revision;
-    public String path;
+    public String path = "Unresolved Path";
     public long timestamp = 0;
     public int size = 0;
     public long offset = -1;

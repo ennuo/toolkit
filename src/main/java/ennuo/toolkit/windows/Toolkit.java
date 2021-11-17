@@ -1910,11 +1910,10 @@ public class Toolkit extends javax.swing.JFrame {
         // NOTE(Abz): Cheap trick, but it's what I'm doing for now.
         Resource resource = new Resource(Globals.extractFile(entry.hash));
         Mod mod = new Mod();
-        Bytes.hashinate(mod, resource, entry);
+        SHA1 hash = Bytes.hashinate(mod, resource, entry);
 
         archive.entries = mod.entries;
         
-        SHA1 hash = mod.find(entry.GUID).hash;
         if (entry.path.endsWith(".bin")) 
             slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
         else if (entry.path.endsWith(".plan")) {
