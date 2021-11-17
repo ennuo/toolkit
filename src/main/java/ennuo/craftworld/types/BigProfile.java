@@ -622,7 +622,7 @@ public class BigProfile extends FileData {
         else title = "Some kind of object";
     }
     
-    entry.path += title;
+    entry.path += title + ".plan";
     
     StringEntry location = findString(item.metadata.locationIndex);
     StringEntry category = findString(item.metadata.categoryIndex);
@@ -653,7 +653,7 @@ public class BigProfile extends FileData {
           String title = slot.title;
           if (title.isEmpty())
               title = "Unnamed Level";
-          entry.path = "slots/" + title;
+          entry.path = "slots/" + title + ".bin";
           Nodes.addNode(root, entry);
         }
       }
