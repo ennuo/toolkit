@@ -8,8 +8,12 @@ import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.enums.SlotType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.types.FileArchive.ArchiveType;
 import ennuo.craftworld.types.savedata.FileSave;
@@ -32,13 +36,20 @@ import ennuo.craftworld.types.*;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.TEA;
 import ennuo.toolkit.configurations.Config;
 import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.*;
 import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
@@ -293,6 +304,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceDependencies.setVisible(false);
         dependencyGroup.setVisible(false);
         exportModGroup.setVisible(false);
+        exportBackupGroup.setVisible(false);
         exportAnimation.setVisible(false);
         exportModelGroup.setVisible(false);
         exportGroup.setVisible(false);
@@ -333,6 +345,8 @@ public class Toolkit extends javax.swing.JFrame {
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.length != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
+                        if (Globals.lastSelected.header.endsWith(".bin") || Globals.lastSelected.header.endsWith(".plan"))
+                            exportBackupGroup.setVisible(true);
                         replaceDependencies.setVisible(true);
                         dependencyGroup.setVisible(true);
                     }
@@ -417,6 +431,8 @@ public class Toolkit extends javax.swing.JFrame {
         exportAsMod = new javax.swing.JMenuItem();
         exportAsModGUID = new javax.swing.JMenuItem();
         exportAnimation = new javax.swing.JMenuItem();
+        exportBackupGroup = new javax.swing.JMenu();
+        exportAsBackup = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -689,6 +705,19 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         exportGroup.add(exportAnimation);
+
+        exportBackupGroup.setText("Backup");
+
+        exportAsBackup.setText("Hash");
+        exportAsBackup.setToolTipText("");
+        exportAsBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsBackupActionPerformed(evt);
+            }
+        });
+        exportBackupGroup.add(exportAsBackup);
+
+        exportGroup.add(exportBackupGroup);
 
         entryContext.add(exportGroup);
 
@@ -1847,6 +1876,87 @@ public class Toolkit extends javax.swing.JFrame {
         ArchiveCallbacks.integrityCheck();
     }//GEN-LAST:event_fileArchiveIntegrityCheckActionPerformed
 
+    private void exportAsBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupActionPerformed
+        FileEntry entry = Globals.lastSelected.entry;
+        String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
+
+        String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
+        if (titleID == null) return;
+        
+        String directory = Toolkit.instance.fileChooser.openDirectory();
+        if (directory == null) return;
+        
+        Revision fartRevision = new Revision(0x272, 0x4c44, 0x0017);
+        FileArchive archive = new FileArchive();
+        
+        Slot slot = new Slot();
+        slot.title = name;
+        slot.id = new SlotID(SlotType.FAKE, 0);
+        slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
+        
+        // NOTE(Abz): Cheap trick, but it's what I'm doing for now.
+        Resource resource = new Resource(Globals.extractFile(entry.hash));
+        Mod mod = new Mod();
+        Bytes.hashinate(mod, resource, entry);
+
+        archive.entries = mod.entries;
+        
+        SHA1 hash = mod.find(entry.GUID).hash;
+        if (entry.path.endsWith(".bin")) 
+            slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        else if (entry.path.endsWith(".plan")) {
+            Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
+            level.replaceDependency(0xB, new ResourceDescriptor(hash, ResourceType.PLAN));
+            byte[] levelData = level.compressToResource();
+            archive.add(levelData);
+            slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
+        }
+        
+        Serializer serializer = new Serializer(1024, fartRevision, (byte) 0x7);
+        serializer.array(new Slot[] { slot }, Slot.class);
+        byte[] slotList = Resource.compressToResource(serializer.output, ResourceType.SLOT_LIST);
+        archive.add(slotList);
+        SHA1 rootHash = SHA1.fromBuffer(slotList);
+        
+        archive.setFatDataSource(rootHash);
+        archive.setFatResourceType(ResourceType.SLOT_LIST);
+        archive.setFatRevision(fartRevision);
+        
+        Random random = new Random();
+        byte[] UID = new byte[4];
+        random.nextBytes(UID);
+        titleID += "LEVEL" + Bytes.toHex(UID).toUpperCase();
+        
+        Path saveDirectory = Path.of(directory, titleID);
+        try { Files.createDirectories(saveDirectory); } 
+        catch (IOException ex) {
+            System.err.println("There was an error creating directory!");
+            return;
+        }
+        
+        FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
+        FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
+        
+        // NOTE(Abz): This seems terribly inefficient in terms of memory cost,
+        // but the levels exported should be low, so it's not entirely an issue,
+        // FOR NOW.
+        
+        byte[][] profiles = null;
+        {
+            byte[] profile = archive.build();
+            profile = Arrays.copyOfRange(profile, 0, profile.length - 4);
+            profiles = Bytes.Split(profile, 0x240000);
+        }
+        
+        for (int i = 0; i < profiles.length; ++i) {
+            byte[] part = profiles[i];
+            part = TEA.encrypt(part);
+            if (i + 1 == profiles.length)
+                part = Bytes.Combine(part, new byte[] { 0x46, 0x41, 0x52, 0x34 });
+            FileIO.write(part, (Path.of(saveDirectory.toString(), String.valueOf(i))).toString());
+        }
+    }//GEN-LAST:event_exportAsBackupActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2065,8 +2175,10 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAnimation;
+    private javax.swing.JMenuItem exportAsBackup;
     private javax.swing.JMenuItem exportAsMod;
     private javax.swing.JMenuItem exportAsModGUID;
+    private javax.swing.JMenu exportBackupGroup;
     private javax.swing.JMenuItem exportDDS;
     private javax.swing.JMenuItem exportGLTF;
     private javax.swing.JMenu exportGroup;

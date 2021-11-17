@@ -268,8 +268,11 @@ public class FileArchive {
     
     public void setFatDataSource(SHA1 hash) {
         if (this.archiveType == ArchiveType.FARC || hash == null) return;
-        if (this.fat == null)
+        if (this.fat == null) {
             this.fat = new byte[(this.archiveType == ArchiveType.FAR4) ? 0x84 : 0xAC];
+            if (this.archiveType == ArchiveType.FAR4)
+                this.fat[11] = 1;
+        }
         int start = this.fat.length - 0x3C;
         byte[] hashBuffer = hash.getHash();
         for (int i = start; i < start + 0x14; ++i)

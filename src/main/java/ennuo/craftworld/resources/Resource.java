@@ -131,10 +131,10 @@ public class Resource {
     public void replaceDependency(int index, ResourceDescriptor newDescriptor) {
         ResourceDescriptor oldDescriptor = this.dependencies[index];
         
+        if (oldDescriptor.equals(newDescriptor)) return;
+        
         byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
         byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
-        
-        if (Arrays.equals(oldDescBuffer, newDescBuffer)) return;
         
         if (this.type == ResourceType.PLAN) {
             Plan plan = new Plan(this);
