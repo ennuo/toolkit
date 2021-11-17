@@ -36,12 +36,14 @@ import ennuo.craftworld.types.*;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.utilities.TEA;
 import ennuo.toolkit.configurations.Config;
 import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.*;
 import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -538,6 +540,8 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
+        convertTexture = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
@@ -1418,6 +1422,15 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(installProfileMod);
+        toolsMenu.add(jSeparator8);
+
+        convertTexture.setText("Convert Texture");
+        convertTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                convertTextureActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(convertTexture);
         toolsMenu.add(jSeparator7);
 
         swapProfilePlatform.setText("Swap Profile Platform");
@@ -1957,6 +1970,27 @@ public class Toolkit extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_exportAsBackupActionPerformed
 
+    private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
+        final String[] types = { "png", "jpg", "jpeg", "dds" };
+        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
+        if (file == null) return;
+        
+        File save = Toolkit.instance.fileChooser.openFile("image.tex", "tex", "Texture", true);
+        if (save == null) return;
+        
+        BufferedImage image;
+        if (file.getAbsolutePath().toLowerCase().endsWith(".dds"))
+            image = Images.fromDDS(FileIO.read(file.getAbsolutePath()));
+        else image = FileIO.readBufferedImage(file.getAbsolutePath());
+
+        if (image == null) { System.err.println("Image was null!"); return; }
+        
+        byte[] texture = Images.toTEX(image);
+        if (texture == null) { System.err.println("Conversion was null!"); return; }
+        
+        FileIO.write(texture, save.getAbsolutePath());        
+    }//GEN-LAST:event_convertTextureActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2148,6 +2182,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea console;
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
+    private javax.swing.JMenuItem convertTexture;
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
@@ -2212,6 +2247,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
