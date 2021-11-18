@@ -34,8 +34,8 @@ public class Slot implements Serializable {
     public String authorName = "";
     public String translationTag = "";
     
-    public String title;
-    public String description;
+    public String title = "";
+    public String description = "";
     
     public SlotID primaryLinkLevel = new SlotID();
     public SlotID primaryLinkGroup = new SlotID();
