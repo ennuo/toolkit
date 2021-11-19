@@ -291,7 +291,7 @@ public class Mesh implements Serializable {
     }
     
     public Vector3f[] getVertices(MeshPrimitive primitive) {
-        return this.getVertices(primitive.minVert, primitive.maxVert - primitive.minVert);
+        return this.getVertices(primitive.minVert, (primitive.maxVert - primitive.minVert) + 1);
     }
     
     public Vector3f[] getVertices() { return this.getVertices(0, this.numVerts); }
@@ -309,7 +309,7 @@ public class Mesh implements Serializable {
     }
     
     public Vector2f[] getUVs(MeshPrimitive primitive, int channel) {
-        return this.getUVs(primitive.minVert, primitive.maxVert - primitive.minVert, channel);
+        return this.getUVs(primitive.minVert, (primitive.maxVert - primitive.minVert) + 1, channel);
     }
     
     public Vector2f[] getUVs(int channel) { return this.getUVs(0, this.numVerts, channel); }
@@ -325,7 +325,7 @@ public class Mesh implements Serializable {
     }
     
     public Vector3f[] getNormals(MeshPrimitive primitive) {
-        return this.getNormals(primitive.minVert, primitive.maxVert - primitive.minVert);
+        return this.getNormals(primitive.minVert, (primitive.maxVert - primitive.minVert) + 1);
     }
     
     public Vector3f[] getNormals() { return this.getNormals(0, this.numVerts); }
@@ -344,7 +344,7 @@ public class Mesh implements Serializable {
     }
     
     public byte[][] getJoints(MeshPrimitive primitive) {
-        return this.getJoints(primitive.minVert, primitive.maxVert - primitive.minVert);
+        return this.getJoints(primitive.minVert, (primitive.maxVert - primitive.minVert) + 1);
     }
     
     public byte[][] getJoints() { return this.getJoints(0, this.numVerts); }
@@ -376,7 +376,7 @@ public class Mesh implements Serializable {
     }
     
     public Vector4f[] getWeights(MeshPrimitive primitive) {
-        return this.getWeights(primitive.minVert, primitive.maxVert - primitive.minVert);
+        return this.getWeights(primitive.minVert, (primitive.maxVert - primitive.minVert) + 1);
     }
     
     public Vector4f[] getWeights() {
