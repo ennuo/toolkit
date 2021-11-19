@@ -163,8 +163,9 @@ public class GfxMaterial implements Serializable {
         return this.boxes[wire.boxTo];
     }
     
-    public byte[] extractTexture(int index) {
-        byte[] data = Globals.extractFile(this.textures[index]);
+    public byte[] extractTexture(int index) { return this.extractTexture(this.textures[index]); }
+    public byte[] extractTexture(ResourceDescriptor texDescriptor) {
+        byte[] data = Globals.extractFile(texDescriptor);
         if (data == null) return null;
         Texture texture = new Texture(data);
         if (texture.parsed) {
