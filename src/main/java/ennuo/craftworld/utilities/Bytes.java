@@ -1,5 +1,8 @@
 package ennuo.craftworld.utilities;
 
+import ennuo.craftworld.registry.MaterialRegistry;
+import ennuo.craftworld.registry.MaterialRegistry.MaterialEntry;
+import ennuo.craftworld.resources.GfxMaterial;
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
@@ -10,6 +13,7 @@ import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.types.data.GfxMaterialInfo;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
 import java.security.InvalidAlgorithmParameterException;
@@ -21,6 +25,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -361,14 +366,16 @@ public class Bytes {
     }
 
     public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry) {
+        return Bytes.hashinate(mod, resource, entry, null);
+    }
+    
+    public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry, HashMap<Integer, MaterialEntry> registry) {
         if (resource.method == SerializationMethod.BINARY) {
             for (int i = 0; i < resource.dependencies.length; ++i) {
                 ResourceDescriptor res = resource.dependencies[i];
                 FileEntry dependencyEntry = Globals.findEntry(res);
                 if (res == null) continue;
                 if (res.type == ResourceType.SCRIPT) continue;
-                if (res.type == ResourceType.PLAN && res.GUID != -1) 
-                    Plan.removePlanDescriptors(resource, res.GUID);
                 /*
                 if (res.type == ResourceType.STREAMING_CHUNK) {
                     if (res.GUID == -1) continue;
@@ -404,8 +411,13 @@ public class Bytes {
                     resource.replaceDependency(i, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
                 }
             }
-            Plan.removePlanDescriptors(resource, entry.GUID);
-            byte[] data = resource.compressToResource();
+            if (resource.type == ResourceType.PLAN)
+                Plan.removePlanDescriptors(resource, entry.GUID);
+            byte[] data = null;
+            if (resource.type == ResourceType.GFX_MATERIAL && registry != null) {
+                GfxMaterialInfo info = new GfxMaterialInfo(new GfxMaterial(resource));
+                data = MaterialRegistry.convert(info, registry);
+            } else data = resource.compressToResource();
             mod.add(entry.path, data, entry.GUID);
             return SHA1.fromBuffer(data);
         }

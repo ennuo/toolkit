@@ -45,13 +45,9 @@ import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
@@ -1910,7 +1906,7 @@ public class Toolkit extends javax.swing.JFrame {
         // NOTE(Abz): Cheap trick, but it's what I'm doing for now.
         Resource resource = new Resource(Globals.extractFile(entry.hash));
         Mod mod = new Mod();
-        SHA1 hash = Bytes.hashinate(mod, resource, entry);
+        SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
 
         archive.entries = mod.entries;
         
