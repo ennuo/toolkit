@@ -8,6 +8,7 @@ import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import gr.zdimensions.jsquish.Squish;
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -174,6 +175,39 @@ public class Images {
             Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, (String) null, ex);
             return null;
         }
+        return output;
+    }
+    
+    public static BufferedImage multiply(BufferedImage source, BufferedImage sample) {
+        if (sample.getWidth() != source.getWidth() || sample.getHeight() != source.getHeight())
+            sample = Scalr.resize(sample, Scalr.Method.AUTOMATIC, source.getWidth(), source.getHeight());
+        for (int x = 0; x < source.getWidth(); ++x) {
+            for (int y = 0; y < source.getHeight(); ++y) {
+                Color sourceColor = new Color(source.getRGB(x, y), true);
+                Color sampleColor = new Color(sample.getRGB(x, y), true);
+                Color o = new Color(
+                        Math.round(sourceColor.getRed() * (float)(sampleColor.getRed() / 255f)),
+                        Math.round(sourceColor.getGreen() * (float)(sampleColor.getGreen() / 255f)),
+                        Math.round(sourceColor.getBlue() * (float)(sampleColor.getBlue() / 255f)),
+                        sourceColor.getAlpha()
+                );
+                source.setRGB(x, y, o.getRGB());
+            }
+        }
+        
+        return source;
+    }
+    
+    public static BufferedImage getTiledImage(BufferedImage image, int scaleX, int scaleY) {
+        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        int scaledWidth = image.getWidth() / scaleX;
+        int scaledHeight = image.getHeight() / scaleY;
+        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, scaledWidth, scaledHeight);
+        Graphics2D graphics = output.createGraphics();
+        for (int x = 0; x < scaleX; ++x)
+            for (int y = 0; y < scaleY; ++y)
+                graphics.drawImage(image, x * scaledWidth, y * scaledHeight, null);
+        graphics.dispose();
         return output;
     }
 
