@@ -371,44 +371,46 @@ public class Bytes {
     
     public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry, HashMap<Integer, MaterialEntry> registry) {
         if (resource.method == SerializationMethod.BINARY) {
-            for (int i = 0; i < resource.dependencies.length; ++i) {
-                ResourceDescriptor res = resource.dependencies[i];
-                FileEntry dependencyEntry = Globals.findEntry(res);
-                if (res == null) continue;
-                if (res.type == ResourceType.SCRIPT) continue;
-                /*
-                if (res.type == ResourceType.STREAMING_CHUNK) {
-                    if (res.GUID == -1) continue;
-                    String name = new File(dependencyEntry.path).getName();
-                    File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
-                    if (file == null) continue;
-                    byte[] data = FileIO.read(file.getAbsolutePath());
-                    BigProfile profile = new BigProfile(new Data(data), true);
-                    for (FileEntry e: profile.entries) {
-                        int index = -1;
-                        for (int j = 0; j < resource.dependencies.length; ++j) {
-                            if (Arrays.equals(resource.dependencies[j].hash, e.SHA1)) {
-                                index = j;
-                                break;
+            if (registry == null || (registry != null && resource.type != ResourceType.GFX_MATERIAL)) {
+                for (int i = 0; i < resource.dependencies.length; ++i) {
+                    ResourceDescriptor res = resource.dependencies[i];
+                    FileEntry dependencyEntry = Globals.findEntry(res);
+                    if (res == null) continue;
+                    if (res.type == ResourceType.SCRIPT) continue;
+                    /*
+                    if (res.type == ResourceType.STREAMING_CHUNK) {
+                        if (res.GUID == -1) continue;
+                        String name = new File(dependencyEntry.path).getName();
+                        File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
+                        if (file == null) continue;
+                        byte[] data = FileIO.read(file.getAbsolutePath());
+                        BigProfile profile = new BigProfile(new Data(data), true);
+                        for (FileEntry e: profile.entries) {
+                            int index = -1;
+                            for (int j = 0; j < resource.dependencies.length; ++j) {
+                                if (Arrays.equals(resource.dependencies[j].hash, e.SHA1)) {
+                                    index = j;
+                                    break;
+                                }
                             }
+                            if (index != -1)
+                                resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK));
                         }
-                        if (index != -1)
-                            resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK));
+                        resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK));
+                        continue;
                     }
-                    resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK));
-                    continue;
-                }
-                */
-                
-                byte[] data = Globals.extractFile(res);
-                if (data == null) continue;
-                Resource dependency = new Resource(data);
-                
-                if (dependency.method == SerializationMethod.BINARY)
-                    resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
-                else {
-                    mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
-                    resource.replaceDependency(i, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
+                    */
+
+                    byte[] data = Globals.extractFile(res);
+                    if (data == null) continue;
+                    Resource dependency = new Resource(data);
+
+                    if (dependency.method == SerializationMethod.BINARY)
+                        resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
+                    else {
+                        mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
+                        resource.replaceDependency(i, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
+                    }
                 }
             }
             if (resource.type == ResourceType.PLAN)
@@ -416,7 +418,7 @@ public class Bytes {
             byte[] data = null;
             if (resource.type == ResourceType.GFX_MATERIAL && registry != null) {
                 GfxMaterialInfo info = new GfxMaterialInfo(new GfxMaterial(resource));
-                data = MaterialRegistry.convert(info, registry);
+                data = info.build(mod, registry);
             } else data = resource.compressToResource();
             mod.add(entry.path, data, entry.GUID);
             return SHA1.fromBuffer(data);
