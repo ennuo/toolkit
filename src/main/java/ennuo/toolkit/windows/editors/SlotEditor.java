@@ -142,8 +142,16 @@ public class SlotEditor extends javax.swing.JFrame {
         for (int i = 0; i < slotInstances.size(); ++i) {
             Slot slot = slotInstances.get(i);
             String title = slot.title;
-            if (title.equals("Unnamed Level") && slot.translationTag != null && !slot.translationTag.equals(""))
+            if (title == null || title.isEmpty() || title.equals("Unnamed Level") && slot.translationTag != null && !slot.translationTag.isEmpty()) {
                 title = slot.translationTag;
+                if (Globals.LAMS != null) {
+                    String translatedTitle = Globals.LAMS.translate(slot.translationTag + "_NAME");
+                    slot.title = translatedTitle;
+                    if (!translatedTitle.isEmpty()) title = translatedTitle;
+                    slot.description = Globals.LAMS.translate(slot.translationTag + "_DESC");
+                }
+            }
+            
             this.slots.add(title + " | " + i);   
         }
         

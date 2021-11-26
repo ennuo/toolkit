@@ -118,6 +118,13 @@ public class Slot implements Serializable {
         if (serializer.revision.head >= 0x183)
             slot.translationTag = serializer.str8(slot.translationTag);
         
+        if (serializer.isWriting) {
+            if (slot.translationTag != null && !slot.translationTag.isEmpty()) {
+                slot.title = "";
+                slot.description = "";
+            }
+        }
+        
         slot.title = serializer.str16(slot.title);
         slot.description = serializer.str16(slot.description);
         
