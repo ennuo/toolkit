@@ -189,7 +189,7 @@ public class Slot implements Serializable {
             for (int i = 0; i < slot.rewardConditionDescription.length; ++i)
                 slot.rewardConditionDescription[i] = serializer.str16(slot.rewardConditionDescription[i]);
             
-            slot.customRewardEnabled = serializer.u32a(slot.customRewardCondition);
+            slot.customRewardCondition = serializer.u32a(slot.customRewardCondition);
             
             if (!serializer.isWriting) slot.amountNeededCustomReward = new long[serializer.input.i32()];
             else serializer.output.i32(slot.amountNeededCustomReward.length);
