@@ -1,6 +1,7 @@
 package ennuo.craftworld.types;
 
 import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileModel;
@@ -8,7 +9,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import java.util.HashMap;
 
 public class FileEntry {
-    public int revision;
+    public Revision revision;
     public String path = "Unresolved Path";
     public long timestamp = 0;
     public int size = 0;

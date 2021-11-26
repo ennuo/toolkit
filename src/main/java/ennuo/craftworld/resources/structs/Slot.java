@@ -247,7 +247,7 @@ public class Slot implements Serializable {
             if (texture != null) image = texture.getImage();
         }
             
-        int revision = entry.revision;
+        int revision = entry.revision.head;
         if (root != null) {
             byte[] root = Globals.extractFile(this.root);
             if (root != null)

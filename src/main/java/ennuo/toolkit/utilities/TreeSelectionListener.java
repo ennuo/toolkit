@@ -78,7 +78,7 @@ public class TreeSelectionListener {
             Resource resource = new Resource(extractedData);
             if (resource.method == SerializationMethod.BINARY && resource.type != ResourceType.STATIC_MESH)
                 entry.canReplaceDecompressed = true;
-            entry.revision = resource.revision.head;
+            entry.revision = resource.revision;
             entry.dependencies = resource.dependencies;
             
             if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {

@@ -249,8 +249,8 @@ public class BigProfile extends FileData {
       }
     }
 
-    if (profile.revision >= 0x3e6) output.u8(0); // vita cross dependency hashes
-    if (profile.revision >= 0x3f6) output.u8(0); // data labels
+    if (profile.revision.head >= 0x3e6) output.u8(0); // vita cross dependency hashes
+    if (profile.revision.head >= 0x3f6) output.u8(0); // data labels
 
     stringCount = stringCollection.size();
 
@@ -287,7 +287,7 @@ public class BigProfile extends FileData {
     for (StringEntry entry: stringCollection)
     entry.serialize(output);
 
-    if (profile.revision > 0x33a) output.bool(fromProductionBuild);
+    if (profile.revision.head > 0x33a) output.bool(fromProductionBuild);
 
     output.i32(slotCount);
     for (Slot slot: slots) {
@@ -339,7 +339,7 @@ public class BigProfile extends FileData {
 
   private void parseProfile() {
     Data profile = new Resource(this.profile.data).handle;
-    this.profile.revision = profile.revision.head;
+    this.profile.revision = profile.revision;
     
     if (profile.revision.head > 0x010503EF) revision = 3;
     else revision = 1;

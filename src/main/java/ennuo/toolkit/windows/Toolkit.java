@@ -2143,8 +2143,9 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.setValueAt("N/A", 5, 1);
             entryTable.setValueAt("N/A", 6, 1);
         }
-        if (entry.revision != 0)
-            entryTable.setValueAt(Bytes.toHex(entry.revision), 7, 1);
+        if (entry.revision != null && entry.revision.head != 0)
+            entryTable.setValueAt(Bytes.toHex(entry.revision.head), 7, 1);
+        else entryTable.setValueAt("N/A", 7,  1);
     }
 
     public void setHexEditor(byte[] bytes) {

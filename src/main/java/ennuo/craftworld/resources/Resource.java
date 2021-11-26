@@ -12,13 +12,12 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.utilities.TEA;
 import ennuo.toolkit.utilities.Globals;
-import java.util.Arrays;
 
 public class Resource {
     public ResourceType type = ResourceType.INVALID;
     public SerializationMethod method = SerializationMethod.UNKNOWN;
     public TextureInfo textureInfo;
-    public Revision revision = new Revision(0x132, 0x0000, 0x0000);
+    public Revision revision;
     private boolean isCompressed = true;
     public byte compressionFlags = 0;
     public Data handle = null;

@@ -5,6 +5,7 @@ import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.PackItem;
+import ennuo.craftworld.resources.structs.Revision;
 import java.util.ArrayList;
 
 public class Pack {
@@ -18,7 +19,7 @@ public class Pack {
 
     }
 
-    public byte[] serialize(int revision, boolean compressed) {
+    public byte[] serialize(Revision revision, boolean compressed) {
         int count = packs.size();
         Output output = new Output(0x5 + (PackItem.MAX_SIZE * count), revision);
         output.i32(packs.size());

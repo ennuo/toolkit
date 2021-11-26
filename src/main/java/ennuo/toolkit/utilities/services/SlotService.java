@@ -27,7 +27,7 @@ public class SlotService implements ResourceService  {
                     if (slot.root != null) {
                         FileEntry levelEntry = Globals.findEntry(slot.root);
                         if (levelEntry != null) {
-                            levelEntry.revision = resource.revision.head;
+                            levelEntry.revision = resource.revision;
                             levelEntry.setResource("slot", slot);
                         }
                     }
