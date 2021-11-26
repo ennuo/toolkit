@@ -124,7 +124,7 @@ public class FileDB extends FileData {
             long GUID = data.u32();
             
             if (path.startsWith(".")) 
-                path = "data/" + FileDB.getFolderFromExtension(path + hash.toString().toLowerCase()) + path;
+                path = "data/" + FileDB.getFolderFromExtension(path) + hash.toString().toLowerCase() + path;
             if (GUID > lastGUID && GUID < 0x00180000)
                 this.lastGUID = GUID;
             
