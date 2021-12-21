@@ -2173,11 +2173,6 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel(new DarculaLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, null, ex);
-        }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Toolkit tk = new Toolkit();
