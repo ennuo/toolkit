@@ -1,12 +1,15 @@
 package ennuo.toolkit.windows;
 
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.resources.enums.Magic;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Compressor;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Strings;
-import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.utilities.StringUtils;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.FileChooser;
 import java.io.File;
 import java.util.ArrayList;
@@ -15,23 +18,18 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 public class Compressinator extends javax.swing.JFrame {
-    
-    
-    ArrayList<ResourcePtr> dependencies = new ArrayList<ResourcePtr>();
+    ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
     DefaultListModel model = new DefaultListModel();
-    
     FileChooser fileChooser;
-    
-    byte[] file;
-    
+    byte[] fileData;
     
     public Compressinator() {
-        initComponents();
-        setResizable(false);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
-        setTitle("Compressinator");
-        fileChooser = new FileChooser(this);
+        this.initComponents();
+        this.setResizable(false);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setIconImage(new ImageIcon(this.getClass().getResource("/legacy_icon.png")).getImage());
+        this.setTitle("Compressinator");
+        this.fileChooser = new FileChooser(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -40,27 +38,34 @@ public class Compressinator extends javax.swing.JFrame {
 
         refType = new javax.swing.ButtonGroup();
         jFormattedTextField1 = new javax.swing.JFormattedTextField();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        headerPanel = new javax.swing.JPanel();
+        headerCategoryLabel = new javax.swing.JLabel();
         resourceCombo = new javax.swing.JComboBox(ennuo.craftworld.resources.enums.Magic.values());
-        jLabel4 = new javax.swing.JLabel();
+        magicLabel = new javax.swing.JLabel();
         revisionLabel = new javax.swing.JLabel();
         revision = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        branchLabel = new javax.swing.JLabel();
+        branchID = new javax.swing.JTextField();
+        branchRevision = new javax.swing.JTextField();
+        compressionFlagsLabel = new javax.swing.JLabel();
+        useCompressedIntegers = new javax.swing.JCheckBox();
+        useCompressMatrices = new javax.swing.JCheckBox();
+        useCompressedVectors = new javax.swing.JCheckBox();
+        dependencyManagerPanel = new javax.swing.JPanel();
+        dependenciesCategoryLabel = new javax.swing.JLabel();
+        dependencyScrollPane = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList<>();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        dependencyModifierPanel = new javax.swing.JPanel();
+        dependencyCategoryLabel = new javax.swing.JLabel();
         hashButton = new javax.swing.JRadioButton();
         guidButton = new javax.swing.JRadioButton();
-        ref = new javax.swing.JTextField();
-        typeCombo = new javax.swing.JComboBox(RType.values());
+        descriptorValue = new javax.swing.JTextField();
+        descriptorResourceType = new javax.swing.JComboBox(ResourceType.values());
         addEntry = new javax.swing.JButton();
         removeEntry = new javax.swing.JButton();
         compress = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
+        dataPanel = new javax.swing.JPanel();
+        dataCategoryLabel = new javax.swing.JLabel();
         openFile = new javax.swing.JButton();
         fileLabel = new javax.swing.JLabel();
 
@@ -71,74 +76,111 @@ public class Compressinator extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        headerPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel3.setText("Header");
+        headerCategoryLabel.setText("Header");
 
-        jLabel4.setText("Magic");
+        magicLabel.setText("Magic");
 
         revisionLabel.setText("Revision");
 
         revision.setText("0x272");
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        branchLabel.setText("Branch");
+
+        branchID.setText("0x4c44");
+
+        branchRevision.setText("0x0017");
+
+        compressionFlagsLabel.setText("Compression Flags");
+
+        useCompressedIntegers.setSelected(true);
+        useCompressedIntegers.setText("Integers");
+
+        useCompressMatrices.setSelected(true);
+        useCompressMatrices.setText("Matrices");
+
+        useCompressedVectors.setSelected(true);
+        useCompressedVectors.setText("Vectors");
+
+        javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
+        headerPanel.setLayout(headerPanelLayout);
+        headerPanelLayout.setHorizontalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(headerPanelLayout.createSequentialGroup()
+                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(compressionFlagsLabel)
+                            .addGroup(headerPanelLayout.createSequentialGroup()
+                                .addComponent(useCompressedIntegers)
+                                .addGap(18, 18, 18)
+                                .addComponent(useCompressMatrices)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(useCompressedVectors)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(headerPanelLayout.createSequentialGroup()
+                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(magicLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(headerCategoryLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(branchLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(revisionLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(revision))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(29, 29, 29)
-                        .addComponent(resourceCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerPanelLayout.createSequentialGroup()
+                                .addComponent(branchID, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(branchRevision))
+                            .addComponent(resourceCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(revision, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        headerPanelLayout.setVerticalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel3)
+                .addComponent(headerCategoryLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(resourceCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
+                    .addComponent(magicLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(revision)
                     .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(branchLabel)
+                    .addComponent(branchID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(branchRevision, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compressionFlagsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(useCompressedIntegers)
+                    .addComponent(useCompressMatrices)
+                    .addComponent(useCompressedVectors))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        dependencyManagerPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel1.setText("Dependencies");
+        dependenciesCategoryLabel.setText("Dependencies");
 
         dependencyList.setModel(model);
-        jScrollPane1.setViewportView(dependencyList);
+        dependencyScrollPane.setViewportView(dependencyList);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        dependencyModifierPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel2.setText("Dependency");
+        dependencyCategoryLabel.setText("Dependency");
 
         hashButton.setText("Hash");
 
         guidButton.setSelected(true);
         guidButton.setText("GUID");
-        guidButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                guidButtonActionPerformed(evt);
-            }
-        });
 
-        ref.setText("2551");
+        descriptorValue.setText("2551");
 
         addEntry.setText("Add");
         addEntry.addActionListener(new java.awt.event.ActionListener() {
@@ -154,72 +196,74 @@ public class Compressinator extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        javax.swing.GroupLayout dependencyModifierPanelLayout = new javax.swing.GroupLayout(dependencyModifierPanel);
+        dependencyModifierPanel.setLayout(dependencyModifierPanelLayout);
+        dependencyModifierPanelLayout.setHorizontalGroup(
+            dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ref)
-                    .addComponent(typeCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
+                        .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(dependencyCategoryLabel)
+                            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
                                 .addComponent(hashButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(guidButton, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(addEntry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeEntry, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                    .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
+                        .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
+                                .addComponent(addEntry, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(removeEntry, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(descriptorValue)
+                            .addComponent(descriptorResourceType, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        dependencyModifierPanelLayout.setVerticalGroup(
+            dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2)
+                .addComponent(dependencyCategoryLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hashButton)
                     .addComponent(guidButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(descriptorValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(typeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(descriptorResourceType, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEntry)
                     .addComponent(removeEntry))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout dependencyManagerPanelLayout = new javax.swing.GroupLayout(dependencyManagerPanel);
+        dependencyManagerPanel.setLayout(dependencyManagerPanelLayout);
+        dependencyManagerPanelLayout.setHorizontalGroup(
+            dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dependenciesCategoryLabel)
+                    .addComponent(dependencyScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(dependencyModifierPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        dependencyManagerPanelLayout.setVerticalGroup(
+            dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                .addGroup(dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dependencyModifierPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
+                        .addComponent(dependenciesCategoryLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                        .addComponent(dependencyScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -230,9 +274,9 @@ public class Compressinator extends javax.swing.JFrame {
             }
         });
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        dataPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel5.setText("Data");
+        dataCategoryLabel.setText("Data");
 
         openFile.setText("Open...");
         openFile.addActionListener(new java.awt.event.ActionListener() {
@@ -243,29 +287,29 @@ public class Compressinator extends javax.swing.JFrame {
 
         fileLabel.setText("No file selected.");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout dataPanelLayout = new javax.swing.GroupLayout(dataPanel);
+        dataPanel.setLayout(dataPanelLayout);
+        dataPanelLayout.setHorizontalGroup(
+            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dataPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
+                .addGroup(dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(dataPanelLayout.createSequentialGroup()
+                        .addComponent(dataCategoryLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(dataPanelLayout.createSequentialGroup()
                         .addComponent(openFile, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(fileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        dataPanelLayout.setVerticalGroup(
+            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dataPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel5)
+                .addComponent(dataCategoryLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(openFile)
                     .addComponent(fileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -277,144 +321,143 @@ public class Compressinator extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(compress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(compress, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(dependencyManagerPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(headerPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(dataPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(dataPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(dependencyManagerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(compress)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeEntryActionPerformed
-        int index = dependencyList.getSelectedIndex();
+        int index = this.dependencyList.getSelectedIndex();
         if (index != -1) {
+            ResourceDescriptor descriptor = this.dependencies.get(index);
+            String value = (String) this.model.get(index);
 
-            ResourcePtr ptr = dependencies.get(index);
-            String str = (String) model.get(index);
+            System.out.println(String.format("Removing dependency of type %s with value %s", descriptor.type, value));
 
-            System.out.println(String.format("Removing dependency of type %s with value %s", ptr.type, str));
-
-            dependencies.remove(index);
-            model.remove(index);
+            this.dependencies.remove(index);
+            this.model.remove(index);
         }
     }//GEN-LAST:event_removeEntryActionPerformed
 
     private void addEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEntryActionPerformed
-        String value = ref.getText();
-        ResourcePtr resource = new ResourcePtr();
-        if (guidButton.isSelected()) {
-            int GUID;
-            if (value.startsWith("0x"))
-            GUID = Integer.parseInt(value.substring(2), 16);
-            else GUID = Integer.parseInt(value);
-
-            if (GUIDExists(GUID)) {
+        String value = this.descriptorValue.getText();
+        ResourceDescriptor descriptor = new ResourceDescriptor();
+        if (this.guidButton.isSelected()) {
+            long GUID = StringUtils.getLong(value);
+            
+            if (this.doesGUIDAlreadyExist(GUID)) {
                 System.out.println(String.format("Dependency with value %s already exists, skipping.", "g" + GUID));
                 return;
             }
 
-            resource.type = (RType) typeCombo.getSelectedItem();
-            resource.GUID = GUID;
+            descriptor.type = (ResourceType) this.descriptorResourceType.getSelectedItem();
+            descriptor.GUID = GUID;
 
-            model.add(model.size(), "g" + GUID);
+            this.model.add(this.model.size(), descriptor.toString());
         } else {
-            value = Strings.leftPad(value, 40);
-            resource.hash = Bytes.toBytes(value);
-            model.add(model.size(), "h" + Bytes.toHex(resource.hash));
+            descriptor.hash = new SHA1(value);
+            this.model.add(this.model.size(), descriptor.toString());
         }
-        System.out.println(String.format("Adding dependency of type %s with value %s", resource.type, model.get(dependencies.size())));
-        dependencies.add(dependencies.size(), resource);
+        System.out.println(String.format("Adding dependency of type %s with value %s", descriptor.type, this.model.get(this.dependencies.size())));
+        this.dependencies.add(this.dependencies.size(), descriptor);
     }//GEN-LAST:event_addEntryActionPerformed
 
-    private void guidButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guidButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_guidButtonActionPerformed
-
     private void compressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressActionPerformed
-        String revisionString = revision.getText();
-        int revision;
-        if (revisionString.startsWith("0x"))
-        revision = Integer.parseInt(revisionString.substring(2), 16);
-        else revision = Integer.parseInt(revisionString);
+        int headRevision = (int) StringUtils.getLong(this.revision.getText());
+        int branchID = (int) StringUtils.getLong(this.branchID.getText());
+        int branchRevision = (int) StringUtils.getLong(this.branchRevision.getText());
+        String header = ((Magic) this.resourceCombo.getSelectedItem()).value;
+        
+        byte compressionFlags = 0x0;
+        if (this.useCompressedIntegers.isSelected()) 
+            compressionFlags |= CompressionFlags.USE_COMPRESSED_INTEGERS;
+        if (this.useCompressMatrices.isSelected()) 
+            compressionFlags |= CompressionFlags.USE_COMPRESSED_MATRICES;
+        if (this.useCompressedVectors.isSelected()) 
+            compressionFlags |= CompressionFlags.USE_COMPRESSED_VECTORS;
 
-        String header = ((Magic) resourceCombo.getSelectedItem()).value;
-
-        ResourcePtr[] dependencies = new ResourcePtr[this.dependencies.size()];
+        ResourceDescriptor[] dependencies = new ResourceDescriptor[this.dependencies.size()];
         dependencies = this.dependencies.toArray(dependencies);
 
-        if (file == null) {
+        if (this.fileData == null) {
             System.err.println("You need to specify a file to compress!");
             return;
         }
+        
+        Revision revision = new Revision(headRevision, branchID, branchRevision);
+        byte[] compressed = Resource.compressToResource(this.fileData, revision, compressionFlags, ResourceType.fromMagic(header), dependencies);
 
-        byte[] compressed = Compressor.Compress(file, header, revision, dependencies);
-
-        File output = fileChooser.openFile("output." + header, "", "", true);
+        File output = this.fileChooser.openFile("output." + header, "", "", true);
         if (output != null)
         FileIO.write(compressed, output.getAbsolutePath());
     }//GEN-LAST:event_compressActionPerformed
 
     private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
-        File file = fileChooser.openFile("Uncompressed Data", "", "",  false);
+        File file = this.fileChooser.openFile("Uncompressed Data", "", "",  false);
         if (file != null) {
-            this.file = FileIO.read(file.getAbsolutePath());
-            if (this.file != null)
-            fileLabel.setText(file.getName());
+            this.fileData = FileIO.read(file.getAbsolutePath());
+            if (this.fileData != null)
+            this.fileLabel.setText(file.getName());
         }
     }//GEN-LAST:event_openFileActionPerformed
 
-    
-    private boolean GUIDExists(int GUID) {
-        for (ResourcePtr ptr : dependencies)
-            if (ptr.GUID == GUID) return true;
+    private boolean doesGUIDAlreadyExist(long GUID) {
+        for (ResourceDescriptor descriptor : this.dependencies)
+            if (descriptor.GUID == GUID) return true;
         return false;
     }
-    
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addEntry;
+    private javax.swing.JTextField branchID;
+    private javax.swing.JLabel branchLabel;
+    private javax.swing.JTextField branchRevision;
     private javax.swing.JButton compress;
+    private javax.swing.JLabel compressionFlagsLabel;
+    private javax.swing.JLabel dataCategoryLabel;
+    private javax.swing.JPanel dataPanel;
+    private javax.swing.JLabel dependenciesCategoryLabel;
+    private javax.swing.JLabel dependencyCategoryLabel;
     private javax.swing.JList<String> dependencyList;
+    private javax.swing.JPanel dependencyManagerPanel;
+    private javax.swing.JPanel dependencyModifierPanel;
+    private javax.swing.JScrollPane dependencyScrollPane;
+    private javax.swing.JComboBox<String> descriptorResourceType;
+    private javax.swing.JTextField descriptorValue;
     private javax.swing.JLabel fileLabel;
     private javax.swing.JRadioButton guidButton;
     private javax.swing.JRadioButton hashButton;
+    private javax.swing.JLabel headerCategoryLabel;
+    private javax.swing.JPanel headerPanel;
     private javax.swing.JFormattedTextField jFormattedTextField1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel magicLabel;
     private javax.swing.JButton openFile;
-    private javax.swing.JTextField ref;
     private javax.swing.ButtonGroup refType;
     private javax.swing.JButton removeEntry;
     private javax.swing.JComboBox<String> resourceCombo;
     private javax.swing.JTextField revision;
     private javax.swing.JLabel revisionLabel;
-    private javax.swing.JComboBox<String> typeCombo;
+    private javax.swing.JCheckBox useCompressMatrices;
+    private javax.swing.JCheckBox useCompressedIntegers;
+    private javax.swing.JCheckBox useCompressedVectors;
     // End of variables declaration//GEN-END:variables
 }

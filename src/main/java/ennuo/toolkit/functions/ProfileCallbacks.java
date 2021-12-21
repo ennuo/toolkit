@@ -1,8 +1,8 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Compressor;
+import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -27,7 +27,7 @@ public class ProfileCallbacks {
         File file = Toolkit.instance.fileChooser.openFile("profile.bpr", "bpr", "Big Profile", true);
         if (file == null) return;
         BigProfile save = (BigProfile) Toolkit.instance.getCurrentDB();
-        FileIO.write(new Resource(save.profile.data).decompress(), file.getAbsolutePath());
+        FileIO.write(new Resource(save.profile.data).handle.data, file.getAbsolutePath());
     }
     
     public static void addKey() {                                       

@@ -1,45 +1,28 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.things.Part;
-import ennuo.craftworld.things.Serializer;
-import ennuo.craftworld.things.ThingPtr;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.things.Thing;
 
-public class PTrigger implements Part {
-    public int triggerType = 0;
-    public ThingPtr[] inThings = null;
-    public float radiusMultiplier = 600;
-    public int zRangeHundreds = 5;
-    public boolean allZLayers = false;
-    public float hysteresisMultiplier = 1;
-    public boolean enabled = true;
-    public float zOffset = 0;
-    public int scoreValue = 10;
+public class PTrigger implements Serializable {
+    public int triggerType;
+    public Thing[] inThings;
+    public float radiusMultiplier;
+    public boolean allZLayers;
+    public float hysteresisMultiplier;
+    public boolean enabled;
     
-    
-    @Override
-    public void Serialize(Serializer serializer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void Deserialize(Serializer serializer) {
-        triggerType = serializer.input.int32();
-        int thingCount = serializer.input.int32();
-        if (thingCount != 0) {
-            inThings = new ThingPtr[thingCount];
-            for (int i = 0; i < thingCount; ++i)
-                inThings[i] = serializer.deserializeThing();
-        }
-        radiusMultiplier = serializer.input.float32();
-        if (serializer.partsRevision >= 0x7e)
-            zRangeHundreds = serializer.input.int32();
-        allZLayers = serializer.input.bool();
-        hysteresisMultiplier = serializer.input.float32();
-        enabled = serializer.input.bool();
-        if (serializer.partsRevision >= 0x7e) {
-            zOffset = serializer.input.float32();
-            scoreValue = serializer.input.int32();
-        }
+    public PTrigger serialize(Serializer serializer, Serializable structure) {
+        PTrigger trigger = (structure == null) ? new PTrigger() : (PTrigger) structure;
+        
+        trigger.triggerType = serializer.i32(trigger.triggerType);
+        trigger.inThings = serializer.array(trigger.inThings, Thing.class, true);
+        trigger.radiusMultiplier = serializer.f32(trigger.radiusMultiplier);
+        trigger.allZLayers = serializer.bool(trigger.allZLayers);
+        trigger.hysteresisMultiplier = serializer.f32(trigger.hysteresisMultiplier);
+        trigger.enabled = serializer.bool(trigger.enabled);
+        
+        return trigger;
     }
     
 }

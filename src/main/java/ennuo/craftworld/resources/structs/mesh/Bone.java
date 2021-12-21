@@ -1,88 +1,49 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.resources.structs.ShapeInfo;
-import ennuo.craftworld.resources.structs.ShapeVert;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-public class Bone {
+public class Bone implements Serializable {
     public String name;
     public int flags;
     public long animHash;
     public int parent, firstChild, nextSibling;
-    public float[] skinPoseMatrix, invSkinPoseMatrix;
+    public Matrix4f skinPoseMatrix, invSkinPoseMatrix;
     public Vector4f OBBMin, OBBMax;
     public ShapeVert[] shapeVerts;
     public ShapeInfo[] shapeInfos;
     public float shapeMinZ, shapeMaxZ;
     public Vector4f boundBoxMin, boundBoxMax, boundSphere;
-    
-    public short mirror;
-    public byte mirrorType;
-    
-    public Bone(Data data) {
-        name = data.str(0x20);
-        flags = data.int32();
-        animHash = data.uint32();
-        parent = data.int32();
-        if (data.revision > 0x271)
-            parent /= 2;
-        firstChild = data.int32();
-        nextSibling = data.int32();
-        skinPoseMatrix = data.matrix();
-        invSkinPoseMatrix = data.matrix();
-        OBBMin = data.v4(); OBBMax = data.v4();
+
+    public Bone serialize(Serializer serializer, Serializable structure) {
+        Bone bone = (structure == null) ? new Bone() : (Bone) structure;
         
-        int shapeVertCount = data.int32();
-        shapeVerts = new ShapeVert[shapeVertCount];
-        for (int i = 0; i < shapeVertCount; ++i)
-            shapeVerts[i] = new ShapeVert(data);
-                
-        int shapeInfoCount = data.int32();
-        shapeInfos = new ShapeInfo[shapeInfoCount];
-        for (int i = 0; i < shapeInfoCount; ++i)
-            shapeInfos[i] = new ShapeInfo(data);
+        bone.name = serializer.str(bone.name, 0x20);
+        bone.flags = serializer.i32(bone.flags);
+        bone.animHash = serializer.u32(bone.animHash);
         
-        shapeMinZ = data.float32(); shapeMaxZ = data.float32();
+        bone.parent = (int) serializer.u32d(bone.parent);
+        bone.firstChild = (int) serializer.u32d(bone.firstChild);
+        bone.nextSibling = (int) serializer.u32d(bone.nextSibling);
         
-        boundBoxMin = data.v4(); boundBoxMax = data.v4();
-        boundSphere = data.v4();
-    }
-    
-    public static Bone[] array(Data data) {
-        int count = data.int32();
-        Bone[] out = new Bone[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new Bone(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.string(name, 0x20);
-        output.int32(flags);
-        output.uint32(animHash);
-        output.int32(parent);
-        output.int32(firstChild);
-        output.int32(nextSibling);
-        output.matrix(skinPoseMatrix);
-        output.matrix(invSkinPoseMatrix);
-        output.v4(OBBMin); output.v4(OBBMax);
+        bone.skinPoseMatrix = serializer.matrix(bone.skinPoseMatrix);
+        bone.invSkinPoseMatrix = serializer.matrix(bone.invSkinPoseMatrix);
         
-        if (shapeVerts != null) {
-            output.int32(shapeVerts.length);
-            for (ShapeVert vert : shapeVerts)
-                vert.serialize(output);
-        }
+        bone.OBBMin = serializer.v4(bone.OBBMin);
+        bone.OBBMax = serializer.v4(bone.OBBMax);
         
-        if (shapeInfos != null) {
-            output.int32(shapeInfos.length);
-            for (ShapeInfo info : shapeInfos)
-                info.serialize(output);
-        }
+        bone.shapeVerts = serializer.array(bone.shapeVerts, ShapeVert.class);
+        bone.shapeInfos = serializer.array(bone.shapeInfos, ShapeInfo.class);
         
-        output.float32(shapeMinZ); output.float32(shapeMaxZ);
-        output.v4(boundBoxMin); output.v4(boundBoxMax);
-        output.v4(boundSphere);
+        bone.shapeMinZ = serializer.f32(bone.shapeMinZ);
+        bone.shapeMaxZ = serializer.f32(bone.shapeMaxZ);
+        
+        bone.boundBoxMin = serializer.v4(bone.boundBoxMin);
+        bone.boundBoxMax = serializer.v4(bone.boundBoxMax);
+        bone.boundSphere = serializer.v4(bone.boundSphere);
+        
+        return bone;
     }
 }

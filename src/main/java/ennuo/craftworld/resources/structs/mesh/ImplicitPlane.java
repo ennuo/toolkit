@@ -1,30 +1,21 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 import org.joml.Vector4f;
 
-public class ImplicitPlane {
+public class ImplicitPlane implements Serializable {
     public Vector4f planeNormal, pointInPlane;
     public int parentBone;
     
-    public ImplicitPlane(Data data) {
-        planeNormal = data.v4();
-        pointInPlane = data.v4();
-        parentBone = data.int32();
-    }
-    
-    public static ImplicitPlane[] array(Data data) {
-        int count = data.int32();
-        ImplicitPlane[] out = new ImplicitPlane[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new ImplicitPlane(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.v4(planeNormal);
-        output.v4(pointInPlane);
-        output.int32(parentBone);
+    public ImplicitPlane serialize(Serializer serializer, Serializable structure) {
+        ImplicitPlane plane = 
+                (structure == null) ? new ImplicitPlane() : (ImplicitPlane) structure;
+        
+        plane.planeNormal = serializer.v4(plane.planeNormal);
+        plane.pointInPlane = serializer.v4(plane.pointInPlane);
+        plane.parentBone = serializer.i32(plane.parentBone);
+        
+        return plane;
     }
 }

@@ -1,26 +1,18 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class SoftbodyVertEquivalence {
+public class SoftbodyVertEquivalence implements Serializable {
     public short first, count;
-    
-    public SoftbodyVertEquivalence(Data data) {
-        first = data.int16();
-        count = data.int16();
-    }
-    
-    public static SoftbodyVertEquivalence[] array(Data data) {
-        int count = data.int32();
-        SoftbodyVertEquivalence[] out = new SoftbodyVertEquivalence[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new SoftbodyVertEquivalence(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.int16(first);
-        output.int16(count);
+
+    public SoftbodyVertEquivalence serialize(Serializer serializer, Serializable structure) {
+        SoftbodyVertEquivalence softbody = 
+                (structure == null) ? new SoftbodyVertEquivalence() : (SoftbodyVertEquivalence) structure;
+        
+        softbody.first = serializer.i16(softbody.first);
+        softbody.count = serializer.i16(softbody.count);
+        
+        return softbody;
     }
 }

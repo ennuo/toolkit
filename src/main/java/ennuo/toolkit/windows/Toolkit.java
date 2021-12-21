@@ -1,74 +1,56 @@
 package ennuo.toolkit.windows;
 
-import com.bulenkov.darcula.DarculaLaf;
-import ennuo.craftworld.types.BigProfile;
-import ennuo.craftworld.types.FileArchive;
-import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
+import ennuo.toolkit.configurations.Flags;
+import ennuo.toolkit.utilities.Globals;
+import ennuo.toolkit.windows.editors.*;
+import ennuo.craftworld.serializer.*;
+import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.Texture;
-import ennuo.craftworld.resources.TranslationTable;
-import ennuo.craftworld.swing.FileData;
-import ennuo.craftworld.swing.FileModel;
-import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.swing.Nodes;
-import ennuo.craftworld.swing.SearchParameters;
-import ennuo.craftworld.things.InventoryItem;
-import ennuo.craftworld.things.InventoryMetadata;
-import ennuo.craftworld.types.FileDB;
-import ennuo.toolkit.functions.ArchiveCallbacks;
-import ennuo.toolkit.functions.DatabaseCallbacks;
-import ennuo.toolkit.functions.DebugCallbacks;
-import ennuo.toolkit.functions.DependencyCallbacks;
+import ennuo.craftworld.swing.*;
+import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.enums.SlotType;
+import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
+import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.resources.structs.SlotID;
+import ennuo.craftworld.resources.structs.plan.InventoryDetails;
+import ennuo.craftworld.types.FileArchive.ArchiveType;
+import ennuo.craftworld.types.savedata.FileSave;
 import ennuo.toolkit.utilities.EasterEgg;
-import ennuo.toolkit.functions.ExportCallbacks;
-import ennuo.toolkit.functions.FileCallbacks;
-import ennuo.toolkit.functions.ModCallbacks;
-import ennuo.toolkit.functions.ProfileCallbacks;
-import ennuo.toolkit.functions.ReplacementCallbacks;
-import ennuo.toolkit.functions.ScanCallback;
-import ennuo.toolkit.functions.UtilityCallbacks;
 import ennuo.toolkit.streams.CustomPrintStream;
 import ennuo.toolkit.streams.TextAreaOutputStream;
-import ennuo.toolkit.utilities.FileChooser;
-import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.utilities.Globals.WorkspaceType;
-import ennuo.toolkit.utilities.TreeSelectionListener;
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
+import tv.porst.jhexview.JHexView;
+import tv.porst.jhexview.SimpleDataProvider;
+import ennuo.craftworld.types.*;
+import ennuo.craftworld.types.data.ResourceDescriptor;
+import ennuo.craftworld.types.mods.Mod;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.Images;
+import ennuo.craftworld.utilities.TEA;
+import ennuo.toolkit.configurations.Config;
+import ennuo.toolkit.configurations.Profile;
+import ennuo.toolkit.utilities.*;
+import ennuo.toolkit.functions.*;
+import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.Arrays;
+import java.util.Random;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
-import tv.porst.jhexview.JHexView;
-import tv.porst.jhexview.SimpleDataProvider;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
@@ -108,9 +90,11 @@ public class Toolkit extends javax.swing.JFrame {
 
     public Toolkit() {
         initComponents();
-        setResizable(false);
         EasterEgg.initialize(this);
         instance = this;
+        
+        if (Flags.ENABLE_NEW_SAVEDATA)
+            this.loadSavedata.setVisible(true);
        
         entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -142,6 +126,7 @@ public class Toolkit extends javax.swing.JFrame {
                     else search.setForeground(Color.WHITE);
                     if (data.type.equals("Big Profile")) Globals.currentWorkspace = WorkspaceType.PROFILE;
                     else if (data.type.equals("Mod")) Globals.currentWorkspace = WorkspaceType.MOD;
+                    else if (data.type.equals("File Save")) Globals.currentWorkspace = WorkspaceType.SAVE;
                     else Globals.currentWorkspace = WorkspaceType.MAP;
                 }
                 updateWorkspace();
@@ -178,6 +163,21 @@ public class Toolkit extends javax.swing.JFrame {
                 checkForChanges();
             }
         });
+        
+        Profile profile = Config.instance.getCurrentProfile();
+        if (profile == null) return;
+        if (profile.archives != null) {
+            for (String path : profile.archives) {
+                if (Files.exists(Paths.get(path)))
+                    ArchiveCallbacks.loadFileArchive(new File(path));
+            }
+        }
+        if (profile.databases != null) {
+            for (String path : profile.databases) {
+                if (Files.exists(Paths.get(path)))
+                    DatabaseCallbacks.loadFileDB(new File(path));
+            }
+        }        
     }
 
     private void checkForChanges() {
@@ -236,8 +236,17 @@ public class Toolkit extends javax.swing.JFrame {
             saveMenu.setVisible(false);
         }
 
-        if (Globals.canExtract() && Globals.currentWorkspace != WorkspaceType.MOD)
+        addFolder.setVisible(false);
+        
+        if (Globals.currentWorkspace == WorkspaceType.NONE && Globals.archives.size() != 0) {
             FARMenu.setVisible(true);
+            addFolder.setVisible(true);
+        }
+        else if (Globals.canExtract() && Globals.currentWorkspace != WorkspaceType.MOD) {
+            FARMenu.setVisible(true); 
+            if (Globals.currentWorkspace == WorkspaceType.MAP)
+                addFolder.setVisible(true);
+        }
         else FARMenu.setVisible(false);
 
         if (Globals.currentWorkspace != WorkspaceType.NONE) {
@@ -293,6 +302,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceDependencies.setVisible(false);
         dependencyGroup.setVisible(false);
         exportModGroup.setVisible(false);
+        exportBackupGroup.setVisible(false);
         exportAnimation.setVisible(false);
         exportModelGroup.setVisible(false);
         exportGroup.setVisible(false);
@@ -333,23 +343,26 @@ public class Toolkit extends javax.swing.JFrame {
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.length != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
+                        if (Globals.lastSelected.header.endsWith(".bin") || Globals.lastSelected.header.endsWith(".plan"))
+                            exportBackupGroup.setVisible(true);
                         replaceDependencies.setVisible(true);
                         dependencyGroup.setVisible(true);
                     }
                 }
                 
                 if (Globals.lastSelected.header.endsWith(".anim")) {
-                    if (Globals.lastSelected.entry.animation != null) {
+                    if (Globals.lastSelected.entry.getResource("animation") != null) {
                         exportGroup.setVisible(true);
                         exportAnimation.setVisible(true);
                     }
                 }
 
                 if (Globals.lastSelected.header.endsWith(".mol")) {
-                    if (Globals.lastSelected.entry.mesh != null) {
+                    Mesh mesh = Globals.lastSelected.entry.getResource("mesh");
+                    if (mesh != null) {
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
-                        int count = Globals.lastSelected.entry.mesh.attributeCount;
+                        int count = mesh.attributeCount;
                         exportOBJTEXCOORD0.setVisible((count > 0));
                         exportOBJTEXCOORD1.setVisible((count > 1));
                         exportOBJTEXCOORD2.setVisible((count > 2));
@@ -360,8 +373,20 @@ public class Toolkit extends javax.swing.JFrame {
                     exportTextureGroupContext.setVisible(true);
                     replaceImage.setVisible(true);
                 }
-
-                if ((Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE) || (Globals.lastSelected.header.endsWith(".slt")) || (Globals.lastSelected.header.endsWith(".pck")))
+                
+                if (Globals.lastSelected.header.endsWith(".slt")) {
+                    ArrayList<Slot> slots = Globals.lastSelected.entry.getResource("slots");
+                    if (slots != null)
+                        editSlotContext.setVisible(true);
+                }
+                
+                if (Globals.lastSelected.header.endsWith(".pck")) {
+                    Pack pack = Globals.lastSelected.entry.getResource("pack");
+                    if (pack != null)
+                        editSlotContext.setVisible(true);
+                }
+                
+                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE)
                     editSlotContext.setVisible(true);
 
                 if (Globals.lastSelected.header.endsWith(".trans")) {
@@ -404,6 +429,8 @@ public class Toolkit extends javax.swing.JFrame {
         exportAsMod = new javax.swing.JMenuItem();
         exportAsModGUID = new javax.swing.JMenuItem();
         exportAnimation = new javax.swing.JMenuItem();
+        exportBackupGroup = new javax.swing.JMenu();
+        exportAsBackup = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -471,6 +498,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadArchive = new javax.swing.JMenuItem();
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
+        loadSavedata = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         saveDivider = new javax.swing.JPopupMenu.Separator();
         saveAs = new javax.swing.JMenuItem();
@@ -480,6 +508,7 @@ public class Toolkit extends javax.swing.JFrame {
         reboot = new javax.swing.JMenuItem();
         FARMenu = new javax.swing.JMenu();
         addFile = new javax.swing.JMenuItem();
+        addFolder = new javax.swing.JMenuItem();
         MAPMenu = new javax.swing.JMenu();
         patchMAP = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
@@ -503,19 +532,16 @@ public class Toolkit extends javax.swing.JFrame {
         generateDiff = new javax.swing.JMenuItem();
         scanRawData = new javax.swing.JMenuItem();
         scanFileArchive = new javax.swing.JMenuItem();
+        fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
+        convertTexture = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        addAllPlansToInventory = new javax.swing.JMenuItem();
-        convertAllToGUID = new javax.swing.JMenuItem();
-        dumpBPRToMod = new javax.swing.JMenuItem();
-        testSerializeCurrentMesh = new javax.swing.JMenuItem();
-        debugJokerTest = new javax.swing.JMenuItem();
-        debugAddSlots = new javax.swing.JMenuItem();
-        debugRecompressAll = new javax.swing.JMenuItem();
-        emittionTendency = new javax.swing.JMenuItem();
+        dummyPlaceholder = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -680,6 +706,19 @@ public class Toolkit extends javax.swing.JFrame {
         });
         exportGroup.add(exportAnimation);
 
+        exportBackupGroup.setText("Backup");
+
+        exportAsBackup.setText("Hash");
+        exportAsBackup.setToolTipText("");
+        exportAsBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsBackupActionPerformed(evt);
+            }
+        });
+        exportBackupGroup.add(exportAsBackup);
+
+        exportGroup.add(exportBackupGroup);
+
         entryContext.add(exportGroup);
 
         replaceContext.setText("Replace");
@@ -792,11 +831,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Craftworld Toolkit");
+        setMinimumSize(new java.awt.Dimension(698, 296));
 
         workspaceDivider.setDividerLocation(275);
 
         treeContainer.setDividerLocation(30);
         treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
+        treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
 
         search.setEditable(false);
         search.setText(" Search is currently disabled.");
@@ -812,6 +854,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         workspaceDivider.setLeftComponent(treeContainer);
 
+        details.setResizeWeight(1);
         details.setDividerLocation(850);
 
         previewContainer.setDividerLocation(325);
@@ -858,11 +901,15 @@ public class Toolkit extends javax.swing.JFrame {
 
         details.setLeftComponent(previewContainer);
 
-        entryData.setDividerLocation(132);
+        entryData.setDividerLocation(148);
         entryData.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         entryData.setMaximumSize(new java.awt.Dimension(55, 2147483647));
         entryData.setMinimumSize(new java.awt.Dimension(55, 102));
         entryData.setPreferredSize(new java.awt.Dimension(55, 1120));
+
+        tableContainer.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        tableContainer.setMaximumSize(new java.awt.Dimension(452, 32767));
+        tableContainer.setMinimumSize(new java.awt.Dimension(452, 6));
 
         entryTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -872,14 +919,15 @@ public class Toolkit extends javax.swing.JFrame {
                 {"Size", "N/A"},
                 {"GUID", "N/A"},
                 {"GUID (Hex)", "N/A"},
-                {"GUID (7-bit)", "N/A"}
+                {"GUID (7-bit)", "N/A"},
+                {"Revision", "N/A"}
             },
             new String [] {
                 "Field", "Value"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                true, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -895,8 +943,9 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryData.setLeftComponent(tableContainer);
 
-        entryModifiers.setMinimumSize(new java.awt.Dimension(55, 81));
-        entryModifiers.setPreferredSize(new java.awt.Dimension(55, 713));
+        entryModifiers.setMaximumSize(new java.awt.Dimension(452, 32767));
+        entryModifiers.setMinimumSize(new java.awt.Dimension(452, 81));
+        entryModifiers.setPreferredSize(new java.awt.Dimension(452, 713));
 
         dependencyTreeContainer.setAlignmentX(2.0F);
 
@@ -1033,7 +1082,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
@@ -1132,6 +1181,15 @@ public class Toolkit extends javax.swing.JFrame {
         });
         savedataMenu.add(loadBigProfile);
 
+        loadSavedata.setText("Savedata (PREVIEW)");
+        loadSavedata.setVisible(false);
+        loadSavedata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadSavedataActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadSavedata);
+
         loadGroupMenu.add(savedataMenu);
 
         loadMod.setText("Mod");
@@ -1194,6 +1252,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         FARMenu.add(addFile);
+
+        addFolder.setText("Add Folder");
+        addFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFolderActionPerformed(evt);
+            }
+        });
+        FARMenu.add(addFolder);
 
         toolkitMenu.add(FARMenu);
 
@@ -1327,6 +1393,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(scanFileArchive);
+
+        fileArchiveIntegrityCheck.setText("File Archive Integrity Check");
+        fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileArchiveIntegrityCheckActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(fileArchiveIntegrityCheck);
         toolsMenu.add(jSeparator3);
 
         mergeFARCs.setText("Merge FARCs");
@@ -1344,82 +1418,31 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(installProfileMod);
+        toolsMenu.add(jSeparator8);
+
+        convertTexture.setText("Convert Texture");
+        convertTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                convertTextureActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(convertTexture);
+        toolsMenu.add(jSeparator7);
+
+        swapProfilePlatform.setText("Swap Profile Platform");
+        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                swapProfilePlatformActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(swapProfilePlatform);
 
         toolkitMenu.add(toolsMenu);
 
         debugMenu.setText("Debug");
 
-        jMenuItem1.setText("create fake table");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        debugMenu.add(jMenuItem1);
-
-        addAllPlansToInventory.setText("add all plans to inv table");
-        addAllPlansToInventory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addAllPlansToInventoryActionPerformed(evt);
-            }
-        });
-        debugMenu.add(addAllPlansToInventory);
-
-        convertAllToGUID.setText("convert all to guid");
-        convertAllToGUID.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                convertAllToGUIDActionPerformed(evt);
-            }
-        });
-        debugMenu.add(convertAllToGUID);
-
-        dumpBPRToMod.setText("dump bpr to mod");
-        dumpBPRToMod.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dumpBPRToModActionPerformed(evt);
-            }
-        });
-        debugMenu.add(dumpBPRToMod);
-
-        testSerializeCurrentMesh.setText("test serialize current mesh");
-        testSerializeCurrentMesh.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testSerializeCurrentMeshActionPerformed(evt);
-            }
-        });
-        debugMenu.add(testSerializeCurrentMesh);
-
-        debugJokerTest.setText("joker test");
-        debugJokerTest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugJokerTestActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugJokerTest);
-
-        debugAddSlots.setText("add slots");
-        debugAddSlots.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugAddSlotsActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugAddSlots);
-
-        debugRecompressAll.setText("recompress all slots");
-        debugRecompressAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugRecompressAllActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugRecompressAll);
-
-        emittionTendency.setText("when you have a tendency to emit");
-        emittionTendency.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                emittionTendencyActionPerformed(evt);
-            }
-        });
-        debugMenu.add(emittionTendency);
+        dummyPlaceholder.setText("This doesn't do anything!");
+        debugMenu.add(dummyPlaceholder);
 
         toolkitMenu.add(debugMenu);
 
@@ -1432,18 +1455,18 @@ public class Toolkit extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE)
-                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(workspaceDivider, javax.swing.GroupLayout.PREFERRED_SIZE, 517, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
         );
 
         pack();
@@ -1557,7 +1580,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
+        InventoryDetails metadata = Globals.lastSelected.entry.<Plan>getResource("item").details;
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
         locationField.setText("" + metadata.location);
@@ -1565,30 +1588,29 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryMetadata metadata = Globals.lastSelected.entry.item.metadata;
+        InventoryDetails metadata = Globals.lastSelected.entry.<Plan>getResource("item").details;
 
-        if (Globals.LAMS != null) {
-            titleField.setText(Globals.Translate(metadata.titleKey));
-            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
-            locationField.setText(Globals.Translate(metadata.location));
-            categoryField.setText(Globals.Translate(metadata.category));
-        }
-
-        if (metadata.userCreatedDetails.title != null)
-            titleField.setText(metadata.userCreatedDetails.title);
-
-        if (metadata.userCreatedDetails.description != null)
-            descriptionField.setText(metadata.userCreatedDetails.description);
-
-        if (Globals.LAMS != null) return;
-
+        titleField.setText("");
+        categoryField.setText("");
         locationField.setText("");
         categoryField.setText("");
-
-        if (metadata.category == 1737521) categoryField.setText("My Photos");
-        else if (metadata.category == 1598223) categoryField.setText("My Pods");
-        else if (metadata.category == 928006) categoryField.setText("My Objects");
-        else if (metadata.category == 578814) categoryField.setText("My Costumes");
+        
+        if (Globals.LAMS != null) {
+            metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
+            metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.category);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.location);
+            
+            titleField.setText(metadata.translatedTitle);
+            descriptionField.setText(metadata.translatedDescription);
+            locationField.setText(metadata.translatedLocation);
+            categoryField.setText(metadata.translatedCategory);
+        }
+        
+        if (metadata.userCreatedDetails != null) {
+            titleField.setText(metadata.userCreatedDetails.title);
+            descriptionField.setText(metadata.userCreatedDetails.description);
+        }
     }//GEN-LAST:event_StringMetadataActionPerformed
 
     private void loadBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadBigProfileActionPerformed
@@ -1628,7 +1650,7 @@ public class Toolkit extends javax.swing.JFrame {
             getCurrentDB().shouldSave = true;
             new SlotEditor(this, Globals.lastSelected.entry).setVisible(true);
         } else {
-            boolean isSlotsFile = Globals.lastSelected.entry.pack == null;
+            boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
             new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
         }
     }//GEN-LAST:event_editSlotContextActionPerformed
@@ -1696,7 +1718,6 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        getCurrentDB().shouldSave = true;
         new SlotEditor(this, ((BigProfile) getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile) getCurrentDB()).revision).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
@@ -1785,62 +1806,19 @@ public class Toolkit extends javax.swing.JFrame {
         ReplacementCallbacks.replaceImage();
     }//GEN-LAST:event_replaceImageActionPerformed
 
-    private void dumpBPRToModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpBPRToModActionPerformed
-        BigProfile profile = (BigProfile) getCurrentDB();
-        profile.dumpToMod();
-    }//GEN-LAST:event_dumpBPRToModActionPerformed
-
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
         checkForChanges(); dispose();
         Toolkit toolkit = new Toolkit();
         toolkit.setVisible(true);
     }//GEN-LAST:event_rebootActionPerformed
 
-    private void addAllPlansToInventoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllPlansToInventoryActionPerformed
-        DebugCallbacks.addAllPlansToInventoryTable();
-    }//GEN-LAST:event_addAllPlansToInventoryActionPerformed
-
-    private void convertAllToGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertAllToGUIDActionPerformed
-        DebugCallbacks.convertAllToGUID();
-    }//GEN-LAST:event_convertAllToGUIDActionPerformed
-
     private void closeTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeTabActionPerformed
         FileCallbacks.closeTab();
     }//GEN-LAST:event_closeTabActionPerformed
 
-    private void testSerializeCurrentMeshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testSerializeCurrentMeshActionPerformed
-        DebugCallbacks.reserializeCurrentMesh();
-    }//GEN-LAST:event_testSerializeCurrentMeshActionPerformed
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        FileDB mod = (FileDB) getCurrentDB();
-        
-        Output output = new Output((mod.entries.size() * 0x1C) + 0x4);
-        output.int32(mod.entries.size());
-        for (FileEntry e : mod.entries) {
-            output.int32(1);
-            output.bytes(e.hash);
-            output.int32(13);
-        }
-        
-        FileIO.write(output.buffer, "C:/Users/Shan/Desktop/table");
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
-
     private void exportGLTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportGLTFActionPerformed
         ExportCallbacks.exportGLB();
     }//GEN-LAST:event_exportGLTFActionPerformed
-
-    private void debugJokerTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugJokerTestActionPerformed
-        DebugCallbacks.jokerTest();
-    }//GEN-LAST:event_debugJokerTestActionPerformed
-
-    private void debugAddSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugAddSlotsActionPerformed
-        DebugCallbacks.addSlots();
-    }//GEN-LAST:event_debugAddSlotsActionPerformed
-
-    private void debugRecompressAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugRecompressAllActionPerformed
-        DebugCallbacks.recompressAllSlots();
-    }//GEN-LAST:event_debugRecompressAllActionPerformed
 
     private void newModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModActionPerformed
         UtilityCallbacks.newMod();
@@ -1866,22 +1844,157 @@ public class Toolkit extends javax.swing.JFrame {
         UtilityCallbacks.scanFileArchive();
     }//GEN-LAST:event_scanFileArchiveActionPerformed
 
-    private void emittionTendencyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emittionTendencyActionPerformed
-        DebugCallbacks.emittionTendency();
-    }//GEN-LAST:event_emittionTendencyActionPerformed
-
     private void exportAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnimationActionPerformed
         ExportCallbacks.exportAnimation();
     }//GEN-LAST:event_exportAnimationActionPerformed
+
+    private void loadSavedataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadSavedataActionPerformed
+        String directory = fileChooser.openDirectory();
+        if (directory.isEmpty()) return;
+        FileSave save = new FileSave(new File(directory));
+        this.addTab(save);
+        this.updateWorkspace();
+        
+    }//GEN-LAST:event_loadSavedataActionPerformed
+
+    private void swapProfilePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapProfilePlatformActionPerformed
+        File FAR4 = fileChooser.openFile("bigfart", "", "FAR4 Archive", false);
+        if (FAR4 == null) return;
+        if (FAR4.exists()) {
+            FileArchive archive = new FileArchive(FAR4);
+            if (archive.isParsed) {
+                if (archive.archiveType != ArchiveType.FAR4) {
+                    System.out.println("FileArchive isn't a FAR4!");
+                    return;
+                }
+                archive.swapFatEndianness();
+                FileIO.write(archive.build(), FAR4.getAbsolutePath());
+                JOptionPane.showMessageDialog(this, 
+                        String.format("FAR4 has been swapped to %s endianness.", 
+                                (archive.fat[0x38] != 0x00) ? "PS4" : "PS3"));
+            } 
+        } else 
+            System.out.println(String.format("%s does not exist!", FAR4.getAbsolutePath()));
+    }//GEN-LAST:event_swapProfilePlatformActionPerformed
+
+    private void addFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFolderActionPerformed
+        ArchiveCallbacks.addFolder();
+    }//GEN-LAST:event_addFolderActionPerformed
+
+    private void fileArchiveIntegrityCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileArchiveIntegrityCheckActionPerformed
+        ArchiveCallbacks.integrityCheck();
+    }//GEN-LAST:event_fileArchiveIntegrityCheckActionPerformed
+
+    private void exportAsBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupActionPerformed
+        FileEntry entry = Globals.lastSelected.entry;
+        String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
+
+        String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
+        if (titleID == null) return;
+        
+        String directory = Toolkit.instance.fileChooser.openDirectory();
+        if (directory == null) return;
+        
+        Revision fartRevision = new Revision(0x272, 0x4c44, 0x0017);
+        FileArchive archive = new FileArchive();
+        
+        Slot slot = new Slot();
+        slot.title = name;
+        slot.id = new SlotID(SlotType.FAKE, 0);
+        slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
+        
+        // NOTE(Abz): Cheap trick, but it's what I'm doing for now.
+        Resource resource = new Resource(Globals.extractFile(entry.hash));
+        Mod mod = new Mod();
+        SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
+
+        archive.entries = mod.entries;
+        
+        if (entry.path.endsWith(".bin")) 
+            slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        else if (entry.path.endsWith(".plan")) {
+            Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
+            level.replaceDependency(0xB, new ResourceDescriptor(hash, ResourceType.PLAN));
+            byte[] levelData = level.compressToResource();
+            archive.add(levelData);
+            slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
+        }
+        
+        Serializer serializer = new Serializer(1024, fartRevision, (byte) 0x7);
+        serializer.array(new Slot[] { slot }, Slot.class);
+        byte[] slotList = Resource.compressToResource(serializer.output, ResourceType.SLOT_LIST);
+        archive.add(slotList);
+        SHA1 rootHash = SHA1.fromBuffer(slotList);
+        
+        archive.setFatDataSource(rootHash);
+        archive.setFatResourceType(ResourceType.SLOT_LIST);
+        archive.setFatRevision(fartRevision);
+        
+        Random random = new Random();
+        byte[] UID = new byte[4];
+        random.nextBytes(UID);
+        titleID += "LEVEL" + Bytes.toHex(UID).toUpperCase();
+        
+        Path saveDirectory = Path.of(directory, titleID);
+        try { Files.createDirectories(saveDirectory); } 
+        catch (IOException ex) {
+            System.err.println("There was an error creating directory!");
+            return;
+        }
+        
+        FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
+        FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
+        
+        // NOTE(Abz): This seems terribly inefficient in terms of memory cost,
+        // but the levels exported should be low, so it's not entirely an issue,
+        // FOR NOW.
+        
+        byte[][] profiles = null;
+        {
+            byte[] profile = archive.build();
+            profile = Arrays.copyOfRange(profile, 0, profile.length - 4);
+            profiles = Bytes.Split(profile, 0x240000);
+        }
+        
+        for (int i = 0; i < profiles.length; ++i) {
+            byte[] part = profiles[i];
+            part = TEA.encrypt(part);
+            if (i + 1 == profiles.length)
+                part = Bytes.Combine(part, new byte[] { 0x46, 0x41, 0x52, 0x34 });
+            FileIO.write(part, (Path.of(saveDirectory.toString(), String.valueOf(i))).toString());
+        }
+    }//GEN-LAST:event_exportAsBackupActionPerformed
+
+    private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
+        final String[] types = { "png", "jpg", "jpeg", "dds" };
+        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
+        if (file == null) return;
+        
+        File save = Toolkit.instance.fileChooser.openFile("image.tex", "tex", "Texture", true);
+        if (save == null) return;
+        
+        BufferedImage image;
+        if (file.getAbsolutePath().toLowerCase().endsWith(".dds"))
+            image = Images.fromDDS(FileIO.read(file.getAbsolutePath()));
+        else image = FileIO.readBufferedImage(file.getAbsolutePath());
+
+        if (image == null) { System.err.println("Image was null!"); return; }
+        
+        byte[] texture = Images.toTEX(image);
+        if (texture == null) { System.err.println("Conversion was null!"); return; }
+        
+        FileIO.write(texture, save.getAbsolutePath());        
+    }//GEN-LAST:event_convertTextureActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
             for (int i = 0; i < entry.dependencies.length; ++i) {
-                if (entry.dependencies[i] == null || entry.dependencies[i].path == null) continue;
-                Nodes.addNode(root, entry.dependencies[i]);
-                if (entry.dependencies[i].dependencies != null) // These files have way too many dependencies
-                    generateDependencyTree(entry.dependencies[i], model);
+                FileEntry dependencyEntry = Globals.findEntry(entry.dependencies[i]);
+                if (dependencyEntry == null|| dependencyEntry.path == null) continue;
+                Nodes.addNode(root, dependencyEntry);
+                if (dependencyEntry.dependencies != null && dependencyEntry != entry)
+                    generateDependencyTree(dependencyEntry, model);
             }
         }
     }
@@ -1909,41 +2022,30 @@ public class Toolkit extends javax.swing.JFrame {
         return selected;
     }
 
-    public void populateMetadata(InventoryItem item) {
+    public void populateMetadata(Plan item) {
         if (item == null || !Globals.canExtract()) return;
-        InventoryMetadata metadata = item.metadata;
+        InventoryDetails metadata = item.details;
         if (metadata == null) return;
 
         iconField.setText("");
         if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
             loadImage(metadata.icon, item);
 
-        if (Globals.lastSelected.entry.item != item) return;
+        if (Globals.lastSelected.entry.<Plan>getResource("item") != item) return;
 
         setPlanDescriptions(metadata);
 
         pageCombo.setSelectedItem(metadata.type);
         subCombo.setSelectedItem(metadata.subType);
-        creatorField.setText(metadata.creator.PSID);
-
+        if (metadata.creator != null)
+            creatorField.setText(metadata.creator.handle);
+        else creatorField.setText("");
+        
         entryModifiers.setEnabledAt(1, true);
         entryModifiers.setSelectedIndex(1);
     }
 
-    public void setPlanDescriptions(InventoryMetadata metadata) {
-        if (Globals.lastSelected.entry.item.revision < 0x272) {
-            titleField.setText(metadata.translationKey);
-            descriptionField.setText("");
-            categoryField.setText(metadata.legacyCategoryKey);
-            locationField.setText(metadata.legacyLocationKey);
-
-            LAMSMetadata.setEnabled(false);
-            LAMSMetadata.setSelected(false);
-            StringMetadata.setEnabled(true);
-            StringMetadata.setSelected(true);
-            return;
-        }
-
+    public void setPlanDescriptions(InventoryDetails metadata) {
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
 
@@ -1953,13 +2055,14 @@ public class Toolkit extends javax.swing.JFrame {
         if (Globals.LAMS != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
+            
+            metadata.translatedTitle = Globals.LAMS.translate(metadata.titleKey);
+            metadata.translatedDescription = Globals.LAMS.translate(metadata.descriptionKey);
+            metadata.translatedCategory = Globals.LAMS.translate(metadata.category);
+            metadata.translatedLocation = Globals.LAMS.translate(metadata.location);
 
-            titleField.setText(Globals.Translate(metadata.titleKey));
-
-            descriptionField.setText(Globals.Translate(metadata.descriptionKey));
-
-            metadata.translatedLocation = Globals.Translate(metadata.location);
-            metadata.translatedCategory = Globals.Translate(metadata.category);
+            titleField.setText(metadata.translatedTitle);
+            descriptionField.setText(metadata.translatedDescription);
             locationField.setText(metadata.translatedLocation);
             categoryField.setText(metadata.translatedCategory);
         } else {
@@ -1968,7 +2071,7 @@ public class Toolkit extends javax.swing.JFrame {
             StringMetadata.setEnabled(false);
         }
 
-        if (metadata.userCreatedDetails != null) {
+        if (metadata.userCreatedDetails != null && metadata.titleKey == 0 && metadata.descriptionKey == 0) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             if (metadata.userCreatedDetails.title != null)
@@ -1979,45 +2082,31 @@ public class Toolkit extends javax.swing.JFrame {
 
             locationField.setText("");
             categoryField.setText("");
-
-            if (metadata.category == 1737521) categoryField.setText("My Photos");
-            else if (metadata.category == 1598223) categoryField.setText("My Pods");
-            else if (metadata.category == 928006) categoryField.setText("My Objects");
-            else if (metadata.category == 578814) categoryField.setText("My Costumes");
         }
     }
 
-    public void loadImage(ResourcePtr resource, InventoryItem item) {
-        FileEntry entry = null;
-        byte[] hash = null;
+    public void loadImage(ResourceDescriptor resource, Plan item) {
         if (resource == null) return;
         iconField.setText(resource.toString());
-        if (resource.hash != null)
-            hash = resource.hash;
-        else {
-            entry = Globals.findEntry(resource.GUID);
-            if (entry != null)
-                hash = entry.hash;
-        }
+        FileEntry entry = Globals.findEntry(resource);
+        
+        if (entry == null) return;
 
-        if (hash == null) return;
-        if (entry == null) entry = Globals.findEntry(hash);
-
-        if (entry != null && entry.texture != null)
-            setImage(entry.texture.getImageIcon(320, 320));
+        Texture texture = entry.getResource("texture");
+        if (entry != null && texture != null)
+            setImage(texture.getImageIcon(320, 320));
         else {
-            byte[] data = Globals.extractFile(hash);
+            byte[] data = Globals.extractFile(resource);
             if (data == null) return;
-            Texture texture = new Texture(data);
-            if (entry != null) entry.texture = texture;
+            texture = new Texture(data);
+            if (entry != null) entry.setResource("texture", texture);
             if (texture.parsed == true)
-                if (Globals.lastSelected.entry.item == item)
+                if (Globals.lastSelected.entry.<Plan>getResource("item") == item)
                     setImage(texture.getImageIcon(320, 320));
         }
     }
 
     public void setImage(ImageIcon image) {
-        preview.setDividerLocation(325);
         if (image == null) {
             texture.setText("No preview to be displayed");
             texture.setIcon(null);
@@ -2025,14 +2114,13 @@ public class Toolkit extends javax.swing.JFrame {
             texture.setText(null);
             texture.setIcon(image);
         }
-        preview.setDividerLocation(325);
     }
 
     public void setEditorPanel(FileNode node) {
         FileEntry entry = node.entry;
         if (entry == null) {
             entryTable.setValueAt(node.path + node.header, 0, 1);
-            for (int i = 1; i < 7; ++i)
+            for (int i = 1; i < 8; ++i)
                 entryTable.setValueAt("N/A", i, 1);
             return;
         }
@@ -2043,8 +2131,9 @@ public class Toolkit extends javax.swing.JFrame {
             Timestamp timestamp = new Timestamp(entry.timestamp * 1000L);
             entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
-        entryTable.setValueAt(Bytes.toHex(entry.hash), 2, 1);
-        entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
+        entryTable.setValueAt(entry.hash, 2, 1);
+        if (entry.size != -1)
+            entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
         if (entry.GUID != -1) {
             entryTable.setValueAt("g" + Long.valueOf(entry.GUID), 4, 1);
             entryTable.setValueAt(Bytes.toHex(entry.GUID), 5, 1);
@@ -2054,6 +2143,9 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.setValueAt("N/A", 5, 1);
             entryTable.setValueAt("N/A", 6, 1);
         }
+        if (entry.revision != null && entry.revision.head != 0)
+            entryTable.setValueAt(Bytes.toHex(entry.revision.head), 7, 1);
+        else entryTable.setValueAt("N/A", 7,  1);
     }
 
     public void setHexEditor(byte[] bytes) {
@@ -2101,8 +2193,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu MAPMenu;
     private javax.swing.JMenu ProfileMenu;
     private javax.swing.JRadioButton StringMetadata;
-    private javax.swing.JMenuItem addAllPlansToInventory;
     private javax.swing.JMenuItem addFile;
+    private javax.swing.JMenuItem addFolder;
     private javax.swing.JMenuItem addKey;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
@@ -2113,14 +2205,11 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea console;
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
-    private javax.swing.JMenuItem convertAllToGUID;
+    private javax.swing.JMenuItem convertTexture;
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
-    private javax.swing.JMenuItem debugAddSlots;
-    private javax.swing.JMenuItem debugJokerTest;
     public javax.swing.JMenu debugMenu;
-    private javax.swing.JMenuItem debugRecompressAll;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
     private javax.swing.JMenu dependencyGroup;
@@ -2129,7 +2218,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JSplitPane details;
-    private javax.swing.JMenuItem dumpBPRToMod;
+    private javax.swing.JMenuItem dummyPlaceholder;
     private javax.swing.JMenuItem dumpHashes;
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
@@ -2138,15 +2227,16 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem editProfileItems;
     private javax.swing.JMenuItem editProfileSlots;
     private javax.swing.JMenuItem editSlotContext;
-    private javax.swing.JMenuItem emittionTendency;
     private javax.swing.JMenuItem encodeInteger;
     private javax.swing.JPopupMenu entryContext;
     private javax.swing.JSplitPane entryData;
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAnimation;
+    private javax.swing.JMenuItem exportAsBackup;
     private javax.swing.JMenuItem exportAsMod;
     private javax.swing.JMenuItem exportAsModGUID;
+    private javax.swing.JMenu exportBackupGroup;
     private javax.swing.JMenuItem exportDDS;
     private javax.swing.JMenuItem exportGLTF;
     private javax.swing.JMenu exportGroup;
@@ -2163,6 +2253,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem extractContext;
     private javax.swing.JMenu extractContextMenu;
     private javax.swing.JMenuItem extractDecompressedContext;
+    private javax.swing.JMenuItem fileArchiveIntegrityCheck;
     public javax.swing.JTabbedPane fileDataTabs;
     public javax.swing.JMenu fileMenu;
     private javax.swing.JMenu gamedataMenu;
@@ -2172,19 +2263,21 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
     private javax.swing.JMenuItem loadMod;
+    private javax.swing.JMenuItem loadSavedata;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenu menuFileMenu;
@@ -2223,8 +2316,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem scanRawData;
     public javax.swing.JTextField search;
     private javax.swing.JComboBox<String> subCombo;
+    private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JScrollPane tableContainer;
-    private javax.swing.JMenuItem testSerializeCurrentMesh;
     public javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;

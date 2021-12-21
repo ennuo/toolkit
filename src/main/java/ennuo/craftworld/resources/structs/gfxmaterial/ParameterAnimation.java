@@ -1,41 +1,25 @@
 package ennuo.craftworld.resources.structs.gfxmaterial;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 import org.joml.Vector4f;
 
-public class ParameterAnimation {
+public class ParameterAnimation implements Serializable {
     public Vector4f baseValue;
     public float[] keys;
     public byte[] name;
     public byte componentsAnimated;
     
-    public ParameterAnimation(Data data) {
-        baseValue = data.v4();
-        keys = new float[data.int32()];
-        for (int i = 0; i < keys.length; ++i)
-            keys[i] = data.float32();
-        name = new byte[data.int32()];
-        for (int i = 0; i < name.length; ++i)
-            name[i] = data.int8();
-        componentsAnimated = data.int8();
-    }
-    
-    public static ParameterAnimation[] array(Data data) {
-        int count = data.int32();
-        ParameterAnimation[] out = new ParameterAnimation[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new ParameterAnimation(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        output.v4(baseValue);
-        output.int32(keys.length);
-        for (float key : keys) output.float32(key);
-        output.int32(name.length);
-        for (byte name : name)
-            output.int8(name);
-        output.int8(componentsAnimated);
+    public ParameterAnimation serialize(Serializer serializer, Serializable structure) {
+        ParameterAnimation parameterAnimation  = null;
+        if (structure != null) parameterAnimation = (ParameterAnimation) structure;
+        else parameterAnimation = new ParameterAnimation();
+        
+        parameterAnimation.baseValue = serializer.v4(parameterAnimation.baseValue);
+        parameterAnimation.keys = serializer.f32a(parameterAnimation.keys);
+        parameterAnimation.name = serializer.i8a(parameterAnimation.name);
+        parameterAnimation.componentsAnimated = serializer.i8(parameterAnimation.componentsAnimated);
+        
+        return parameterAnimation;
     }
 }

@@ -1,21 +1,14 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.things.ThingPtr;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class PYellowHead {
-    public ThingPtr deprecatedHead;
-    public ThingPtr legacyToolTetherJoint;
-    public float legacyToolTetherWidth = 0;
-    public int playerNumber = -1;
-    public byte poppet = 0;
-    public boolean requestedSuicide = false;
-    public ThingPtr legacyJetpack;
-    public float onScreenCounter = 0;
-    public boolean onScreenStatus = true;
-    public ThingPtr recordee;
-    public int lastTimeSlappedAPlayer = 0;
-    public int animSetKey = 0;
-    public boolean monstrousHeadScale = false;
-    public int creatureToSpawnAs = 0;
-    public boolean spawnAsAlternateForm = false;
+public class PYellowHead implements Serializable {
+
+    public PYellowHead serialize(Serializer serializer, Serializable structure) {
+        PYellowHead yellowHead = (structure == null) ? new PYellowHead() : (PYellowHead) structure;
+        
+        return yellowHead;
+    }
+    
 }

@@ -1,10 +1,11 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ContentsType;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.serializer.Serializer;
 import java.util.Date;
 
 public class PackItem {
@@ -12,7 +13,7 @@ public class PackItem {
     public static int MAX_SIZE = 0x125 + Slot.MAX_SIZE;
     
     public ContentsType contentsType = ContentsType.LEVEL;
-    public ResourcePtr mesh = new ResourcePtr(16006, RType.MESH);
+    public ResourceDescriptor mesh = new ResourceDescriptor(16006, ResourceType.MESH);
     public Slot slot = new Slot();
     public String contentID = "";
     public long timestamp = new Date().getTime() * 2 / 1000;
@@ -20,22 +21,22 @@ public class PackItem {
     
     public PackItem() {}
     public PackItem(Data data) {
-        contentsType = ContentsType.getValue(data.int32());
-        mesh = data.resource(RType.MESH, true);
-        slot = new Slot(data, true, false);
+        contentsType = ContentsType.getValue(data.i32());
+        mesh = data.resource(ResourceType.MESH, true);
+        slot = new Serializer(data).struct(null, Slot.class);
         contentID = data.str8();
-        timestamp = data.uint32();
-        if (data.revision == 0x3e2)
+        timestamp = data.u32();
+        if (data.revision.isVita())
             crossBuyCompatible = data.bool();
     }
     
     public void serialize(Output output) {
-        output.int8(contentsType.value);
+        output.u8(contentsType.value);
         output.resource(mesh, true);
-        slot.serialize(output, true, false);
+        new Serializer(output).struct(slot, Slot.class);
         output.str8(contentID);
-        output.uint32(timestamp);
-        if (output.revision == 0x3e2)
+        output.u32(timestamp);
+        if (output.revision.isVita())
             output.bool(crossBuyCompatible);
     }
 }

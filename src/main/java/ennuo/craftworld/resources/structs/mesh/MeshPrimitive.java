@@ -1,46 +1,32 @@
 package ennuo.craftworld.resources.structs.mesh;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.enums.RType;
+import ennuo.craftworld.types.data.ResourceDescriptor;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class MeshPrimitive {
+public class MeshPrimitive implements Serializable {
     public static int MAX_SIZE = 0x4B;
     
-    public ResourcePtr material;
-    public ResourcePtr textureAlternatives;
+    public ResourceDescriptor material;
+    public ResourceDescriptor textureAlternatives;
     public int minVert;
     public int maxVert;
     public int firstIndex;
     public int numIndices;
     public int region;
-    
-    public MeshPrimitive(Data data) {
-        boolean isBit = data.revision < 0x230;
-        material = data.resource(RType.GFXMATERIAL, isBit);
-        textureAlternatives = data.resource(RType.TEXTURE_LIST, isBit);
-        minVert = data.int32();
-        maxVert = data.int32();
-        firstIndex = data.int32();
-        numIndices = data.int32();
-        region = data.int32();
-    }
-    
-    public static MeshPrimitive[] array(Data data) {
-        int count = data.int32();
-        MeshPrimitive[] out = new MeshPrimitive[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new MeshPrimitive(data);
-        return out;
-    }
-    
-    public void serialize(Output output) {
-        boolean isBit = output.revision < 0x230;
-        output.resource(material, isBit);
-        output.resource(textureAlternatives, isBit);
-        output.int32(minVert); output.int32(maxVert);
-        output.int32(firstIndex); output.int32(numIndices);
-        output.int32(region);
+
+    public MeshPrimitive serialize(Serializer serializer, Serializable structure) {
+        MeshPrimitive primitive = (structure == null) ? new MeshPrimitive() : (MeshPrimitive) structure;
+        
+        primitive.material = serializer.resource(primitive.material, ResourceType.GFX_MATERIAL);
+        primitive.textureAlternatives = serializer.resource(primitive.textureAlternatives, ResourceType.TEXTURE_LIST);
+        primitive.minVert = serializer.i32(primitive.minVert);
+        primitive.maxVert = serializer.i32(primitive.maxVert);
+        primitive.firstIndex = serializer.i32(primitive.firstIndex);
+        primitive.numIndices = serializer.i32(primitive.numIndices);
+        primitive.region = serializer.i32(primitive.region);
+        
+        return primitive;
     }
 }

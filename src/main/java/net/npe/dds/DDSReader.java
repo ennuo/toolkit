@@ -107,6 +107,12 @@ public final class DDSReader {
           case 327682:
             offset += (type & 0xFF) * width * height;
             break;
+          case 0xFF:
+          case 0xFF00:
+          case 0xFF0000:
+          case 0xFF000000:
+            offset += width * height;
+            break;
         } 
         width /= 2;
         height /= 2;
@@ -115,9 +121,13 @@ public final class DDSReader {
         width = 1; 
       if (height <= 0)
         height = 1; 
-    } 
+    }
+
     int[] pixels = null;
     switch (type) {
+      case 0xFF:
+        pixels = readB8(width, height, offset, buffer, order);
+        break;
       case 1146639409:
         pixels = decodeDXT1(width, height, offset, buffer, order);
         break;
@@ -172,13 +182,19 @@ public final class DDSReader {
     int flags = getPixelFormatFlags(buffer);
     if ((flags & 0x4) != 0) {
       type = getFourCC(buffer);
-    } else if ((flags & 0x40) != 0) {
+    } else {
       int bitCount = getBitCount(buffer);
       int redMask = getRedMask(buffer);
       int greenMask = getGreenMask(buffer);
       int blueMask = getBlueMask(buffer);
       int alphaMask = ((flags & 0x1) != 0) ? getAlphaMask(buffer) : 0;
-      if (bitCount == 16) {
+      if (bitCount == 8) {
+          if (redMask != 0) type = 0x00FF0000;
+          else if (greenMask != 0) type = 0x0000FF00;
+          else if (blueMask != 0) type = 0x000000FF;
+          else if (alphaMask != 0) type = 0xFF000000;
+      }
+      else if (bitCount == 16) {
         if (redMask == A1R5G5B5_MASKS[0] && greenMask == A1R5G5B5_MASKS[1] && blueMask == A1R5G5B5_MASKS[2] && alphaMask == A1R5G5B5_MASKS[3]) {
           type = 65538;
         } else if (redMask == X1R5G5B5_MASKS[0] && greenMask == X1R5G5B5_MASKS[1] && blueMask == X1R5G5B5_MASKS[2] && alphaMask == X1R5G5B5_MASKS[3]) {
@@ -417,6 +433,17 @@ public final class DDSReader {
       pixels[i] = a << order.alphaShift | r << order.redShift | g << order.greenShift | b << order.blueShift;
     } 
     return pixels;
+  }
+  
+  private static int[] readB8(int width, int height, int offset, byte[] buffer, Order order) {
+      int index = offset;
+      int[] pixels = new int[width * height];
+      for (int i = 0; i < height * width; ++i) {
+          int b = buffer[index] & 0xFF;
+          index++;
+          pixels[i] = 255 << order.alphaShift | 0 << order.redShift | 0 << order.greenShift | b << order.blueShift;
+      }
+      return pixels;
   }
   
   private static int[] readR8G8B8(int width, int height, int offset, byte[] buffer, Order order) {

@@ -39,7 +39,8 @@ public class Nodes {
             boolean isVisible = false;
             if (node.entry != null) {
                 if (params.pointer != null) {
-                    if (params.pointer.hash != null) isVisible = Arrays.equals(node.entry.hash, params.pointer.hash);
+                    if (params.pointer.hash != null) 
+                        isVisible = node.entry.hash.equals(params.pointer.hash);
                     else isVisible = node.entry.GUID == params.pointer.GUID;
                 }
                 else if (node.entry.path.contains(params.path)) 

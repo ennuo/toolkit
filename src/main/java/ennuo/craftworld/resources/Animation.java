@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.memory.Data;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.structs.animation.AnimatedMorph;
 import ennuo.craftworld.resources.structs.animation.AnimationBone;
 import ennuo.craftworld.resources.structs.animation.Locator;
@@ -32,7 +32,7 @@ public class Animation {
     public AnimatedMorph[] morphs;
     
     public Animation(Data data) {
-        if (data.revision > 0x2ae) 
+        if (data.revision.head > 0x2ae) 
             processLBP3(data);
         else processLBP1(data);
         
@@ -51,36 +51,36 @@ public class Animation {
     private void processLBP1(Data data) {
         bones = AnimationBone.array(data);
         boneCount = bones.length;
-        numFrames = data.int32();
-        FPS = data.int32();
-        morphCount = data.int32();
+        numFrames = data.i32();
+        FPS = data.i32();
+        morphCount = data.i32();
         
-        rotBonesAnimatedCount = data.int32();
+        rotBonesAnimatedCount = data.i32();
         rotBonesAnimated = new short[rotBonesAnimatedCount];
         for (int i = 0; i < rotBonesAnimatedCount; ++i)
-            rotBonesAnimated[i] = data.int16();
+            rotBonesAnimated[i] = data.i16();
        
-        posBonesAnimatedCount = data.int32();
+        posBonesAnimatedCount = data.i32();
         posBonesAnimated = new short[posBonesAnimatedCount];
         for (int i = 0; i < posBonesAnimatedCount; ++i)
-            posBonesAnimated[i] = data.int16();
+            posBonesAnimated[i] = data.i16();
         
-        scaledBonesAnimatedCount = data.int32();
+        scaledBonesAnimatedCount = data.i32();
         scaledBonesAnimated = new short[scaledBonesAnimatedCount];
         for (int i = 0; i < scaledBonesAnimatedCount; ++i)
-            scaledBonesAnimated[i] = data.int16();
+            scaledBonesAnimated[i] = data.i16();
         
-        morphsAnimatedCount = data.int32();
+        morphsAnimatedCount = data.i32();
         morphsAnimated = new short[morphsAnimatedCount];
         for (int i = 0; i < morphsAnimatedCount; ++i)
-            morphsAnimated[i] = data.int16();
+            morphsAnimated[i] = data.i16();
         
         
         Vector4f[] rotation;
         Vector4f[] position;
         Vector4f[] scale;
     
-        int rotationCount = data.int32();
+        int rotationCount = data.i32();
         for (int i = 0; i < boneCount; ++i)
             bones[i].initialRotation = data.v4();
         rotation = new Vector4f[rotationCount - boneCount];
@@ -88,29 +88,29 @@ public class Animation {
             rotation[i] = data.v4();
         
         
-        int positionCount = data.int32();
+        int positionCount = data.i32();
         for (int i = 0; i < boneCount; ++i)
             bones[i].initialPosition = data.v4();
         position = new Vector4f[positionCount - boneCount];
         for (int i = 0; i < positionCount - boneCount; ++i)
             position[i] = data.v4();
         
-        int scaleCount = data.int32();
+        int scaleCount = data.i32();
         for (int i = 0; i < boneCount; ++i)
             bones[i].initialScale = data.v4();
         scale = new Vector4f[scaleCount - boneCount];
         for (int i = 0; i < scaleCount - boneCount; ++i)
             scale[i] = data.v4();
         
-        int morphC = data.int32();
+        int morphC = data.i32();
         morphs = new AnimatedMorph[this.morphCount];
         for (int i = 0; i < morphCount; ++i) {
-            morphs[i] = new AnimatedMorph(data.float32(), this.numFrames - 1);
+            morphs[i] = new AnimatedMorph(data.f32(), this.numFrames - 1);
             initialMorphs.add(morphs[i].value);
         }
         float[] morph = new float[morphC - morphCount];
         for (int i = 0; i < morphC - morphCount; ++i)
-            morph[i] = data.float32();
+            morph[i] = data.f32();
        
         
         for (AnimationBone bone : bones) {
@@ -150,25 +150,25 @@ public class Animation {
     }
     
     private void processLBP3(Data data) {
-        numFrames = data.int16();
-        FPS = data.int16();
-        loopStart = data.int16();
-        morphCount = data.int8();
-        boneCount = data.int8();
-        rotBonesAnimatedCount = data.int8();
-        posBonesAnimatedCount = data.int8();
-        scaledBonesAnimatedCount = data.int8();
-        morphsAnimatedCount = data.int8();
-        locatorKeysCount = data.int16();
+        numFrames = data.i16();
+        FPS = data.i16();
+        loopStart = data.i16();
+        morphCount = data.i8();
+        boneCount = data.i8();
+        rotBonesAnimatedCount = data.i8();
+        posBonesAnimatedCount = data.i8();
+        scaledBonesAnimatedCount = data.i8();
+        morphsAnimatedCount = data.i8();
+        locatorKeysCount = data.i16();
         
-        if (data.revision >= 0x3d9) {
+        if (data.revision.head >= 0x3d9) {
             posOffset = data.v4();
             posScale = data.v4();
         
             fat = data.bool();
         }
                 
-        byte[] animData = data.bytes(data.int32());
+        byte[] animData = data.bytes(data.i32());
         
         processAnimationDataLBP3(animData);
         
@@ -186,22 +186,22 @@ public class Animation {
         
         rotBonesAnimated = new short[rotBonesAnimatedCount];
         for (int i = 0; i < rotBonesAnimatedCount; ++i)
-            rotBonesAnimated[i] = data.int8();
+            rotBonesAnimated[i] = data.i8();
         
         posBonesAnimated = new short[posBonesAnimatedCount];
         for (int i = 0; i < posBonesAnimatedCount; ++i)
-            posBonesAnimated[i] = data.int8();
+            posBonesAnimated[i] = data.i8();
         
         scaledBonesAnimated = new short[scaledBonesAnimatedCount];
         for (int i = 0; i < scaledBonesAnimatedCount; ++i)
-            scaledBonesAnimated[i] = data.int8();
+            scaledBonesAnimated[i] = data.i8();
         
         morphsAnimated = new short[morphsAnimatedCount];
         for (int i = 0; i < morphsAnimatedCount; ++i)
-            morphsAnimated[i] = data.int8();
+            morphsAnimated[i] = data.i8();
         
         if ((rotBonesAnimatedCount + posBonesAnimatedCount + scaledBonesAnimatedCount + morphsAnimatedCount) % 2 != 0)
-            data.int8(); 
+            data.i8(); 
         
         Vector4f[] rotation = new Vector4f[rotBonesAnimatedCount * (numFrames - 1)];
         Vector4f[] position = new Vector4f[posBonesAnimatedCount * (numFrames - 1)];
@@ -209,9 +209,9 @@ public class Animation {
         float[] morph = new float[morphsAnimatedCount * (numFrames - 1)];
         
         for (int i = 0; i < boneCount; ++i) {
-            short x = data.int16();
-            short y = data.int16();
-            short z = data.int16();
+            short x = data.i16();
+            short y = data.i16();
+            short z = data.i16();
             Vector3f rot = new Vector3f(Math.max(x / 32767.0f, -1.0f), Math.max(y / 32767.0f, -1.0f), Math.max(z / 32767.0f, -1.0f));
             
             bones[i].initialRotation = new Vector4f(rot.x, rot.y, rot.z, (float) Math.sqrt(1 - ((Math.pow(rot.x, 2)) + (Math.pow(rot.y, 2) + (Math.pow(rot.z, 2))))));   
@@ -219,9 +219,9 @@ public class Animation {
         
         
         for (int i = 0; i < rotation.length; ++i) {
-            short x = data.int16();
-            short y = data.int16();
-            short z = data.int16();
+            short x = data.i16();
+            short y = data.i16();
+            short z = data.i16();
             Vector3f rot = new Vector3f(Math.max(x / 32767.0f, -1.0f), Math.max(y / 32767.0f, -1.0f), Math.max(z / 32767.0f, -1.0f));
             rotation[i] = new Vector4f(rot.x, rot.y, rot.z, (float) Math.sqrt(1 - ((Math.pow(rot.x, 2)) + (Math.pow(rot.y, 2) + (Math.pow(rot.z, 2))))));   
         }

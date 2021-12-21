@@ -1,10 +1,8 @@
 package ennuo.toolkit.utilities;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.io.File;
 import java.nio.file.Paths;
-import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import jnafilechooser.api.JnaFileChooser;
 import jnafilechooser.api.JnaFileChooser.Mode;
@@ -23,6 +21,11 @@ public class FileChooser {
     }
 
     public File openFile(String name, String ext, String desc, boolean saveFile) {
+        if (ext.isEmpty()) ext = "*";
+        return this.openFile(name, new String[] { ext }, desc, saveFile);
+    }
+    
+    public File openFile(String name, String[] ext, String desc, boolean saveFile) {
         this.fileDialogue = new JnaFileChooser();
         System.out.println("Waiting for user to select file...");
         if (setupFilter(name, ext, desc, false, false) && (
@@ -33,6 +36,10 @@ public class FileChooser {
     }
 
     public File[] openFiles(String ext, String desc) {
+        return this.openFiles(new String[] { ext }, desc);
+    }
+    
+    public File[] openFiles(String[] ext, String desc) {
         this.fileDialogue = new JnaFileChooser();
         System.out.println("Waiting for user to select files...");
         if (setupFilter("", ext, desc, true, false) &&
@@ -53,6 +60,10 @@ public class FileChooser {
     }
 
     private boolean setupFilter(String name, final String ext, final String desc, boolean mult, boolean dirs) {
+        return this.setupFilter(name, new String[] { ext }, desc, mult, dirs);
+    }
+    
+    private boolean setupFilter(String name, final String[] ext, final String desc, boolean mult, boolean dirs) {
         if (dirs)
             this.fileDialogue.setMode(Mode.Directories);
         if (!name.equals("") && name != null)

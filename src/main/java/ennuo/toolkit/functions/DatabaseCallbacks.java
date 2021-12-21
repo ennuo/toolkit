@@ -1,18 +1,26 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.memory.Strings;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.TranslationTable;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.utilities.StringUtils;
+import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.SHA1;
+import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
+import ennuo.toolkit.configurations.Config;
+import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.Color;
@@ -51,8 +59,17 @@ public class DatabaseCallbacks {
                     toolkit.search.setText("Search...");
                     toolkit.search.setForeground(Color.GRAY);
                 } else toolkit.addTab(db);
-
+                
                 toolkit.updateWorkspace();
+                
+                if (Globals.archives.size() != 0 && Globals.LAMS == null) {
+                    Profile profile = Config.instance.getCurrentProfile();
+                    if (profile != null) {
+                        byte[] data = Globals.extractFile(profile.language);
+                        if (data != null)
+                            Globals.LAMS = new TranslationTable(new Data(data));
+                    }
+                }
             }
 
             toolkit.savedataMenu.setEnabled(true);
@@ -68,10 +85,10 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         int added = 0, patched = 0;
         for (FileEntry entry: newDB.entries) {
-            int old = db.entries.size();
-            db.add(entry);
-            if (old == db.entries.size()) patched++;
-            else added++;
+            if (db.add(entry) && !FileDB.isHidden(entry.path)) {
+                db.addNode(entry);
+                added++;
+            } else patched++;
         }
         Toolkit.instance.updateWorkspace();
         System.out.println(String.format("Succesfully updated FileDB (added = %d, patched = %d)", added, patched));
@@ -94,7 +111,7 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         StringBuilder builder = new StringBuilder(0x100 * db.entries.size());
         for (FileEntry entry: db.entries)
-            builder.append(Bytes.toHex(entry.hash) + '\n');
+            builder.append(entry.hash.toString() + '\n');
         FileIO.write(builder.toString().getBytes(), file.getAbsolutePath());
     }
     
@@ -138,7 +155,17 @@ public class DatabaseCallbacks {
             return;
         }
         
-        if (integer == nextGUID) db.lastGUID++;
+        boolean alreadyExists = false;
+        if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
+            alreadyExists = ((Mod) db).find(integer) != null;
+        else alreadyExists = ((FileDB) db).find(integer) != null;
+        
+        if (alreadyExists) {
+            System.err.println("This GUID already exists!");
+            return;
+        }
+        
+        if (integer > db.lastGUID) db.lastGUID = integer;
         
         FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, integer);
 
@@ -185,17 +212,12 @@ public class DatabaseCallbacks {
         FileNode node = Globals.lastSelected;
         FileEntry entry = node.entry;
         
-        String SHA1 = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + Bytes.toHex(entry.hash).toLowerCase());
-        if (SHA1 == null) return;
-        SHA1 = SHA1.replaceAll("\\s", "");
-        
-        byte[] hash;
-        
-        if (SHA1.startsWith("h"))
-            SHA1 = SHA1.substring(1);
-        hash = Bytes.toBytes(Strings.leftPad(SHA1, 40));
-        
-        entry.hash = hash;
+        String hash = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + entry.hash.toString().toLowerCase());
+        if (hash == null) return;
+        hash = hash.replaceAll("\\s", "");
+        if (hash.startsWith("h"))
+            hash = hash.substring(1);
+        entry.hash = new SHA1(hash);
         
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         db.shouldSave = true;
@@ -210,25 +232,14 @@ public class DatabaseCallbacks {
         
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
         if (GUID == null) return;
-        GUID = GUID.replaceAll("\\s", "");
         
-        long integer;
-        try {
-            if (GUID.toLowerCase().startsWith("0x"))
-                integer = Long.parseLong(GUID.substring(2), 16);
-            else if (GUID.toLowerCase().startsWith("g"))
-                integer = Long.parseLong(GUID.substring(1));
-            else
-                integer = Long.parseLong(GUID);
-        } catch (NumberFormatException e) {
+        long parsedGUID = StringUtils.getLong(GUID);
+        if (parsedGUID == -1) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
         
-        entry.GUID = integer;
-        
-        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
-        db.shouldSave = true;
+        ((FileDB)Toolkit.instance.getCurrentDB()).edit(entry, parsedGUID);
         
         Toolkit.instance.updateWorkspace();
         Toolkit.instance.setEditorPanel(node);
@@ -279,40 +290,30 @@ public class DatabaseCallbacks {
         
         long nextGUID = db.lastGUID + 1;
         
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
         if (GUID == null) return;
-        GUID = GUID.replaceAll("\\s", "");
         
-        long integer;
-        try {
-            if (GUID.toLowerCase().startsWith("0x"))
-                integer = Long.parseLong(GUID.substring(2), 16);
-            else if (GUID.toLowerCase().startsWith("g"))
-                integer = Long.parseLong(GUID.substring(1));
-            else
-                integer = Long.parseLong(GUID);
-        } catch (NumberFormatException e) {
+        long parsedGUID = StringUtils.getLong(GUID);
+        if (parsedGUID == -1) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
         
-        if (integer == nextGUID) db.lastGUID++;
+        if (parsedGUID > nextGUID) db.lastGUID = parsedGUID;
         
-        duplicate.GUID = integer;
+        duplicate.GUID = parsedGUID;
 
         db.add(duplicate);
         TreePath treePath = new TreePath(db.addNode(duplicate).getPath());
 
-        db.shouldSave = true;
-
         byte[] data = Globals.extractFile(entry.GUID);
         if (data != null) {
             Resource resource = new Resource(data);
-            if (resource.magic.equals("PLNb")) {
-                resource.getDependencies(entry);
-                resource.removePlanDescriptors(entry.GUID, true);
-                Globals.addFile(resource.data);
-                duplicate.hash = Bytes.SHA1(resource.data);
+            if (resource.type == ResourceType.PLAN) {
+                Plan.removePlanDescriptors(resource, entry.GUID);
+                data = resource.compressToResource();
+                Globals.addFile(data);
+                duplicate.hash = SHA1.fromBuffer(data);
             }
         }
 
@@ -352,8 +353,10 @@ public class DatabaseCallbacks {
                 FileEntry entry = node.entry;
                 node.removeFromParent();
                 if (entry == null) continue;
-                if (entry.slot != null) profile.slots.remove(entry.slot);
-                if (entry.profileItem != null) profile.inventoryCollection.remove(entry.profileItem);
+                Slot slot = entry.getResource("slot");
+                if (slot != null) profile.slots.remove(slot);
+                ProfileItem item = entry.getResource("profileItem");
+                if (item != null) profile.inventoryCollection.remove(item);
                 profile.entries.remove(entry);
                 profile.shouldSave = true;
             }
@@ -370,8 +373,8 @@ public class DatabaseCallbacks {
     
     public static void newFileDB(int header) {
         Output output = new Output(0x8);
-        output.int32(header);
-        output.int32(0);
+        output.i32(header);
+        output.i32(0);
         File file = Toolkit.instance.fileChooser.openFile("blurayguids.map", "map", "FileDB", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {

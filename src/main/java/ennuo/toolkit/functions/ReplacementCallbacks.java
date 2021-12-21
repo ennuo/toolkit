@@ -1,10 +1,9 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Images;
-import ennuo.craftworld.memory.Resource;
-import ennuo.craftworld.resources.enums.Metadata;
+import ennuo.craftworld.utilities.Images;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
@@ -15,7 +14,8 @@ public class ReplacementCallbacks {
     public static void replaceImage() {
         FileEntry entry = Globals.lastSelected.entry;
 
-        File file = Toolkit.instance.fileChooser.openFile("image.png", "png", "Portable Network Graphics (PNG)", false);
+        final String[] types = { "png", "jpg", "jpeg", "dds" };
+        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
         if (file == null) return;
 
         BufferedImage image;
@@ -27,17 +27,10 @@ public class ReplacementCallbacks {
             System.err.println("Image was null, cancelling replacement operation.");
             return;
         }
-
-        Resource oldImage = new Resource(Globals.extractFile(entry.hash));
-
-        Resource newImage = null;
-        if (oldImage.type == Metadata.CompressionType.GTF_TEXTURE)
-            newImage = Images.toGTF(image);
-        else if ((oldImage.type == null && oldImage.data == null) || oldImage.type == Metadata.CompressionType.LEGACY_TEXTURE)
-            newImage = Images.toTEX(image);
-
+        
+        byte[] newImage = Images.toTEX(image);
         if (newImage != null) {
-            Globals.replaceEntry(entry, newImage.data);
+            Globals.replaceEntry(entry, newImage);
             return;
         }
 
@@ -49,15 +42,16 @@ public class ReplacementCallbacks {
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) {
-            byte[] original = Globals.extractFile(Globals.lastSelected.entry.GUID);
+            byte[] original = Globals.lastSelected.entry.data;
+            if (original == null) Globals.extractFile(Globals.lastSelected.entry.GUID);
             if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.hash);
             if (original == null) {
                 System.out.println("Couldn't find entry, can't replace.");
                 return;
             }
             Resource resource = new Resource(original);
-            resource.getDependencies(Globals.lastSelected.entry);
-            byte[] out = Compressor.Compress(data, resource.magic, resource.revision, resource.resources);
+            resource.handle.setData(data);
+            byte[] out = resource.compressToResource();
             if (out == null) {
                 System.err.println("Error occurred when compressing data.");
                 return;

@@ -1,37 +1,34 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.resources.structs.Copyright;
-import ennuo.craftworld.things.Part;
-import ennuo.craftworld.things.Serializer;
-import ennuo.craftworld.things.ThingPtr;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.SceNpId;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.things.Thing;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 
-public class PGroup implements Part {
-    public Copyright copyright;
-    public ResourcePtr planDescriptor = new ResourcePtr(null, RType.PLAN);
-    public boolean editable = false;
-    public ThingPtr emitter = null;
-    public int lifetime = 0;
-    public int aliveFrames = 0;
-    public boolean pickupAllMembers = false;
-    public int flags = 0;
+public class PGroup implements Serializable {
+    public boolean copyright;
+    public SceNpId creator;
+    public ResourceDescriptor planDescriptor;
+    public boolean editable;
+    public Thing emitter;
+    public int lifetime, aliveFrames;
+    public boolean pickupAllMembers;
     
-    @Override
-    public void Serialize(Serializer serializer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void Deserialize(Serializer serializer) {
-        copyright = new Copyright(serializer.input);
-        planDescriptor = serializer.input.resource(RType.PLAN, true);
-        if (serializer.partsRevision < 0x5e) editable = serializer.input.bool();
-        emitter = serializer.deserializeThing();
-        lifetime = serializer.input.int32();
-        aliveFrames = serializer.input.int32();
-        if (serializer.partsRevision < 0x5e) pickupAllMembers = serializer.input.bool();
-        flags = serializer.input.int32();
+    public PGroup serialize(Serializer serializer, Serializable structure) {
+        PGroup group = (structure == null) ? new PGroup() : (PGroup) structure;
+        
+        group.copyright = serializer.bool(group.copyright);
+        group.creator = serializer.struct(group.creator, SceNpId.class);
+        group.planDescriptor = serializer.resource(group.planDescriptor, ResourceType.PLAN, true);
+        group.editable = serializer.bool(group.editable);
+        group.emitter = serializer.reference(group.emitter, Thing.class);
+        group.lifetime = serializer.i32(group.lifetime);
+        group.aliveFrames = serializer.i32(group.aliveFrames);
+        group.pickupAllMembers = serializer.bool(group.pickupAllMembers);
+        
+        return group;
     }
     
 }

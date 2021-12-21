@@ -1,28 +1,28 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.things.Part;
-import ennuo.craftworld.things.Serializer;
-import ennuo.craftworld.things.ThingPtr;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.things.Thing;
 import org.joml.Vector3f;
 
-public class PBody implements Part {
-    public static long PART_FLAG = 1;
-    
+public class PBody implements Serializable {
     public Vector3f posVel = new Vector3f(0, 0, 0);
-    public float angVel = 0;
-    public int frozen = 0;
-    public ThingPtr editingPlayer;
-
-    @Override
-    public void Serialize(Serializer serializer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public float angVel;
+    public int frozen;
+    public Thing editingPlayer;
+    
+    
+    public PBody serialize(Serializer serializer, Serializable structure) {
+        PBody body = (structure == null) ? new PBody() : (PBody) structure;
+        
+        body.posVel = serializer.v3(body.posVel);
+        body.angVel = serializer.f32(body.angVel);
+        body.frozen = serializer.i32(body.frozen);
+        
+        if (serializer.revision.head > 0x22c)
+            body.editingPlayer = serializer.reference(body.editingPlayer, Thing.class);
+        
+        return body;
     }
-
-    @Override
-    public void Deserialize(Serializer serializer) {
-        posVel = serializer.input.v3();
-        angVel = serializer.input.float32();
-        frozen = serializer.input.int32();
-        editingPlayer = serializer.deserializeThing();
-    }
+    
 }

@@ -1,9 +1,9 @@
 package ennuo.toolkit.utilities;
 
-import ennuo.craftworld.memory.Bytes;
-import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.ResourcePtr;
+import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.TranslationTable;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -11,8 +11,11 @@ import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.windows.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -22,7 +25,18 @@ public class Globals {
         NONE,
         MAP,
         PROFILE,
-        MOD
+        MOD,
+        SAVE,
+        
+    }
+    
+    public static File workingDirectory;
+    
+    static {
+        try {
+            Globals.workingDirectory = Files.createTempDirectory("twd").toFile();
+            Globals.workingDirectory.deleteOnExit();
+        } catch (IOException ex) { System.out.println("An error occurred creating temp directory."); }
     }
 
     public static ArrayList < FileData > databases = new ArrayList < FileData > ();
@@ -43,7 +57,7 @@ public class Globals {
         return false;
     }
 
-    public static FileEntry findEntry(ResourcePtr res) {
+    public static FileEntry findEntry(ResourceDescriptor res) {
         if (res.GUID != -1) return findEntry(res.GUID);
         else if (res.hash != null) return findEntry(res.hash);
         return null;
@@ -71,17 +85,17 @@ public class Globals {
         return null;
     }
 
-    public static FileEntry findEntry(byte[] sha1) {
+    public static FileEntry findEntry(SHA1 hash) {
         if (Globals.databases.size() == 0) return null;
         FileData db = Toolkit.instance.getCurrentDB();
 
-        FileEntry e = db.find(sha1);
+        FileEntry e = db.find(hash);
         if (e != null)
             return e;
 
         for (FileData data: Globals.databases) {
             if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(sha1);
+                FileEntry entry = ((FileDB) data).find(hash);
                 if (entry != null)
                     return entry;
             }
@@ -89,7 +103,7 @@ public class Globals {
         return null;
     }
 
-    public static byte[] extractFile(ResourcePtr ptr) {
+    public static byte[] extractFile(ResourceDescriptor ptr) {
         if (ptr == null) return null;
         if (ptr.hash != null) return extractFile(ptr.hash);
         else if (ptr.GUID != -1) return extractFile(ptr.GUID);
@@ -126,21 +140,21 @@ public class Globals {
         return null;
     }
 
-    public static byte[] extractFile(byte[] sha1) {
+    public static byte[] extractFile(SHA1 hash) {
         FileData db = Toolkit.instance.getCurrentDB();
         if (currentWorkspace == WorkspaceType.PROFILE) {
-            byte[] data = ((BigProfile) db).extract(sha1);
+            byte[] data = ((BigProfile) db).extract(hash);
             if (data != null) return data;
         } else if (currentWorkspace == WorkspaceType.MOD) {
-            byte[] data = ((Mod) db).extract(sha1);
+            byte[] data = ((Mod) db).extract(hash);
             if (data != null) return data;
         }
         for (FileArchive archive: Globals.archives) {
-            byte[] data = archive.extract(sha1);
+            byte[] data = archive.extract(hash);
             if (data != null) return data;
         }
         
-        System.out.println("Could not extract h" + Bytes.toHex(sha1));
+        System.out.println("Could not extract h" + hash.toString());
         
         return null;
     }
@@ -152,7 +166,7 @@ public class Globals {
                 addFile(data);
         }
 
-        Toolkit.instance.getCurrentDB().replace(entry, data);
+        Toolkit.instance.getCurrentDB().edit(entry, data);
         Toolkit.instance.updateWorkspace();
 
         JTree tree = Toolkit.instance.getCurrentTree();
@@ -180,13 +194,5 @@ public class Globals {
             archive.add(data);
         Toolkit.instance.updateWorkspace();
         System.out.println("Added file to queue, make sure to save your workspace!");
-    }
-
-    public static String Translate(long key) {
-        String translated = null;
-        if (LAMS != null) translated = LAMS.Translate(key);
-        if (translated == null && KEYS != null)
-            translated = KEYS.Translate(key);
-        return translated;
     }
 }

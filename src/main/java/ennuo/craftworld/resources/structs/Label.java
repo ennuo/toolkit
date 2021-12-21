@@ -1,23 +1,21 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class Label {
+public class Label implements Serializable {
     public static int MAX_SIZE = 0x6;
-    
     
     public long key;
     public int category;
     public String translated;
     
-    public Label(Data data) {
-        key = data.uint32();
-        category = data.int8();
-    }
-    
-    public void serialize(Output output) {
-        output.int32((int) key);
-        output.int8(category);
+    public Label serialize(Serializer serializer, Serializable structure) {
+        Label label = (structure == null) ? new Label() : (Label) structure;
+        
+        label.key = serializer.u32(label.key);
+        label.category = serializer.i32(label.category);
+        
+        return label;
     }
 }

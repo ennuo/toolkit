@@ -1,22 +1,20 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.memory.Bytes;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
-import ennuo.craftworld.memory.Output;
-import ennuo.craftworld.memory.Resource;
+import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.Mesh;
-import ennuo.craftworld.resources.enums.Metadata;
-import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.things.InventoryMetadata;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.Mod;
+import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.windows.ModEditor;
+import ennuo.toolkit.windows.editors.ModEditor;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
 import javax.swing.JOptionPane;
@@ -31,6 +29,11 @@ public class UtilityCallbacks {
             Mod mod = new Mod();
             new ModEditor(mod, true).setVisible(true);
             mod.save(file.getAbsolutePath());
+            mod = ModCallbacks.loadMod(file);
+            if (mod != null && mod.isParsed) {
+                Toolkit.instance.addTab(mod);
+                Toolkit.instance.updateWorkspace();
+            }
         }
     }
         
@@ -42,16 +45,15 @@ public class UtilityCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-        byte[] decompressed = resource.decompress();
 
-        if (decompressed == null) {
+        if (resource.handle.data == null) {
             System.err.println("Failed to decompress resource.");
             return;
         }
 
         File out = Toolkit.instance.fileChooser.openFile(file.getName() + ".dec", "", "", true);
         if (out != null)
-            FileIO.write(decompressed, out.getAbsolutePath());
+            FileIO.write(resource.handle.data, out.getAbsolutePath());
     }
     
     public static void mergeFileArchives() {         
@@ -127,17 +129,17 @@ public class UtilityCallbacks {
             return;
         }
 
-        Output output = new Output(updateDB.entryCount * 0x100);
+        Output output = new Output(updateDB.entries.size() * 0x100);
         for (FileEntry entry: updateDB.entries) {
             FileEntry baseEntry = baseDB.find(entry.GUID);
             if (baseEntry == null)
-                output.string("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
             else if (baseEntry.size != entry.size) {
-                output.string("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + Bytes.toHex(baseEntry.hash) + " -> " + Bytes.toHex(entry.hash) + " " + Bytes.toHex(entry.GUID) + '\n');
+                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + baseEntry.hash.toString() + " -> " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
             }
 
         }
-        output.shrinkToFit();
+        output.shrink();
 
         File out = Toolkit.instance.fileChooser.openFile("diff.txt", ".txt", "Text Document", true);
         if (out == null) return;
@@ -158,11 +160,7 @@ public class UtilityCallbacks {
                 if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
                     BigProfile profile = (BigProfile) Toolkit.instance.getCurrentDB();
                     for (FileEntry entry: mod.entries)
-                        profile.add(entry.data, false);
-                    for (InventoryMetadata item: mod.items)
-                        profile.addItem(item.resource, item);
-                    for (Slot slot: mod.slots)
-                        profile.addSlot(slot);
+                        profile.add(entry.data, true);
                 } else if (Globals.currentWorkspace == Globals.WorkspaceType.MAP) {
                     if (mod.entries.size() == 0) return;
                     FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
@@ -204,7 +202,7 @@ public class UtilityCallbacks {
 
         Output output = new Output(12, 0xFFFFFFFF);
         output.varint(integer);
-        output.shrinkToFit();
+        output.shrink();
 
         System.out.println("0x" + Bytes.toHex(integer) + " (" + integer + ")" + " -> " + "0x" + Bytes.toHex(output.buffer));
     }
@@ -226,29 +224,29 @@ public class UtilityCallbacks {
                 for (FileEntry match : matches)
                     out.add(match);
             } else {
-                Resource resource = new Resource(archive.extract(entry.hash));
-                entry.GUID = Bytes.toHex(entry.hash).hashCode();
+                byte[] data = archive.extract(entry.hash);
+                String magic = new Data(data).str(4);
+                entry.GUID = entry.hash.hashCode();
                 
                 String name = "" + entry.offset;
-                switch (resource.magic) {
+                switch (magic) {
                     
                     case "PLNb": name += ".plan"; break;
                     case "LVLb": name += ".bin"; break;
                     default: 
-                        if (resource.magic.startsWith("#")) resource.magic = "txt";
-                        else if (!(resource.magic.length() == 4 && resource.magic.charAt(3) == 't') && (Metadata.getType(resource.magic, 0) == Metadata.CompressionType.UNKNOWN))
-                            resource.magic = "raw";
+                        if (magic.startsWith("#")) magic = "txt";
+                        else magic = "raw";
                         
-                        name += "." + resource.magic.substring(0, 3).toLowerCase();
+                        name += "." + magic.substring(0, 3).toLowerCase();
                         break;
                 }
                 
                 try {
-                    if (resource.magic.equals("MSHb"))
-                        name = (new Mesh("mesh", resource.data)).bones[0].name + ".mol";   
+                    if (magic.equals("MSHb"))
+                        name = (new Mesh("mesh", new Resource(data))).bones[0].name + ".mol";   
                 } catch (Exception e) { System.err.println("Error parsing mesh, defaulting to offset name."); } 
                 
-                entry.path = "resources/" + resource.magic.substring(0, 3).toLowerCase() + "/" + name;
+                entry.path = "resources/" + magic.substring(0, 3).toLowerCase() + "/" + name;
                 
                 out.add(entry);
             }

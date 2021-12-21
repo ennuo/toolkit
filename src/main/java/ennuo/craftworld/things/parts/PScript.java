@@ -1,25 +1,20 @@
 package ennuo.craftworld.things.parts;
 
-import ennuo.craftworld.memory.ResourcePtr;
-import ennuo.craftworld.resources.enums.RType;
-import ennuo.craftworld.things.Part;
-import ennuo.craftworld.things.Serializer;
+import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 
-public class PScript implements Part {
-    public ResourcePtr script = new ResourcePtr(null, RType.SCRIPT);
-    public ScriptInstance instanceLayout;
+public class PScript implements Serializable {
+    public ResourceDescriptor script;
     
     
-    @Override
-    public void Serialize(Serializer serializer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void Deserialize(Serializer serializer) {
-        script = serializer.input.resource(RType.SCRIPT);
-        if (serializer.input.bool())
-            instanceLayout = (ScriptInstance) serializer.deserializePart("SCRIPTINSTANCE");
+    public PScript serialize(Serializer serializer, Serializable structure) {
+        PScript script = (structure == null) ? new PScript() : (PScript) structure;
+        
+        script.script = serializer.resource(script.script, ResourceType.SCRIPT);
+        
+        return script;
     }
     
 }

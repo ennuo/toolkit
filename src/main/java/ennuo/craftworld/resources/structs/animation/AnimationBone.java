@@ -1,7 +1,7 @@
 package ennuo.craftworld.resources.structs.animation;
 
-import ennuo.craftworld.memory.Data;
-import ennuo.craftworld.memory.Output;
+import ennuo.craftworld.serializer.Data;
+import ennuo.craftworld.serializer.Output;
 import org.joml.Vector4f;
 
 public class AnimationBone {
@@ -27,21 +27,21 @@ public class AnimationBone {
     }
     
     public AnimationBone(Data data) {
-        animHash = data.uint32f();
-        if (data.revision > 0x272) {
-            parent = data.int8();
-            firstChild = data.int8();
-            nextSibling = data.int8();
-            flags = data.int8();
+        animHash = data.u32f();
+        if (data.revision.head > 0x272) {
+            parent = data.i8();
+            firstChild = data.i8();
+            nextSibling = data.i8();
+            flags = data.i8();
         } else {
-            parent = data.int32();
-            firstChild = data.int32();
-            nextSibling = data.int32();
+            parent = data.i32();
+            firstChild = data.i32();
+            nextSibling = data.i32();
         }
     }
     
     public static AnimationBone[] array(Data data) {
-        int count = data.int32();
+        int count = data.i32();
         AnimationBone[] out = new AnimationBone[count];
         for (int i = 0; i < count; ++i)
             out[i] = new AnimationBone(data);
@@ -49,17 +49,17 @@ public class AnimationBone {
     }
     
     public void serialize(Output output) {
-        output.uint32f(animHash);
-        if (output.revision > 0x272) {
-            output.int8(parent);
-            output.int8(firstChild);
-            output.int8(nextSibling);
-            output.int8(flags);
+        output.u32f(animHash);
+        if (output.revision.head > 0x272) {
+            output.u8(parent);
+            output.u8(firstChild);
+            output.u8(nextSibling);
+            output.u8(flags);
         }
         else {
-            output.int32(parent);
-            output.int32(firstChild);
-            output.int32(nextSibling);
+            output.i32(parent);
+            output.i32(firstChild);
+            output.i32(nextSibling);
         }
     }
 }

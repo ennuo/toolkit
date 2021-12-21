@@ -1,5 +1,6 @@
 package ennuo.toolkit.utilities;
 
+import ennuo.toolkit.configurations.Flags;
 import ennuo.toolkit.windows.Toolkit;
 
 public class EasterEgg {
@@ -27,8 +28,8 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("shan") || username.equals("aidan")) {
-            toolkit.setTitle("GregTool w/ Andre");
+        if (username.equals("aidan")) {
+            toolkit.setTitle("Overture");
             toolkit.debugMenu.setVisible(true);
         }
 
@@ -42,7 +43,9 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (toolkit.debugMenu.isVisible())
+        if (toolkit.debugMenu.isVisible()) {
             toolkit.setTitle(toolkit.getTitle() + " | Debug");
+            Flags.ENABLE_NEW_SAVEDATA = true;
+        }
     }
 }
