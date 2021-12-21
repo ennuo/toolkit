@@ -11,6 +11,10 @@ import javax.swing.JOptionPane;
 public class ProfileCallbacks {
     public static void loadProfile() {
         File file = Toolkit.instance.fileChooser.openFile("bigfart1", "", "Big Profile", false);
+        loadProfile(file);
+    }
+    
+    public static void loadProfile(File file) {
         if (file != null) {
             BigProfile profile = new BigProfile(file);
             if (!profile.isParsed) return;

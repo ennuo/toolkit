@@ -12,6 +12,10 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
             toolkit.setTitle("VeryCoolMe's Modding Emporium");
         }
+        
+        if (username.equals("manoplay")) {
+            toolkit.debugMenu.setVisible(true);
+        }
 
         if (username.equals("elija")) {
             toolkit.setTitle("Eli's Den of Cancer");

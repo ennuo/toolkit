@@ -2068,6 +2068,17 @@ public class Toolkit extends javax.swing.JFrame {
         }
         hex.repaint();
     }
+    
+    public void run(String args[]) {
+        for (String arg : args) {
+            if (arg.endsWith(".farc"))
+                ArchiveCallbacks.loadFileArchive(new File(arg));
+            if (arg.endsWith(".map"))
+                DatabaseCallbacks.loadFileDB(new File(arg));
+            if (arg.contains("bigfart"))
+                ProfileCallbacks.loadProfile(new File(arg));
+        }
+    }
 
     public static void main(String args[]) {
         try {
@@ -2077,7 +2088,9 @@ public class Toolkit extends javax.swing.JFrame {
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Toolkit().setVisible(true);
+                Toolkit tk = new Toolkit();
+                tk.setVisible(true);
+                tk.run(args);
             }
         });
     }
