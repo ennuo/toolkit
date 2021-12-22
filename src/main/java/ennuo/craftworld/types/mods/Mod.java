@@ -50,6 +50,8 @@ public class Mod extends FileData {
     
     public Mod() {
         this.isParsed = true;
+        this.model = new FileModel(new FileNode("MOD", null, null)); 
+        this.root = (FileNode) this.model.getRoot();
         this.type = "Mod";
     }
     
@@ -57,8 +59,6 @@ public class Mod extends FileData {
         this();
         this.path = file.getAbsolutePath();
         this.name = file.getName();
-        this.model = new FileModel(new FileNode("MOD", null, null)); 
-        this.root = (FileNode) this.model.getRoot();
         this.process(file);
     }
     
