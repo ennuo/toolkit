@@ -381,7 +381,7 @@ public class Bytes {
                     if (res.type == ResourceType.STREAMING_CHUNK) {
                         if (res.GUID == -1) continue;
                         String name = new File(dependencyEntry.path).getName();
-                        File file = Toolkit.instance.fileChooser.openFile(name, ".farc", "Streaming Chunk", false);
+                        File file = FileChooser.openFile(name, ".farc", "Streaming Chunk", false);
                         if (file == null) continue;
                         byte[] data = FileIO.read(file.getAbsolutePath());
                         BigProfile profile = new BigProfile(new Data(data), true);

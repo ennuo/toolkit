@@ -12,8 +12,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 public class ModEditor extends javax.swing.JDialog {
-    
-    private FileChooser chooser = new FileChooser(this);
     private Mod mod;
     
     public ModEditor(Mod mod, boolean modal) {
@@ -182,7 +180,7 @@ public class ModEditor extends javax.swing.JDialog {
 
     private void modIconMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modIconMouseClicked
         try {
-            File file = chooser.openFile("icon.png","png", "Portable Network Graphics (.PNG)", false);
+            File file = FileChooser.openFile("icon.png", "png", false);
             if (file == null) return;
             BufferedImage image = ImageIO.read(file);
             if (image == null) return;

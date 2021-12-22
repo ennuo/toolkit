@@ -13,6 +13,7 @@ import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.editors.ModEditor;
 import ennuo.toolkit.windows.Toolkit;
@@ -23,7 +24,7 @@ import javax.swing.tree.TreePath;
 
 public class UtilityCallbacks {
     public static void newMod() {
-        File file = Toolkit.instance.fileChooser.openFile("template.mod", "mod", "Mod", true);
+        File file = FileChooser.openFile("template.mod", "mod", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {
             Mod mod = new Mod();
@@ -38,7 +39,7 @@ public class UtilityCallbacks {
     }
         
     public static void decompressResource() {                                                   
-        File file = Toolkit.instance.fileChooser.openFile("data.bin", "", "", false);
+        File file = FileChooser.openFile("data.bin", null, false);
         if (file == null) return;
 
         byte[] data = FileIO.read(file.getAbsolutePath());
@@ -51,14 +52,14 @@ public class UtilityCallbacks {
             return;
         }
 
-        File out = Toolkit.instance.fileChooser.openFile(file.getName() + ".dec", "", "", true);
+        File out = FileChooser.openFile(file.getName() + ".dec", null, true);
         if (out != null)
             FileIO.write(resource.handle.data, out.getAbsolutePath());
     }
     
     public static void mergeFileArchives() {         
         Toolkit toolkit = Toolkit.instance;
-        File base = toolkit.fileChooser.openFile("base.farc", "farc", "Base FileArchive", false);
+        File base = FileChooser.openFile("base.farc", "farc", false);
         if (base == null) return;
         FileArchive archive;
         int index = toolkit.isArchiveLoaded(base);
@@ -70,7 +71,7 @@ public class UtilityCallbacks {
             return;
         }
 
-        File patch = toolkit.fileChooser.openFile("patch.farc", "farc", "Patch FileArchive", false);
+        File patch = FileChooser.openFile("patch.farc", "farc", false);
         if (patch == null) return;
         FileArchive pArchive = new FileArchive(patch);
 
@@ -111,7 +112,7 @@ public class UtilityCallbacks {
     }
     
     public static void generateFileDBDiff() {                                             
-        File base = Toolkit.instance.fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
+        File base = FileChooser.openFile("blurayguids.map", "map", false);
         if (base == null) return;
 
         FileDB baseDB = new FileDB(base);
@@ -120,7 +121,7 @@ public class UtilityCallbacks {
             return;
         }
 
-        File update = Toolkit.instance.fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
+        File update = FileChooser.openFile("blurayguids.map", "map", false);
         if (update == null) return;
 
         FileDB updateDB = new FileDB(update);
@@ -141,14 +142,14 @@ public class UtilityCallbacks {
         }
         output.shrink();
 
-        File out = Toolkit.instance.fileChooser.openFile("diff.txt", ".txt", "Text Document", true);
+        File out = FileChooser.openFile("diff.txt", "txt", true);
         if (out == null) return;
 
         FileIO.write(output.buffer, out.getAbsolutePath());
     }
     
     public static void installMod() {                                                  
-        File[] files = Toolkit.instance.fileChooser.openFiles("mod", "File Mod");
+        File[] files = FileChooser.openFiles("mod");
         if (files == null) return;
 
         for (int i = 0; i < files.length; ++i) {
@@ -208,9 +209,9 @@ public class UtilityCallbacks {
     }
     
     public static void scanFileArchive() {
-        File dumpFARC = Toolkit.instance.fileChooser.openFile("data.farc", "farc", "File Archive", false);
+        File dumpFARC = FileChooser.openFile("data.farc", "farc", false);
         if (dumpFARC == null) return;
-        File dumpDB = Toolkit.instance.fileChooser.openFile("dump.map", "map", "FileDB", true);
+        File dumpDB = FileChooser.openFile("dump.map", "map", true);
         if (dumpDB == null) return;
         
         FileIO.write(new byte[] { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 }, dumpDB.getAbsolutePath());

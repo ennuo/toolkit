@@ -9,6 +9,7 @@ import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -37,7 +38,7 @@ public class ArchiveCallbacks {
     }
     
     public static void newFileArchive() {
-        File file = Toolkit.instance.fileChooser.openFile("data.farc", "farc", "File Archive", true);
+        File file = FileChooser.openFile("data.farc", "farc", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {
             FileIO.write(new byte[] {
@@ -55,7 +56,7 @@ public class ArchiveCallbacks {
     }
     
     public static void integrityCheck() {
-        File file = Toolkit.instance.fileChooser.openFile("data.farc", "farc", "File Archive", false);
+        File file = FileChooser.openFile("data.farc", "farc", false);
         if (file == null) return;
         FileArchive archive = new FileArchive(file);
         int count = 0;
@@ -88,16 +89,22 @@ public class ArchiveCallbacks {
     public static void addFile() {                                        
         if (Globals.archives.size() == 0 && Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) return;
 
-        File[] files = Toolkit.instance.fileChooser.openFiles("data.bin", "");
+        File[] files = FileChooser.openFiles(null);
         if (files == null) return;
-
+        
+        FileArchive[] archives = null;
+        if (Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) {
+            archives = Toolkit.instance.getSelectedArchives();
+            if (archives == null) return;
+        }
+        
         for (File file: files) {
             byte[] data = FileIO.read(file.getAbsolutePath());
             if (data == null) return;
 
             if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE)
                 ((BigProfile) Toolkit.instance.getCurrentDB()).add(data);
-            else Globals.addFile(data);
+            else Globals.addFile(data, archives);
         }
 
         Toolkit.instance.updateWorkspace();
@@ -115,7 +122,7 @@ public class ArchiveCallbacks {
     public static void addFolder() {                                        
         if (Globals.archives.size() == 0) return;
 
-        String directory = Toolkit.instance.fileChooser.openDirectory();
+        String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
         directory = directory.substring(0, directory.length() - 1); // shit fix for fnf on linux
         
@@ -158,7 +165,7 @@ public class ArchiveCallbacks {
         if (Globals.entries.size() != 1) {
             int success = 0;
             int total = 0;
-            String path = Toolkit.instance.fileChooser.openDirectory();
+            String path = FileChooser.openDirectory();
             if (path == null) return;
             for (int i = 0; i < Globals.entries.size(); ++i) {
                 FileNode node = Globals.entries.get(i);
@@ -189,7 +196,7 @@ public class ArchiveCallbacks {
                     data = Globals.extractFile(node.entry.hash);
                 if (data != null) {
                     data = (decompress) ? new Resource(data).handle.data : data;
-                    File file = Toolkit.instance.fileChooser.openFile(node.header, "", "", true);
+                    File file = FileChooser.openFile(node.header, null, true);
                     if (file != null)
                         if (FileIO.write(data, file.getAbsolutePath()))
                             System.out.println("Successfully extracted entry!");

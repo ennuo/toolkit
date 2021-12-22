@@ -57,7 +57,6 @@ public class Toolkit extends javax.swing.JFrame {
 
     public ExecutorService databaseService = Executors.newSingleThreadExecutor();
     public ExecutorService resourceService = Executors.newSingleThreadExecutor();
-    public final FileChooser fileChooser = new FileChooser(this);
 
     public static ArrayList <JTree> trees = new ArrayList <JTree>();
 
@@ -1473,7 +1472,7 @@ public class Toolkit extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loadDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadDBActionPerformed
-        File file = fileChooser.openFile("blurayguids.map", "map", "FileDB", false);
+        File file = FileChooser.openFile("blurayguids.map", "map", false);
         if (file != null) DatabaseCallbacks.loadFileDB(file);
     }//GEN-LAST:event_loadDBActionPerformed
 
@@ -1515,7 +1514,7 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     private void loadArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadArchiveActionPerformed
-        File[] files = fileChooser.openFiles("farc", "File Archive");
+        File[] files = FileChooser.openFiles("farc");
         if (files == null) return;
         for (File file: files)
             ArchiveCallbacks.loadFileArchive(file);
@@ -1704,7 +1703,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_generateDiffActionPerformed
 
     private void loadModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadModActionPerformed
-        File file = fileChooser.openFile("example.mod", "mod", "Mod", false);
+        File file = FileChooser.openFile("example.mod", "mod", false);
         if (file == null) return;
         Mod mod = ModCallbacks.loadMod(file);
         if (mod != null && mod.isParsed) {
@@ -1849,7 +1848,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAnimationActionPerformed
 
     private void loadSavedataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadSavedataActionPerformed
-        String directory = fileChooser.openDirectory();
+        String directory = FileChooser.openDirectory();
         if (directory.isEmpty()) return;
         FileSave save = new FileSave(new File(directory));
         this.addTab(save);
@@ -1858,7 +1857,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_loadSavedataActionPerformed
 
     private void swapProfilePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapProfilePlatformActionPerformed
-        File FAR4 = fileChooser.openFile("bigfart", "", "FAR4 Archive", false);
+        File FAR4 = FileChooser.openFile("bigfart", null, false);
         if (FAR4 == null) return;
         if (FAR4.exists()) {
             FileArchive archive = new FileArchive(FAR4);
@@ -1892,7 +1891,7 @@ public class Toolkit extends javax.swing.JFrame {
         String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
         if (titleID == null) return;
         
-        String directory = Toolkit.instance.fileChooser.openDirectory();
+        String directory = FileChooser.openDirectory();
         if (directory == null) return;
         
         Revision fartRevision = new Revision(0x272, 0x4c44, 0x0017);
@@ -1966,11 +1965,11 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAsBackupActionPerformed
 
     private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
-        final String[] types = { "png", "jpg", "jpeg", "dds" };
-        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
+
+        File file = FileChooser.openFile("image.png", "png,jpg,jpeg,dds", false);
         if (file == null) return;
         
-        File save = Toolkit.instance.fileChooser.openFile("image.tex", "tex", "Texture", true);
+        File save = FileChooser.openFile("image.tex", "tex", true);
         if (save == null) return;
         
         BufferedImage image;

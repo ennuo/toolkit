@@ -29,14 +29,9 @@ public class GfxMaterialInfo {
             byte[] data = Globals.extractFile(this.texture);
             if (data == null) return null;
             Texture texture = new Texture(data);
-            if (scale.x > 1 || scale.y > 1) {
-                if (scale.x < 1) scale.x = 1;
-                if (scale.y < 1) scale.y = 1;
-                BufferedImage scaled = Images.getTiledImage(
-                        texture.cached, 
-                        (int) Math.round(this.scale.x), 
-                        (int) Math.round(this.scale.y)
-                );
+            if (scale.x > 1 && scale.y > 1) {
+                BufferedImage scaled = 
+                        Images.getTiledImage(texture.cached, (int) Math.round(this.scale.x), (int) Math.round(this.scale.y));
                 return scaled;
             }
             return texture.cached;
@@ -48,19 +43,14 @@ public class GfxMaterialInfo {
             if (data == null) return null;
             Texture texture = new Texture(data);
             if (!texture.parsed || texture.cached == null) return null;
-            BufferedImage scaled = texture.cached;
-            if (scale.x > 1 || scale.y > 1) {
-                if (scale.x < 1) scale.x = 1;
-                if (scale.y < 1) scale.y = 1;
-                scaled = Images.getTiledImage(
-                        texture.cached, 
-                        (int) Math.round(this.scale.x), 
-                        (int) Math.round(this.scale.y)
-                );
+            if (scale.x > 1 && scale.y > 1) {
+                BufferedImage scaled = 
+                        Images.getTiledImage(texture.cached, (int) Math.round(this.scale.x), (int) Math.round(this.scale.y));
+                if (dirt != null)
+                    scaled = Images.multiply(dirt, scaled);
+                return Images.toTEX(scaled);
             }
-            if (dirt != null)
-                scaled = Images.multiply(dirt, scaled);
-            return Images.toTEX(scaled);
+            return data;
         }
     }
     
@@ -147,13 +137,10 @@ public class GfxMaterialInfo {
         
         if (this.textures.containsKey("DIFFUSE")) {
             byte[] diffuseData;
-            BufferedImage dirtData = null;
             GfxTextureInfo diffuse = this.textures.get("DIFFUSE");
             GfxTextureInfo dirt = this.textures.get("DIRT");
             if (dirt != null)
-                dirtData = dirt.getBufferedImage();
-            if (dirtData != null)
-                diffuseData = diffuse.getTexture(dirtData);
+                diffuseData = diffuse.getTexture(dirt.getBufferedImage());
             else diffuseData = diffuse.getTexture();
             String path = diffuse.path;
             SHA1 sha1 = SHA1.fromBuffer(diffuseData);

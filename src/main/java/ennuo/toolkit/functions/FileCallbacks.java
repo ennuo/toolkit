@@ -2,6 +2,7 @@ package ennuo.toolkit.functions;
 
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.types.FileArchive;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import static ennuo.toolkit.windows.Toolkit.trees;
@@ -44,7 +45,7 @@ public class FileCallbacks {
 
         FileData db = Toolkit.instance.getCurrentDB();
 
-        File file = Toolkit.instance.fileChooser.openFile(db.name, ext, type, true);
+        File file = FileChooser.openFile(db.name, ext, true);
         if (file == null) return;
         db.save(file.getAbsolutePath());
     }

@@ -29,7 +29,6 @@ public class Compressinator extends javax.swing.JFrame {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setIconImage(new ImageIcon(this.getClass().getResource("/legacy_icon.png")).getImage());
         this.setTitle("Compressinator");
-        this.fileChooser = new FileChooser(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -407,13 +406,13 @@ public class Compressinator extends javax.swing.JFrame {
         Revision revision = new Revision(headRevision, branchID, branchRevision);
         byte[] compressed = Resource.compressToResource(this.fileData, revision, compressionFlags, ResourceType.fromMagic(header), dependencies);
 
-        File output = this.fileChooser.openFile("output." + header, "", "", true);
+        File output = FileChooser.openFile("output." + header, null, true);
         if (output != null)
         FileIO.write(compressed, output.getAbsolutePath());
     }//GEN-LAST:event_compressActionPerformed
 
     private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
-        File file = this.fileChooser.openFile("Uncompressed Data", "", "",  false);
+        File file = this.fileChooser.openFile("Uncompressed Data", null,  false);
         if (file != null) {
             this.fileData = FileIO.read(file.getAbsolutePath());
             if (this.fileData != null)

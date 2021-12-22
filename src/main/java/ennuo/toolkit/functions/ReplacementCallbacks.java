@@ -5,6 +5,7 @@ import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.image.BufferedImage;
@@ -13,9 +14,7 @@ import java.io.File;
 public class ReplacementCallbacks {
     public static void replaceImage() {
         FileEntry entry = Globals.lastSelected.entry;
-
-        final String[] types = { "png", "jpg", "jpeg", "dds" };
-        File file = Toolkit.instance.fileChooser.openFile("image.png", types, "Media Types", false);
+        File file = FileChooser.openFile("image.png", "png,jpeg,jpg,dds", false);
         if (file == null) return;
 
         BufferedImage image;
@@ -38,7 +37,7 @@ public class ReplacementCallbacks {
     }
 
     public static void replaceDecompressed() {
-        File file = Toolkit.instance.fileChooser.openFile(Globals.lastSelected.header, "", "Resource", false);
+        File file = FileChooser.openFile(Globals.lastSelected.header, null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) {
@@ -62,7 +61,7 @@ public class ReplacementCallbacks {
     }
 
     public static void replaceCompressed() {
-        File file = Toolkit.instance.fileChooser.openFile(Globals.lastSelected.header, "", "Resource", false);
+        File file = FileChooser.openFile(Globals.lastSelected.header, null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) Globals.replaceEntry(Globals.lastSelected.entry, data);
