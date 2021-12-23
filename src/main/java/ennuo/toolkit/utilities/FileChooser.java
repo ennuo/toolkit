@@ -72,8 +72,7 @@ public class FileChooser {
             String[] paths = null;
             if (saveFile) {
                 String path = tinyfd_saveFileDialog("Save", name, patterns, "");
-                if (path != null)
-                    paths = tinyfd_saveFileDialog("Save", name, patterns, "").split("\\|");
+                if (path != null) paths = path.split("\\|");
                 else {
                     System.out.println("File operation was cancelled by user.");
                     return null;
