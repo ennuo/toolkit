@@ -297,6 +297,7 @@ public class Toolkit extends javax.swing.JFrame {
         duplicateContext.setVisible(false);
         extractContextMenu.setVisible(false);
         newItemContext.setVisible(false);
+        renameFolder.setVisible(false);
         replaceDecompressed.setVisible(false);
         replaceDependencies.setVisible(false);
         dependencyGroup.setVisible(false);
@@ -314,6 +315,7 @@ public class Toolkit extends javax.swing.JFrame {
             if ((useContext && Globals.lastSelected.entry == null)) {
                 newItemContext.setVisible(true);
                 newFolderContext.setVisible(true);
+                renameFolder.setVisible(true);
             } else if (!useContext) newFolderContext.setVisible(true);
             if (useContext) {
                 zeroContext.setVisible(true);
@@ -440,6 +442,7 @@ public class Toolkit extends javax.swing.JFrame {
         removeMissingDependencies = new javax.swing.JMenuItem();
         newItemContext = new javax.swing.JMenuItem();
         newFolderContext = new javax.swing.JMenuItem();
+        renameFolder = new javax.swing.JMenuItem();
         duplicateContext = new javax.swing.JMenuItem();
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
@@ -796,6 +799,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(newFolderContext);
+
+        renameFolder.setText("Rename Folder");
+        renameFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renameFolderActionPerformed(evt);
+            }
+        });
+        entryContext.add(renameFolder);
 
         duplicateContext.setText("Duplicate");
         duplicateContext.addActionListener(new java.awt.event.ActionListener() {
@@ -2036,6 +2047,54 @@ public class Toolkit extends javax.swing.JFrame {
         DebugCallbacks.CollectDependencies(extension);
     }//GEN-LAST:event_customCollectorActionPerformed
 
+    private void renameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameFolderActionPerformed
+        FileNode node = Globals.lastSelected;
+        FileNode[] selected = Globals.entries.toArray(new FileNode[Globals.entries.size()]);
+        String parent = node.path + node.header;
+        
+        String newFolder = JOptionPane.showInputDialog(Toolkit.instance, "Folder", parent);
+        if (newFolder == null) return;
+        newFolder = newFolder.replace("\\", "/");
+        if (newFolder.endsWith("/"))
+            newFolder = newFolder.substring(0, newFolder.length() - 2);
+        if (newFolder == parent) return;
+        
+        FileData database = this.getCurrentDB();
+        FileNode lastNode = null;
+        for (FileNode child : selected) {
+            if (child == node) continue;
+            child.removeFromParent();
+            if (child.entry != null) {
+                child.entry.path = newFolder + child.path.substring(parent.length()) + child.header;
+                lastNode = database.addNode(child.entry);
+            }
+        }
+        boolean foundParent = false;
+        FileNode theParent = lastNode;
+        while (theParent != null) {
+            theParent = (FileNode) theParent.getParent();
+            if (theParent == node)
+                foundParent = true;
+        }
+        if (!foundParent) {
+            node.removeAllChildren();
+            node.removeFromParent();
+        }
+        
+        database.shouldSave = true;
+
+        JTree tree = this.getCurrentTree();
+        TreePath treePath = new TreePath(((FileNode) lastNode.getParent()).getPath());
+        
+        FileModel m = (FileModel) tree.getModel();
+        m.reload((FileNode) m.getRoot());
+
+        tree.setSelectionPath(treePath);
+        tree.scrollPathToVisible(treePath);
+
+        Toolkit.instance.updateWorkspace();
+    }//GEN-LAST:event_renameFolderActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2330,6 +2389,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem reboot;
     private javax.swing.JMenuItem removeDependencies;
     private javax.swing.JMenuItem removeMissingDependencies;
+    private javax.swing.JMenuItem renameFolder;
     private javax.swing.JMenuItem renameItemContext;
     private javax.swing.JMenuItem replaceCompressed;
     private javax.swing.JMenu replaceContext;
