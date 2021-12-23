@@ -212,6 +212,7 @@ public class Toolkit extends javax.swing.JFrame {
         FileData db = getCurrentDB();
 
         if (db != null) {
+            editMenu.setVisible(true);
             if (db.shouldSave) {
                 fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name + " *");
                 saveMenu.setEnabled(true);
@@ -219,7 +220,7 @@ public class Toolkit extends javax.swing.JFrame {
                 fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name);
                 saveMenu.setEnabled(false);
             }
-        } 
+        } else editMenu.setVisible(false);
 
         fileExists = false;
         if (Globals.lastSelected != null && Globals.lastSelected.entry != null) {
@@ -508,6 +509,8 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         closeTab = new javax.swing.JMenuItem();
         reboot = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
+        editMenuDelete = new javax.swing.JMenuItem();
         FARMenu = new javax.swing.JMenu();
         addFile = new javax.swing.JMenuItem();
         addFolder = new javax.swing.JMenuItem();
@@ -824,7 +827,6 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(zeroContext);
 
-        deleteContext.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
         deleteContext.setText("Delete");
         deleteContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1256,6 +1258,19 @@ public class Toolkit extends javax.swing.JFrame {
         fileMenu.add(reboot);
 
         toolkitMenu.add(fileMenu);
+
+        editMenu.setText("Edit");
+
+        editMenuDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
+        editMenuDelete.setText("Delete");
+        editMenuDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMenuDeleteActionPerformed(evt);
+            }
+        });
+        editMenu.add(editMenuDelete);
+
+        toolkitMenu.add(editMenu);
 
         FARMenu.setText("Archive");
 
@@ -2095,6 +2110,10 @@ public class Toolkit extends javax.swing.JFrame {
         Toolkit.instance.updateWorkspace();
     }//GEN-LAST:event_renameFolderActionPerformed
 
+    private void editMenuDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuDeleteActionPerformed
+        DatabaseCallbacks.delete();
+    }//GEN-LAST:event_editMenuDeleteActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2310,7 +2329,9 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
+    private javax.swing.JMenu editMenu;
     private javax.swing.JMenu editMenuContext;
+    private javax.swing.JMenuItem editMenuDelete;
     private javax.swing.JMenuItem editProfileItems;
     private javax.swing.JMenuItem editProfileSlots;
     private javax.swing.JMenuItem editSlotContext;

@@ -330,12 +330,17 @@ public class DatabaseCallbacks {
         System.out.println(entry.path + " -> " + duplicate.path);
     }
     
-    public static void delete() {                                              
+    public static void delete() {      
+        if (Globals.currentWorkspace == Globals.WorkspaceType.NONE)
+            return;
         JTree tree = Toolkit.instance.getCurrentTree();
 
         TreePath[] paths = tree.getSelectionPaths();
         TreeSelectionModel model = tree.getSelectionModel();
         int[] rows = tree.getSelectionRows();
+        
+        if (rows == null || rows.length == 0)
+            return;
 
         if (Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) {
             FileData db = Toolkit.instance.getCurrentDB();
