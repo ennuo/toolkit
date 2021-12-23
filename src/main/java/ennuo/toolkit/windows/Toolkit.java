@@ -1562,7 +1562,7 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     private void loadArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadArchiveActionPerformed
-        File[] files = FileChooser.openFiles("farc");
+        File[] files = FileChooser.openFiles("data.farc", "farc");
         if (files == null) return;
         for (File file: files)
             ArchiveCallbacks.loadFileArchive(file);
