@@ -532,6 +532,11 @@ public class Toolkit extends javax.swing.JFrame {
         scanRawData = new javax.swing.JMenuItem();
         scanFileArchive = new javax.swing.JMenuItem();
         fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
+        collectionD = new javax.swing.JMenu();
+        collectorPresets = new javax.swing.JMenu();
+        collectAllLevelDependencies = new javax.swing.JMenuItem();
+        collectAllItemDependencies = new javax.swing.JMenuItem();
+        customCollector = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeFARCs = new javax.swing.JMenuItem();
         installProfileMod = new javax.swing.JMenuItem();
@@ -1400,6 +1405,38 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(fileArchiveIntegrityCheck);
+
+        collectionD.setText("Collectors");
+
+        collectorPresets.setText("Presets");
+
+        collectAllLevelDependencies.setText("RLevel");
+        collectAllLevelDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                collectAllLevelDependenciesActionPerformed(evt);
+            }
+        });
+        collectorPresets.add(collectAllLevelDependencies);
+
+        collectAllItemDependencies.setText("RPlan");
+        collectAllItemDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                collectAllItemDependenciesActionPerformed(evt);
+            }
+        });
+        collectorPresets.add(collectAllItemDependencies);
+
+        collectionD.add(collectorPresets);
+
+        customCollector.setText("Custom");
+        customCollector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customCollectorActionPerformed(evt);
+            }
+        });
+        collectionD.add(customCollector);
+
+        toolsMenu.add(collectionD);
         toolsMenu.add(jSeparator3);
 
         mergeFARCs.setText("Merge FARCs");
@@ -1985,6 +2022,20 @@ public class Toolkit extends javax.swing.JFrame {
         FileIO.write(texture, save.getAbsolutePath());        
     }//GEN-LAST:event_convertTextureActionPerformed
 
+    private void collectAllItemDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collectAllItemDependenciesActionPerformed
+        DebugCallbacks.CollectDependencies(".plan");
+    }//GEN-LAST:event_collectAllItemDependenciesActionPerformed
+
+    private void collectAllLevelDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collectAllLevelDependenciesActionPerformed
+       DebugCallbacks.CollectDependencies(".bin");
+    }//GEN-LAST:event_collectAllLevelDependenciesActionPerformed
+
+    private void customCollectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customCollectorActionPerformed
+        String extension = JOptionPane.showInputDialog(Toolkit.instance, "File extension", ".plan");
+        if (extension == null) return;
+        DebugCallbacks.CollectDependencies(extension);
+    }//GEN-LAST:event_customCollectorActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2174,6 +2225,10 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem changeHash;
     private javax.swing.JMenuItem clear;
     private javax.swing.JMenuItem closeTab;
+    private javax.swing.JMenuItem collectAllItemDependencies;
+    private javax.swing.JMenuItem collectAllLevelDependencies;
+    private javax.swing.JMenu collectionD;
+    private javax.swing.JMenu collectorPresets;
     private javax.swing.JTextArea console;
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
@@ -2181,6 +2236,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
+    private javax.swing.JMenuItem customCollector;
     public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
