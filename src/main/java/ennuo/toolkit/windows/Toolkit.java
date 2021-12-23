@@ -2056,7 +2056,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (newFolder == null) return;
         newFolder = newFolder.replace("\\", "/");
         if (newFolder.endsWith("/"))
-            newFolder = newFolder.substring(0, newFolder.length() - 2);
+            newFolder = newFolder.substring(0, newFolder.length() - 1);
         if (newFolder == parent) return;
         
         FileData database = this.getCurrentDB();
