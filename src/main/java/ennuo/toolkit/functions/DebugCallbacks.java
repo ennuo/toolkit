@@ -5,10 +5,13 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
+import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DebugCallbacks {
     public static void CollectDependencies(String extension) {
@@ -20,22 +23,28 @@ public class DebugCallbacks {
         FileDB database = (FileDB) Toolkit.instance.getCurrentDB();
         StringBuilder builder = new StringBuilder(database.entries.size() * 1024);
         for (FileEntry entry : database.entries) {
-            if (entry.path.toLowerCase().contains(extension)) {
+            if (entry.path.toLowerCase().endsWith(extension)) {
                 byte[] data = Globals.extractFile(entry.hash);
                 if (data == null) continue;
                 try {
                     Resource resource = new Resource(data);
-                    if (resource.dependencies != null && resource.dependencies.length == 0) continue;
-                    builder.append(entry.path + '\n');
+                    if (resource.dependencies == null || (resource.dependencies != null && resource.dependencies.length == 0)) 
+                        continue;
+                    builder.append(String.format("%s (g%d)\n", entry.path, entry.GUID));
                     for (ResourceDescriptor descriptor : resource.dependencies) {
-                        String name = String.format(" - (Unresolved Path) (g%d)\n", descriptor.GUID);
-                        FileEntry resolved = Globals.findEntry(descriptor);
-                        if (entry != null)
-                            name = String.format(" - %s (g%d)\n", resolved.path, descriptor.GUID);
+                        String name = String.format(" - (Unresolved Resource)");
+                        if (descriptor.GUID != -1) {
+                            name = String.format(" - (Unresolved Path) (g%d)\n", descriptor.GUID);
+                            FileEntry resolved = Globals.findEntry(descriptor.GUID);
+                            if (resolved != null)
+                                name = String.format(" - %s (g%d)\n", resolved.path, descriptor.GUID);
+                        } else if (descriptor.hash != null)
+                            name = String.format(" - %s", descriptor.hash.toString());
+                        else continue;
                         builder.append(name);
                     }   
                     builder.append('\n');
-                } catch (Exception e) { /* Ignoring any errors. */ }
+                } catch (Exception e) { /* Ignore the error */ }
             }
         }
         
