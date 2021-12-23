@@ -71,7 +71,7 @@ public class Mesh implements Serializable {
     
     public CullBone[] cullBones;
     
-    public long[] regionIDsToHide;
+    public int[] regionIDsToHide;
     public int costumeCategoriesUsed;
     public int hairMorphs;
     
@@ -167,42 +167,7 @@ public class Mesh implements Serializable {
         mesh.softbodyContainingBoundBoxMax = serializer.v4(mesh.softbodyContainingBoundBoxMax);
         
         mesh.cullBones = serializer.array(mesh.cullBones, CullBone.class);
-        
-
-        // NOTE(Abz): So this is what a compressed int vector looks like apparently,
-        // the fact that this is different than the other ones, probably means that
-        // I messed something up, will fix it later.
-        
-        if ((serializer.compressionFlags & CompressionFlags.USE_COMPRESSED_VECTORS) == 0)
-            mesh.regionIDsToHide = serializer.u32a(mesh.regionIDsToHide);
-        else if (serializer.isWriting) {
-            if (mesh.regionIDsToHide != null && mesh.regionIDsToHide.length != 0) {
-                serializer.output.i32(mesh.regionIDsToHide.length);
-                serializer.output.i32(4);
-                byte[][] regionIDs = new byte[mesh.regionIDsToHide.length][];
-                for (int i = 0; i < regionIDs.length; ++i) {
-                    long regionID = mesh.regionIDsToHide[i];
-                    regionIDs[i] = Bytes.toBytesLE(regionID);
-                }
-                for (int i = 0; i < 4; ++i)
-                    for (int j = 0; j < mesh.regionIDsToHide.length; ++j)
-                        serializer.output.i8(regionIDs[j][i]);                
-            }
-            else serializer.output.i32(0);
-        } else {
-            mesh.regionIDsToHide = new long[serializer.input.i32()];
-            if (mesh.regionIDsToHide.length != 0) {
-                byte[][] regionIDs = new byte[mesh.regionIDsToHide.length][];
-                int packSize = serializer.input.i32();
-                for (int i = 0; i < regionIDs.length; ++i)
-                    regionIDs[i] = new byte[packSize];
-                for (int i = 0; i < packSize; ++i)
-                    for (int j = 0; j < regionIDs.length; ++j)
-                        regionIDs[j][i] = serializer.input.i8();
-                for (int i = 0; i < regionIDs.length; ++i)
-                    mesh.regionIDsToHide[i] = Bytes.toIntegerLE(regionIDs[i]);
-            }
-        }
+        mesh.regionIDsToHide = serializer.table(mesh.regionIDsToHide);
         
         mesh.costumeCategoriesUsed = serializer.i32(mesh.costumeCategoriesUsed);
         mesh.hairMorphs = serializer.i32(mesh.hairMorphs);
