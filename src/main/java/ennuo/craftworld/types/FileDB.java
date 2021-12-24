@@ -75,8 +75,12 @@ public class FileDB extends FileData {
         // NOTE(Jun): Check if this map is from a game install
         // useful for loading assets that are only meant for
         // being streamed from disk.
-      
-        File parent = file.getParentFile().getParentFile();
+		
+        File parent = file.getParentFile();
+        if (parent == null) return;
+        parent = parent.getParentFile();
+        if (parent == null) return;
+
         if (parent.getName().toUpperCase().equals("USRDIR"))
             USRDIR = parent.getAbsolutePath() + "\\";
     }
