@@ -2161,7 +2161,7 @@ public class Toolkit extends javax.swing.JFrame {
         hex.repaint();
     }
     
-    public void run(String args[]) {
+    public Toolkit run(String args[]) {
         for (String arg : args) {
             if (arg.endsWith(".farc"))
                 ArchiveCallbacks.loadFileArchive(new File(arg));
@@ -2170,16 +2170,7 @@ public class Toolkit extends javax.swing.JFrame {
             if (arg.contains("bigfart"))
                 ProfileCallbacks.loadProfile(new File(arg));
         }
-    }
-
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                Toolkit tk = new Toolkit();
-                tk.setVisible(true);
-                tk.run(args);
-            }
-        });
+        return this;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

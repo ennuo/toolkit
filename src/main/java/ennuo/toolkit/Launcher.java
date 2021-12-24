@@ -20,6 +20,6 @@ public class Launcher {
             }
         } else LafManager.install(new DarculaTheme()); // NOTE(Abz): I don't really like how this looks, but I don't like light themes!
         Config.initialize();
-        EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
+        EventQueue.invokeLater(() -> new Toolkit().run(args).setVisible(true));
     }
 }
