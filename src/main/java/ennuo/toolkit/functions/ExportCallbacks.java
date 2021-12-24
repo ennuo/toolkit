@@ -11,6 +11,7 @@ import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -21,10 +22,9 @@ import javax.swing.JOptionPane;
 
 public class ExportCallbacks {
     public static void exportOBJ(int channel) {
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
             Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + ".obj",
             "obj",
-            "Wavefront Object (.OBJ)",
             true
         );
 
@@ -33,10 +33,9 @@ public class ExportCallbacks {
     }
     
     public static void exportGLB() {
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
             Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + ".glb",
             "glb",
-            "glTF Binary (.GLB)",
             true
         );
        
@@ -45,10 +44,9 @@ public class ExportCallbacks {
     }
     
     public static void exportAnimation() {
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
             Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".glb",
             "glb",
-            "glTF Binary (.GLB)",
             true
         );
        
@@ -86,10 +84,9 @@ public class ExportCallbacks {
     }
 
     public static void exportTexture(String extension) {
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
             Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + "." + extension,
             extension,
-            "Image",
             true
         );
 
@@ -109,10 +106,9 @@ public class ExportCallbacks {
     }
 
     public static void exportDDS() {
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
             Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + "dds",
             "DDS",
-            "Image",
             true
         );
 
@@ -127,10 +123,9 @@ public class ExportCallbacks {
     public static void exportTranslations() {
         TranslationTable table = new TranslationTable(new Data(Globals.lastSelected.entry.data));
         byte[] data = table.export();
-        File file = Toolkit.instance.fileChooser.openFile(
+        File file = FileChooser.openFile(
         Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".txt",
             "txt",
-            "Text Document",
             true
         );
         if (file == null) return;
@@ -145,7 +140,7 @@ public class ExportCallbacks {
             name = name.substring(0, name.length() - 5);
         else name = name.substring(0, name.length() - 4);
 
-        File file = Toolkit.instance.fileChooser.openFile(name + ".mod", "mod", "Mod", true);
+        File file = FileChooser.openFile(name + ".mod", "mod", true);
         if (file == null) return;
 
         Resource resource = new Resource(Globals.extractFile(entry.hash));

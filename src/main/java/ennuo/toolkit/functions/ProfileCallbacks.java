@@ -1,21 +1,20 @@
 package ennuo.toolkit.functions;
 
-import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.BigProfile;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
 import javax.swing.JOptionPane;
 
 public class ProfileCallbacks {
     public static void loadProfile() {
-        File file = Toolkit.instance.fileChooser.openFile("bigfart1", "", "Big Profile", false);
+        File file = FileChooser.openFile("bigfart1", null, false);
         loadProfile(file);
     }
-    
-    public static void loadProfile(File file) {
-        if (file != null) {
+
+    public static void loadProfile(File file) {if (file != null) {
             BigProfile profile = new BigProfile(file);
             if (!profile.isParsed) return;
             Toolkit.instance.addTab(profile);
@@ -24,7 +23,7 @@ public class ProfileCallbacks {
     }
     
     public static void extractProfile() {
-        File file = Toolkit.instance.fileChooser.openFile("profile.bpr", "bpr", "Big Profile", true);
+        File file = FileChooser.openFile("profile.bpr", "bpr", true);
         if (file == null) return;
         BigProfile save = (BigProfile) Toolkit.instance.getCurrentDB();
         FileIO.write(new Resource(save.profile.data).handle.data, file.getAbsolutePath());

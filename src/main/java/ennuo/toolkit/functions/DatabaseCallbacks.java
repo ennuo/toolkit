@@ -21,6 +21,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.toolkit.configurations.Config;
 import ennuo.toolkit.configurations.Profile;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.awt.Color;
@@ -79,7 +80,7 @@ public class DatabaseCallbacks {
     }
 
     public static void patchDatabase() {
-        File file = Toolkit.instance.fileChooser.openFile("brg_patch.map", "map", "FileDB", false);
+        File file = FileChooser.openFile("brg_patch.map", "map", false);
         if (file == null) return;
         FileDB newDB = new FileDB(file);
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
@@ -99,14 +100,14 @@ public class DatabaseCallbacks {
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         String str = db.toRLST();
 
-        File file = Toolkit.instance.fileChooser.openFile("poppet_inventory_empty.rlst", "rlst", "RLST", true);
+        File file = FileChooser.openFile("poppet_inventory_empty.rlst", "rlst", true);
         if (file == null) return;
 
         FileIO.write(str.getBytes(), file.getAbsolutePath());
     }
 
     public static void dumpHashes() {
-        File file = Toolkit.instance.fileChooser.openFile("hashes.txt", "txt", "Text File", true);
+        File file = FileChooser.openFile("hashes.txt", "txt", true);
         if (file == null) return;
         FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
         StringBuilder builder = new StringBuilder(0x100 * db.entries.size());
@@ -329,12 +330,17 @@ public class DatabaseCallbacks {
         System.out.println(entry.path + " -> " + duplicate.path);
     }
     
-    public static void delete() {                                              
+    public static void delete() {      
+        if (Globals.currentWorkspace == Globals.WorkspaceType.NONE)
+            return;
         JTree tree = Toolkit.instance.getCurrentTree();
 
         TreePath[] paths = tree.getSelectionPaths();
         TreeSelectionModel model = tree.getSelectionModel();
         int[] rows = tree.getSelectionRows();
+        
+        if (rows == null || rows.length == 0)
+            return;
 
         if (Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) {
             FileData db = Toolkit.instance.getCurrentDB();
@@ -375,7 +381,7 @@ public class DatabaseCallbacks {
         Output output = new Output(0x8);
         output.i32(header);
         output.i32(0);
-        File file = Toolkit.instance.fileChooser.openFile("blurayguids.map", "map", "FileDB", true);
+        File file = FileChooser.openFile("blurayguids.map", "map", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {
             FileIO.write(output.buffer, file.getAbsolutePath());

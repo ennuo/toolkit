@@ -180,7 +180,7 @@ public class Images {
     
     public static BufferedImage multiply(BufferedImage source, BufferedImage sample) {
         if (sample.getWidth() != source.getWidth() || sample.getHeight() != source.getHeight())
-            sample = Scalr.resize(sample, Scalr.Method.AUTOMATIC, source.getWidth(), source.getHeight());
+            sample = Scalr.resize(sample, Scalr.Mode.FIT_EXACT, source.getWidth(), source.getHeight());
         for (int x = 0; x < source.getWidth(); ++x) {
             for (int y = 0; y < source.getHeight(); ++y) {
                 Color sourceColor = new Color(source.getRGB(x, y), true);

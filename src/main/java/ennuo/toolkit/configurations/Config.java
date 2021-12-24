@@ -20,6 +20,7 @@ public class Config {
     
     public Profile[] profiles = new Profile[] {};
     public String currentProfile = "";
+    public boolean useLegacyFileDialogue = false;
     
     public Profile getCurrentProfile() {
         if (currentProfile.isEmpty() || profiles == null) 

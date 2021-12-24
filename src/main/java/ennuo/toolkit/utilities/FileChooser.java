@@ -1,79 +1,138 @@
 package ennuo.toolkit.utilities;
 
-import java.awt.Window;
+import ennuo.toolkit.configurations.Config;
+import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
 import java.nio.file.Paths;
-import javax.swing.filechooser.FileFilter;
-import jnafilechooser.api.JnaFileChooser;
-import jnafilechooser.api.JnaFileChooser.Mode;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.util.tinyfd.TinyFileDialogs.*;
 
 public class FileChooser {
-    public JnaFileChooser fileDialogue;
-    
-    private FileFilter filter;
-
-    private Window frame;
-
-    public FileChooser(Window frame) {
-        this.fileDialogue = new JnaFileChooser();
-        this.fileDialogue.setCurrentDirectory(Paths.get(System.getProperty("user.home") + "/Documents").toAbsolutePath().toString());
-        this.frame = frame;
-    }
-
-    public File openFile(String name, String ext, String desc, boolean saveFile) {
-        if (ext.isEmpty()) ext = "*";
-        return this.openFile(name, new String[] { ext }, desc, saveFile);
+    public static final JFileChooser chooser = new JFileChooser();
+    public static String getHomePath(String name) {
+        return Paths.get(System.getProperty("user.home"), "Documents", name).toAbsolutePath().toString();
     }
     
-    public File openFile(String name, String[] ext, String desc, boolean saveFile) {
-        this.fileDialogue = new JnaFileChooser();
-        System.out.println("Waiting for user to select file...");
-        if (setupFilter(name, ext, desc, false, false) && (
-                saveFile ? this.fileDialogue.showSaveDialog(this.frame) : this.fileDialogue.showOpenDialog(this.frame)))
-            return this.fileDialogue.getSelectedFile();
-        System.out.println("Cancelling operation, user did not select a file.");
-        return null;
-    }
-
-    public File[] openFiles(String ext, String desc) {
-        return this.openFiles(new String[] { ext }, desc);
+    public static File openFile(String name, String ext, boolean saveFile) {
+        File[] files = openFile(name, ext, saveFile, false);
+        if (files == null) return null;
+        return files[0];
     }
     
-    public File[] openFiles(String[] ext, String desc) {
-        this.fileDialogue = new JnaFileChooser();
-        System.out.println("Waiting for user to select files...");
-        if (setupFilter("", ext, desc, true, false) &&
-            this.fileDialogue.showOpenDialog(this.frame))
-            return this.fileDialogue.getSelectedFiles();
-        System.out.println("Cancelling operation, user did not select any files.");
-        return null;
-    }
-
-    public String openDirectory() {
-        this.fileDialogue = new JnaFileChooser();
-        System.out.println("Waiting for user to select directory...");
-        if (setupFilter("", "", "", false, true) &&
-            this.fileDialogue.showOpenDialog(this.frame))
-            return this.fileDialogue.getSelectedFile().getAbsolutePath() + "\\";
-        System.out.println("Cancelling operation, user did not select a directory.");
-        return null;
-    }
-
-    private boolean setupFilter(String name, final String ext, final String desc, boolean mult, boolean dirs) {
-        return this.setupFilter(name, new String[] { ext }, desc, mult, dirs);
+    public static File[] openFiles(String name, String ext) {
+        return openFile(name, ext, false, true);
     }
     
-    private boolean setupFilter(String name, final String[] ext, final String desc, boolean mult, boolean dirs) {
-        if (dirs)
-            this.fileDialogue.setMode(Mode.Directories);
-        if (!name.equals("") && name != null)
-            this.fileDialogue.setDefaultFileName(name);
-        if (ext.equals("") || desc.equals("")) {
-            this.fileDialogue.addFilter("All Files", "*");
-            return true;
+    public static File[] openFiles(String ext) {
+        return openFile(null, ext, false, true);
+    }
+    
+    public static File[] openFileLegacy(String name, String[] extensions, boolean saveFile, boolean multiple) {
+        int returnValue = JFileChooser.CANCEL_OPTION;
+        setupFilter(name, extensions, multiple, false);
+        
+        if (!saveFile)
+            returnValue = chooser.showOpenDialog(Toolkit.instance);
+        else
+            returnValue = chooser.showSaveDialog(Toolkit.instance);
+        
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            if (multiple) return chooser.getSelectedFiles();
+            else return new File[] { chooser.getSelectedFile() };
         }
-        this.fileDialogue.addFilter(desc, ext);
-        this.fileDialogue.addFilter("All Files", "*");
+        else 
+            System.out.println("File operation was cancelled by user.");
+        
+        return null;
+    }
+    
+    
+    public static File[] openFile(String name, String ext, boolean saveFile, boolean multiple) {
+        String[] extensions = new String[0];
+        if (ext != null)
+            extensions = ext.split(",");
+        if (name != null)
+            name = getHomePath(name);
+        File[] files = null;
+        if (Config.instance.useLegacyFileDialogue)
+            return openFileLegacy(name, extensions, saveFile, multiple);
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer patterns = null;
+            if (extensions != null && extensions.length != 0) {
+                patterns = stack.mallocPointer(extensions.length);
+                for (String extension : extensions)
+                    patterns.put(stack.UTF8("*." + extension));
+                patterns.flip();
+            }
+            
+            String[] paths = null;
+            if (saveFile) {
+                String path = tinyfd_saveFileDialog("Save", name, patterns, "");
+                if (path != null) paths = path.split("\\|");
+                else {
+                    System.out.println("File operation was cancelled by user.");
+                    return null;
+                }
+            }
+            else {
+                String path = tinyfd_openFileDialog("Open File(s)", name, patterns, null, multiple);
+                if (path != null) paths = path.split("\\|");
+                else {
+                    System.out.println("File operation was cancelled by user.");
+                    return null;
+                }
+            }
+            
+            if (paths.length == 0) {
+                System.out.println("File operation was cancelled by user.");
+                return null;
+            }
+            
+            files = new File[paths.length];
+            for (int i = 0; i < files.length; ++i) 
+                files[i] = new File(paths[i]);   
+        }
+        return files;
+    }
+    
+    private static boolean setupFilter(String name, final String[] extensions, boolean mult, boolean dirs) {
+        chooser.resetChoosableFileFilters();
+        chooser.setSelectedFile(new File(""));
+        chooser.setCurrentDirectory(new File(getHomePath("")));
+        if (dirs)
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (name != null && !name.equals(""))
+            chooser.setSelectedFile(new File(name));
+        chooser.setMultiSelectionEnabled(mult);
+        if (extensions != null && extensions.length != 0) {
+            for (String extension : extensions) {
+                if (extension == null || extension.isEmpty()) continue;
+                chooser.addChoosableFileFilter(new FileNameExtensionFilter("*." + extension, extension));   
+            }
+        }
+        chooser.setAcceptAllFileFilterUsed(true);
         return true;
+    }
+    
+    public static String openDirectoryLegacy() {
+        setupFilter(null, null, false, true);
+        if (chooser.showOpenDialog(Toolkit.instance) == JFileChooser.APPROVE_OPTION)
+            return chooser.getSelectedFile().getAbsolutePath();
+        return null;
+    }
+
+    public static String openDirectory() {
+        System.out.println("Waiting for user to select directory...");
+        String directory = null;
+        if (Config.instance.useLegacyFileDialogue)
+            directory = openDirectoryLegacy();
+        else directory = tinyfd_selectFolderDialog("Select folder", "");
+        if (directory == null) 
+            System.out.println("File operation was cancelled by user.");
+        return directory;
     }
 }

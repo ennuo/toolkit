@@ -1,6 +1,5 @@
 package ennuo.toolkit.utilities;
 
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.structs.SHA1;

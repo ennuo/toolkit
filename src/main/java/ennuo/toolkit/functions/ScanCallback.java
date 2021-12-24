@@ -11,6 +11,7 @@ import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.io.File;
@@ -22,7 +23,7 @@ import java.util.Set;
 public class ScanCallback {
     public static void scanRawData() {
         Toolkit toolkit = Toolkit.instance;
-        File dump = toolkit.fileChooser.openFile("data.bin", "", "", false);
+        File dump = FileChooser.openFile("data.bin", null, false);
         if (dump == null) return;
 
         System.out.println("Loading Image into memory, this may take a while.");
@@ -32,7 +33,7 @@ public class ScanCallback {
         System.out.println("Image loaded");
 
 
-        File dumpMap = toolkit.fileChooser.openFile("dump.map", "", "", true);
+        File dumpMap = FileChooser.openFile("dump.map", "map", true);
         if (dumpMap == null) return;
 
         FileIO.write(new byte[] {
@@ -48,7 +49,7 @@ public class ScanCallback {
 
         FileDB out = new FileDB(dumpMap);
 
-        File file = toolkit.fileChooser.openFile("dump.farc", "farc", "FileArchive", true);
+        File file = FileChooser.openFile("dump.farc", "farc", true);
         if (file == null) return;
         FileIO.write(new byte[] {
             0,
