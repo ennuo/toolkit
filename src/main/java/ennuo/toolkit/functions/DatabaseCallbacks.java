@@ -134,8 +134,8 @@ public class DatabaseCallbacks {
         if (file == null) return;
         
         JTree tree = Toolkit.instance.getCurrentTree();
-
-        FileData db = Toolkit.instance.getCurrentDB();
+        
+        FileData db = (FileDB) Toolkit.instance.getCurrentDB();
         
         long nextGUID = db.lastGUID + 1;
         
@@ -143,32 +143,27 @@ public class DatabaseCallbacks {
         if (GUID == null) return;
         GUID = GUID.replaceAll("\\s", "");
         
-        long integer;
-        try {
-            if (GUID.toLowerCase().startsWith("0x"))
-                integer = Long.parseLong(GUID.substring(2), 16);
-            else if (GUID.toLowerCase().startsWith("g"))
-                integer = Long.parseLong(GUID.substring(1));
-            else
-                integer = Long.parseLong(GUID);
-        } catch (NumberFormatException e) {
+        
+        long parsedGUID = StringUtils.getLong(GUID);
+        if (parsedGUID == -1) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
         
         boolean alreadyExists = false;
         if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
-            alreadyExists = ((Mod) db).find(integer) != null;
-        else alreadyExists = ((FileDB) db).find(integer) != null;
+            alreadyExists = ((Mod) db).find(parsedGUID) != null;
+        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
         
         if (alreadyExists) {
             System.err.println("This GUID already exists!");
             return;
         }
         
-        if (integer > db.lastGUID) db.lastGUID = integer;
+        if (parsedGUID > nextGUID) db.lastGUID = parsedGUID;
+        else if (parsedGUID == nextGUID) db.lastGUID++;
         
-        FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, integer);
+        FileEntry entry = new FileEntry(Globals.lastSelected.path + Globals.lastSelected.header + "/" + file, parsedGUID);
 
         if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
             ((Mod) db).add(entry);
@@ -230,6 +225,7 @@ public class DatabaseCallbacks {
     public static void changeGUID() {
         FileNode node = Globals.lastSelected;
         FileEntry entry = node.entry;
+        FileData db = Toolkit.instance.getCurrentDB();
         
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
         if (GUID == null) return;
@@ -237,6 +233,22 @@ public class DatabaseCallbacks {
         long parsedGUID = StringUtils.getLong(GUID);
         if (parsedGUID == -1) {
             System.err.println("You inputted an invalid GUID!");
+            return;
+        }
+        
+        if (parsedGUID == entry.GUID) {
+            System.err.println("The GUID is unchanged!");
+            return;
+        }
+        
+        boolean alreadyExists = false;
+        if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
+            alreadyExists = ((Mod) db).find(parsedGUID) != null;
+        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
+        
+        
+        if (alreadyExists) {
+            System.err.println("This GUID already exists!");
             return;
         }
         
@@ -285,13 +297,13 @@ public class DatabaseCallbacks {
 
         JTree tree = Toolkit.instance.getCurrentTree();
 
-        FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+        FileData db = Toolkit.instance.getCurrentDB();
         FileEntry duplicate = new FileEntry(entry);
         duplicate.path = path;
         
         long nextGUID = db.lastGUID + 1;
         
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
+        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
         if (GUID == null) return;
         
         long parsedGUID = StringUtils.getLong(GUID);
@@ -300,11 +312,26 @@ public class DatabaseCallbacks {
             return;
         }
         
+        boolean alreadyExists = false;
+        if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
+            alreadyExists = ((Mod) db).find(parsedGUID) != null;
+        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
+        
+        if (alreadyExists) {
+            System.err.println("This GUID already exists!");
+            return;
+        }
+        
         if (parsedGUID > nextGUID) db.lastGUID = parsedGUID;
+        else if (parsedGUID == nextGUID) db.lastGUID++;
         
         duplicate.GUID = parsedGUID;
 
-        db.add(duplicate);
+        if (Globals.currentWorkspace == Globals.WorkspaceType.MOD)
+            ((Mod)db).add(duplicate);
+        else
+            ((FileDB)db).add(duplicate);
+        
         TreePath treePath = new TreePath(db.addNode(duplicate).getPath());
 
         byte[] data = Globals.extractFile(entry.GUID);
