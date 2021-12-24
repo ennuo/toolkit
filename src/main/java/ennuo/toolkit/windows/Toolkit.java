@@ -2288,6 +2288,19 @@ public class Toolkit extends javax.swing.JFrame {
         }
         hex.repaint();
     }
+    
+    public Toolkit run(String args[]) {
+        for (String arg : args) {
+            if (arg.endsWith(".farc"))
+                ArchiveCallbacks.loadFileArchive(new File(arg));
+            if (arg.endsWith(".map"))
+                DatabaseCallbacks.loadFileDB(new File(arg));
+            if (arg.contains("bigfart"))
+                ProfileCallbacks.loadProfile(new File(arg));
+        }
+        return this;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JMenu FARMenu;
     private javax.swing.JRadioButton LAMSMetadata;
