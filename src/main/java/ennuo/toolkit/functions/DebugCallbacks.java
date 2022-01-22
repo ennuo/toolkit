@@ -32,14 +32,15 @@ public class DebugCallbacks {
                         continue;
                     builder.append(String.format("%s (g%d)\n", entry.path, entry.GUID));
                     for (ResourceDescriptor descriptor : resource.dependencies) {
-                        String name = String.format(" - (Unresolved Resource)");
+                        String type = descriptor.type.name();
+                        String name = String.format(" - (Unresolved Resource) [%s]", type);
                         if (descriptor.GUID != -1) {
-                            name = String.format(" - (Unresolved Path) (g%d)\n", descriptor.GUID);
+                            name = String.format(" - (Unresolved Path) (g%d) [%s]\n", descriptor.GUID, type);
                             FileEntry resolved = Globals.findEntry(descriptor.GUID);
                             if (resolved != null)
-                                name = String.format(" - %s (g%d)\n", resolved.path, descriptor.GUID);
+                                name = String.format(" - %s (g%d) [%s]\n", resolved.path, descriptor.GUID, type);
                         } else if (descriptor.hash != null)
-                            name = String.format(" - %s", descriptor.hash.toString());
+                            name = String.format(" - %s [%s]", descriptor.hash.toString(), type);
                         else continue;
                         builder.append(name);
                     }   
