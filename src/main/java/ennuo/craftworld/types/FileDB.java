@@ -266,7 +266,9 @@ public class FileDB extends FileData {
     public boolean edit(FileEntry entry, long GUID) {
         FileEntry lookup = this.find(entry.GUID);
         if (lookup != null) {
+            this.GUIDLookup.remove(entry.GUID);
             entry.GUID = GUID;
+            this.GUIDLookup.put(GUID, entry);
             this.shouldSave = true;
             return true;
         }
