@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
@@ -551,7 +552,10 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        dummyPlaceholder = new javax.swing.JMenuItem();
+        debugModCallbacks = new javax.swing.JMenu();
+        debugModMeshCallbacks = new javax.swing.JMenu();
+        debugModExpandBoundboxes = new javax.swing.JMenuItem();
+        debugLoadProfileBackup = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -1503,8 +1507,29 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
-        dummyPlaceholder.setText("This doesn't do anything!");
-        debugMenu.add(dummyPlaceholder);
+        debugModCallbacks.setText("Mod Callbacks");
+
+        debugModMeshCallbacks.setText("RMesh");
+
+        debugModExpandBoundboxes.setText("Expand Boundboxes");
+        debugModExpandBoundboxes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugModExpandBoundboxesActionPerformed(evt);
+            }
+        });
+        debugModMeshCallbacks.add(debugModExpandBoundboxes);
+
+        debugModCallbacks.add(debugModMeshCallbacks);
+
+        debugMenu.add(debugModCallbacks);
+
+        debugLoadProfileBackup.setText("Load Profile Backup");
+        debugLoadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugLoadProfileBackupActionPerformed(evt);
+            }
+        });
+        debugMenu.add(debugLoadProfileBackup);
 
         toolkitMenu.add(debugMenu);
 
@@ -2114,6 +2139,34 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.delete();
     }//GEN-LAST:event_editMenuDeleteActionPerformed
 
+    private void debugModExpandBoundboxesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugModExpandBoundboxesActionPerformed
+       DebugCallbacks.ExpandBoundboxes();
+    }//GEN-LAST:event_debugModExpandBoundboxesActionPerformed
+
+    private void debugLoadProfileBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugLoadProfileBackupActionPerformed
+        String directoryString = FileChooser.openDirectory();
+        if (directoryString == null) return;
+        File directory = new File(directoryString);
+        Pattern regex = Pattern.compile("BIG\\d+");
+        File[] fragments = directory.listFiles((dir, name) -> regex.matcher(name).matches());
+        if (fragments.length == 0) {
+            System.out.println("Couldn't find a profile backup in this directory!");
+            return;
+        }
+        byte[][] data = new byte[fragments.length + 1][];
+        data[fragments.length] = new byte[] { 0x46, 0x41, 0x52, 0x34 };
+        for (int i = 0; i < fragments.length; ++i) {
+            byte[] fragment = FileIO.read(fragments[i].getAbsolutePath());
+            if (i + 1 == fragments.length) 
+                fragment = Arrays.copyOfRange(fragment, 0, fragment.length - 4);
+            data[i] = TEA.decrypt(fragment);
+        }
+        File save = new File(Globals.workingDirectory, directory.getName());
+        save.deleteOnExit();
+        FileIO.write(Bytes.Combine(data), save.getAbsolutePath());
+        ProfileCallbacks.loadProfile(save);
+    }//GEN-LAST:event_debugLoadProfileBackupActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2328,7 +2381,11 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
     private javax.swing.JMenuItem customCollector;
+    private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
+    private javax.swing.JMenu debugModCallbacks;
+    private javax.swing.JMenuItem debugModExpandBoundboxes;
+    private javax.swing.JMenu debugModMeshCallbacks;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
     private javax.swing.JMenu dependencyGroup;
@@ -2337,7 +2394,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JSplitPane details;
-    private javax.swing.JMenuItem dummyPlaceholder;
     private javax.swing.JMenuItem dumpHashes;
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
