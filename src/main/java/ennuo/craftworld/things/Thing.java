@@ -29,7 +29,7 @@ public class Thing implements Serializable {
     public PEmitter emitter;
     public PRef ref;
     public PMetadata metadata;
-    public  PCostume costume;
+    public PCostume costume;
     public PCameraTweak cameraTweak;
     public PSwitch switchBase;
     public PSwitchKey switchKey;
