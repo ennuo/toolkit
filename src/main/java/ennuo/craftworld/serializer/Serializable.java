@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public interface Serializable {
     public static <T extends Serializable> T serialize(Serializer serializer, T structure, Class<T> clazz) {
-        // NOTE(Abz): Holy fuck that's a lot of exceptions, don't I always initialize the structure
+        // NOTE(Aidan): Holy fuck that's a lot of exceptions, don't I always initialize the structure
         // in the serialization functions anyway, do I really need this?
         
         try {

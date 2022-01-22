@@ -42,7 +42,7 @@ public class Data {
         this.setData(data);
         this.revision = new Revision(revision);
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -57,7 +57,7 @@ public class Data {
         this.setData(data);
         this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -73,7 +73,7 @@ public class Data {
         this.setData(data);
         this.revision = new Revision(revision, branchID, branchRevision);
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -87,7 +87,7 @@ public class Data {
         this.setData(data);
         this.revision = revision;
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -113,7 +113,7 @@ public class Data {
         byte[] data = FileIO.read(path);
         this.setData(data);
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }

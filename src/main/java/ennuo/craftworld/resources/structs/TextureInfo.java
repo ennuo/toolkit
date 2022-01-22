@@ -15,7 +15,7 @@ public class TextureInfo {
     
     public TextureInfo(Data data, SerializationMethod method) {
         
-        // NOTE(Abz): I don't want to grab the full structure for this right now,
+        // NOTE(Aidan): I don't want to grab the full structure for this right now,
         // and it's not really necessary for anything either, so I guess I'll finish
         // it at some other point
         

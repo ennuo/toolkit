@@ -17,7 +17,7 @@ public class SoftbodyCluster implements Serializable {
         
         softbody.clusterCount = serializer.i32(clusterCount);
         
-        // NOTE(Abz): Vector4, Matrix4f, and String arrays don't serve too much of a purpose to have globally
+        // NOTE(Aidan): Vector4, Matrix4f, and String arrays don't serve too much of a purpose to have globally
         // at the moment, so I'm just going to manually make them here.
         
         if (!serializer.isWriting) softbody.restCenterOfMass = new Vector4f[serializer.input.i32()];

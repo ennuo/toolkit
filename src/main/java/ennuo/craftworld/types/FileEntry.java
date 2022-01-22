@@ -54,6 +54,8 @@ public class FileEntry {
         
         this.resources.clear();
     }
+    
+    public FileEntry() {};
   
     public FileEntry(String path) {
         this.path = path;

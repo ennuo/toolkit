@@ -2,11 +2,21 @@ package ennuo.craftworld.types.savedata;
 
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
+import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.swing.FileData;
+import ennuo.craftworld.swing.FileModel;
+import ennuo.craftworld.swing.FileNode;
+import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.types.FileArchive;
+import ennuo.craftworld.types.FileArchive.ArchiveType;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.toolkit.utilities.Globals;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -14,31 +24,146 @@ import java.util.regex.Pattern;
  * A save manager for both Big and Local Profiles, as well as downloaded levels.
  */
 public class FileSave extends FileData {
-    public int revision;
+    public Revision revision;
     public File directory;
-    public boolean isVita = false;
     
     public BigProfile bigProfile;
     public LocalProfile localProfile;
     
+    public ArrayList<FileEntry> userCreatedEntries = new ArrayList<FileEntry>();
     public HashMap<SHA1, byte[]> resources = new HashMap<SHA1, byte[]>();
     
     public FileSave(File folder) {
         this.name = "Savedata";
         this.type = "File Save";
+        this.model = new FileModel(new FileNode("SAVE", null, null));
+        this.root = (FileNode) this.model.getRoot();
         this.directory = folder;
         if (!folder.exists()) return;
         
         this.getLocalSave();
         this.getBigSaves();
         
-        // NOTE(Jun): We check if RBigProfile exists because both of these save types,
+        // NOTE(Aidan): We check if RBigProfile exists because both of these save types,
         // while technically isolated, are dependant on the existence of the Big Profile.
         
-        if (this.bigProfile != null && this.isVita) {
+        if (this.bigProfile != null && this.revision.isVita()) {
             this.getMoonSlots();
             this.getDownloadSlots();   
         }
+        
+        this.generateNodes();
+        this.build();
+    }
+    
+    private void generateNodes() {
+        if (this.bigProfile != null) {
+            for (Slot slot : this.bigProfile.myMoonSlots.values()) {
+                String title = slot.title.isEmpty() ? "Unnamed Level" : slot.title;
+                FileEntry entry = new FileEntry("slots/" + title);
+                entry.timestamp = -1;
+                if (slot.root != null) {
+                    if (slot.root.GUID != -1) {
+                        entry.GUID = slot.root.GUID;
+                        entry.size = -1;
+                    }
+                    else if (slot.root.hash != null) {
+                        entry.hash = slot.root.hash;
+                        byte[] data = this.extract(entry.hash);
+                        if (data != null)
+                            entry.size = data.length;
+                    }
+                }
+                entry.setResource("slot", slot);
+                Nodes.addNode(this.root, entry);
+            }
+            for (CachedInventoryItem item : this.bigProfile.inventory) {
+                String title = "Some kind of object";
+                if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
+                    title = item.details.userCreatedDetails.title;
+                else if (item.details.titleKey != 0 && Globals.LAMS != null)
+                    title = Globals.LAMS.translate(item.details.titleKey);
+                if (title.isEmpty()) title = "Some kind of object";
+                
+                
+                String type = item.details.type.name();
+                String folder = type.toLowerCase() + "/";
+                /*
+                if (item.details.type == ItemType.USER_COSTUMES || item.details.type == ItemType.COSTUMES)
+                    folder += item.details.subType.name().toLowerCase() + "/";
+                */
+                
+                FileEntry entry = new FileEntry("ugc/items/" + folder + title);
+                
+                entry.timestamp = -1;
+                if (item.plan != null) {
+                    if (item.plan.GUID != -1) {
+                        entry.GUID = item.plan.GUID;
+                        entry.size = -1;
+                    }
+                    else if (item.plan.hash != null) {
+                        entry.hash = item.plan.hash;
+                        byte[] data = this.extract(entry.hash);
+                        if (data != null)
+                            entry.size = data.length;
+                    }
+                }
+                entry.setResource("cachedItemDetails", item);
+                Nodes.addNode(this.root, entry);
+            }
+        }
+        
+        if (this.localProfile != null) {
+            for (CachedInventoryItem item : this.localProfile.inventory) {
+                String title = "Some kind of object";
+                if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
+                    title = item.details.userCreatedDetails.title;
+                else if (item.details.titleKey != 0 && Globals.LAMS != null)
+                    title = Globals.LAMS.translate(item.details.titleKey);
+                if (title.isEmpty()) title = "Some kind of object";
+                
+                String type = item.details.type.name();
+                String folder = type.toLowerCase() + "/";
+                if (item.details.categoryIndex != -1) {
+                    int index = this.localProfile.stringTable.rawIndexToSortedIndex[item.details.categoryIndex];
+                    String category = this.localProfile.stringTable.strings[index].string;
+                    if (!category.isEmpty())
+                        folder += category + "/";
+                }
+                /*
+                if (item.details.type == ItemType.USER_COSTUMES || item.details.type == ItemType.COSTUMES)
+                    folder += item.details.subType.name().toLowerCase() + "/";
+                */
+                
+                FileEntry entry = new FileEntry("items/" + folder + title);
+                entry.timestamp = -1; entry.size = -1;
+                if (item.plan != null) {
+                    if (item.plan.GUID != -1)
+                        entry.GUID = item.plan.GUID;
+                    else if (item.plan.hash != null)
+                        entry.hash = item.plan.hash;
+                    byte[] data = Globals.extractFile(item.plan);
+                    if (data != null) {
+                        entry.hash = SHA1.fromBuffer(data);
+                        entry.size = data.length;
+                        entry.data = data;
+                    }
+                }
+                entry.setResource("cachedItemDetails", item);
+                Nodes.addNode(this.root, entry);
+            }
+        }
+    }
+    
+    public void add(byte[] data) {
+        if (data == null) return;
+        this.resources.put(SHA1.fromBuffer(data), data);
+    }
+    
+    public byte[] extract(SHA1 hash) {
+        if (this.resources.containsKey(hash))
+            return this.resources.get(hash);
+        return null;
     }
     
     /**
@@ -53,8 +178,11 @@ public class FileSave extends FileData {
             for (FileEntry entry : archive.entries)
                 this.resources.put(entry.hash, entry.data);
             SHA1 dataSourceHash = archive.getFatDataSource();
-            if (this.resources.containsKey(dataSourceHash))
-                return new Resource(this.resources.get(dataSourceHash));
+            if (this.resources.containsKey(dataSourceHash)) {
+                Resource source = new Resource(this.resources.get(dataSourceHash));
+                this.resources.remove(dataSourceHash);
+                return source;
+            }
         }
         return null;
     }
@@ -73,26 +201,20 @@ public class FileSave extends FileData {
         else System.out.println(String.format("Found local save file: %s", localSaves[0].getName())); 
         
         Resource localProfile = this.addProfileData(localSaves[0]);
+        this.revision = localProfile.revision;
         if (localProfile == null) {
             System.out.println("Local save did not contain an instance of RLocalProfile!");
             return;
         }
         
-        // NOTE(Jun): I don't know if any LBP2 saves use revision 0x3e2, a better way
-        // to determine if it's actually from Vita would be to check that the branch
-        // descriptor is not equal to 0, but the current resource base does not support
-        // that, I will have to remake that later.
-        
-        if (localProfile.revision.head == 0x3e2)
-            this.isVita = true;
-        
-        
-        // TODO(Jun): I don't have the entire structure for RLocalProfile right now,
+        // TODO(Aidan): I don't have the entire structure for RLocalProfile right now,
         // it also changes a lot between games naturally, due to the nature of the type of
         // resource it is, for now we'll just ignore it, not write to it. I'll later come back to
         // it and create basic editor applications, for say, popit colors or disabling the 
         // copied from another user error.
         
+        try { this.localProfile = new Serializer(localProfile.handle).struct(null, LocalProfile.class); }
+        catch (Exception e) { System.err.println("An error occurred while processing RLocalProfile"); }
     }
     
     /**
@@ -111,14 +233,14 @@ public class FileSave extends FileData {
         
         Resource bigProfile = null; 
         
-        // TODO(Jun): We're assuming isVita has been set from the local profile check,
+        // TODO(Aidan): We're assuming isVita has been set from the local profile check,
         // but what if there were no local profiles? Will account for this later.
         
-        if (this.isVita) {
-            // TODO(Jun): Add support for Vita multi-profile saves.
+        if (false) {
+            // TODO(Aidan): Add support for Vita multi-profile saves.
         } else {
             
-            // NOTE(Jun): The mainline LBP games should never have more than one big profile,
+            // NOTE(Aidan): The mainline LBP games should never have more than one big profile,
             // only LBPV uses multiple, not accounting for level backups however, but that isn't
             // covered by this manager.
             
@@ -131,6 +253,9 @@ public class FileSave extends FileData {
                 System.out.println("Big save did not contain an instance of RBigProfile!");
                 return;
             }
+            
+            try { this.bigProfile = new Serializer(bigProfile.handle).struct(null, BigProfile.class); }
+            catch (Exception e) { System.err.println("An error occurred while processing RBigProfile"); }
         }
     }
     
@@ -158,5 +283,29 @@ public class FileSave extends FileData {
             FileArchive archive = new FileArchive(file);
             System.out.println(String.format("Found download save file: %s", file.getName()));   
         }
+    }
+    
+    public byte[] build() {
+        FileArchive archive = new FileArchive();
+        if (this.revision.isVita())
+            archive.archiveType = ArchiveType.FAR5;
+        for (SHA1 hash : this.resources.keySet()) {
+            FileEntry entry = new FileEntry();
+            byte[] data = this.resources.get(hash);
+            entry.hash = hash;
+            entry.size = data.length;
+            entry.data = data;
+            archive.add(entry);
+        }
+        byte[] profile = this.bigProfile.build(this.revision, (byte) 0);
+        
+        archive.add(profile);
+        archive.setFatRevision(revision);
+        archive.setFatDataSource(SHA1.fromBuffer(profile));
+        
+        byte[] output = archive.build();
+        FileIO.write(output, "C:/Users/Aidan/Desktop/bigfart");
+        
+        return null;
     }
 }

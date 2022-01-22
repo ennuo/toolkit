@@ -62,7 +62,7 @@ public class Resource {
                     dependencyTableOffset = this.getDependencies();
                     if (this.revision.head >= 0x189) {
                         if (this.revision.head >= 0x271) { 
-                            // NOTE(Abz): Were they actually added on 0x27a, but how can it be on 0x272 then?!
+                            // NOTE(Aidan): Were they actually added on 0x27a, but how can it be on 0x272 then?!
                             this.revision.branchID = this.handle.i16();
                             this.revision.branchRevision = this.handle.i16();
                             this.handle.revision = revision;

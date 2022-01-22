@@ -130,7 +130,7 @@ public class LegacyMod {
                 item.translatedLocation = data.str16();
                 item.translatedCategory = data.str16();
                 if (revision > 4) {
-                    // NOTE(Abz): min/max revision has been depreciated.
+                    // NOTE(Aidan): min/max revision has been depreciated.
                     data.i32();
                     data.i32();
                 }

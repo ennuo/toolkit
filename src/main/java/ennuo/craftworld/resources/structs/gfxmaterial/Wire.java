@@ -17,7 +17,7 @@ public class Wire implements Serializable {
         wire.portFrom = serializer.i8(wire.portFrom);
         wire.portTo = serializer.i8(wire.portTo);
         
-        // NOTE(Abz): I have no idea what this is, no named fields for it,
+        // NOTE(Aidan): I have no idea what this is, no named fields for it,
         // it's always just null bytes, so I figure it doesn't matter anyway.
         serializer.pad(0x5);
         

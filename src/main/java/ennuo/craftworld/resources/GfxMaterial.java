@@ -78,7 +78,7 @@ public class GfxMaterial implements Serializable {
             }
         }
        
-        // NOTE(Abz): RGfxMaterial still had 3 shaders at 0x272 branch (0x4c440009)
+        // NOTE(Aidan): RGfxMaterial still had 3 shaders at 0x272 branch (0x4c440009)
         // current Resource class doesn't hold branch information yet, so nothing I
         // can do about that here at the moment.
         

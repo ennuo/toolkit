@@ -3,7 +3,7 @@ package ennuo.craftworld.resources.structs;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 
-// NOTE(Abz): This structure isn't technically accurate,
+// NOTE(Aidan): This structure isn't technically accurate,
 // but it serves well enough for the purposes of serialization.
 
 public class SceNpId implements Serializable {

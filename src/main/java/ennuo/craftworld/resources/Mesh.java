@@ -46,7 +46,7 @@ public class Mesh implements Serializable {
     public byte[] mirrorType;
     public short[] mirrorMorphs;
     
-    // NOTE(Abz): Primitive type 5 is for triangle lists, although the game
+    // NOTE(Aidan): Primitive type 5 is for triangle lists, although the game
     // generally tends to use triangle strips. As a reference for possible
     // values, see: 
     // https://www.khronos.org/opengl/wiki/Primitive
@@ -120,7 +120,7 @@ public class Mesh implements Serializable {
             for (byte[] stream : mesh.streams)
                 serializer.output.bytes(stream);
         } else {
-            // NOTE(Abz): We're skipping source stream offsets. 
+            // NOTE(Aidan): We're skipping source stream offsets. 
             for (int i = 0; i < mesh.streamCount + 1; ++i)
                 serializer.input.i32();
             serializer.input.i32();
@@ -250,7 +250,7 @@ public class Mesh implements Serializable {
         Vector3f[] vertices = new Vector3f[count];
         for (int i = 0; i < count; ++i) {
             vertices[i] = data.v3();
-            data.f32(); // NOTE(Abz): We're skipping that 0x000000FF bit, no idea what it is, seems irrelevant!
+            data.f32(); // NOTE(Aidan): We're skipping that 0x000000FF bit, no idea what it is, seems irrelevant!
         }
         return vertices;
     }

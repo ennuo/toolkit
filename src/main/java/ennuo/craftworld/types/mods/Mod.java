@@ -106,7 +106,7 @@ public class Mod extends FileData {
                 Files.copy(archivePath, tempArchive.toPath());
                 archive = new FileArchive(tempArchive);
                 if (archive.archiveType == ArchiveType.FARC)
-                    // NOTE(Abz): FAR4 is the default, but if for some reason there's a FARC, 
+                    // NOTE(Aidan): FAR4 is the default, but if for some reason there's a FARC, 
                     // we need to manually preload it since this isn't the default.
                     archive.preload();
                 Files.delete(tempArchive.toPath());
@@ -125,7 +125,7 @@ public class Mod extends FileData {
                 if (this.add(entry) && this.model != null)
                     this.addNode(entry);
             }
-            this.shouldSave = false; // NOTE(Abz): Calling Mod.add triggers shouldSave, but we haven't actually made any changes, so...
+            this.shouldSave = false; // NOTE(Aidan): Calling Mod.add triggers shouldSave, but we haven't actually made any changes, so...
             
             Path patchesPath = fileSystem.getPath("patches.json");
             if (Files.exists(patchesPath)) {

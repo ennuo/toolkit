@@ -30,7 +30,7 @@ public class Plan implements Serializable {
         plan.revision = serializer.i32(plan.revision);
         plan.thingData = serializer.i8a(plan.thingData);
         
-        // NOTE(Abz): This serializer isn't fully finished because of how many revisions
+        // NOTE(Aidan): This serializer isn't fully finished because of how many revisions
         // there are, so wrapping it in an try/catch block just in case.
         
         try {

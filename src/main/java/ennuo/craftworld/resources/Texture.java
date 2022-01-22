@@ -111,7 +111,7 @@ public class Texture {
         
         this.data = DDS;
         
-        // TODO(Jun): The unswizzling process is different for Vita,
+        // TODO(Aidan): The unswizzling process is different for Vita,
         // or I'm assuming the wrong DDS type, either way, the textures
         // come out corrupted regardless and this should be looked into.
         
@@ -153,7 +153,7 @@ public class Texture {
      */
     public int[] unswizzleData(int[] swizzled) {
         
-        // NOTE(Jun): For original source, see:
+        // NOTE(Aidan): For original source, see:
         // https://github.com/RPCS3/rpcs3/blob/3d49976b3c0f2d2fe5fbd9dba0419c13b389c6ba/rpcs3/Emu/RSX/rsx_utils.h
         
         int[] unswizzled = new int[swizzled.length];
@@ -225,7 +225,7 @@ public class Texture {
      * @return Generated DDS header.
      */
     public static byte[] getDDSHeader(int format, int width, int height, int mips) {
-        // NOTE(Jun): For details on the DDS header structure, see:
+        // NOTE(Aidan): For details on the DDS header structure, see:
         // https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
         
         Output header = new Output(0x80);

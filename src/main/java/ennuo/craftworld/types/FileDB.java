@@ -72,7 +72,7 @@ public class FileDB extends FileData {
      * @param file Path of FileDB resource
      */
     private void checkGameDirectory(File file) {
-        // NOTE(Jun): Check if this map is from a game install
+        // NOTE(Aidan): Check if this map is from a game install
         // useful for loading assets that are only meant for
         // being streamed from disk.
 		

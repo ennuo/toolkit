@@ -110,7 +110,7 @@ public class InventoryDetails implements Serializable {
         if (serializer.revision.head > 0x233) {
             details.highlightSound = serializer.u32f(details.highlightSound);
             
-            // NOTE(Abz): In these older versions of the inventory details,
+            // NOTE(Aidan): In these older versions of the inventory details,
             // 32 bit values are enforced while still using encoded values elsewhere,
             // so for some structures like SlotID, we need to force it manually.
 

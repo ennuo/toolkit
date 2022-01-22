@@ -44,7 +44,7 @@ public class Output {
         this.revision = new Revision(revision);
         this.length = size;
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -59,7 +59,7 @@ public class Output {
         this.revision = revision;
         this.length = size;
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if (this.revision.head == 0x272 || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -75,7 +75,7 @@ public class Output {
         this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
         this.length = size;
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }
@@ -92,7 +92,7 @@ public class Output {
         this.revision = new Revision(revision, branchID, branchRevision);
         this.length = size;
         
-        // NOTE(Abz): For legacy reasons.
+        // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
     }

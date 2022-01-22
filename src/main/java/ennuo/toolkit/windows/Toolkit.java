@@ -1971,7 +1971,7 @@ public class Toolkit extends javax.swing.JFrame {
         slot.id = new SlotID(SlotType.FAKE, 0);
         slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
         
-        // NOTE(Abz): Cheap trick, but it's what I'm doing for now.
+        // NOTE(Aidan): Cheap trick, but it's what I'm doing for now.
         Resource resource = new Resource(Globals.extractFile(entry.hash));
         Mod mod = new Mod();
         SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
@@ -2013,7 +2013,7 @@ public class Toolkit extends javax.swing.JFrame {
         FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
         FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
         
-        // NOTE(Abz): This seems terribly inefficient in terms of memory cost,
+        // NOTE(Aidan): This seems terribly inefficient in terms of memory cost,
         // but the levels exported should be low, so it's not entirely an issue,
         // FOR NOW.
         

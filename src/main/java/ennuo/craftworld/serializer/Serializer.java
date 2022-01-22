@@ -136,7 +136,7 @@ public class Serializer {
     }
     
     public long u32d(long value) {
-        // NOTE(Abz): I'm not actually sure what this type is
+        // NOTE(Aidan): I'm not actually sure what this type is
         // but for some reason in the "encoded" revisions, it's
         // doubled for some reason? Well, whatever
         
