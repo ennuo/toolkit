@@ -124,7 +124,6 @@ public class ArchiveCallbacks {
 
         String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
-        directory = directory.substring(0, directory.length() - 1); // shit fix for fnf on linux
         
         FileArchive[] archives = Toolkit.instance.getSelectedArchives();
         if (archives == null) return;
