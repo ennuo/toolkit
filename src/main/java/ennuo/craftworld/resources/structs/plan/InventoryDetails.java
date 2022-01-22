@@ -218,10 +218,16 @@ public class InventoryDetails implements Serializable {
                 if (!serializer.isWriting) {
                     details.creationHistory = new CreationHistory();
                     details.creationHistory.creators = new String[serializer.input.i32()];
-                } else serializer.output.i32(details.creationHistory.creators.length);
-                for (int i = 0; i < details.creationHistory.creators.length; ++i)
-                    details.creationHistory.creators[i] = 
-                            serializer.str16(details.creationHistory.creators[i]);
+                } else {
+                    if (details.creationHistory != null && details.creationHistory.creators != null)
+                        serializer.output.i32(details.creationHistory.creators.length);
+                    else serializer.output.i32(0);
+                }       
+                if (details.creationHistory != null && details.creationHistory.creators != null) {
+                    for (int i = 0; i < details.creationHistory.creators.length; ++i)
+                        details.creationHistory.creators[i] = 
+                                serializer.str16(details.creationHistory.creators[i]);
+                }
             }
         }
         
