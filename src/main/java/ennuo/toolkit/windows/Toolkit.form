@@ -841,28 +841,6 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
           </AuxValues>
           <SubComponents>
-            <Menu class="javax.swing.JMenu" name="debugModCallbacks">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Mod Callbacks"/>
-              </Properties>
-              <SubComponents>
-                <Menu class="javax.swing.JMenu" name="debugModMeshCallbacks">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="RMesh"/>
-                  </Properties>
-                  <SubComponents>
-                    <MenuItem class="javax.swing.JMenuItem" name="debugModExpandBoundboxes">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Expand Boundboxes"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugModExpandBoundboxesActionPerformed"/>
-                      </Events>
-                    </MenuItem>
-                  </SubComponents>
-                </Menu>
-              </SubComponents>
-            </Menu>
             <MenuItem class="javax.swing.JMenuItem" name="debugLoadProfileBackup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Load Profile Backup"/>

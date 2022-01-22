@@ -552,9 +552,6 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        debugModCallbacks = new javax.swing.JMenu();
-        debugModMeshCallbacks = new javax.swing.JMenu();
-        debugModExpandBoundboxes = new javax.swing.JMenuItem();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
@@ -1507,22 +1504,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
-        debugModCallbacks.setText("Mod Callbacks");
-
-        debugModMeshCallbacks.setText("RMesh");
-
-        debugModExpandBoundboxes.setText("Expand Boundboxes");
-        debugModExpandBoundboxes.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugModExpandBoundboxesActionPerformed(evt);
-            }
-        });
-        debugModMeshCallbacks.add(debugModExpandBoundboxes);
-
-        debugModCallbacks.add(debugModMeshCallbacks);
-
-        debugMenu.add(debugModCallbacks);
-
         debugLoadProfileBackup.setText("Load Profile Backup");
         debugLoadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2139,10 +2120,6 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.delete();
     }//GEN-LAST:event_editMenuDeleteActionPerformed
 
-    private void debugModExpandBoundboxesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugModExpandBoundboxesActionPerformed
-       DebugCallbacks.ExpandBoundboxes();
-    }//GEN-LAST:event_debugModExpandBoundboxesActionPerformed
-
     private void debugLoadProfileBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugLoadProfileBackupActionPerformed
         String directoryString = FileChooser.openDirectory();
         if (directoryString == null) return;
@@ -2383,9 +2360,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem customCollector;
     private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
-    private javax.swing.JMenu debugModCallbacks;
-    private javax.swing.JMenuItem debugModExpandBoundboxes;
-    private javax.swing.JMenu debugModMeshCallbacks;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
     private javax.swing.JMenu dependencyGroup;
