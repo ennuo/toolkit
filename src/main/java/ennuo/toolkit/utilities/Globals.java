@@ -38,15 +38,25 @@ public class Globals {
         } catch (IOException ex) { System.out.println("An error occurred creating temp directory."); }
     }
 
-    public static ArrayList < FileData > databases = new ArrayList < FileData > ();
-    public static ArrayList < FileArchive > archives = new ArrayList < FileArchive > ();
+    public static ArrayList<FileData> databases;
+    public static ArrayList<FileArchive> archives;
     public static TranslationTable LAMS;
     private static TranslationTable KEYS;
 
-    public static ArrayList < FileNode > entries = new ArrayList < FileNode > ();
+    public static ArrayList<FileNode> entries;
     public static FileNode lastSelected;
 
     public static WorkspaceType currentWorkspace = WorkspaceType.NONE;
+    
+    public static void reset() {
+        Globals.currentWorkspace = WorkspaceType.NONE;
+        Globals.entries = new ArrayList<FileNode>();
+        Globals.lastSelected = null;
+        Globals.LAMS = null;
+        Globals.KEYS = null;
+        Globals.archives = new ArrayList<FileArchive>();
+        Globals.databases = new ArrayList<FileData>();
+    }
 
     public static boolean canExtract() {
         if (currentWorkspace == WorkspaceType.MAP)

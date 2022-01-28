@@ -89,9 +89,10 @@ public class Toolkit extends javax.swing.JFrame {
     };
 
     public Toolkit() {
+        Globals.reset();
+        instance = this;
         initComponents();
         EasterEgg.initialize(this);
-        instance = this;
         
         if (Flags.ENABLE_NEW_SAVEDATA)
             this.loadSavedata.setVisible(true);
