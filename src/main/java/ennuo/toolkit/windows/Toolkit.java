@@ -1919,6 +1919,7 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void loadSavedataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadSavedataActionPerformed
         String directory = FileChooser.openDirectory();
+        if (directory == null) return;
         if (directory.isEmpty()) return;
         FileSave save = new FileSave(new File(directory));
         this.addTab(save);

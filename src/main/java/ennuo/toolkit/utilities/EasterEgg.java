@@ -43,6 +43,11 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
+        if (username.equals("madbrine")) { //metraberryy, feel free to remove this if you want
+            toolkit.setTitle("farctool3");
+            toolkit.debugMenu.setVisible(true);
+        }
+
         if (toolkit.debugMenu.isVisible()) {
             toolkit.setTitle(toolkit.getTitle() + " | Debug");
             Flags.ENABLE_NEW_SAVEDATA = true;

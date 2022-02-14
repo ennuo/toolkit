@@ -64,7 +64,7 @@ public class Mod extends FileData {
     
     private void process(File file) {
         this.isParsed = false;
-        try (FileSystem fileSystem = FileSystems.newFileSystem(file.toPath(), null)) {
+        try (FileSystem fileSystem = FileSystems.newFileSystem(file.toPath(), (java.lang.ClassLoader) null)) {
             Path configPath = fileSystem.getPath("config.json");
             if (!Files.exists(configPath)) {
                 System.err.println("Mod is missing config.json!");
