@@ -1,5 +1,6 @@
 package ennuo.toolkit.functions;
 
+import ennuo.craftworld.resources.Animation;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
@@ -11,6 +12,7 @@ import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
@@ -56,33 +58,28 @@ public class ExportCallbacks {
         if (GUID == null) return;
         GUID = GUID.replaceAll("\\s", "");
         
-        long integer;
-        try {
-            if (GUID.toLowerCase().startsWith("0x"))
-                integer = Long.parseLong(GUID.substring(2), 16);
-            else if (GUID.toLowerCase().startsWith("g"))
-                integer = Long.parseLong(GUID.substring(1));
-            else
-                integer = Long.parseLong(GUID);
-        } catch (NumberFormatException e) {
-            System.err.println("You inputted an invalid GUID!");
+        long integer = StringUtils.getLong(GUID);
+        if (integer == -1) {
+            System.err.println("You entered an invalid GUID!");
             return;
         }
         
-        FileEntry entry = Globals.findEntry(integer);
-        
         Mesh mesh = null;
-        if (entry == null) {
-            System.err.println("Couldn't find model!");
-        } else {
-            byte[] data = Globals.extractFile(integer);
-            if (data == null) System.err.println("Couldn't find data for model in any archives.");
-            else
-                mesh = new Mesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
+        if (integer != 0) {
+            FileEntry entry = Globals.findEntry(integer);
+            if (entry == null) 
+                System.err.println("Couldn't find model! Exporting without model!");
+            else {
+                byte[] data = Globals.extractFile(integer);
+                if (data == null) System.err.println("Couldn't find data for model in any archives.");
+                else
+                    mesh = new Mesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
+            }
+            
         }
         
-        if (file != null)
-            MeshIO.GLB.FromAnimation(Globals.lastSelected.entry.getResource("animation"), mesh).export(file.getAbsolutePath());
+        Animation animation = Globals.lastSelected.entry.getResource("animation");
+        MeshIO.GLB.FromAnimation(animation, mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {
