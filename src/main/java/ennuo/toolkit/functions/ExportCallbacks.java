@@ -49,6 +49,8 @@ public class ExportCallbacks {
             "glb",
             true
         );
+        
+        if (file == null) return;
        
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
         if (GUID == null) return;
