@@ -73,7 +73,7 @@ public class Thing implements Serializable {
     public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
         
-        if (serializer.revision.head > 0x2a0 || serializer.revision.isAfterLBP1BranchedRevision(5))
+        if (serializer.revision.head > 0x2a0 || serializer.revision.isAfterLeerdammerRevision(5))
             serializer.i8((byte) 0xAA); // test_serialize_marker
         
         if (serializer.revision.head < 0x27f) {
@@ -109,7 +109,7 @@ public class Thing implements Serializable {
         int parts = Thing.getCompressedPartsRevision(serializer.revision.head);
         parts = (int) serializer.u32d((long) parts);
         
-        if (serializer.revision.head > 0x297 || serializer.revision.isAfterLBP1BranchedRevision(2))
+        if (serializer.revision.head > 0x297 || serializer.revision.isAfterLeerdammerRevision(2))
             flags = serializer.i64(flags);
         
         if (((flags & (1 << 0)) != 0) && parts >= PartHistory.BODY)

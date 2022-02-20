@@ -20,7 +20,7 @@ public class Revision {
     }
     
     public boolean isLBP1() { return this.head <= 0x272; }
-    public boolean isLBP1Branched() { return this.branchID == 0x4c44 && this.isLBP1(); }
+    public boolean isLeerdammer() { return this.branchID == 0x4c44 && this.isLBP1(); }
     public boolean isLBP2() { 
         if (this.isLBP1() || this.isLBP3() || this.isVita()) return false;
         return true;
@@ -34,15 +34,23 @@ public class Revision {
         return false;
     }
     
-    public boolean isAfterVitaBranchedRevision(int branchRevision) {
+    public boolean isAfterVitaRevision(int branchRevision) {
         if (!this.isVita()) return false;
         if (this.branchRevision > branchRevision) return true;
         return false;
     }
     
-    public boolean isAfterLBP1BranchedRevision(int branchRevision) {
+    public boolean isAfterLeerdammerRevision(int branchRevision) {
         if (this.branchID != 0x4c44) return false;
         if (this.branchRevision > branchRevision) return true;
         return false;
+    }
+    
+    @Override public String toString() {
+        if (this.branchID != 0) {
+            return String.format("Revision: (r%d, b%04X:%04X)", 
+                    this.head, this.branchID, this.branchRevision);
+        }
+        return String.format("Revision: (r%d)", this.head);
     }
 }
