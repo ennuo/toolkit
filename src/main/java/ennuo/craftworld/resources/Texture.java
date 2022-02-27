@@ -141,6 +141,12 @@ public class Texture {
     public void unswizzle() {
         int[] pixels = DDSReader.read(this.data, DDSReader.ARGB, 0);
         pixels = this.unswizzleData(pixels);
+        
+        for (int i = 0; i < pixels.length; ++i) {
+            int pixel = pixels[i];
+            pixels[i] = (pixel & 0xff) << 24 | (pixel & 0xff00) << 8 | (pixel & 0xff0000) >> 8 | (pixel >> 24) & 0xff;
+        }
+        
         this.cached = new BufferedImage(this.info.width, this.info.height, BufferedImage.TYPE_INT_ARGB);
         if (this.cached != null)
             this.cached.setRGB(0, 0, this.info.width, this.info.height, pixels, 0, this.info.width);
