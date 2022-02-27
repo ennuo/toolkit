@@ -138,8 +138,18 @@
       </dependency>
       <dependency>
          <groupId>org.lwjgl</groupId>
+         <artifactId>lwjgl</artifactId>
+         <classifier>natives-windows-x86</classifier>
+      </dependency>
+      <dependency>
+         <groupId>org.lwjgl</groupId>
          <artifactId>lwjgl-tinyfd</artifactId>
          <classifier>natives-windows</classifier>
+      </dependency>
+      <dependency>
+         <groupId>org.lwjgl</groupId>
+         <artifactId>lwjgl-tinyfd</artifactId>
+         <classifier>natives-windows-x86</classifier>
       </dependency>
       <dependency>
          <groupId>org.lwjgl</groupId>
