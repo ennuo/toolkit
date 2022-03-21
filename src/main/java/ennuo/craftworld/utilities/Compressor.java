@@ -11,7 +11,7 @@ import java.util.zip.Inflater;
 public class Compressor {
     public static byte[] deflateData(byte[] data) {
         try {
-            Deflater deflater = new Deflater();
+            Deflater deflater = new Deflater(9);
             ByteArrayOutputStream stream = new ByteArrayOutputStream(data.length);
             deflater.setInput(data);
             deflater.finish();
