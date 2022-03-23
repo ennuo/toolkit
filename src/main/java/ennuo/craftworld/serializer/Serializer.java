@@ -346,7 +346,7 @@ public class Serializer {
             if (reference == -1) {
                 int next = this.nextReference++;
                 this.output.i32(next);
-                T.serialize(this, value, clazz);
+                Serializable.serialize(this, value, clazz);
                 this.referenceIDs.put(next, value);
                 this.referenceObjects.put(value, next);
                 return value;
@@ -357,7 +357,7 @@ public class Serializer {
         if (reference == 0) return null;
         if (this.referenceIDs.containsKey(reference))
             return (T) this.referenceIDs.get(reference);
-        T struct = T.serialize(this, null, clazz);
+        T struct = Serializable.serialize(this, null, clazz);
         this.referenceIDs.put(reference, struct);
         this.referenceObjects.put(struct, reference);
         return struct;
@@ -365,10 +365,10 @@ public class Serializer {
     
     public <T extends Serializable> T struct(T value, Class<T> clazz) {
         if (this.isWriting) {
-            T.serialize(this, value, clazz);
+            Serializable.serialize(this, value, clazz);
             return value;
         }
-        return clazz.cast(T.serialize(this, null, clazz));
+        return clazz.cast(Serializable.serialize(this, null, clazz));
     }
     
     public <T extends Serializable> T[] array(T[] values, Class<T> clazz) {
@@ -384,7 +384,7 @@ public class Serializer {
             this.output.i32(values.length);
             for (T serializable : values) {
                 if (isReference) this.reference(serializable, clazz);
-                else T.serialize(this, serializable, clazz);
+                else Serializable.serialize(this, serializable, clazz);
             }
             return values;
         }
@@ -394,7 +394,7 @@ public class Serializer {
             if (isReference)
                 output[i] = clazz.cast(this.reference(null, clazz));
             else
-                output[i] = clazz.cast(T.serialize(this, null, clazz));
+                output[i] = clazz.cast(Serializable.serialize(this, null, clazz));
         }
         return output;
     }
