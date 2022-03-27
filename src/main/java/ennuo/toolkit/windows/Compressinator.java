@@ -395,16 +395,13 @@ public class Compressinator extends javax.swing.JFrame {
         if (this.useCompressedVectors.isSelected()) 
             compressionFlags |= CompressionFlags.USE_COMPRESSED_VECTORS;
 
-        ResourceDescriptor[] dependencies = new ResourceDescriptor[this.dependencies.size()];
-        dependencies = this.dependencies.toArray(dependencies);
-
         if (this.fileData == null) {
             System.err.println("You need to specify a file to compress!");
             return;
         }
         
         Revision revision = new Revision(headRevision, branchID, branchRevision);
-        byte[] compressed = Resource.compressToResource(this.fileData, revision, compressionFlags, ResourceType.fromMagic(header), dependencies);
+        byte[] compressed = Resource.compressToResource(this.fileData, revision, compressionFlags, ResourceType.fromMagic(header), this.dependencies);
 
         File output = FileChooser.openFile("output." + header, null, true);
         if (output != null)

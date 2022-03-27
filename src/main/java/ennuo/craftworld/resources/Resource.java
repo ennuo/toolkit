@@ -12,6 +12,9 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.utilities.TEA;
 import ennuo.toolkit.utilities.Globals;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Resource {
     public ResourceType type = ResourceType.INVALID;
@@ -21,15 +24,14 @@ public class Resource {
     private boolean isCompressed = true;
     public byte compressionFlags = 0;
     public Data handle = null;
-    public ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
+    public ArrayList<ResourceDescriptor> dependencies = new ArrayList<>();
     
     public Resource(){}
     
     public Resource(Output output) {
         output.shrink();
         this.revision = output.revision;
-        this.dependencies = output.dependencies.toArray(
-                new ResourceDescriptor[output.dependencies.size()]);
+        this.dependencies = output.dependencies;
         this.method = SerializationMethod.BINARY;
         this.compressionFlags = output.compressionFlags;
         this.handle = new Data(output.buffer, output.revision);
@@ -119,7 +121,7 @@ public class Resource {
                     if (resource.method == SerializationMethod.BINARY) {
                         entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
                         entry.canReplaceDecompressed = true;
-                        entry.dependencies = resource.dependencies; 
+                        entry.dependencies = resource.dependencies;
                     }
                 }
             }
@@ -127,10 +129,10 @@ public class Resource {
         return missingDependencies;
     }
     
-    public void replaceDependency(int index, ResourceDescriptor newDescriptor) {
-        ResourceDescriptor oldDescriptor = this.dependencies[index];
-        
+    public void replaceDependency(ResourceDescriptor oldDescriptor, ResourceDescriptor newDescriptor) {
         if (oldDescriptor.equals(newDescriptor)) return;
+        int index = this.dependencies.indexOf(oldDescriptor);
+        if (index == -1) return;
         
         byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
         byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
@@ -144,7 +146,10 @@ public class Resource {
         }
         Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
         
-        this.dependencies[index] = newDescriptor;
+        // Remove the dependency from the array if it's effectively null.
+        if (newDescriptor == null || newDescriptor.GUID == 0)
+            this.dependencies.remove(index);
+        else this.dependencies.set(index, newDescriptor);
     }
     
     private int getDependencies() {
@@ -152,8 +157,9 @@ public class Resource {
         int originalOffset = this.handle.offset;
         this.handle.offset = dependencyTableOffset;
         
-        this.dependencies = new ResourceDescriptor[this.handle.i32f()];
-        for (int i = 0; i < this.dependencies.length; ++i) {
+        int size = this.handle.i32f();
+        this.dependencies = new ArrayList<>(size);
+        for (int i = 0; i < size; ++i) {
             ResourceDescriptor descriptor = new ResourceDescriptor();
             switch (this.handle.i8()) {
                 case 1:
@@ -164,7 +170,7 @@ public class Resource {
                     break;
             }
             descriptor.type = ResourceType.fromType(this.handle.i32f());
-            this.dependencies[i] = descriptor;
+            this.dependencies.add(descriptor);
         }
         
         this.handle.offset = originalOffset;
@@ -172,7 +178,7 @@ public class Resource {
         return dependencyTableOffset;
     }
     
-    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ResourceDescriptor[] dependencies) {
+    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ArrayList<ResourceDescriptor> dependencies) {
         Resource resource = new Resource();
         resource.handle = new Data(data, revision);
         resource.compressionFlags = compressionFlags;
@@ -195,7 +201,7 @@ public class Resource {
     
     public byte[] compressToResource() {
         if (this.type == ResourceType.STATIC_MESH) return this.handle.data;
-        Output output = new Output(this.dependencies.length * 0x1c + this.handle.length + 0x50);
+        Output output = new Output(this.dependencies.size() * 0x1c + this.handle.length + 0x50);
         
         if (this.method == SerializationMethod.TEXT) {
             output.str(this.type.header + this.method.value + '\n');
@@ -238,7 +244,7 @@ public class Resource {
             output.i32f(dependencyTableOffset);
             output.offset = dependencyTableOffset;
             
-            output.i32f(this.dependencies.length);
+            output.i32f(this.dependencies.size());
             for (ResourceDescriptor dependency : this.dependencies) {
                 if (dependency.GUID != -1) {
                     output.i8((byte) 2);

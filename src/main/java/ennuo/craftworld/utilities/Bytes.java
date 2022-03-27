@@ -351,8 +351,8 @@ public class Bytes {
     */
     
     public static void recurse(Mod mod, Resource resource, FileEntry entry) {
-        for (int i = 0; i < resource.dependencies.length; ++i) {
-            ResourceDescriptor res = resource.dependencies[i];
+        for (int i = 0; i < resource.dependencies.size(); ++i) {
+            ResourceDescriptor res = resource.dependencies.get(i);
             if (res == null || res.type == ResourceType.SCRIPT) continue;
             byte[] data = Globals.extractFile(res);
             if (data == null) continue;
@@ -372,8 +372,8 @@ public class Bytes {
     public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry, HashMap<Integer, MaterialEntry> registry) {
         if (resource.method == SerializationMethod.BINARY) {
             if (registry == null || (registry != null && resource.type != ResourceType.GFX_MATERIAL)) {
-                for (int i = 0; i < resource.dependencies.length; ++i) {
-                    ResourceDescriptor res = resource.dependencies[i];
+                for (int i = 0; i < resource.dependencies.size(); ++i) {
+                    ResourceDescriptor res = resource.dependencies.get(i);
                     FileEntry dependencyEntry = Globals.findEntry(res);
                     if (res == null) continue;
                     if (res.type == ResourceType.SCRIPT) continue;
@@ -406,10 +406,10 @@ public class Bytes {
                     Resource dependency = new Resource(data);
 
                     if (dependency.method == SerializationMethod.BINARY)
-                        resource.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
+                        resource.replaceDependency(res, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
                     else {
                         mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
-                        resource.replaceDependency(i, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
+                        resource.replaceDependency(res, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
                     }
                 }
             }

@@ -344,7 +344,7 @@ public class Toolkit extends javax.swing.JFrame {
             if (Globals.lastSelected.entry != null) {
                 if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed) {
                     replaceDecompressed.setVisible(true);
-                    if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.length != 0) {
+                    if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.size() != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
                         if (Globals.lastSelected.header.endsWith(".bin") || Globals.lastSelected.header.endsWith(".plan"))
@@ -1995,7 +1995,7 @@ public class Toolkit extends javax.swing.JFrame {
             slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
         else if (entry.path.endsWith(".plan")) {
             Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
-            level.replaceDependency(0xB, new ResourceDescriptor(hash, ResourceType.PLAN));
+            level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
             byte[] levelData = level.compressToResource();
             archive.add(levelData);
             slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
@@ -2166,9 +2166,9 @@ public class Toolkit extends javax.swing.JFrame {
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
-            for (int i = 0; i < entry.dependencies.length; ++i) {
-                FileEntry dependencyEntry = Globals.findEntry(entry.dependencies[i]);
-                if (dependencyEntry == null|| dependencyEntry.path == null) continue;
+            for (int i = 0; i < entry.dependencies.size(); ++i) {
+                FileEntry dependencyEntry = Globals.findEntry(entry.dependencies.get(i));
+                if (dependencyEntry == null || dependencyEntry.path == null) continue;
                 Nodes.addNode(root, dependencyEntry);
                 if (dependencyEntry.dependencies != null && dependencyEntry != entry)
                     generateDependencyTree(dependencyEntry, model);

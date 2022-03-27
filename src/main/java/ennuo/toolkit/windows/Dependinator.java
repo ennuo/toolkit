@@ -1,8 +1,6 @@
-
 package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.utilities.Compressor;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.Globals;
@@ -10,99 +8,97 @@ import java.nio.file.Paths;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 public class Dependinator extends javax.swing.JFrame {
     private Resource resource;
-    
     private FileEntry entry;
     
+    private ResourceDescriptor[] dependencies;
     private ResourceDescriptor[] modifications;
     
-    DefaultListModel model = new DefaultListModel();
+    private  DefaultListModel model = new DefaultListModel();
     
     public Dependinator(Toolkit toolkit, FileEntry entry) {
-        initComponents();
-        setResizable(false);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
-        setTitle("Dependinator");
-        
-        list.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                ResourceDescriptor ptr;
-                int index = list.getSelectedIndex();
-                if (modifications[index] != null)
-                    ptr = modifications[index];
-                else ptr = resource.dependencies[index];
-                pointer.setText(ptr.toString());
-                pointer.setEnabled(true);
-                update.setEnabled(true);
-            }
-        });
-        
+        this.initComponents();
+        this.setResizable(false);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setTitle("Dependinator");
         
         this.entry = entry;
         
+        // Get the resource data
         byte[] data = entry.data;
         if (data == null)
             data = Globals.extractFile(entry.GUID);
-        if (data == null) data = Globals.extractFile(entry.hash);
-        
+        if (data == null)
+            data = Globals.extractFile(entry.hash);
         if (data == null) {
-            dispose();
+            this.dispose();
             return;
         }
         
-        resource = new Resource(data);
-        modifications = new ResourceDescriptor[resource.dependencies.length];
+        this.resource = new Resource(data);
+        this.modifications = new ResourceDescriptor[resource.dependencies.size()];
         
-        for (int i = 0; i < resource.dependencies.length; ++i) {
-            ResourceDescriptor ptr = resource.dependencies[i];
-            modifications[i] = ptr;
-            FileEntry dependency = Globals.findEntry(ptr);
-            if (dependency == null) model.addElement(ptr.toString());
-            else {
-                if (dependency.path == null) model.addElement(ptr.toString());
-                else model.addElement(Paths.get(dependency.path).getFileName().toString());
+        // Create a new copy of the dependencies list, so indexes aren't offset if the user removes dependencies.
+        this.dependencies = resource.dependencies.stream().toArray(ResourceDescriptor[]::new);
+        
+        for (int i = 0; i < this.dependencies.length; ++i) {
+            ResourceDescriptor descriptor = this.dependencies[i];
+            this.modifications[i] = descriptor;
+            FileEntry dependency = Globals.findEntry(descriptor);
+            if (dependency == null || dependency.path == null) {
+                model.addElement(descriptor.toString());
+                continue;
             }
+            model.addElement(Paths.get(dependency.path).getFileName().toString());
         }
-        setVisible(true);
+        
+        this.descriptorList.addListSelectionListener(e -> {
+            ResourceDescriptor descriptor;
+            int index = this.descriptorList.getSelectedIndex();
+            descriptor = this.modifications[index];
+            if (descriptor == null)
+                descriptor = this.resource.dependencies.get(index);
+            this.currentDescriptorText.setText(descriptor.toString());
+            this.currentDescriptorText.setEnabled(true);
+            this.updateDescriptorButton.setEnabled(true);
+        });
+       
+        this.setVisible(true);
     }
     
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        list = new javax.swing.JList<>();
-        pointer = new javax.swing.JTextField();
-        replace = new javax.swing.JButton();
-        update = new javax.swing.JButton();
+        descriptorContainer = new javax.swing.JScrollPane();
+        descriptorList = new javax.swing.JList<>();
+        currentDescriptorText = new javax.swing.JTextField();
+        saveChangesButton = new javax.swing.JButton();
+        updateDescriptorButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        list.setModel(model);
-        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(list);
+        descriptorList.setModel(model);
+        descriptorList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        descriptorContainer.setViewportView(descriptorList);
 
-        pointer.setEnabled(false);
+        currentDescriptorText.setEnabled(false);
 
-        replace.setText("Save");
-        replace.setEnabled(false);
-        replace.addActionListener(new java.awt.event.ActionListener() {
+        saveChangesButton.setText("Save");
+        saveChangesButton.setEnabled(false);
+        saveChangesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceActionPerformed(evt);
+                saveChangesButtonActionPerformed(evt);
             }
         });
 
-        update.setText("Update");
-        update.setEnabled(false);
-        update.addActionListener(new java.awt.event.ActionListener() {
+        updateDescriptorButton.setText("Update");
+        updateDescriptorButton.setEnabled(false);
+        updateDescriptorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateActionPerformed(evt);
+                updateDescriptorButtonActionPerformed(evt);
             }
         });
 
@@ -113,73 +109,72 @@ public class Dependinator extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
-                    .addComponent(replace, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(descriptorContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .addComponent(saveChangesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pointer)
+                        .addComponent(currentDescriptorText)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(update, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(updateDescriptorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(descriptorContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pointer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(update))
+                    .addComponent(currentDescriptorText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(updateDescriptorButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(replace)
+                .addComponent(saveChangesButton)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
-        int index = list.getSelectedIndex();
+    private void updateDescriptorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDescriptorButtonActionPerformed
+        int index = this.descriptorList.getSelectedIndex();
+        ResourceDescriptor newDescriptor = new ResourceDescriptor(
+                this.dependencies[index].type,
+                this.currentDescriptorText.getText()
+        );
         
-        ResourceDescriptor newRes = new ResourceDescriptor(resource.dependencies[index].type, pointer.getText());
+        if (newDescriptor.equals(this.dependencies[index])) return;
+        if (this.modifications[index] != null)
+            if (newDescriptor.equals(this.modifications[index])) 
+                return;
         
-        if (newRes.equals(resource.dependencies[index])) return;
-        if (modifications[index] != null)
-            if (newRes.equals(modifications[index])) return;
+        this.modifications[index] = newDescriptor;
         
-        modifications[index] = newRes;
+        System.out.println("Set " + this.dependencies[index] + " -> " + newDescriptor);
         
-        System.out.println("Set " + resource.dependencies[index].toString() + " -> " + newRes.toString());
-        
-        FileEntry entry = Globals.findEntry(newRes);
+        FileEntry entry = Globals.findEntry(newDescriptor);
         if (entry == null || entry.path == null)
-            model.setElementAt(newRes.toString(), index);
+            model.setElementAt(newDescriptor.toString(), index);
         else model.setElementAt(Paths.get(entry.path).getFileName().toString(), index);
         
-        
-        replace.setEnabled(true);
-        
-        
-    }//GEN-LAST:event_updateActionPerformed
+        this.saveChangesButton.setEnabled(true);
+    }//GEN-LAST:event_updateDescriptorButtonActionPerformed
 
-    private void replaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceActionPerformed
-
-        for (int i = 0; i < modifications.length; ++i) {
-            System.out.println(modifications[i].toString() + " : " + resource.dependencies[i].toString());
-            if (modifications[i].equals(resource.dependencies[i])) continue;
-            resource.replaceDependency(i, modifications[i]);
+    private void saveChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChangesButtonActionPerformed
+        for (int i = 0; i < this.modifications.length; ++i) {
+            ResourceDescriptor old = this.dependencies[i];
+            if (this.modifications[i].equals(old)) continue;
+            System.out.println(modifications[i] + " : " + old);
+            this.resource.replaceDependency(old, this.modifications[i]);
         }
         
         Globals.replaceEntry(entry, resource.compressToResource());
-        
-        dispose();
-    }//GEN-LAST:event_replaceActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_saveChangesButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList<String> list;
-    private javax.swing.JTextField pointer;
-    private javax.swing.JButton replace;
-    private javax.swing.JButton update;
+    private javax.swing.JTextField currentDescriptorText;
+    private javax.swing.JScrollPane descriptorContainer;
+    private javax.swing.JList<String> descriptorList;
+    private javax.swing.JButton saveChangesButton;
+    private javax.swing.JButton updateDescriptorButton;
     // End of variables declaration//GEN-END:variables
 }

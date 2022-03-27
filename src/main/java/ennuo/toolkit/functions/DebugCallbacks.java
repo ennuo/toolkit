@@ -28,7 +28,7 @@ public class DebugCallbacks {
                 if (data == null) continue;
                 try {
                     Resource resource = new Resource(data);
-                    if (resource.dependencies == null || (resource.dependencies != null && resource.dependencies.length == 0)) 
+                    if (resource.dependencies == null || (resource.dependencies != null && resource.dependencies.size() == 0)) 
                         continue;
                     builder.append(String.format("%s (g%d)\n", entry.path, entry.GUID));
                     for (ResourceDescriptor descriptor : resource.dependencies) {

@@ -14,7 +14,7 @@ public class DependencyCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-        resource.dependencies = new ResourceDescriptor[0];
+        resource.dependencies.clear();
 
         Globals.replaceEntry(entry, resource.compressToResource());
     }
@@ -27,11 +27,11 @@ public class DependencyCallbacks {
 
         Resource resource = new Resource(data);
         
-        ArrayList<ResourceDescriptor> dependencies = new ArrayList<>(resource.dependencies.length);
+        ArrayList<ResourceDescriptor> dependencies = new ArrayList<>(resource.dependencies.size());
         for (ResourceDescriptor descriptor : dependencies)
             if (Globals.findEntry(descriptor) != null)
                 dependencies.add(descriptor);
-        resource.dependencies = dependencies.toArray(new ResourceDescriptor[dependencies.size()]);
+        resource.dependencies = dependencies;
         
         Globals.replaceEntry(entry, resource.compressToResource());
     }

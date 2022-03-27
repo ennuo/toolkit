@@ -7,6 +7,7 @@ import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.services.*;
 import ennuo.toolkit.utilities.services.ResourceService;
 import ennuo.toolkit.windows.Toolkit;

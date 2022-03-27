@@ -452,7 +452,7 @@ public class Output {
                 this.sha1(value.hash);
                 if (!this.hasDependency(value))
                     this.dependencies.add(value);
-            } else if (value.GUID != -1) {
+            } else if (value.GUID != -1 && value.GUID != 0) {
                 this.i8(GUID);
                 this.u32(value.GUID);
                 if (!this.hasDependency(value))
