@@ -187,9 +187,6 @@ public class Dependinator extends javax.swing.JFrame {
         
         System.out.println("Set " + this.dependencies.get(index) + " -> " + newDescriptor);
         
-        if (this.removed.contains(newDescriptor))
-            this.removed.remove(newDescriptor);
-        
         FileEntry entry = Globals.findEntry(newDescriptor);
         if (entry == null || entry.path == null)
             model.setElementAt(newDescriptor.toString(), index);
