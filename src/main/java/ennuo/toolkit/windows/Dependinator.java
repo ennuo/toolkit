@@ -49,7 +49,7 @@ public class Dependinator extends javax.swing.JFrame {
             this.modifications.add(descriptor);
             FileEntry dependency = Globals.findEntry(descriptor);
             if (dependency == null || dependency.path == null) {
-                model.addElement(descriptor.toString());
+                model.addElement(descriptor.toString() + " (" + descriptor.type.name() + ")");
                 continue;
             }
             model.addElement(Paths.get(dependency.path).getFileName().toString());
@@ -189,7 +189,7 @@ public class Dependinator extends javax.swing.JFrame {
         
         FileEntry entry = Globals.findEntry(newDescriptor);
         if (entry == null || entry.path == null)
-            model.setElementAt(newDescriptor.toString(), index);
+            model.setElementAt(newDescriptor.toString() + " (" + newDescriptor.type.name() + ")", index);
         else model.setElementAt(Paths.get(entry.path).getFileName().toString(), index);
         
         this.saveChangesButton.setEnabled(true);
