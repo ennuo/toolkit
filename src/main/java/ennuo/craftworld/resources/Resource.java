@@ -140,7 +140,7 @@ public class Resource {
         
         // Music dependencies are actually the GUID dependencies of a script,
         // so they don't have the same structure for referencing.
-        if (type.equals(ResourceType.MUSIC_SETTINGS) || isFSB) {
+        if (type.equals(ResourceType.MUSIC_SETTINGS) || type.equals(ResourceType.FILE_OF_BYTES) || isFSB) {
             oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
             newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
         } else {
