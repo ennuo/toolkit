@@ -201,6 +201,7 @@ public class Dependinator extends javax.swing.JFrame {
             model.setElementAt(newDescriptor.toString() + " (" + newDescriptor.type.name() + ")", index);
         else model.setElementAt(Paths.get(entry.path).getFileName().toString(), index);
         
+        this.updateDescriptorButton.setEnabled(false);
         this.saveChangesButton.setEnabled(true);
     }//GEN-LAST:event_updateDescriptorButtonActionPerformed
 
