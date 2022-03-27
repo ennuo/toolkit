@@ -89,14 +89,15 @@ public class Dependinator extends javax.swing.JFrame {
                     text
             );
             
-            this.updateDescriptorButton.setEnabled(!this.modifications.contains(newDescriptor));
-            
             // If the resource type is music settings or fsb (filename), it can only take in GUIDs
             if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
                 || newDescriptor.type.equals(ResourceType.FILENAME))
                 || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) && !isGUID) {
                 this.updateDescriptorButton.setEnabled(false);
+                return;
             }
+            
+            this.updateDescriptorButton.setEnabled(!this.modifications.contains(newDescriptor));
         });
         
         this.descriptorList.setSelectedIndex(0);
