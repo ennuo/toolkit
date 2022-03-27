@@ -895,7 +895,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="workspaceDivider" pref="538" max="32767" attributes="0"/>
+              <Component id="workspaceDivider" pref="591" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="progressBar" min="-2" pref="7" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
@@ -1078,7 +1078,7 @@
             </Container>
             <Container class="javax.swing.JSplitPane" name="entryData">
               <Properties>
-                <Property name="dividerLocation" type="int" value="148"/>
+                <Property name="dividerLocation" type="int" value="204"/>
                 <Property name="orientation" type="int" value="0"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[55, 2147483647]"/>
@@ -1323,7 +1323,7 @@
                                       <Component id="creatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="creatorField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="41" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>

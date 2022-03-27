@@ -920,7 +920,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         details.setLeftComponent(previewContainer);
 
-        entryData.setDividerLocation(148);
+        entryData.setDividerLocation(204);
         entryData.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         entryData.setMaximumSize(new java.awt.Dimension(55, 2147483647));
         entryData.setMinimumSize(new java.awt.Dimension(55, 102));
@@ -1101,7 +1101,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
@@ -1532,7 +1532,7 @@ public class Toolkit extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+                .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12))
