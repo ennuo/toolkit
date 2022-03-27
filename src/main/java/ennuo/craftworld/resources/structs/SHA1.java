@@ -13,8 +13,22 @@ public class SHA1 {
     }
     
     public SHA1(String hash) {
-        if (hash.length() != 40) 
+        if (hash == null || hash.isEmpty())
+            throw new NullPointerException("No hash passed to SHA1 constructor.");
+        
+        if (hash.length() == 41 && hash.startsWith("h"))
+            hash = hash.substring(1);
+        
+        if (hash.length() > 40)
+            throw new IllegalArgumentException("SHA1 hash must be 40 characters long!");
+        
+        // Maybe I should replace this with an error,
+        // but I have to actually validate other parts of the
+        // UI first before I can do this without causing errors.
+        // This is bad design!
+        if (hash.length() != 40)
             hash = StringUtils.leftPad(hash, 40);
+        
         this.hashString = hash.toLowerCase();
         this.hashBytes = Bytes.toBytes(this.hashString);
     }
