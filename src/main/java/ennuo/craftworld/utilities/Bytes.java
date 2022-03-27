@@ -124,6 +124,14 @@ public class Bytes {
         data[offset + 1] = data[offset + 2];
         data[offset + 2] = temp;
     }
+    
+    public static byte[] createGUID(long GUID, byte compressionFlags) {
+        Output output = new Output(0x8);
+        output.compressionFlags = compressionFlags;
+        output.u32(GUID);
+        output.shrink();
+        return output.buffer;
+    }
 
     public static byte[] createResourceReference(ResourceDescriptor res, Revision revision, byte compressionFlags) {
         Output output = new Output(0x1C + 0x4, revision);

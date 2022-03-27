@@ -2,6 +2,7 @@ package ennuo.toolkit.windows;
 
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
@@ -77,7 +78,8 @@ public class Dependinator extends javax.swing.JFrame {
             String text = this.currentDescriptorText.getText();
             text = text.replaceAll("\\s", "");
             
-            if (!(StringUtils.isGUID(text) || StringUtils.isSHA1(text))) {
+            boolean isGUID = StringUtils.isGUID(text);
+            if (!(isGUID || StringUtils.isSHA1(text))) {
                 this.updateDescriptorButton.setEnabled(false);
                 return;
             }
@@ -86,6 +88,13 @@ public class Dependinator extends javax.swing.JFrame {
                     this.dependencies.get(this.descriptorList.getSelectedIndex()).type,
                     text
             );
+            
+            // If the resource type is music settings or fsb (filename), it can only take in GUIDs
+            if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
+                || newDescriptor.type.equals(ResourceType.FILENAME)) && !isGUID) {
+                this.updateDescriptorButton.setEnabled(false);
+                return;
+            }
             
             this.updateDescriptorButton.setEnabled(!this.modifications.contains(newDescriptor));
         });

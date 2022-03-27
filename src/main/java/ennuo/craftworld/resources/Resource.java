@@ -134,14 +134,32 @@ public class Resource {
         int index = this.dependencies.indexOf(oldDescriptor);
         if (index == -1) return;
         
-        byte[] oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
-        byte[] newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
+        ResourceType type = oldDescriptor.type;
+        boolean isFSB = type.equals(ResourceType.FILENAME);
+        byte[] oldDescBuffer, newDescBuffer;
+        
+        // Music dependencies are actually the GUID dependencies of a script,
+        // so they don't have the same structure for referencing.
+        if (type.equals(ResourceType.MUSIC_SETTINGS) || isFSB) {
+            oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
+            newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
+        } else {
+            oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
+            newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
+        }
+        
         
         if (this.type == ResourceType.PLAN) {
             Plan plan = new Plan(this);
             Data thingData = new Data(plan.thingData, this.revision);
             Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
             plan.thingData = thingData.data;
+            
+            if (isFSB && plan.details != null) {
+                if (oldDescriptor.GUID == plan.details.highlightSound)
+                    plan.details.highlightSound = newDescriptor.GUID;
+            }
+            
             this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
         }
         Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
