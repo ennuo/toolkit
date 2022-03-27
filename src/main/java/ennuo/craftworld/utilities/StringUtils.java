@@ -1,5 +1,6 @@
 package ennuo.craftworld.utilities;
 
+import ennuo.craftworld.resources.structs.SHA1;
 import java.util.regex.Pattern;
 
 public final class StringUtils {
@@ -32,12 +33,27 @@ public final class StringUtils {
             number = number.replaceAll("\\s", "");
             if (number.toLowerCase().startsWith("0x"))
                 integer = Long.parseLong(number.substring(2), 16);
-            else if (number.startsWith("g"))
-                integer = Long.parseLong(number.substring(1));
+            else if (number.startsWith("g")) {
+                number = number.substring(1);
+                if (number.toLowerCase().startsWith("0x"))
+                    integer = Long.parseLong(number.substring(2), 16);
+                else
+                    integer = Long.parseLong(number);
+            }
             else
                 integer = Long.parseLong(number);
             return integer;
         } catch (NumberFormatException e) { return -1; }
+    }
+    
+    /**
+     * Gets a SHA1 from a string
+     * @param hash SHA1 string
+     * @return SHA1 hash from string.
+     */
+    public static final SHA1 getSHA1(String hash) {
+        if (hash == null || hash.isEmpty() || !StringUtils.isSHA1(hash)) return null;
+        return new SHA1(hash);
     }
     
     /**
