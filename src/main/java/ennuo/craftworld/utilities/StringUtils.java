@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 public final class StringUtils {
     private static final Pattern SHA1_REGEX = Pattern.compile("(h?)[a-fA-F0-9]{40}$");
     private static final Pattern GUID_REGEX = Pattern.compile("(g?)\\d+");
+    private static final Pattern HEX_GUID_REGEX = Pattern.compile("(g?)(0x|0X)[a-fA-F0-9]+$");
     
     /**
      * Left pads the input with zeros.
@@ -56,6 +57,6 @@ public final class StringUtils {
      */
     public static final boolean isGUID(String guid) {
         if (guid == null || guid.isEmpty()) return false;
-        return GUID_REGEX.matcher(guid).matches();
+        return GUID_REGEX.matcher(guid).matches() || HEX_GUID_REGEX.matcher(guid).matches();
     }
 }
