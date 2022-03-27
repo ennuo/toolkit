@@ -62,15 +62,6 @@ public class DatabaseCallbacks {
                 } else toolkit.addTab(db);
                 
                 toolkit.updateWorkspace();
-                
-                if (Globals.archives.size() != 0 && Globals.LAMS == null) {
-                    Profile profile = Config.instance.getCurrentProfile();
-                    if (profile != null) {
-                        byte[] data = Globals.extractFile(profile.language);
-                        if (data != null)
-                            Globals.LAMS = new TranslationTable(new Data(data));
-                    }
-                }
             }
 
             toolkit.savedataMenu.setEnabled(true);

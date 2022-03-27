@@ -58,7 +58,7 @@ public class FileChooser {
         if (name != null)
             name = getHomePath(name);
         File[] files = null;
-        if (Config.instance.useLegacyFileDialogue)
+        if (Config.instance.useLegacyFileDialogue || Config.instance.getCurrentProfile().useLegacyFileDialogue)
             return openFileLegacy(name, extensions, saveFile, multiple);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer patterns = null;

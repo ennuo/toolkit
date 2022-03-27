@@ -505,6 +505,8 @@ public class Toolkit extends javax.swing.JFrame {
         loadBigProfile = new javax.swing.JMenuItem();
         loadSavedata = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
+        manageProfile = new javax.swing.JMenuItem();
         saveDivider = new javax.swing.JPopupMenu.Separator();
         saveAs = new javax.swing.JMenuItem();
         saveMenu = new javax.swing.JMenuItem();
@@ -1220,6 +1222,15 @@ public class Toolkit extends javax.swing.JFrame {
         loadGroupMenu.add(loadMod);
 
         fileMenu.add(loadGroupMenu);
+        fileMenu.add(jSeparator9);
+
+        manageProfile.setText("Manage Profiles");
+        manageProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageProfileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(manageProfile);
         fileMenu.add(saveDivider);
 
         saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -2146,6 +2157,12 @@ public class Toolkit extends javax.swing.JFrame {
         ProfileCallbacks.loadProfile(save);
     }//GEN-LAST:event_debugLoadProfileBackupActionPerformed
 
+    private void manageProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageProfileActionPerformed
+        ProfileManager manager = new ProfileManager(this);
+        manager.setVisible(true);
+        Config.save();
+    }//GEN-LAST:event_manageProfileActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2424,6 +2441,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
@@ -2433,6 +2451,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem loadSavedata;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
+    private javax.swing.JMenuItem manageProfile;
     private javax.swing.JMenu menuFileMenu;
     private javax.swing.JMenuItem mergeFARCs;
     private javax.swing.ButtonGroup metadataButtonGroup;

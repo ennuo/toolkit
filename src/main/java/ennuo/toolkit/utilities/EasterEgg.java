@@ -1,5 +1,6 @@
 package ennuo.toolkit.utilities;
 
+import ennuo.toolkit.configurations.Config;
 import ennuo.toolkit.configurations.Flags;
 import ennuo.toolkit.windows.Toolkit;
 
@@ -8,7 +9,9 @@ public class EasterEgg {
         toolkit.debugMenu.setVisible(false);
 
         String username = System.getProperty("user.name").toLowerCase();
-
+        
+        toolkit.debugMenu.setVisible(Config.instance.getCurrentProfile().debug);
+        
         if (username.equals("veryc")) {
             toolkit.debugMenu.setVisible(true);
             toolkit.setTitle("VeryCoolMe's Modding Emporium");
@@ -28,7 +31,7 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("aidan")) {
+        if (username.equals("rueezus")) {
             toolkit.setTitle("Overture");
             toolkit.debugMenu.setVisible(true);
         }
