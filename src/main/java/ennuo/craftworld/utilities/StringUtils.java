@@ -1,6 +1,11 @@
 package ennuo.craftworld.utilities;
 
+import java.util.regex.Pattern;
+
 public final class StringUtils {
+    private static final Pattern SHA1_REGEX = Pattern.compile("(h?)[a-fA-F0-9]{40}$");
+    private static final Pattern GUID_REGEX = Pattern.compile("(g?)\\d+");
+    
     /**
      * Left pads the input with zeros.
      * @param text String to pad
@@ -32,5 +37,25 @@ public final class StringUtils {
                 integer = Long.parseLong(number);
             return integer;
         } catch (NumberFormatException e) { return -1; }
+    }
+    
+    /**
+     * Tests if a given string is a SHA1 hash.
+     * @param hash String to test
+     * @return Whether or not the string is a SHA1.
+     */
+    public static final boolean isSHA1(String hash) {
+        if (hash == null || hash.isEmpty()) return false;
+        return SHA1_REGEX.matcher(hash).matches();
+    }
+    
+    /**
+     * Tests if a given string is a valid GUID.
+     * @param guid String to test
+     * @return Whether or not the string is a valid GUID.
+     */
+    public static final boolean isGUID(String guid) {
+        if (guid == null || guid.isEmpty()) return false;
+        return GUID_REGEX.matcher(guid).matches();
     }
 }
