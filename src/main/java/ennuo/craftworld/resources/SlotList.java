@@ -8,12 +8,15 @@ import ennuo.craftworld.serializer.Serializer;
 
 public class SlotList implements Serializable {
     public Slot[] slots;
+    public boolean fromProductionBuild = true;
 
     @SuppressWarnings("unchecked")
     @Override public SlotList serialize(Serializer serializer, Serializable structure) {
         SlotList slots = (structure == null) ? new SlotList() : (SlotList) structure;
 
         slots.slots = serializer.array(slots.slots, Slot.class);
+        if (serializer.revision.head > 0x3b6)
+            slots.fromProductionBuild = serializer.bool(slots.fromProductionBuild);
 
         return slots;
     }
