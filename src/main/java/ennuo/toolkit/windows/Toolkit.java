@@ -534,6 +534,8 @@ public class Toolkit extends javax.swing.JFrame {
         editMenu = new javax.swing.JMenu();
         editMenuDelete = new javax.swing.JMenuItem();
         FARMenu = new javax.swing.JMenu();
+        manageArchives = new javax.swing.JMenuItem();
+        jSeparator10 = new javax.swing.JPopupMenu.Separator();
         addFile = new javax.swing.JMenuItem();
         addFolder = new javax.swing.JMenuItem();
         MAPMenu = new javax.swing.JMenu();
@@ -1304,6 +1306,15 @@ public class Toolkit extends javax.swing.JFrame {
         toolkitMenu.add(editMenu);
 
         FARMenu.setText("Archive");
+
+        manageArchives.setText("Manage Archives");
+        manageArchives.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageArchivesActionPerformed(evt);
+            }
+        });
+        FARMenu.add(manageArchives);
+        FARMenu.add(jSeparator10);
 
         addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addFile.setText("Add...");
@@ -2187,6 +2198,11 @@ public class Toolkit extends javax.swing.JFrame {
         Config.save();
     }//GEN-LAST:event_manageProfileActionPerformed
 
+    private void manageArchivesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageArchivesActionPerformed
+        ArchiveManager manager = new ArchiveManager(this);
+        manager.setVisible(true);
+    }//GEN-LAST:event_manageArchivesActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2458,6 +2474,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -2475,6 +2492,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem loadSavedata;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
+    private javax.swing.JMenuItem manageArchives;
     private javax.swing.JMenuItem manageProfile;
     private javax.swing.JMenu menuFileMenu;
     private javax.swing.JMenuItem mergeFARCs;
