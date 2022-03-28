@@ -2,6 +2,7 @@ package ennuo.toolkit.windows;
 
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.SlotList;
+import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
 import ennuo.craftworld.resources.enums.ResourceType;
@@ -21,6 +22,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -34,11 +36,35 @@ public class SlotManager extends javax.swing.JFrame {
         EMPTY_SLOT.title = "None";
     }
     
+    
+    /**
+     * Used for getting random slot location.
+     */
+    private static final Random RNG = new Random();
+    
     /**
      * Flag to stop action events from triggering when first
      * loading each slot's information.
      */
     private boolean canUpdate = false;
+    
+    /**
+     * The version of the game the files come from.
+     * LBP1/LBP3 mainly, for the moon crater locations.
+     */
+    private int game = 1;
+    
+    /**
+     * Whether or not the current instance of the slot editor
+     * is editing a profile.
+     */
+    private boolean isSave = false;
+    
+    /**
+     * Whether or not the current instance of the slot editor
+     * is editing a pack file.
+     */
+    private boolean isPack = false;
     
     private class SlotEntry {
         private SlotID id;
@@ -69,8 +95,10 @@ public class SlotManager extends javax.swing.JFrame {
     private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>(); 
     
     public SlotManager(BigProfile profile, Slot selectedSlot) {
+        this.isSave = true;
         this.entry = profile.profile;
         this.slots = profile.slots;
+        
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {
@@ -93,7 +121,9 @@ public class SlotManager extends javax.swing.JFrame {
     public SlotManager(FileEntry slotList, ArrayList<Slot> slots) {
         this.slots = slots;
         this.entry = slotList;
+        
         this.setup();
+        
         this.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent e) { onClose(); }
         });
@@ -115,6 +145,8 @@ public class SlotManager extends javax.swing.JFrame {
         this.initComponents();
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
+        
+        this.game = (this.entry.revision.head > 0x010503EF) ? 3 : 1;
         
         this.slotList.setModel(this.model);
         this.groupCombo.setModel(this.groups);
@@ -153,9 +185,24 @@ public class SlotManager extends javax.swing.JFrame {
             }
             
             Slot slot = new Slot();
+            
+            if (this.isPack)
+                slot.id.type = SlotType.DLC_PACK;
+            else if (this.isSave)
+                slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
+            else
+                slot.id.type = SlotType.DEVELOPER;
+            
+            slot.id.ID = this.getNextAvailableSlot(slot.id.type);
+            
+            if (this.isSave)
+                slot.location = Crater.valueOf("SLOT_" + (slot.id.ID % 82) + "_LBP" + this.game).value;
+            else
+                slot.location = Crater.valueOf("SLOT_" + SlotManager.RNG.nextInt(82) + "_LBP" + this.game).value;
+
             this.slots.add(slot);
             this.model.addElement(slot);
-            this.slotList.setSelectedIndex(this.model.size() - 1);
+            this.slotList.setSelectedValue(slot, true);
             
             this.setupLinks();
             this.setupGroups();
@@ -182,6 +229,19 @@ public class SlotManager extends javax.swing.JFrame {
         });
         
         this.slotList.setSelectedIndex(0);
+    }
+    
+    private long getNextAvailableSlot(SlotType type) {
+        ArrayList<Long> IDs = new ArrayList<>(this.slots.size());
+        for (Slot slot : this.slots)
+            IDs.add(slot.id.ID);
+        long ID = 0;
+        if (!type.equals(SlotType.USER_CREATED_STORED_LOCAL)) {
+            IDs.sort((Long a, Long b) -> (int)(b - a));
+            ID = IDs.get(IDs.size() - 1);
+        }
+        while (IDs.contains(ID)) ID++;
+        return ID;
     }
     
     private SlotEntry getGroup(SlotID id) {
@@ -468,28 +528,6 @@ public class SlotManager extends javax.swing.JFrame {
         this.canUpdate = true;
         
     }
-    
-    private void debugProcessDeveloperSlots() {
-        this.entry = Globals.findEntry(21480);
-        Resource ores = new Resource(Globals.extractFile(21480));
-        this.entry.revision = ores.revision;
-        Data resource = ores.handle;
-        int count = resource.i32();
-        slots = new ArrayList<Slot>(count);
-        Serializer serializer = new Serializer(resource);
-        for (int i = 0; i < count; ++i) {
-            Slot slot = serializer.struct(null, Slot.class);
-            slots.add(slot);
-            if (slot.root != null) {
-                FileEntry levelEntry = Globals.findEntry(slot.root);
-                if (levelEntry != null) {
-                    levelEntry.revision = resource.revision;
-                    levelEntry.setResource("slot", slot);
-                }
-            }
-        }
-    }
-    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
