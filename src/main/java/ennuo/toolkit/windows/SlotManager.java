@@ -72,16 +72,19 @@ public class SlotManager extends javax.swing.JFrame {
         this.entry = slotList;
         this.setup();
         this.addWindowListener(new WindowAdapter() {
-            @Override public void windowClosing(WindowEvent e) {
-                int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
-                if (result == JOptionPane.YES_OPTION) {
-                    SlotList list = new SlotList();
-                    list.slots = slots.stream().toArray(Slot[]::new);
-                    Globals.replaceEntry(slotList, list.build(slotList.revision, slotList.compressionFlags));
-                }
-                entry.resetResources();
-            }
+            @Override public void windowClosing(WindowEvent e) { onClose(); }
         });
+    }
+    
+    private void onClose() {
+        int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            SlotList list = new SlotList();
+            list.slots = slots.stream().toArray(Slot[]::new);
+            Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
+        }
+        this.entry.resetResources();
+        this.dispose();
     }
     
     private void setup() {
@@ -154,6 +157,7 @@ public class SlotManager extends javax.swing.JFrame {
             this.setupGroups();
         });
         
+        this.closeButton.addActionListener(l -> this.onClose());
         
         this.slotList.setSelectedIndex(0);
     }
