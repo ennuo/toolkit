@@ -6,43 +6,51 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 
 public class ArchiveSelector extends javax.swing.JDialog {
-    
     private DefaultListModel model = new DefaultListModel();
-    
     private FileArchive[] selectedArchives;
     
     public ArchiveSelector(Toolkit toolkit, boolean modal) {
         super(toolkit, modal);
-        initComponents();
+        this.initComponents();
         
-        setTitle("Archive Selector");
-        setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setTitle("Archive Selector");
+        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setResizable(false);
         
         for (FileArchive archive : Globals.archives)
-            model.addElement(archive.file.getName());
+            this.model.addElement(archive.file.getAbsolutePath());
         
-        setVisible(true);
+        this.cancelButton.addActionListener(e -> this.dispose());
+        this.archiveList.setSelectedIndex(0);
+        
+        this.setVisible(true);
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        archiveContainer = new javax.swing.JScrollPane();
         archiveList = new javax.swing.JList<>();
-        selectArchive = new javax.swing.JButton();
+        selectButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
+        archiveLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         archiveList.setModel(model);
-        jScrollPane1.setViewportView(archiveList);
+        archiveContainer.setViewportView(archiveList);
 
-        selectArchive.setText("Select");
-        selectArchive.addActionListener(new java.awt.event.ActionListener() {
+        selectButton.setText("Select");
+        selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectArchiveActionPerformed(evt);
+                selectButtonActionPerformed(evt);
             }
         });
+
+        cancelButton.setText("Cancel");
+
+        archiveLabel.setText("Archives:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -51,38 +59,48 @@ public class ArchiveSelector extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .addComponent(selectArchive, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(archiveContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(archiveLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(selectButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(cancelButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(archiveLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectArchive)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(archiveContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(selectButton)
+                    .addComponent(cancelButton))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void selectArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectArchiveActionPerformed
-        int[] selected = archiveList.getSelectedIndices();
+    private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
+        int[] selected = this.archiveList.getSelectedIndices();
         if (selected.length == 0) return;
-        selectedArchives = new FileArchive[selected.length];
+        this.selectedArchives = new FileArchive[selected.length];
         for (int i = 0; i < selected.length; ++i)
-            selectedArchives[i] = Globals.archives.get(selected[i]);
-        dispose();
-    }//GEN-LAST:event_selectArchiveActionPerformed
+            this.selectedArchives[i] = Globals.archives.get(selected[i]);
+        this.dispose();
+    }//GEN-LAST:event_selectButtonActionPerformed
 
-    public FileArchive[] getSelected() { return selectedArchives; }
-    
-    
+    public FileArchive[] getSelected() { return this.selectedArchives; }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane archiveContainer;
+    private javax.swing.JLabel archiveLabel;
     private javax.swing.JList<String> archiveList;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton selectArchive;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JButton selectButton;
     // End of variables declaration//GEN-END:variables
 }
