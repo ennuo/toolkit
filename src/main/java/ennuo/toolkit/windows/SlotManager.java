@@ -10,6 +10,7 @@ import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Serializer;
+import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
@@ -65,7 +66,29 @@ public class SlotManager extends javax.swing.JFrame {
     private Slot selectedSlot;
     private final DefaultListModel model = new DefaultListModel();
     private final DefaultComboBoxModel<SlotEntry> groups = new DefaultComboBoxModel<>();
-    private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>();
+    private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>(); 
+    
+    public SlotManager(BigProfile profile, Slot selectedSlot) {
+        this.entry = profile.profile;
+        this.slots = profile.slots;
+        this.setup();
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent e) { 
+                profile.shouldSave = true;
+                Toolkit.instance.updateWorkspace();
+            }
+        });
+        
+        this.closeButton.addActionListener(l -> {
+            profile.shouldSave = true;
+            Toolkit.instance.updateWorkspace();
+            this.dispose();
+        });
+        
+        if (selectedSlot != null)
+            this.slotList.setSelectedValue(selectedSlot, true);
+    }
     
     public SlotManager(FileEntry slotList, ArrayList<Slot> slots) {
         this.slots = slots;
@@ -74,6 +97,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent e) { onClose(); }
         });
+        this.closeButton.addActionListener(l -> this.onClose());
     }
     
     private void onClose() {
@@ -156,8 +180,6 @@ public class SlotManager extends javax.swing.JFrame {
             this.setupLinks();
             this.setupGroups();
         });
-        
-        this.closeButton.addActionListener(l -> this.onClose());
         
         this.slotList.setSelectedIndex(0);
     }

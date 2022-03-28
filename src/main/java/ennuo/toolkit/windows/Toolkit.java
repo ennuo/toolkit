@@ -1764,14 +1764,18 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
-            getCurrentDB().shouldSave = true;
-            new SlotEditor(this, Globals.lastSelected.entry).setVisible(true);
-        } else {
-            boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
-            if (isSlotsFile) {
-                new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.getResource("slots")).setVisible(true);
-            } else new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
+            new SlotManager((BigProfile)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
+            return;
         }
+        
+        boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
+        if (isSlotsFile) {
+            new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.getResource("slots")).setVisible(true);
+            return;
+        }
+        
+        // The slot manager doesn't have support for packs yet.
+        new SlotEditor(this, Globals.lastSelected.entry, SlotEditor.EditorType.PACKS).setVisible(true);
     }//GEN-LAST:event_editSlotContextActionPerformed
 
     private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed
@@ -1837,7 +1841,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        new SlotEditor(this, ((BigProfile) getCurrentDB()).profile, SlotEditor.EditorType.BIG_PROFILE_SLOTS, ((BigProfile) getCurrentDB()).revision).setVisible(true);
+        new SlotManager((BigProfile) this.getCurrentDB(), null).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
