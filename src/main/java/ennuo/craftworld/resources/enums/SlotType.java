@@ -33,4 +33,12 @@ public enum SlotType {
         return SlotType.DEVELOPER;
     }
     
+    public boolean isGroup() {
+       return this.equals(SlotType.DEVELOPER_GROUP) || this.equals(SlotType.LOCAL_GROUP) || this.equals(SlotType.DLC_PACK);
+    }
+    
+    public boolean isLink() {
+        return this.equals(SlotType.DEVELOPER) || this.equals(SlotType.DLC_LEVEL);
+    }
+    
 }

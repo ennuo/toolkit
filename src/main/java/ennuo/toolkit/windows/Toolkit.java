@@ -1731,7 +1731,9 @@ public class Toolkit extends javax.swing.JFrame {
             new SlotEditor(this, Globals.lastSelected.entry).setVisible(true);
         } else {
             boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
-            new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
+            if (isSlotsFile) {
+                new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.getResource("slots")).setVisible(true);
+            } else new SlotEditor(this, Globals.lastSelected.entry, (isSlotsFile) ? SlotEditor.EditorType.SLOTS : SlotEditor.EditorType.PACKS).setVisible(true);
         }
     }//GEN-LAST:event_editSlotContextActionPerformed
 

@@ -254,8 +254,8 @@ public class Images {
         } catch (IOException ex) {
             Logger.getLogger(Images.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        return new ImageIcon(res);
+        
+        return Images.getImageScaled(res, 128, 128);
     }
 
     public static ImageIcon getSlotIcon(BufferedImage master, int revision) {
@@ -301,7 +301,8 @@ public class Images {
             Logger.getLogger(Images.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return new ImageIcon(getBufferedImageScaled(res, 220, 220));
+        return Images.getImageScaled(res, 128, 128);
+        //return new ImageIcon(getBufferedImageScaled(res, 220, 220));
     }
 
     public static void applyQualityRenderingHints(Graphics2D g2d) {

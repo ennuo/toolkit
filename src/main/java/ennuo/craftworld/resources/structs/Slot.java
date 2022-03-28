@@ -21,9 +21,9 @@ public class Slot implements Serializable {
     
     public SlotID id = new SlotID();
     
-    public ResourceDescriptor root;
+    public ResourceDescriptor root = new ResourceDescriptor(16704, ResourceType.LEVEL);
     public ResourceDescriptor adventure;
-    public ResourceDescriptor icon;
+    public ResourceDescriptor icon = new ResourceDescriptor(11651, ResourceType.TEXTURE);
     
     public ImageIcon renderedIcon;
     
@@ -257,5 +257,19 @@ public class Slot implements Serializable {
         if (id.type.equals(SlotType.DEVELOPER_GROUP) || id.type.equals(SlotType.DLC_PACK))
             renderedIcon = Images.getGroupIcon(image);
         else renderedIcon = Images.getSlotIcon(image, revision);
+        
+    }
+    
+    
+    @Override public String toString() {
+        if (this.translationTag != null && !this.translationTag.isEmpty()) {
+            if (Globals.LAMS == null) return this.translationTag;
+            String translated = Globals.LAMS.translate(this.translationTag + "_NAME");
+            if (translated != null) return translated;
+            return this.translationTag;
+        }
+        if (this.title == null || this.title.isEmpty())
+            return "Unnamed Level";
+        return this.title;
     }
 }

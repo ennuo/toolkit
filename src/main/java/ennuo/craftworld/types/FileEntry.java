@@ -11,6 +11,8 @@ import java.util.HashMap;
 
 public class FileEntry {
     public Revision revision;
+    public byte compressionFlags = 0;
+    
     public String path = "Unresolved Path";
     public long timestamp = 0;
     public int size = 0;

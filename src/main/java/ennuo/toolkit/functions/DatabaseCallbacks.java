@@ -1,17 +1,14 @@
 package ennuo.toolkit.functions;
 
 import ennuo.craftworld.resources.Plan;
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.craftworld.resources.structs.ProfileItem;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
-import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
@@ -19,8 +16,6 @@ import ennuo.craftworld.types.BigProfile;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
-import ennuo.toolkit.configurations.Config;
-import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.FileChooser;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
