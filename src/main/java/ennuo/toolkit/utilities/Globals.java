@@ -202,7 +202,7 @@ public class Globals {
     }
 
     public static void addFile(byte[] data, FileArchive[] archives) {
-        for (FileArchive archive: Globals.archives)
+        for (FileArchive archive: archives)
             archive.add(data);
         Toolkit.instance.updateWorkspace();
         System.out.println("Added file to queue, make sure to save your workspace!");
