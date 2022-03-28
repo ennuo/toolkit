@@ -171,8 +171,10 @@ public class Globals {
     public static void replaceEntry(FileEntry entry, byte[] data) {
         if (Globals.currentWorkspace != WorkspaceType.PROFILE) {
             entry.resetResources();
-            if (Globals.currentWorkspace != WorkspaceType.MOD)
-                addFile(data);
+            if (Globals.currentWorkspace != WorkspaceType.MOD) {
+                if (!Globals.addFile(data))
+                    return; 
+            }
         }
 
         Toolkit.instance.getCurrentDB().edit(entry, data);
@@ -182,20 +184,21 @@ public class Globals {
         TreePath selectionPath = tree.getSelectionPath();
         ((FileModel) tree.getModel()).reload();
         tree.setSelectionPath(selectionPath);
+        
     }
 
-    public static void addFile(byte[] data) {
+    public static boolean addFile(byte[] data) {
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
             ((BigProfile) Toolkit.instance.getCurrentDB()).add(data);
             Toolkit.instance.updateWorkspace();
-            return;
+            return true;
         }
 
         FileArchive[] archives = Toolkit.instance.getSelectedArchives();
-        if (archives == null) return;
+        if (archives == null) return false;
 
-        addFile(data, archives);
-
+        Globals.addFile(data, archives);
+        return true;
     }
 
     public static void addFile(byte[] data, FileArchive[] archives) {
