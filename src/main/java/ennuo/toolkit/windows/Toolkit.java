@@ -329,27 +329,34 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.setVisible(false);
         replaceImage.setVisible(false);
         editMenuContext.setVisible(false);
+        
+        boolean isDependencyTree = tree == this.dependencyTree;
+        
+        if (!useContext && isDependencyTree) return;
 
-        if (Globals.currentWorkspace == WorkspaceType.PROFILE && useContext) deleteContext.setVisible(true);
+        if (!isDependencyTree && (Globals.currentWorkspace == WorkspaceType.PROFILE && useContext)) 
+            deleteContext.setVisible(true);
 
         if (!(Globals.currentWorkspace == WorkspaceType.PROFILE) && Globals.databases.size() != 0) {
-            if ((useContext && Globals.lastSelected.entry == null)) {
+            if ((useContext && Globals.lastSelected.entry == null) && !isDependencyTree) {
                 newItemContext.setVisible(true);
                 newFolderContext.setVisible(true);
                 renameFolder.setVisible(true);
             } else if (!useContext) newFolderContext.setVisible(true);
             if (useContext) {
-                zeroContext.setVisible(true);
-                deleteContext.setVisible(true);
+                if (!isDependencyTree) {
+                    zeroContext.setVisible(true);
+                    deleteContext.setVisible(true);
+                }
                 if (Globals.lastSelected.entry != null) {
                     duplicateContext.setVisible(true);
-                    if (Globals.currentWorkspace == WorkspaceType.MAP)
+                    if (Globals.currentWorkspace == WorkspaceType.MAP && !isDependencyTree)
                         editMenuContext.setVisible(true);
                 }
             }
         }
 
-        if (Globals.canExtract() && Globals.lastSelected != null && Globals.lastSelected.entry != null) {
+        if (Globals.canExtract() && Globals.lastSelected != null && Globals.lastSelected.entry != null && !isDependencyTree) {
             replaceContext.setVisible(true);
             if (Globals.lastSelected.header.endsWith(".tex"))
                 replaceImage.setVisible(true);
@@ -360,7 +367,7 @@ public class Toolkit extends javax.swing.JFrame {
             extractContextMenu.setVisible(true);
 
             if (Globals.lastSelected.entry != null) {
-                if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed) {
+                if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed && !isDependencyTree) {
                     replaceDecompressed.setVisible(true);
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.size() != 0) {
                         exportGroup.setVisible(true);
@@ -393,22 +400,23 @@ public class Toolkit extends javax.swing.JFrame {
                 if (Globals.lastSelected.header.endsWith(".tex")) {
                     exportGroup.setVisible(true);
                     exportTextureGroupContext.setVisible(true);
-                    replaceImage.setVisible(true);
+                    if (!isDependencyTree)
+                        replaceImage.setVisible(true);
                 }
                 
-                if (Globals.lastSelected.header.endsWith(".slt")) {
+                if (Globals.lastSelected.header.endsWith(".slt") && !isDependencyTree) {
                     ArrayList<Slot> slots = Globals.lastSelected.entry.getResource("slots");
                     if (slots != null)
                         editSlotContext.setVisible(true);
                 }
                 
-                if (Globals.lastSelected.header.endsWith(".pck")) {
+                if (Globals.lastSelected.header.endsWith(".pck") && !isDependencyTree) {
                     Pack pack = Globals.lastSelected.entry.getResource("pack");
                     if (pack != null)
                         editSlotContext.setVisible(true);
                 }
                 
-                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE)
+                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE && !isDependencyTree)
                     editSlotContext.setVisible(true);
 
                 if (Globals.lastSelected.header.endsWith(".trans")) {
