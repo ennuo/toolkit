@@ -356,7 +356,7 @@ public class Toolkit extends javax.swing.JFrame {
             }
         }
 
-        if (Globals.canExtract() && Globals.lastSelected != null && Globals.lastSelected.entry != null && !isDependencyTree) {
+        if (Globals.canExtract() && Globals.lastSelected != null && Globals.lastSelected.entry != null) {
             replaceContext.setVisible(true);
             if (Globals.lastSelected.header.endsWith(".tex"))
                 replaceImage.setVisible(true);
@@ -367,7 +367,7 @@ public class Toolkit extends javax.swing.JFrame {
             extractContextMenu.setVisible(true);
 
             if (Globals.lastSelected.entry != null) {
-                if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed && !isDependencyTree) {
+                if ((Globals.currentWorkspace == WorkspaceType.PROFILE || Globals.databases.size() != 0) && Globals.lastSelected.entry.canReplaceDecompressed) {
                     replaceDecompressed.setVisible(true);
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.size() != 0) {
                         exportGroup.setVisible(true);
