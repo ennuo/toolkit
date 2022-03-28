@@ -43,23 +43,22 @@ import ennuo.toolkit.configurations.Profile;
 import ennuo.toolkit.utilities.*;
 import ennuo.toolkit.functions.*;
 import ennuo.toolkit.utilities.Globals.WorkspaceType;
+import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.regex.Pattern;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
-
+    
     public ExecutorService databaseService = Executors.newSingleThreadExecutor();
     public ExecutorService resourceService = Executors.newSingleThreadExecutor();
 
-    public static ArrayList <JTree> trees = new ArrayList <JTree>();
+    public static ArrayList <JTree> trees;
 
     public boolean fileExists = false;
     public boolean useContext = false;
@@ -89,15 +88,19 @@ public class Toolkit extends javax.swing.JFrame {
     };
 
     public Toolkit() {
+        /* Reset the state in case of a reboot. */
         Globals.reset();
-        instance = this;
-        initComponents();
-        EasterEgg.initialize(this);
+        Toolkit.instance = this;
+        Toolkit.trees = new ArrayList<JTree>();
         
+        this.initComponents();
+        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        
+        EasterEgg.initialize(this);
         if (Flags.ENABLE_NEW_SAVEDATA)
             this.loadSavedata.setVisible(true);
        
-        entryTable.getActionMap().put("copy", new AbstractAction() {
+        this.entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 String copied = "";
                 for (int i = 0; i < entryTable.getSelectedRowCount(); ++i) {
@@ -110,69 +113,83 @@ public class Toolkit extends javax.swing.JFrame {
 
         });
         
-        progressBar.setVisible(false);
-        fileDataTabs.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = fileDataTabs.getSelectedIndex();
-                if (index == -1) {
-                    search.setEnabled(false);
-                    Globals.currentWorkspace = WorkspaceType.NONE;
-                    search.setForeground(Color.GRAY);
-                    search.setText("Search is currently disabled.");
-                } else {
-                    search.setEnabled(true);
-                    FileData data = Globals.databases.get(fileDataTabs.getSelectedIndex());
-                    search.setText(data.query);
-                    if (search.getText().equals("Search...")) search.setForeground(Color.GRAY);
-                    else search.setForeground(Color.WHITE);
-                    if (data.type.equals("Big Profile")) Globals.currentWorkspace = WorkspaceType.PROFILE;
-                    else if (data.type.equals("Mod")) Globals.currentWorkspace = WorkspaceType.MOD;
-                    else if (data.type.equals("File Save")) Globals.currentWorkspace = WorkspaceType.SAVE;
-                    else Globals.currentWorkspace = WorkspaceType.MAP;
-                }
-                updateWorkspace();
+        this.progressBar.setVisible(false);
+        this.fileDataTabs.addChangeListener(l -> {
+            int index = this.fileDataTabs.getSelectedIndex();
+            
+            if (index == -1) {
+                this.search.setEnabled(false);
+                this.search.setForeground(Color.GRAY);
+                this.search.setText("Search is currently disabled.");
+                
+                Globals.currentWorkspace = WorkspaceType.NONE;
+                this.updateWorkspace();
+                
+                return;
             }
+            
+            this.search.setEnabled(true);
+            FileData data = Globals.databases.get(this.fileDataTabs.getSelectedIndex());
+            this.search.setText(data.query);
+            
+            if (this.search.getText().equals("Search...")) search.setForeground(Color.GRAY);
+            else this.search.setForeground(Color.WHITE);
+            
+            if (data.type.equals("Big Profile")) Globals.currentWorkspace = WorkspaceType.PROFILE;
+            else if (data.type.equals("Mod")) Globals.currentWorkspace = WorkspaceType.MOD;
+            else if (data.type.equals("File Save")) Globals.currentWorkspace = WorkspaceType.SAVE;
+            else Globals.currentWorkspace = WorkspaceType.MAP;
+            
+            this.updateWorkspace();
         });
-
-        entryModifiers.setEnabledAt(1, false);
-        StringMetadata.setEnabled(false);
-        updateWorkspace();
-
-        setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
-        search.addFocusListener(new FocusListener() {
+        
+        /* Disable tabs since nothing is selected yet */
+        this.entryModifiers.setEnabledAt(1, false);
+        this.StringMetadata.setEnabled(false);
+        this.updateWorkspace();
+        
+        
+        this.search.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
                 if (search.getText().equals("Search...")) {
                     search.setText("");
                     search.setForeground(Color.WHITE);
                 }
             }
-
+            
             public void focusLost(FocusEvent e) {
                 if (search.getText().isEmpty()) {
                     search.setText("Search...");
                     search.setForeground(Color.GRAY);
                 }
             }
-
         });
 
-        dependencyTree.addMouseListener(showContextMenu);
-        dependencyTree.addTreeSelectionListener(e -> TreeSelectionListener.listener(dependencyTree));
+        this.dependencyTree.addMouseListener(showContextMenu);
+        this.dependencyTree.addTreeSelectionListener(e -> TreeSelectionListener.listener(dependencyTree));
 
-        addWindowListener(new WindowAdapter() {
+        /* Don't let the user close the program without
+           confirming if they want to save or discard changes.
+        */
+        this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 checkForChanges();
             }
         });
         
+        
+        /* Auto-load configurations from whatever profile is currently enabled. */
+        
         Profile profile = Config.instance.getCurrentProfile();
         if (profile == null) return;
+        
         if (profile.archives != null) {
             for (String path : profile.archives) {
                 if (Files.exists(Paths.get(path)))
                     ArchiveCallbacks.loadFileArchive(new File(path));
             }
         }
+        
         if (profile.databases != null) {
             for (String path : profile.databases) {
                 if (Files.exists(Paths.get(path)))
@@ -1889,9 +1906,10 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_replaceImageActionPerformed
 
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
-        checkForChanges(); dispose();
-        Toolkit toolkit = new Toolkit();
-        toolkit.setVisible(true);
+        this.search.getParent().remove(this.search);
+        this.checkForChanges();
+        this.dispose();
+        EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
     }//GEN-LAST:event_rebootActionPerformed
 
     private void closeTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeTabActionPerformed
