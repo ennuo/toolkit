@@ -1,5 +1,6 @@
 package ennuo.craftworld.types;
 
+import ennuo.craftworld.ex.SerializationException;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
@@ -35,8 +36,7 @@ public class FileArchive {
     public ArchiveType archiveType = ArchiveType.FARC;
 
     public File file;
-
-    public boolean isParsed = false;
+    
     public boolean shouldSave = false;
 
     public byte[] fat;
@@ -54,12 +54,11 @@ public class FileArchive {
     public FileArchive() {
         this.archiveType = ArchiveType.FAR4;
         this.refresh();
-        this.isParsed = true;
     }
     
     public FileArchive(File file) {
         this.file = file;
-        process();
+        this.process();
     }
     
     public void refresh() {
@@ -67,7 +66,6 @@ public class FileArchive {
         this.entries = new ArrayList<FileEntry>();
         this.queue = new ArrayList<FileEntry>();
         this.queueSize = 0;
-        this.isParsed = false;
     }
 
     public void process() {
@@ -75,94 +73,81 @@ public class FileArchive {
         long begin = System.currentTimeMillis();
         
         this.refresh();
+        if (!this.file.exists())
+            throw new SerializationException("File archive specified does not exist!");
         
         boolean shouldPreload = false;
-        byte[] preload = null;
+        byte[] preloadData = null;
         
-        int entryCount = 0;
-        try {
-            RandomAccessFile fishArchive = new RandomAccessFile(this.file.getAbsolutePath(), "rw");
-            if (fishArchive.length() < 8) {
-                System.out.println("This is not a FileArchive.");
-                fishArchive.close();
-                this.isParsed = false;
-                return;
-            }
-            fishArchive.seek(this.file.length() - 8);
-            entryCount = fishArchive.readInt();
+        int fatCount = 0;
+        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
+            if (archive.length() < 8) 
+                throw new SerializationException("Invalid File archive, size is less than minimum of 8 bytes!");
+            
+            archive.seek(this.file.length() - 8);
+            fatCount = archive.readInt();
 
             byte[] magicBytes = new byte[4];
-            fishArchive.readFully(magicBytes);
+            archive.readFully(magicBytes);
             String magic = new String(magicBytes, StandardCharsets.UTF_8);
 
-            try {
-                this.archiveType = ArchiveType.valueOf(magic);
-            } catch (Exception e) {
-                System.out.println(magic + " is not a valid FileArchive type.");
-                fishArchive.close();
-                this.isParsed = false;
-                return;
+            try { this.archiveType = ArchiveType.valueOf(magic); } 
+            catch (Exception e) {
+                throw new SerializationException(magic + " is not a valid File archive type!");
             }
 
-            System.out.println("Entry Count: " + entryCount);
+            System.out.println("Entry Count: " + fatCount);
             switch (this.archiveType) {
                 case FARC:
-                    this.tableOffset = this.file.length() - 0x8 - (entryCount * 0x1C);
+                    this.tableOffset = this.file.length() - 0x8 - (fatCount * 0x1C);
                     break;
                 case FAR4:
-                    this.tableOffset = this.file.length() - 0x1C - (entryCount * 0x1C);
+                    this.tableOffset = this.file.length() - 0x1C - (fatCount * 0x1C);
                     shouldPreload = true;
                     break;
                 case FAR5:
-                    this.tableOffset = this.file.length() - 0x20 - (entryCount * 0x1C);
-                    shouldPreload = true;
-                    System.out.println("FAR5 has been temporarily diabled.");
-                    fishArchive.close();
-                    this.isParsed = false;
-                    return;
+                    this.tableOffset = this.file.length() - 0x20 - (fatCount * 0x1C);
+                    throw new SerializationException("FAR version 5 has been temporarily disabled.");
             }
            
             if (shouldPreload) {
-                preload = new byte[(int) this.tableOffset];
-                fishArchive.seek(0);
-                fishArchive.readFully(preload, 0, preload.length);
+                preloadData = new byte[(int) this.tableOffset];
+                archive.seek(0);
+                archive.readFully(preloadData, 0, preloadData.length);
             }
             
-            this.hashTable = new byte[entryCount * 0x1C];
+            this.hashTable = new byte[fatCount * 0x1C];
 
-            fishArchive.seek(this.tableOffset);
-            fishArchive.read(this.hashTable);
+            archive.seek(this.tableOffset);
+            archive.read(this.hashTable);
 
             if (this.archiveType != ArchiveType.FARC) {
                 int fatSize = this.archiveType == ArchiveType.FAR4 ?
                     0x84 : 0xAC;
-                fishArchive.seek(this.tableOffset - fatSize);
+                archive.seek(this.tableOffset - fatSize);
                 this.fat = new byte[fatSize];
-                fishArchive.read(this.fat);
+                archive.read(this.fat);
 
                 if (this.archiveType == ArchiveType.FAR4)
-                    fishArchive.seek(this.file.length() - 0x1c);
+                    archive.seek(this.file.length() - 0x1c);
                 else
-                    fishArchive.seek(this.file.length() - 0x20);
+                    archive.seek(this.file.length() - 0x20);
             }
-
-            fishArchive.close();
         } catch (IOException ex) {
-            System.err.println(String.format("There was an error processing the %s file!", this.archiveType.name()));
-            isParsed = false;
-            return;
+            throw new SerializationException("An I/O error occurred while reading the File Archive.");
         }
+        
         Data table = new Data(this.hashTable);
-        this.entries = new ArrayList<FileEntry>(entryCount);
-        this.lookup = new HashMap<SHA1, FileEntry>(entryCount);
-        for (int i = 0; i < entryCount; i++) {
+        this.entries = new ArrayList<FileEntry>(fatCount);
+        this.lookup = new HashMap<SHA1, FileEntry>(fatCount);
+        for (int i = 0; i < fatCount; i++) {
             FileEntry entry = new FileEntry(
                  table.sha1(), 
                  table.u32(), 
                  table.i32(), 
                  null);
             if (shouldPreload)
-                entry.data = Arrays.copyOfRange(preload, (int) entry.offset, ((int) (entry.offset + entry.size)));
+                entry.data = Arrays.copyOfRange(preloadData, (int) entry.offset, ((int) (entry.offset + entry.size)));
             this.entries.add(entry);
             this.lookup.put(entry.hash, entry);
         }
@@ -174,7 +159,6 @@ public class FileArchive {
                 ((end - begin) / 1000),
                 (end - begin))
         );
-        this.isParsed = true;
     }
 
     public FileEntry find(SHA1 hash) { return find(hash, false); }

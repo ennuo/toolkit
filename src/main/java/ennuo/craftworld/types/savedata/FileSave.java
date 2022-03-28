@@ -1,5 +1,6 @@
 package ennuo.craftworld.types.savedata;
 
+import ennuo.craftworld.ex.SerializationException;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.io.FileIO;
@@ -173,16 +174,16 @@ public class FileSave extends FileData {
      * @return The fat data source of the FAR4/5 archive.
      */
     private Resource addProfileData(File save) {
-        FileArchive archive = new FileArchive(save);
-        if (archive.isParsed) {
-            for (FileEntry entry : archive.entries)
-                this.resources.put(entry.hash, entry.data);
-            SHA1 dataSourceHash = archive.getFatDataSource();
-            if (this.resources.containsKey(dataSourceHash)) {
-                Resource source = new Resource(this.resources.get(dataSourceHash));
-                this.resources.remove(dataSourceHash);
-                return source;
-            }
+        FileArchive archive = null;
+        try { archive = new FileArchive(save); }
+        catch (SerializationException ex) { return null; }
+        for (FileEntry entry : archive.entries)
+            this.resources.put(entry.hash, entry.data);
+        SHA1 dataSourceHash = archive.getFatDataSource();
+        if (this.resources.containsKey(dataSourceHash)) {
+            Resource source = new Resource(this.resources.get(dataSourceHash));
+            this.resources.remove(dataSourceHash);
+            return source;
         }
         return null;
     }

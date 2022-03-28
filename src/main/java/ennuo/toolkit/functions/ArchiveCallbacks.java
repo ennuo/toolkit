@@ -1,5 +1,6 @@
 package ennuo.toolkit.functions;
 
+import ennuo.craftworld.ex.SerializationException;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.Resource;
@@ -30,9 +31,13 @@ public class ArchiveCallbacks {
     public static void loadFileArchive(File file) {
         int index = Toolkit.instance.isArchiveLoaded(file);
         if (index == -1) {
-            FileArchive archive = new FileArchive(file);
-            if (archive.isParsed)
-                Globals.archives.add(archive);
+            FileArchive archive = null;
+            try { archive = new FileArchive(file); }
+            catch (SerializationException ex) {
+                System.err.println(ex.getMessage());
+                return;
+            }
+            Globals.archives.add(archive);
         } else Globals.archives.get(index).process();
         Toolkit.instance.updateWorkspace();
     }

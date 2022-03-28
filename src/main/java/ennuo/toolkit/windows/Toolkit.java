@@ -1,5 +1,6 @@
 package ennuo.toolkit.windows;
 
+import ennuo.craftworld.ex.SerializationException;
 import ennuo.toolkit.configurations.Flags;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.editors.*;
@@ -1962,18 +1963,21 @@ public class Toolkit extends javax.swing.JFrame {
         File FAR4 = FileChooser.openFile("bigfart", null, false);
         if (FAR4 == null) return;
         if (FAR4.exists()) {
-            FileArchive archive = new FileArchive(FAR4);
-            if (archive.isParsed) {
-                if (archive.archiveType != ArchiveType.FAR4) {
-                    System.out.println("FileArchive isn't a FAR4!");
-                    return;
-                }
-                archive.swapFatEndianness();
-                FileIO.write(archive.build(), FAR4.getAbsolutePath());
-                JOptionPane.showMessageDialog(this, 
-                        String.format("FAR4 has been swapped to %s endianness.", 
-                                (archive.fat[0x38] != 0x00) ? "PS4" : "PS3"));
-            } 
+            FileArchive archive = null;
+            try { archive = new FileArchive(FAR4); }
+            catch (SerializationException ex) {
+                System.err.println(ex.getMessage());
+                return;
+            }
+            if (archive.archiveType != ArchiveType.FAR4) {
+                System.out.println("FileArchive isn't a FAR4!");
+                return;
+            }
+            archive.swapFatEndianness();
+            FileIO.write(archive.build(), FAR4.getAbsolutePath());
+            JOptionPane.showMessageDialog(this, 
+                    String.format("FAR4 has been swapped to %s endianness.", 
+                            (archive.fat[0x38] != 0x00) ? "PS4" : "PS3"));
         } else 
             System.out.println(String.format("%s does not exist!", FAR4.getAbsolutePath()));
     }//GEN-LAST:event_swapProfilePlatformActionPerformed
