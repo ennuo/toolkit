@@ -549,6 +549,7 @@ public class SlotManager extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Slot Manager");
 
+        slotList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         slotContainer.setViewportView(slotList);
 
         addSlotButton.setText("Add Slot");

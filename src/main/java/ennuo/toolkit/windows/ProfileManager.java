@@ -183,6 +183,7 @@ public class ProfileManager extends javax.swing.JDialog {
 
         removeProfileButton.setText("Remove");
 
+        profilesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         profilesContainer.setViewportView(profilesList);
 
         profileNameLabel.setText("Profile Name:");
