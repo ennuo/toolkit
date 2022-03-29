@@ -135,6 +135,21 @@ public class Serializer {
         return this.input.i32a();
     }
     
+    public long i64d(long value) {
+        // NOTE(Aidan): I'm not actually sure what this type is
+        // but for some reason in the "encoded" revisions, it's
+        // doubled for some reason? Well, whatever
+        
+        int multiplier = 
+                ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) ? 2 : 1;
+        
+        if (this.isWriting) {
+            this.output.i64(value * multiplier);
+            return value;
+        }
+        return this.input.i64() / multiplier;
+    }
+    
     public long u32d(long value) {
         // NOTE(Aidan): I'm not actually sure what this type is
         // but for some reason in the "encoded" revisions, it's

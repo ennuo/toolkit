@@ -71,7 +71,7 @@ public class InventoryDetails implements Serializable {
                 (structure == null) ? new InventoryDetails() : (InventoryDetails) structure;
         
         if (serializer.revision.head > 0x377) {
-            details.dateAdded = serializer.u32d(details.dateAdded);
+            details.dateAdded = serializer.i64d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
             details.highlightSound = serializer.u32(details.highlightSound);
             details.colour = serializer.u32(details.colour);

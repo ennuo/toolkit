@@ -25,7 +25,7 @@ public class PackItem implements Serializable {
         item.mesh = serializer.resource(item.mesh, ResourceType.MESH, true);
         item.slot = serializer.struct(item.slot, Slot.class);
         item.contentID = serializer.str8(item.contentID);
-        item.timestamp = serializer.u32d(this.timestamp);
+        item.timestamp = serializer.i64d(this.timestamp);
         if (serializer.revision.isVita())
             item.crossBuyCompatible = serializer.bool(item.crossBuyCompatible);
 
