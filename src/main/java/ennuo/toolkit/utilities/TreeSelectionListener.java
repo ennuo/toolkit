@@ -34,6 +34,7 @@ public class TreeSelectionListener {
     
     public static void listener(JTree tree) {
         Toolkit toolkit = Toolkit.instance;
+        toolkit.setImage(null);
         JTree currentTree = toolkit.getCurrentTree();
         
         if (tree == currentTree) {

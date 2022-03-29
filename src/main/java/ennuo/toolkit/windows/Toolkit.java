@@ -329,6 +329,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.setVisible(false);
         replaceImage.setVisible(false);
         editMenuContext.setVisible(false);
+        editItemContext.setVisible(false);
         
         boolean isDependencyTree = tree == this.dependencyTree;
         
@@ -410,6 +411,14 @@ public class Toolkit extends javax.swing.JFrame {
                         editSlotContext.setVisible(true);
                 }
                 
+                if (Flags.ENABLE_ITEM_MANAGER) {
+                    if (Globals.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
+                        Plan plan = Globals.lastSelected.entry.getResource("item");
+                        if (plan != null)
+                            editItemContext.setVisible(true);
+                    }
+                }
+                
                 if (Globals.lastSelected.header.endsWith(".pck") && !isDependencyTree) {
                     Pack pack = Globals.lastSelected.entry.getResource("pack");
                     if (pack != null)
@@ -442,6 +451,7 @@ public class Toolkit extends javax.swing.JFrame {
         renameItemContext = new javax.swing.JMenuItem();
         changeHash = new javax.swing.JMenuItem();
         changeGUID = new javax.swing.JMenuItem();
+        editItemContext = new javax.swing.JMenuItem();
         editSlotContext = new javax.swing.JMenuItem();
         loadLAMSContext = new javax.swing.JMenuItem();
         exportGroup = new javax.swing.JMenu();
@@ -583,6 +593,7 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
+        debugItemManager = new javax.swing.JMenuItem();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
@@ -632,6 +643,14 @@ public class Toolkit extends javax.swing.JFrame {
         editMenuContext.add(changeGUID);
 
         entryContext.add(editMenuContext);
+
+        editItemContext.setText("Edit Item Details");
+        editItemContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editItemContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(editItemContext);
 
         editSlotContext.setText("Edit Slot");
         editSlotContext.addActionListener(new java.awt.event.ActionListener() {
@@ -1553,6 +1572,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
+        debugItemManager.setText("Item Manager");
+        debugItemManager.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugItemManagerActionPerformed(evt);
+            }
+        });
+        debugMenu.add(debugItemManager);
+
         debugLoadProfileBackup.setText("Load Profile Backup");
         debugLoadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2214,6 +2241,19 @@ public class Toolkit extends javax.swing.JFrame {
         manager.setVisible(true);
     }//GEN-LAST:event_manageArchivesActionPerformed
 
+    private void debugItemManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugItemManagerActionPerformed
+        ItemManager manager = new ItemManager();
+        manager.setVisible(true);
+    }//GEN-LAST:event_debugItemManagerActionPerformed
+
+    private void editItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItemContextActionPerformed
+        FileEntry entry = Globals.lastSelected.entry;
+        Plan plan = entry.getResource("item");
+        if (plan == null) return;
+        ItemManager manager = new ItemManager(entry, plan);
+        manager.setVisible(true);
+    }//GEN-LAST:event_editItemContextActionPerformed
+
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
@@ -2230,7 +2270,6 @@ public class Toolkit extends javax.swing.JFrame {
     public FileNode getLastSelected(JTree tree) {
         Globals.entries.clear();
         TreePath[] treePaths = tree.getSelectionPaths();
-        setImage(null);
         if (treePaths == null) {
             Globals.lastSelected = null;
             return null;
@@ -2428,6 +2467,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
     private javax.swing.JMenuItem customCollector;
+    private javax.swing.JMenuItem debugItemManager;
     private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
@@ -2442,6 +2482,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
+    private javax.swing.JMenuItem editItemContext;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu editMenuContext;
     private javax.swing.JMenuItem editMenuDelete;

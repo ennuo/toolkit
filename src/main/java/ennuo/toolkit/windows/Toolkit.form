@@ -62,6 +62,14 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <MenuItem class="javax.swing.JMenuItem" name="editItemContext">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Edit Item Details"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editItemContextActionPerformed"/>
+          </Events>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="editSlotContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit Slot"/>
@@ -861,6 +869,14 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
           </AuxValues>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="debugItemManager">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Item Manager"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugItemManagerActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="debugLoadProfileBackup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Load Profile Backup"/>

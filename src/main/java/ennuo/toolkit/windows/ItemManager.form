@@ -1,0 +1,907 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="2"/>
+    <Property name="title" type="java.lang.String" value="Item Manager"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="slotContainer" min="-2" pref="191" max="-2" attributes="0"/>
+                          <Component id="itemsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="itemSettings" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="addItemButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="removeItemButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="closeButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="itemSettings" pref="285" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="itemsLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="slotContainer" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="addItemButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="removeItemButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="closeButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JScrollPane" name="slotContainer">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JList" name="itemList">
+          <Properties>
+            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+              <StringArray count="0"/>
+            </Property>
+            <Property name="selectionMode" type="int" value="0"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+          </AuxValues>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="addItemButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Add Item"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="removeItemButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Remove"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JTabbedPane" name="itemSettings">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="DLC"/>
+      </AccessibilityProperties>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="detailsPane">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Details">
+                <Property name="tabTitle" type="java.lang.String" value="Details"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="titleTextEntry" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="descriptionPane" pref="351" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="creatorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="iconLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="creatorTextEntry" alignment="1" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="titleKeySpinner" pref="119" max="32767" attributes="0"/>
+                                          <Component id="descKeySpinner" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="categoryLabel" max="32767" attributes="0"/>
+                                          <Component id="locationLabel" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="categoryTextEntry" pref="166" max="32767" attributes="0"/>
+                                          <Component id="locationTextEntry" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Component id="iconTextEntry" alignment="1" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="titleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="descriptionPane" min="-2" pref="78" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="iconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="iconTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="creatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="creatorTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="titleKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="titleKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="categoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="categoryTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="descKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="descKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                              <Component id="locationTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="itemIcon">
+              <Properties>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="No icon available."/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="titleLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Title:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="titleTextEntry">
+            </Component>
+            <Component class="javax.swing.JLabel" name="descriptionLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Description:"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="descriptionPane">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="descriptionTextEntry">
+                  <Properties>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="lineWrap" type="boolean" value="true"/>
+                    <Property name="rows" type="int" value="5"/>
+                    <Property name="wrapStyleWord" type="boolean" value="true"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="iconLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Icon:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="iconTextEntry">
+            </Component>
+            <Component class="javax.swing.JLabel" name="creatorLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Creator:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="creatorTextEntry">
+            </Component>
+            <Component class="javax.swing.JLabel" name="titleKeyLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Title Key:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="descKeyLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Desc. Key:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="titleKeySpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="descKeySpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="categoryLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Category:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="categoryTextEntry">
+            </Component>
+            <Component class="javax.swing.JLabel" name="locationLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Location:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="locationTextEntry">
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JScrollPane" name="typePane">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Type">
+                <Property name="tabTitle" type="java.lang.String" value="Type"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="typesContainer">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="lbp2TypeContainer" alignment="1" max="32767" attributes="0"/>
+                              <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="lbp1TypeContainer" pref="0" max="32767" attributes="0"/>
+                                      <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lbp1TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="generalTypesContainer" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="lbp2TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="lbp3TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lbp3TypesContainer" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="generalTypesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="generalTypesContainer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp1TypesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp1TypeContainer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp2TypesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp2TypeContainer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp3TypesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="lbp3TypesContainer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="generalTypesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="General Types:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="generalTypesContainer">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="decorationsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="materialsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="objectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="stickersCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="costumesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="gameplayKitsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="jointsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="userObjectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="backgroundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="gadgetsCheckbox" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="eyetoyCheckbox" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="toolsCheckbox" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="dangerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="userStickersCheckbox" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="shapesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="playerColorsCheckbox" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <Component id="userCostumesCheckbox" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                                      <Group type="103" groupAlignment="0" attributes="0">
+                                                          <Component id="musicCheckbox" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="soundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="photoboothCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="podsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                      </Group>
+                                                  </Group>
+                                              </Group>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <Component id="costumeMaterialsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="materialsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jointsCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Component id="dangerCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="musicCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="objectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userObjectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="eyetoyCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="soundsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="decorationsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="backgroundsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="gadgetsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoboothCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="stickersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="gameplayKitsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="toolsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="podsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="costumesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userStickersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="playerColorsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="costumeMaterialsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="shapesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userCostumesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="materialsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Materials"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="objectsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Objects"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="decorationsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Decorations"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="stickersCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Stickers"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="costumeMaterialsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Costume Materials"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="jointsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Joints"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="userObjectsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="User Objects"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="backgroundsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Backgrounds"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="gameplayKitsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Gameplay Kits"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="costumesCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Costumes"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="userStickersCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="User Stickers"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="shapesCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Shapes"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="toolsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Tools"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="dangerCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Danger"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="eyetoyCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Eyetoy"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="gadgetsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Gadgets"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="playerColorsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Player Colors"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="userCostumesCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="User Costumes"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="musicCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Music"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="soundsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sound"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="photoboothCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Photobooth"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="podsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Pods"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="lbp1TypesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="LBP1 Types:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="lbp1TypeContainer">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="paintCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="planToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="photoToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="floodFillCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="stickerToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="pictureToolsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="podToolLbp1Checkbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="costumeToolCheckbox" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Component id="communityPhotosCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="paintCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="floodFillCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Component id="stickerToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="costumeToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="planToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="pictureToolsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="podToolLbp1Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="communityPhotosCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="paintCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Paint"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="planToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Plan Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="communityPhotosCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Community Photo Tools"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="floodFillCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Flood Fill"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="photoToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Photo Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="stickerToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sticker Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="pictureToolsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Picture Tools"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="costumeToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Costume Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="podToolLbp1Checkbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Pod Tool (LBP1)"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="lbp2TypesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="LBP2 Types:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="lbp2TypeContainer">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="sequencerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="gunItemCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="editModeToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="userPlanetCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="npcCostumeCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="podToolLbp2Checkbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="instrumentCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="earthToolCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="levelKeyCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="emittedItemCheckbox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="sequencerCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userPlanetCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Component id="levelKeyCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="emittedItemCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="gunItemCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="npcCostumeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="instrumentCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="editModeToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="podToolLbp2Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="earthToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="sequencerCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sequencer"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="gunItemCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Gun Item"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="editModeToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Edit Mode Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="userPlanetCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="User Planet"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="npcCostumeCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="NPC Costume"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="levelKeyCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Level Key"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="instrumentCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Instrument"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="emittedItemCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Emitted Item"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="earthToolCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Earth Tool"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="podToolLbp2Checkbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Pod Tool (LBP2)"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="lbp3TypesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="LBP3 Types:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="lbp3TypesContainer">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="sackbotMeshCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="creatureCharactersCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="costumeTweakerCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="sackbotMeshCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="creatureCharactersCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Component id="costumeTweakerCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="sackbotMeshCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sackbot Mesh"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="creatureCharactersCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Creature Characters"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="costumeTweakerCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Costume Tweaker Tool"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="closeButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Close"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="itemsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Items:"/>
+      </Properties>
+    </Component>
+  </SubComponents>
+</Form>
