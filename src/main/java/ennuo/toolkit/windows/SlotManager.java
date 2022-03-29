@@ -1,12 +1,15 @@
 package ennuo.toolkit.windows;
 
+import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.SlotList;
+import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.Crater;
 import ennuo.craftworld.resources.enums.GameMode;
 import ennuo.craftworld.resources.enums.LevelType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
+import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Data;
@@ -22,6 +25,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -88,8 +93,13 @@ public class SlotManager extends javax.swing.JFrame {
     }
     
     private FileEntry entry;
+    
     public ArrayList<Slot> slots;
+    public ArrayList<PackItem> packs;
+    
+    private PackItem selectedItem;
     private Slot selectedSlot;
+    
     private final DefaultListModel model = new DefaultListModel();
     private final DefaultComboBoxModel<SlotEntry> groups = new DefaultComboBoxModel<>();
     private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>(); 
@@ -118,9 +128,29 @@ public class SlotManager extends javax.swing.JFrame {
             this.slotList.setSelectedValue(selectedSlot, true);
     }
     
-    public SlotManager(FileEntry slotList, ArrayList<Slot> slots) {
-        this.slots = slots;
-        this.entry = slotList;
+    public SlotManager(FileEntry entry, SlotList slotList) {
+        this.slots = new ArrayList<>(Arrays.asList(slotList.slots));
+        this.entry = entry;
+        
+        this.setup();
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent e) { onClose(); }
+        });
+        this.closeButton.addActionListener(l -> this.onClose());
+    }
+    
+    public SlotManager(FileEntry entry, Pack pack) {
+        this.isPack = true;
+        
+        this.slots = new ArrayList<>(pack.packs.length);
+        this.packs = new ArrayList<>(pack.packs.length);
+        for (PackItem item : pack.packs) {
+            this.packs.add(item);
+            this.slots.add(item.slot);
+        }
+        
+        this.entry = entry;
         
         this.setup();
         
@@ -133,9 +163,15 @@ public class SlotManager extends javax.swing.JFrame {
     private void onClose() {
         int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
-            SlotList list = new SlotList();
-            list.slots = slots.stream().toArray(Slot[]::new);
-            Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
+            if (this.isPack) {
+                Pack pack = new Pack();
+                pack.packs = this.packs.stream().toArray(PackItem[]::new);
+                Globals.replaceEntry(this.entry, pack.build(this.entry.revision, this.entry.compressionFlags));
+            } else {
+                SlotList list = new SlotList();
+                list.slots = this.slots.stream().toArray(Slot[]::new);
+                Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
+            }
         }
         this.entry.resetResources();
         this.dispose();
@@ -152,7 +188,8 @@ public class SlotManager extends javax.swing.JFrame {
         this.groupCombo.setModel(this.groups);
         this.linkCombo.setModel(this.links);
         
-        this.slotSettings.setEnabledAt(3, false);
+        if (!this.isPack)
+            this.slotSettings.setEnabledAt(3, false);
         
         for (Slot slot : this.slots)
             this.model.addElement(slot);
@@ -169,11 +206,15 @@ public class SlotManager extends javax.swing.JFrame {
         this.setupDetailsListeners();
         this.setupDataListeners();
         this.setupSettingsListeners();
+        if (this.isPack)
+            this.setupDLCListeners();
         
         this.slotList.addListSelectionListener(listener -> {
             int index = this.slotList.getSelectedIndex();
             if (index == -1) return;
-            this.selectedSlot = (Slot) this.model.getElementAt(this.slotList.getSelectedIndex());
+            if (this.isPack) 
+                this.selectedItem = this.packs.get(index);
+            this.selectedSlot = (Slot) this.model.getElementAt(index);
             this.setSlotData();
         });
         
@@ -186,8 +227,18 @@ public class SlotManager extends javax.swing.JFrame {
             
             Slot slot = new Slot();
             
-            if (this.isPack)
+            if (this.isPack) {
                 slot.id.type = SlotType.DLC_PACK;
+                
+                PackItem item = new PackItem();
+                item.contentsType = ContentsType.PACK;
+                item.mesh = ContentsType.PACK.getBadgeMesh();
+                
+                item.slot = slot;
+                item.slot.root = null;
+                
+                this.packs.add(item);
+            }
             else if (this.isSave)
                 slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
             else
@@ -223,6 +274,8 @@ public class SlotManager extends javax.swing.JFrame {
             
             this.model.remove(index);
             this.slots.remove(index);
+            if (this.isPack)
+                this.packs.remove(index);
             
             this.setupLinks();
             this.setupGroups();
@@ -397,6 +450,7 @@ public class SlotManager extends javax.swing.JFrame {
             this.canUpdate = true;
             
         });
+        
         this.slotNumberSpinner.addChangeListener(e -> {
             SlotID oldSlotID = new SlotID(this.selectedSlot.id.type, this.selectedSlot.id.ID);
             this.selectedSlot.id.ID = (long) this.slotNumberSpinner.getValue();
@@ -422,6 +476,38 @@ public class SlotManager extends javax.swing.JFrame {
             SlotEntry entry = (SlotEntry) this.linkCombo.getSelectedItem();
             this.selectedSlot.primaryLinkLevel.ID = entry.id.ID;
             this.selectedSlot.primaryLinkLevel.type = entry.id.type;
+        });
+    }
+    
+    private void setupDLCListeners() {
+        this.contentsTypeCombo.addItemListener(e -> {
+            if (e.getStateChange() != ItemEvent.SELECTED || !this.canUpdate) return;
+            
+            ContentsType type = (ContentsType) this.contentsTypeCombo.getSelectedItem();
+            this.selectedItem.contentsType = type;
+            
+            // Use the default badge mesh for specified type.
+            
+            ResourceDescriptor badgeMesh = type.getBadgeMesh();
+            this.selectedItem.mesh = badgeMesh;
+            this.badgeMeshTextEntry.setText(badgeMesh.toString());
+        });
+        
+        this.badgeMeshTextEntry.addActionListener(e -> {
+            String descriptor = this.badgeMeshTextEntry.getText();
+            if (descriptor == null || descriptor.isEmpty()) {
+                this.selectedItem.mesh = null;
+                return;
+            }
+            if (StringUtils.isGUID(descriptor) || StringUtils.isSHA1(descriptor))
+                this.selectedItem.mesh = new ResourceDescriptor(ResourceType.MESH, descriptor);
+        });
+        
+        this.contentIDTextEntry.addActionListener(e -> this.selectedItem.contentID = this.contentIDTextEntry.getText());
+        
+        this.timestampSpinner.addChangeListener(e -> {
+            long timestamp = ((Date)this.timestampSpinner.getValue()).getTime() / 1000l;
+            this.selectedItem.timestamp = timestamp;
         });
     }
     
@@ -524,6 +610,16 @@ public class SlotManager extends javax.swing.JFrame {
         
         /* DLC page */
         
+        if (this.isPack) {
+            PackItem item = this.selectedItem;
+            this.contentsTypeCombo.setSelectedItem(item.contentsType);
+            if (item.mesh != null)
+                this.badgeMeshTextEntry.setText(item.mesh.toString());
+            else
+                this.badgeMeshTextEntry.setText("");
+            this.contentIDTextEntry.setText(item.contentID);
+            this.timestampSpinner.setValue(new Date(item.timestamp * 1000));
+        }
         
         this.canUpdate = true;
         
@@ -599,7 +695,7 @@ public class SlotManager extends javax.swing.JFrame {
         badgeMeshLabel = new javax.swing.JLabel();
         contentIDLabel = new javax.swing.JLabel();
         timestampLabel = new javax.swing.JLabel();
-        contentsTypeCombo = new javax.swing.JComboBox<>();
+        contentsTypeCombo = new javax.swing.JComboBox(ContentsType.values());
         timestampSpinner = new javax.swing.JSpinner();
         badgeMeshTextEntry = new javax.swing.JTextField();
         contentIDTextEntry = new javax.swing.JTextField();
@@ -998,8 +1094,6 @@ public class SlotManager extends javax.swing.JFrame {
         contentIDLabel.setText("Content ID:");
 
         timestampLabel.setText("Timestamp:");
-
-        contentsTypeCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         timestampSpinner.setModel(new javax.swing.SpinnerDateModel());
 

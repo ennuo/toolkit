@@ -405,7 +405,7 @@ public class Toolkit extends javax.swing.JFrame {
                 }
                 
                 if (Globals.lastSelected.header.endsWith(".slt") && !isDependencyTree) {
-                    ArrayList<Slot> slots = Globals.lastSelected.entry.getResource("slots");
+                    SlotList slots = Globals.lastSelected.entry.getResource("slots");
                     if (slots != null)
                         editSlotContext.setVisible(true);
                 }
@@ -1770,12 +1770,11 @@ public class Toolkit extends javax.swing.JFrame {
         
         boolean isSlotsFile = Globals.lastSelected.entry.getResource("pack") == null;
         if (isSlotsFile) {
-            new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.getResource("slots")).setVisible(true);
+            new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.<SlotList>getResource("slots")).setVisible(true);
             return;
         }
         
-        // The slot manager doesn't have support for packs yet.
-        new SlotEditor(this, Globals.lastSelected.entry, SlotEditor.EditorType.PACKS).setVisible(true);
+        new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.<Pack>getResource("pack")).setVisible(true);
     }//GEN-LAST:event_editSlotContextActionPerformed
 
     private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed

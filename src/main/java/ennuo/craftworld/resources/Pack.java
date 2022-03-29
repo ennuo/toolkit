@@ -1,35 +1,27 @@
 package ennuo.craftworld.resources;
 
 import ennuo.craftworld.resources.enums.ResourceType;
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.Output;
-import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.craftworld.resources.structs.Revision;
-import java.util.ArrayList;
+import ennuo.craftworld.serializer.Serializable;
+import ennuo.craftworld.serializer.Serializer;
 
-public class Pack {
-    public ArrayList<PackItem> packs;
+public class Pack implements Serializable {
+    public PackItem[] packs;
 
-    public Pack(Data data) {
-        int count = data.i32();
-        packs = new ArrayList<PackItem>(count);
-        for (int i = 0; i < count; ++i)
-            packs.add(new PackItem(data));
+    @SuppressWarnings("unchecked")
+    @Override public Pack serialize(Serializer serializer, Serializable structure) {
+        Pack pack = (structure == null) ? new Pack() : (Pack) structure;
 
+        pack.packs = serializer.array(pack.packs, PackItem.class);
+
+        return pack;
     }
-
-    public byte[] serialize(Revision revision, boolean compressed) {
-        int count = packs.size();
-        Output output = new Output(0x5 + (PackItem.MAX_SIZE * count), revision);
-        output.i32(packs.size());
-        for (PackItem item: packs)
-            item.serialize(output);
-        output.shrink();
-        if (compressed) {
-            ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
-            dependencies = output.dependencies.toArray(dependencies);
-            return Resource.compressToResource(output, ResourceType.PACKS);
-        } else return output.buffer;
-    }
+    
+    public byte[] build(Revision revision, byte compressionFlags) {
+        int dataSize = 0x1000 * this.packs.length;
+        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
+        this.serialize(serializer, this);
+        return Resource.compressToResource(serializer.output, ResourceType.PACKS);      
+    }    
 }

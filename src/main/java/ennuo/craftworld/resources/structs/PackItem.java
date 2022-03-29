@@ -1,42 +1,34 @@
 package ennuo.craftworld.resources.structs;
 
-import ennuo.craftworld.serializer.Data;
-import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ContentsType;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import java.util.Date;
 
-public class PackItem {
-    
+public class PackItem implements Serializable {
     public static int MAX_SIZE = 0x125 + Slot.MAX_SIZE;
     
     public ContentsType contentsType = ContentsType.LEVEL;
     public ResourceDescriptor mesh = new ResourceDescriptor(16006, ResourceType.MESH);
     public Slot slot = new Slot();
     public String contentID = "";
-    public long timestamp = new Date().getTime() * 2 / 1000;
+    public long timestamp = new Date().getTime() / 1000;
     public boolean crossBuyCompatible = false;
-    
-    public PackItem() {}
-    public PackItem(Data data) {
-        contentsType = ContentsType.getValue(data.i32());
-        mesh = data.resource(ResourceType.MESH, true);
-        slot = new Serializer(data).struct(null, Slot.class);
-        contentID = data.str8();
-        timestamp = data.u32();
-        if (data.revision.isVita())
-            crossBuyCompatible = data.bool();
-    }
-    
-    public void serialize(Output output) {
-        output.u8(contentsType.value);
-        output.resource(mesh, true);
-        new Serializer(output).struct(slot, Slot.class);
-        output.str8(contentID);
-        output.u32(timestamp);
-        if (output.revision.isVita())
-            output.bool(crossBuyCompatible);
+
+    @SuppressWarnings("unchecked")
+    @Override public PackItem serialize(Serializer serializer, Serializable structure) {
+        PackItem item = (structure == null) ? new PackItem() : (PackItem) structure;
+        
+        item.contentsType = ContentsType.getValue(serializer.i32(item.contentsType.value));
+        item.mesh = serializer.resource(item.mesh, ResourceType.MESH, true);
+        item.slot = serializer.struct(item.slot, Slot.class);
+        item.contentID = serializer.str8(item.contentID);
+        item.timestamp = serializer.u32d(this.timestamp);
+        if (serializer.revision.isVita())
+            item.crossBuyCompatible = serializer.bool(item.crossBuyCompatible);
+
+        return item;
     }
 }
