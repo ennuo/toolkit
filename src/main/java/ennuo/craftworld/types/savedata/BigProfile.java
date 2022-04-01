@@ -90,7 +90,7 @@ public class BigProfile implements Serializable {
         if (serializer.revision.isAfterVitaRevision(0x7a))
             profile.planetDecorations = serializer.resource(profile.planetDecorations, ResourceType.LEVEL, true);
         
-        return this;
+        return profile;
     }
     
     public byte[] build(Revision revision, byte compressionFlags) {
