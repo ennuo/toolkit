@@ -96,7 +96,7 @@ public class Slot implements Serializable {
     
     public SlotID[] subLevels;
     public ResourceDescriptor slotList;
-    public int vitaRevision = 0;
+    public short vitaRevision = 0;
     
     public Slot serialize(Serializer serializer, Serializable structure) {
         Slot slot = (structure == null) ? new Slot() : (Slot) structure;
@@ -145,7 +145,7 @@ public class Slot implements Serializable {
         if (serializer.revision.head >= 0x1df)
             slot.developerLevelType = LevelType.getValue(serializer.i32(slot.developerLevelType.value));
         
-        if (serializer.revision.head <= 0x36c)
+        if (serializer.revision.head < 0x36c && 0x1b8 < serializer.revision.head)
             slot.gameProgressionState = serializer.i32(slot.gameProgressionState);
         
         if (serializer.revision.head <= 0x2c3) return slot;
@@ -181,37 +181,46 @@ public class Slot implements Serializable {
         slot.livesOverride = serializer.i8(slot.livesOverride);
         
         if (serializer.revision.isVita()) {
-            slot.acingEnabled = serializer.bool(slot.acingEnabled);
-            slot.customRewardEnabled = serializer.u32a(slot.customRewardEnabled);
+            if (serializer.revision.isAfterVitaRevision(0x3c)) {
+                slot.acingEnabled = serializer.bool(slot.acingEnabled);
+                slot.customRewardEnabled = serializer.u32a(slot.customRewardEnabled);
+                
+                if (!serializer.isWriting) slot.rewardConditionDescription = new String[serializer.input.i32()];
+                else serializer.output.i32(slot.rewardConditionDescription.length);
+                for (int i = 0; i < slot.rewardConditionDescription.length; ++i)
+                    slot.rewardConditionDescription[i] = serializer.str16(slot.rewardConditionDescription[i]);
+
+                slot.customRewardCondition = serializer.u32a(slot.customRewardCondition);
+
+                if (!serializer.isWriting) slot.amountNeededCustomReward = new long[serializer.input.i32()];
+                else serializer.output.i32(slot.amountNeededCustomReward.length);
+                for (int i = 0; i < slot.amountNeededCustomReward.length; ++i)
+                    slot.amountNeededCustomReward[i] = serializer.u32f(slot.amountNeededCustomReward[i]);
+
+                if (!serializer.isWriting) slot.customRewardDescription = new String[serializer.input.i32()];
+                else serializer.output.i32(slot.customRewardDescription.length);
+                for (int i = 0; i < slot.customRewardDescription.length; ++i)
+                    slot.customRewardDescription[i] = serializer.str16(slot.customRewardDescription[i]);
+            }
             
-            if (!serializer.isWriting) slot.rewardConditionDescription = new String[serializer.input.i32()];
-            else serializer.output.i32(slot.rewardConditionDescription.length);
-            for (int i = 0; i < slot.rewardConditionDescription.length; ++i)
-                slot.rewardConditionDescription[i] = serializer.str16(slot.rewardConditionDescription[i]);
+            if (serializer.revision.isAfterVitaRevision(0x5d)) 
+                slot.containsCollectabubbles = serializer.bool(slot.containsCollectabubbles);
             
-            slot.customRewardCondition = serializer.u32a(slot.customRewardCondition);
+            if (serializer.revision.isAfterVitaRevision(0x4b))
+                slot.enforceMinMaxPlayers = serializer.bool(slot.enforceMinMaxPlayers);
             
-            if (!serializer.isWriting) slot.amountNeededCustomReward = new long[serializer.input.i32()];
-            else serializer.output.i32(slot.amountNeededCustomReward.length);
-            for (int i = 0; i < slot.amountNeededCustomReward.length; ++i)
-                slot.amountNeededCustomReward[i] = serializer.u32f(slot.amountNeededCustomReward[i]);
+            if (serializer.revision.isAfterVitaRevision(0x4c))
+                slot.sameScreenGame = serializer.bool(slot.sameScreenGame);
             
-            if (!serializer.isWriting) slot.customRewardDescription = new String[serializer.input.i32()];
-            else serializer.output.i32(slot.customRewardDescription.length);
-            for (int i = 0; i < slot.customRewardDescription.length; ++i)
-                slot.customRewardDescription[i] = serializer.str16(slot.customRewardDescription[i]);
+            if (serializer.revision.isAfterVitaRevision(0x5c)) {
+                slot.sizeOfResources = serializer.u32(slot.sizeOfResources);
+                slot.sizeOfSubLevels = serializer.u32(slot.sizeOfSubLevels);
+                slot.subLevels = serializer.array(slot.subLevels, SlotID.class);
+                slot.slotList = serializer.resource(slot.slotList, ResourceType.SLOT_LIST);
+            }
             
-            slot.containsCollectabubbles = serializer.bool(slot.containsCollectabubbles);
-            slot.enforceMinMaxPlayers = serializer.bool(slot.enforceMinMaxPlayers);
-            slot.sameScreenGame = serializer.bool(slot.sameScreenGame);
-            
-            slot.sizeOfResources = serializer.u32(slot.sizeOfResources);
-            slot.sizeOfSubLevels = serializer.u32(slot.sizeOfSubLevels);
-            
-            slot.subLevels = serializer.array(slot.subLevels, SlotID.class);
-            slot.slotList = serializer.resource(slot.slotList, ResourceType.SLOT_LIST);
-            
-            slot.vitaRevision = serializer.i32(slot.vitaRevision);
+            if (serializer.revision.isAfterVitaRevision(0x7f))
+                slot.vitaRevision = serializer.i16(slot.vitaRevision);
         }
         
         if (!serializer.revision.isLBP3()) return slot;
