@@ -34,7 +34,9 @@ public class Plan implements Serializable {
         // there are, so wrapping it in an try/catch block just in case.
         
         try {
-            if (serializer.revision.head > 0x18b) {
+            if (!serializer.isWriting && serializer.input.offset == serializer.input.length)
+                return plan;
+            if (serializer.revision.head >= 0x197) {
                 plan.details = serializer.struct(plan.details, InventoryDetails.class);
 
                 if ((serializer.revision.head == 0x272 && serializer.revision.branchID != 0) || serializer.revision.head > 0x2ba) {
