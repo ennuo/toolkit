@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Dependinator extends javax.swing.JFrame {
     private Resource resource;
@@ -74,35 +76,41 @@ public class Dependinator extends javax.swing.JFrame {
             this.updateDescriptorButton.setEnabled(false);
         });
         
-        this.currentDescriptorText.addActionListener(e -> {
-            String text = this.currentDescriptorText.getText();
-            text = text.replaceAll("\\s", "");
-            
-            boolean isGUID = StringUtils.isGUID(text);
-            if (!(isGUID || StringUtils.isSHA1(text))) {
-                this.updateDescriptorButton.setEnabled(false);
-                return;
-            }
-            
-            ResourceDescriptor newDescriptor = new ResourceDescriptor(
-                    this.dependencies.get(this.descriptorList.getSelectedIndex()).type,
-                    text
-            );
-            
-            // If the resource type is music settings or fsb (filename), it can only take in GUIDs
-            if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
-                || newDescriptor.type.equals(ResourceType.FILENAME))
-                || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) && !isGUID) {
-                this.updateDescriptorButton.setEnabled(false);
-                return;
-            }
-            
-            this.updateDescriptorButton.setEnabled(!this.modifications.contains(newDescriptor));
+        this.currentDescriptorText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { onTextChange(); }
+            @Override public void removeUpdate(DocumentEvent e) { onTextChange(); }
+            @Override public void changedUpdate(DocumentEvent e) { return; }
         });
         
         this.descriptorList.setSelectedIndex(0);
        
         this.setVisible(true);
+    }
+    
+    private void onTextChange() {
+        String text = this.currentDescriptorText.getText();
+        text = text.replaceAll("\\s", "");
+
+        boolean isGUID = StringUtils.isGUID(text);
+        if (!(isGUID || StringUtils.isSHA1(text))) {
+            this.updateDescriptorButton.setEnabled(false);
+            return;
+        }
+
+        ResourceDescriptor newDescriptor = new ResourceDescriptor(
+                this.dependencies.get(this.descriptorList.getSelectedIndex()).type,
+                text
+        );
+
+        // If the resource type is music settings or fsb (filename), it can only take in GUIDs
+        if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
+            || newDescriptor.type.equals(ResourceType.FILENAME))
+            || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) && !isGUID) {
+            this.updateDescriptorButton.setEnabled(false);
+            return;
+        }
+
+        this.updateDescriptorButton.setEnabled(!this.modifications.contains(newDescriptor));
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
