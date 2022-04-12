@@ -23,6 +23,10 @@ public class ArchiveManager extends javax.swing.JDialog {
             archiveModel.addElement(archive.file.getAbsolutePath());
         this.archivesList.setModel(this.archiveModel);
         
+        this.saveChangesButton.setEnabled(false);
+        if (Globals.archives.size() == 0)
+            this.removeButton.setEnabled(false);
+        
         this.addButton.addActionListener(e -> {
             File file = FileChooser.openFile("data.farc", "farc", false);
             if (file == null) return;
@@ -75,9 +79,26 @@ public class ArchiveManager extends javax.swing.JDialog {
             Toolkit.instance.updateWorkspace();
         });
         
+        this.saveChangesButton.addActionListener(e -> {
+            int index = this.archivesList.getSelectedIndex();
+            if (index == -1) return;
+            
+            FileArchive archive = Globals.archives.get(index);
+            
+            if (archive.shouldSave)
+                archive.save();
+            
+            this.saveChangesButton.setEnabled(false);
+        });
+        
+        this.archivesList.addListSelectionListener(e -> {
+            int index = this.archivesList.getSelectedIndex();
+            if (index == -1) return;
+            FileArchive archive = Globals.archives.get(index);
+            this.saveChangesButton.setEnabled(archive.shouldSave);
+        });
+        
         this.closeButton.addActionListener(e -> this.dispose());
-        
-        
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -89,6 +110,7 @@ public class ArchiveManager extends javax.swing.JDialog {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
+        saveChangesButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Archive Manager");
@@ -104,6 +126,8 @@ public class ArchiveManager extends javax.swing.JDialog {
 
         closeButton.setText("Close");
 
+        saveChangesButton.setText("Save");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -116,6 +140,8 @@ public class ArchiveManager extends javax.swing.JDialog {
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(saveChangesButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(closeButton))
                     .addGroup(layout.createSequentialGroup()
@@ -134,7 +160,8 @@ public class ArchiveManager extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addButton)
                     .addComponent(removeButton)
-                    .addComponent(closeButton))
+                    .addComponent(closeButton)
+                    .addComponent(saveChangesButton))
                 .addContainerGap())
         );
 
@@ -148,5 +175,6 @@ public class ArchiveManager extends javax.swing.JDialog {
     private javax.swing.JList<String> archivesList;
     private javax.swing.JButton closeButton;
     private javax.swing.JButton removeButton;
+    private javax.swing.JButton saveChangesButton;
     // End of variables declaration//GEN-END:variables
 }
