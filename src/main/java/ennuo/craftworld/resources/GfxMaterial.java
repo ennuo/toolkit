@@ -27,8 +27,10 @@ public class GfxMaterial implements Serializable {
     public byte fuzzLengthAndRefractiveFlag, translucencyDensity,
     fuzzSwirlAngle, fuzzSwirlAmplitude, fuzzLightingBias,
     fuzzLightingScale, iridescenceRoughness;
+    
+    int[] blobBinaryOffsets;
+    byte[] ps3BinaryCode;
 
-    byte[][] shaders;
     public ResourceDescriptor[] textures;
 
     public byte[] wrapS, wrapT;
@@ -46,6 +48,22 @@ public class GfxMaterial implements Serializable {
         this.serialize(serializer, this);
     }
     
+    public int getBlobOffsetCount(Revision revision) {
+        int sourceOffsets = 0xC;
+        if ((this.flags & 0x10000) != 0)
+            sourceOffsets = 0x18;
+        if (revision.head < 0x3c1 || !revision.isVita() || !revision.isAfterVitaRevision(0xF))
+            sourceOffsets = 0xA;
+        if (revision.head < 0x393)
+            sourceOffsets = 0x8;
+        if (revision.head < 0x34f)
+            sourceOffsets = 0x4;
+        if ((revision.head < 0x2d0 && !revision.isLeerdammer()) ||
+                (revision.isLeerdammer() && !revision.isAfterLeerdammerRevision(0x12)))
+            sourceOffsets = 0x3;
+        return sourceOffsets;
+    }
+    
     public GfxMaterial serialize(Serializer serializer, Serializable structure) {
         
         GfxMaterial gfxMaterial = null;
@@ -55,7 +73,7 @@ public class GfxMaterial implements Serializable {
         gfxMaterial.flags = serializer.i32(gfxMaterial.flags);
         gfxMaterial.alphaTestLevel = serializer.f32(gfxMaterial.alphaTestLevel);
         gfxMaterial.alphaLayer = serializer.i8(gfxMaterial.alphaLayer);
-        if (serializer.revision.head > 0x331)
+        if (serializer.revision.head > 0x2f9)
             gfxMaterial.alphaMode = serializer.i8(gfxMaterial.alphaMode);
         gfxMaterial.shadowCastMode = serializer.i8(gfxMaterial.shadowCastMode);
         gfxMaterial.bumpLevel = serializer.f32(gfxMaterial.bumpLevel);
@@ -77,39 +95,20 @@ public class GfxMaterial implements Serializable {
                 gfxMaterial.iridescenceRoughness = serializer.i8(gfxMaterial.iridescenceRoughness);
             }
         }
-       
-        // NOTE(Aidan): RGfxMaterial still had 3 shaders at 0x272 branch (0x4c440009)
-        // current Resource class doesn't hold branch information yet, so nothing I
-        // can do about that here at the moment.
         
-        int shaderCount = 3;
-        if (serializer.revision.isVita()) shaderCount = 25;
-        else if (serializer.revision.head >= 0x398) shaderCount = 11;
-        else if (serializer.revision.head >= 0x353) shaderCount = 8;
-        else if (serializer.revision.head == 0x272 || serializer.revision.head >= 0x336) shaderCount = 4;
-        
+        int sourceOffsets = gfxMaterial.getBlobOffsetCount(serializer.revision);
         if (serializer.isWriting) {
-            int offset = 0;
-            if (serializer.revision.head < 0x398) 
-                serializer.output.i32(0);
-            for (int i = 0; i < shaderCount; ++i) {
-                byte[] shader = gfxMaterial.shaders[i];
-                offset += shader.length;
-                serializer.output.i32(offset);
-            }
-            for (int i = 0; i < shaderCount; ++i)
-                serializer.output.bytes(gfxMaterial.shaders[i]);
+            for (int i = 0; i  < sourceOffsets; ++i)
+                serializer.output.i32(gfxMaterial.blobBinaryOffsets[i]);
+            serializer.output.i8a(gfxMaterial.ps3BinaryCode);
             for (int i = 0; i < 8; ++i)
                 serializer.output.resource(gfxMaterial.textures[i]);            
-        } else {            
-            gfxMaterial.shaders = new byte[shaderCount][];
-            
-            int[] offsets = new int[shaderCount + 1];
-            for (int i = (serializer.revision.head >= 0x398) ? 1 : 0; i < shaderCount + 1; ++i)
-                offsets[i] = serializer.input.i32();
-            for (int i = 1; i <= shaderCount; ++i)
-                gfxMaterial.shaders[i - 1] = serializer.input.bytes(offsets[i] - offsets[i - 1]);
-            
+        } else {
+            // offsets are based on start until 0x393
+            gfxMaterial.blobBinaryOffsets  = new int[sourceOffsets];
+            for (int i = 0; i < sourceOffsets; ++i)
+                gfxMaterial.blobBinaryOffsets[i] = serializer.input.i32();
+            gfxMaterial.ps3BinaryCode = serializer.input.i8a();
             gfxMaterial.textures = new ResourceDescriptor[8];
             for (int i = 0; i < 8; ++i)
                 gfxMaterial.textures[i] = serializer.input.resource(ResourceType.TEXTURE);
@@ -131,9 +130,7 @@ public class GfxMaterial implements Serializable {
     }
     
     public byte[] build(Revision revision, byte compressionFlags) {
-        int dataSize = 0x1000;
-        for (byte[] shader : this.shaders)
-            dataSize += shader.length;
+        int dataSize = 0x1000 + this.ps3BinaryCode.length;
         Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
         return Resource.compressToResource(serializer.output, ResourceType.GFX_MATERIAL);      
