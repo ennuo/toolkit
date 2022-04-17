@@ -63,7 +63,7 @@ public class MeshIO {
                 builder.append("vn " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
             for (Vector2f vertex : mesh.getUVs(channel))
                 builder.append("vt " + vertex.x + " " + (1.0f - vertex.y) + '\n');
-            short[] indices = mesh.getIndices();
+            int[] indices = mesh.getIndices();
             // NOTE(Aidan): Wavefront OBJ has 1-based indices.
             for (int i = 0; i < indices.length; ++i)
                 indices[i] += 1;
