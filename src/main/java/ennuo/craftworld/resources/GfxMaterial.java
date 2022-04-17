@@ -17,6 +17,11 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 public class GfxMaterial implements Serializable {
+    public static final int MAX_TEXTURES = 8;
+    public static final int MAX_WRAPS = 8;
+    public static final int UV_OFFSETS = 0x10;
+    public static final int UV_SCALES = 0x8;
+    
     public int flags;
     public float alphaTestLevel;
     public byte alphaLayer, alphaMode, shadowCastMode;
@@ -31,9 +36,9 @@ public class GfxMaterial implements Serializable {
     int[] blobBinaryOffsets;
     byte[] ps3BinaryCode;
 
-    public ResourceDescriptor[] textures;
+    public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
 
-    public byte[] wrapS, wrapT;
+    public byte[] wrapS = new byte[MAX_WRAPS], wrapT = new byte[MAX_WRAPS];
 
     public Box[] boxes;
     public Wire[] wires;
@@ -41,6 +46,14 @@ public class GfxMaterial implements Serializable {
     public int soundEnum;
 
     public ParameterAnimation[] parameterAnimations;
+    
+    public short[] uvOffsets = new short[UV_OFFSETS];
+    public short[] uvScales = new short[UV_SCALES];
+
+    public byte[] cycleCount = new byte[2];
+    public byte[] conditionalTexLookups = new byte[2];
+    public byte[] unconditionalTexLookups = new byte[2];
+    public byte[] nonDependentTexLookups = new byte[2];
     
     public GfxMaterial() {}
     public GfxMaterial(Resource resource) {
@@ -65,72 +78,93 @@ public class GfxMaterial implements Serializable {
     }
     
     public GfxMaterial serialize(Serializer serializer, Serializable structure) {
+        GfxMaterial gmat = (structure == null) ? new GfxMaterial() : (GfxMaterial) structure;
         
-        GfxMaterial gfxMaterial = null;
-        if (structure != null) gfxMaterial = (GfxMaterial) structure;
-        else gfxMaterial = new GfxMaterial();
-        
-        gfxMaterial.flags = serializer.i32(gfxMaterial.flags);
-        gfxMaterial.alphaTestLevel = serializer.f32(gfxMaterial.alphaTestLevel);
-        gfxMaterial.alphaLayer = serializer.i8(gfxMaterial.alphaLayer);
+        gmat.flags = serializer.i32(gmat.flags);
+        gmat.alphaTestLevel = serializer.f32(gmat.alphaTestLevel);
+        gmat.alphaLayer = serializer.i8(gmat.alphaLayer);
         if (serializer.revision.head > 0x2f9)
-            gfxMaterial.alphaMode = serializer.i8(gfxMaterial.alphaMode);
-        gfxMaterial.shadowCastMode = serializer.i8(gfxMaterial.shadowCastMode);
-        gfxMaterial.bumpLevel = serializer.f32(gfxMaterial.bumpLevel);
-        gfxMaterial.cosinePower = serializer.f32(gfxMaterial.cosinePower);
-        gfxMaterial.reflectionBlur = serializer.f32(gfxMaterial.reflectionBlur);
-        gfxMaterial.refractiveIndex = serializer.f32(gfxMaterial.refractiveIndex);
-        if (serializer.revision.head > 0x13003ef) {
-            gfxMaterial.refractiveFresnelFalloffPower = serializer.f32(gfxMaterial.refractiveFresnelFalloffPower);
-            gfxMaterial.refractiveFresnelMultiplier = serializer.f32(gfxMaterial.refractiveFresnelMultiplier);
-            gfxMaterial.refractiveFresnelOffset = serializer.f32(gfxMaterial.refractiveFresnelOffset);
-            gfxMaterial.refractiveFresnelShift = serializer.f32(gfxMaterial.refractiveFresnelShift);
-            gfxMaterial.fuzzLengthAndRefractiveFlag = serializer.i8(gfxMaterial.fuzzLengthAndRefractiveFlag);
-            if (serializer.revision.head > 0x17703ef) {
-                gfxMaterial.translucencyDensity = serializer.i8(gfxMaterial.translucencyDensity);
-                gfxMaterial.fuzzSwirlAngle = serializer.i8(gfxMaterial.fuzzSwirlAngle);
-                gfxMaterial.fuzzSwirlAmplitude = serializer.i8(gfxMaterial.fuzzSwirlAmplitude);
-                gfxMaterial.fuzzLightingBias = serializer.i8(gfxMaterial.fuzzLightingBias);
-                gfxMaterial.fuzzLightingScale = serializer.i8(gfxMaterial.fuzzLightingScale);
-                gfxMaterial.iridescenceRoughness = serializer.i8(gfxMaterial.iridescenceRoughness);
+            gmat.alphaMode = serializer.i8(gmat.alphaMode);
+        gmat.shadowCastMode = serializer.i8(gmat.shadowCastMode);
+        gmat.bumpLevel = serializer.f32(gmat.bumpLevel);
+        gmat.cosinePower = serializer.f32(gmat.cosinePower);
+        gmat.reflectionBlur = serializer.f32(gmat.reflectionBlur);
+        gmat.refractiveIndex = serializer.f32(gmat.refractiveIndex);
+        if (serializer.revision.isAfterLBP3Revision(0x139)) {
+            gmat.refractiveFresnelFalloffPower = serializer.f32(gmat.refractiveFresnelFalloffPower);
+            gmat.refractiveFresnelMultiplier = serializer.f32(gmat.refractiveFresnelMultiplier);
+            gmat.refractiveFresnelOffset = serializer.f32(gmat.refractiveFresnelOffset);
+            gmat.refractiveFresnelShift = serializer.f32(gmat.refractiveFresnelShift);
+            if (serializer.revision.isAfterLBP3Revision(0x16a)) {
+                gmat.fuzzLengthAndRefractiveFlag = serializer.i8(gmat.fuzzLengthAndRefractiveFlag);
+                if (serializer.revision.isAfterLBP3Revision(0x17b)) {
+                    gmat.translucencyDensity = serializer.i8(gmat.translucencyDensity);
+                    gmat.fuzzSwirlAngle = serializer.i8(gmat.fuzzSwirlAngle);
+                    gmat.fuzzSwirlAmplitude = serializer.i8(gmat.fuzzSwirlAmplitude);
+                    gmat.fuzzLightingBias = serializer.i8(gmat.fuzzLightingBias);
+                    gmat.fuzzLightingScale = serializer.i8(gmat.fuzzLightingScale);
+                    gmat.iridescenceRoughness = serializer.i8(gmat.iridescenceRoughness);
+                }
             }
         }
         
-        int sourceOffsets = gfxMaterial.getBlobOffsetCount(serializer.revision);
+        int sourceOffsets = gmat.getBlobOffsetCount(serializer.revision);
         if (serializer.isWriting) {
             for (int i = 0; i  < sourceOffsets; ++i)
-                serializer.output.i32(gfxMaterial.blobBinaryOffsets[i]);
-            serializer.output.i8a(gfxMaterial.ps3BinaryCode);
+                serializer.output.i32(gmat.blobBinaryOffsets[i]);
+            serializer.output.i8a(gmat.ps3BinaryCode);
             for (int i = 0; i < 8; ++i)
-                serializer.output.resource(gfxMaterial.textures[i]);            
+                serializer.output.resource(gmat.textures[i]);            
         } else {
             // offsets are based on start until 0x393
-            gfxMaterial.blobBinaryOffsets  = new int[sourceOffsets];
+            gmat.blobBinaryOffsets  = new int[sourceOffsets];
             for (int i = 0; i < sourceOffsets; ++i)
-                gfxMaterial.blobBinaryOffsets[i] = serializer.input.i32();
-            gfxMaterial.ps3BinaryCode = serializer.input.i8a();
-            gfxMaterial.textures = new ResourceDescriptor[8];
+                gmat.blobBinaryOffsets[i] = serializer.input.i32();
+            gmat.ps3BinaryCode = serializer.input.i8a();
+            gmat.textures = new ResourceDescriptor[8];
             for (int i = 0; i < 8; ++i)
-                gfxMaterial.textures[i] = serializer.input.resource(ResourceType.TEXTURE);
+                gmat.textures[i] = serializer.input.resource(ResourceType.TEXTURE);
         }
         
-        gfxMaterial.wrapS = serializer.i8a(gfxMaterial.wrapS);
-        gfxMaterial.wrapT = serializer.i8a(gfxMaterial.wrapT);
-        gfxMaterial.boxes = serializer.array(gfxMaterial.boxes, Box.class);
-        gfxMaterial.wires = serializer.array(gfxMaterial.wires, Wire.class);
+        gmat.wrapS = serializer.i8a(gmat.wrapS);
+        gmat.wrapT = serializer.i8a(gmat.wrapT);
+        gmat.boxes = serializer.array(gmat.boxes, Box.class);
+        gmat.wires = serializer.array(gmat.wires, Wire.class);
         
-        if (serializer.revision.head > 0x148)
-            gfxMaterial.soundEnum = serializer.i32(gfxMaterial.soundEnum);
+        if (serializer.revision.head > 0x15a)
+            gmat.soundEnum = serializer.i32(gmat.soundEnum);
         
-        if (serializer.revision.head >= 0x2a2)
-            gfxMaterial.parameterAnimations = 
-                        serializer.array(gfxMaterial.parameterAnimations, ParameterAnimation.class);
+        if (serializer.revision.head > 0x2a1)
+            gmat.parameterAnimations = 
+                        serializer.array(gmat.parameterAnimations, ParameterAnimation.class);
         
-        return gfxMaterial;
+        if (serializer.revision.isAfterVitaRevision(0x18)) {
+            for (int i = 0; i < UV_OFFSETS; ++i)
+                gmat.uvOffsets[i] = serializer.i16(gmat.uvOffsets[i]);
+            for (int i = 0; i < UV_SCALES; ++i)
+                gmat.uvScales[i] = serializer.i16(gmat.uvScales[i]);
+        }
+        
+        if (serializer.revision.isAfterVitaRevision(0x3)) {
+            gmat.cycleCount[0] = serializer.i8(gmat.cycleCount[0]);
+            gmat.cycleCount[1] = serializer.i8(gmat.cycleCount[1]);
+
+            gmat.conditionalTexLookups[0] = serializer.i8(gmat.conditionalTexLookups[0]);
+            gmat.conditionalTexLookups[1] = serializer.i8(gmat.conditionalTexLookups[1]);
+
+            gmat.unconditionalTexLookups[0] = serializer.i8(gmat.unconditionalTexLookups[0]);
+            gmat.unconditionalTexLookups[1] = serializer.i8(gmat.unconditionalTexLookups[1]);
+
+            gmat.nonDependentTexLookups[0] = serializer.i8(gmat.nonDependentTexLookups[0]);
+            gmat.nonDependentTexLookups[1] = serializer.i8(gmat.nonDependentTexLookups[1]);
+        }
+        
+        
+        return gmat;
     }
     
     public byte[] build(Revision revision, byte compressionFlags) {
-        int dataSize = 0x1000 + this.ps3BinaryCode.length;
+        int dataSize = 0x2000 + this.ps3BinaryCode.length;
         Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
         return Resource.compressToResource(serializer.output, ResourceType.GFX_MATERIAL);      
