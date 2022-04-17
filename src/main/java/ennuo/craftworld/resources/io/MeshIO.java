@@ -790,10 +790,10 @@ public class MeshIO {
                     int triangleStart = output.offset;
                     ennuo.craftworld.resources.structs.mesh.MeshPrimitive primitive
                             = subMeshes[i][j];
-                    short[] triangles = mesh.getIndices(primitive);
+                    int[] triangles = mesh.getIndices(primitive);
                     primitive.minVert = getMin(triangles);
                     primitive.maxVert = getMax(triangles);
-                    for (short triangle : triangles)
+                    for (int triangle : triangles)
                         output.i16LE((short) (triangle - primitive.minVert));
                     createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.offset - triangleStart);
                 }
@@ -871,16 +871,16 @@ public class MeshIO {
             return output.buffer;
         }
         
-        public static short getMin(short[] triangles) {
-            short minValue = triangles[0];
+        public static int getMin(int[] triangles) {
+            int minValue = triangles[0];
             for (int i = 1; i < triangles.length; ++i)
                 if (triangles[i] < minValue)
                     minValue = triangles[i];
             return minValue;
         }
         
-        public static short getMax(short[] triangles) {
-            short maxValue = triangles[0];
+        public static int getMax(int[] triangles) {
+            int maxValue = triangles[0];
             for (int i = 1; i < triangles.length; ++i)
                 if (triangles[i] > maxValue)
                     maxValue = triangles[i];

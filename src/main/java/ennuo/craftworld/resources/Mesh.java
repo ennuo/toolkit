@@ -132,7 +132,7 @@ public class Mesh implements Serializable {
         
         mesh.attributes = serializer.i8a(mesh.attributes);
         mesh.indices = serializer.i8a(mesh.indices);
-        if (serializer.revision.head >= 0x016b03f0)
+        if (serializer.revision.isAfterLBP3Revision(0x16a))
             mesh.triangles = serializer.i8a(mesh.triangles);
         
         mesh.meshPrimitives = serializer.array(mesh.meshPrimitives, MeshPrimitive.class);
@@ -174,7 +174,7 @@ public class Mesh implements Serializable {
         mesh.bevelVertexCount = serializer.i32(mesh.bevelVertexCount);
         mesh.implicitBevelSprings = serializer.bool(mesh.implicitBevelSprings);
         
-        if (serializer.revision.head >= 0x015f03ef)
+        if (serializer.revision.isAfterLBP3Revision(0xd5))
             mesh.skeletonType = serializer.i8(mesh.skeletonType);
         
         return mesh;
@@ -364,16 +364,16 @@ public class Mesh implements Serializable {
         return morphs;
     }
     
-    public short[] getIndices(int start, int count) {
-        short[] faces = new short[count];
+    public int[] getIndices(int start, int count) {
+        int[] faces = new int[count];
         Data data = new Data(this.indices);
         data.offset = 0x2 * start;
         for (int i = 0; i < count; ++i)
-            faces[i] = data.i16();
+            faces[i] = (data.i16() & 0xFFFF) >>> 0;
         if (this.primitiveType == 5) return faces;
-        ArrayList<Short> triangles = new ArrayList<Short>(count * 3);
+        ArrayList<Integer> triangles = new ArrayList<Integer>(count * 3);
         for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
-            if (i == -1 || (faces[i] == -1)) {
+            if (i == -1 || (faces[i] == 0xFFFF)) {
                 if (i + 3 >= count) break;
                 triangles.add(faces[i + 1]);
                 triangles.add(faces[i + 2]);
@@ -393,15 +393,15 @@ public class Mesh implements Serializable {
             }
         }
         
-        short[] tris = new short[triangles.size()];
+        int[] tris = new int[triangles.size()];
         for (int i = 0; i < tris.length; ++i)
             tris[i] = triangles.get(i);
         return tris;
     }
     
-    public short[] getIndices(MeshPrimitive primitive) {
+    public int[] getIndices(MeshPrimitive primitive) {
         return this.getIndices(primitive.firstIndex, primitive.numIndices);
     }
     
-    public short[] getIndices() { return this.getIndices(0, this.numIndices); }
+    public int[] getIndices() { return this.getIndices(0, this.numIndices); }
 }
