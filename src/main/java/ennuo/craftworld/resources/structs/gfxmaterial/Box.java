@@ -14,7 +14,7 @@ public class Box implements Serializable {
     
     public int type;
     public long[] params;
-    public float x, y, z, w;
+    public float x, y, w, h;
     public int subType;
     
     public ParameterAnimation anim;
@@ -27,24 +27,25 @@ public class Box implements Serializable {
         
         box.type = serializer.i32(box.type);
         
-        if (serializer.revision.head >= 0x2b2)
-            box.params = serializer.u32a(box.params);
-        else {
+        if (serializer.revision.head < 0x2a4) {
             if (!serializer.isWriting) box.params = new long[6];
             for (int i = 0; i < 6; ++i)
                 box.params[i] = serializer.u32(box.params[i]);
-        }
-        
+        } else box.params = serializer.u32a(box.params);
+
         box.x = serializer.f32(box.x);
         box.y = serializer.f32(box.y);
-        box.z = serializer.f32(box.z);
         box.w = serializer.f32(box.w);
+        box.h = serializer.f32(box.h);
         
-        if (serializer.revision.head >= 0x2a2) {
+        if (serializer.revision.head > 0x2a3)
             box.subType = serializer.i32(box.subType);
+        
+        if (serializer.revision.head > 0x2a1)
             box.anim = serializer.struct(box.anim, ParameterAnimation.class);
+        
+        if (serializer.revision.head > 0x2a3)
             box.anim2 = serializer.struct(box.anim2, ParameterAnimation.class);
-        }
         
         return box;
     }

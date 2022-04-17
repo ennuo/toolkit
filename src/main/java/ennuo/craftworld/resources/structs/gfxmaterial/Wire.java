@@ -4,8 +4,11 @@ import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 
 public class Wire implements Serializable {
+    public static final int SWIZZLE_ELEMENT_COUNT = 5;
+    
     public int boxFrom, boxTo;
     public byte portFrom, portTo;
+    public byte[] swizzle = new byte[SWIZZLE_ELEMENT_COUNT];
     
     public Wire serialize(Serializer serializer, Serializable structure) {
         Wire wire = null;
@@ -16,10 +19,8 @@ public class Wire implements Serializable {
         wire.boxTo = (int) serializer.u32d(wire.boxTo);
         wire.portFrom = serializer.i8(wire.portFrom);
         wire.portTo = serializer.i8(wire.portTo);
-        
-        // NOTE(Aidan): I have no idea what this is, no named fields for it,
-        // it's always just null bytes, so I figure it doesn't matter anyway.
-        serializer.pad(0x5);
+        for (int i = 0; i < SWIZZLE_ELEMENT_COUNT; ++i)
+                    wire.swizzle[i] = serializer.i8(wire.swizzle[i]);
         
         return wire;
     }
