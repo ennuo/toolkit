@@ -86,7 +86,7 @@ public class Resource {
                 }
                 
                 if (this.isCompressed)
-                    Compressor.decompressData(this.handle);
+                    Compressor.decompressData(this.handle, dependencyTableOffset);
                 else if (dependencyTableOffset != -1)
                     this.handle.setData(this.handle.bytes(dependencyTableOffset - this.handle.offset));
                 else this.handle.setData(this.handle.bytes(this.handle.length - this.handle.offset));
@@ -100,7 +100,7 @@ public class Resource {
             case GXT_EXTENDED:
                 if (this.type != ResourceType.TEXTURE)
                     this.textureInfo = new TextureInfo(this.handle, this.method);
-                Compressor.decompressData(this.handle);
+                Compressor.decompressData(this.handle, this.handle.length);
                 break;
         }
     }

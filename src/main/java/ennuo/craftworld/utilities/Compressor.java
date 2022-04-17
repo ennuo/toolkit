@@ -37,9 +37,14 @@ public class Compressor {
         } catch (DataFormatException  ex) { return null; }
     }
     
-    public static void decompressData(Data data) {
+    public static void decompressData(Data data, int endOffset) {
         data.i16(); // Some flag? Always 0x0001
         short chunks = data.i16();
+        
+        if (chunks == 0) {
+            data.setData(data.bytes(endOffset - data.offset));
+            return;
+        }
         
         int[] compressed = new int[chunks];
         int[] decompressed = new int[chunks];
