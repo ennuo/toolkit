@@ -6,7 +6,9 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.TextureInfo;
+import ennuo.craftworld.resources.structs.mesh.StaticPrimitive;
 import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Compressor;
@@ -20,6 +22,7 @@ public class Resource {
     public ResourceType type = ResourceType.INVALID;
     public SerializationMethod method = SerializationMethod.UNKNOWN;
     public TextureInfo textureInfo;
+    public StaticMeshInfo meshInfo;
     public Revision revision;
     private boolean isCompressed = true;
     public byte compressionFlags = 0;
@@ -51,7 +54,7 @@ public class Resource {
     private void process() {
         if (this.handle == null || this.handle.length < 0xb) return;
         this.type = ResourceType.fromMagic(this.handle.str(3));
-        if (this.type == ResourceType.INVALID || this.type == ResourceType.STATIC_MESH) { this.handle.seek(0); return; }
+        if (this.type == ResourceType.INVALID) { this.handle.seek(0); return; }
         this.method = SerializationMethod.getValue(this.handle.str(1));
         if (this.method == SerializationMethod.UNKNOWN) { this.handle.seek(0); return; }
         switch (this.method) {
@@ -63,17 +66,20 @@ public class Resource {
                 if (this.revision.head >= 0x109) {
                     dependencyTableOffset = this.getDependencies();
                     if (this.revision.head >= 0x189) {
-                        if (this.revision.head >= 0x271) { 
-                            // NOTE(Aidan): Were they actually added on 0x27a, but how can it be on 0x272 then?!
-                            this.revision.branchID = this.handle.i16();
-                            this.revision.branchRevision = this.handle.i16();
-                            this.handle.revision = revision;
-                        }
-                        if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0)) {
-                            this.compressionFlags = this.handle.i8();
-                            this.handle.compressionFlags = this.compressionFlags;
-                        }
-                        this.isCompressed = this.handle.bool();
+                        if (this.type != ResourceType.STATIC_MESH) {
+                            if (this.revision.head >= 0x271) { 
+                                // NOTE(Aidan): Were they actually added on 0x27a, but how can it be on 0x272 then?!
+                                this.revision.branchID = this.handle.i16();
+                                this.revision.branchRevision = this.handle.i16();
+                                this.handle.revision = revision;
+                            }
+                            if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0)) {
+                                this.compressionFlags = this.handle.i8();
+                                this.handle.compressionFlags = this.compressionFlags;
+                            }
+                            this.isCompressed = this.handle.bool();
+                        } else 
+                            this.meshInfo = new Serializer(this.handle).struct(null, StaticMeshInfo.class);
                     }
                 }
                 
@@ -134,35 +140,47 @@ public class Resource {
         int index = this.dependencies.indexOf(oldDescriptor);
         if (index == -1) return;
         
-        ResourceType type = oldDescriptor.type;
-        boolean isFSB = type.equals(ResourceType.FILENAME);
-        byte[] oldDescBuffer, newDescBuffer;
-        
-        // Music dependencies are actually the GUID dependencies of a script,
-        // so they don't have the same structure for referencing.
-        if (type.equals(ResourceType.MUSIC_SETTINGS) || type.equals(ResourceType.FILE_OF_BYTES) || isFSB) {
-            oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
-            newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
-        } else {
-            oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
-            newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
-        }
-        
-        
-        if (this.type == ResourceType.PLAN) {
-            Plan plan = new Plan(this);
-            Data thingData = new Data(plan.thingData, this.revision);
-            Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
-            plan.thingData = thingData.data;
-            
-            if (isFSB && plan.details != null) {
-                if (oldDescriptor.GUID == plan.details.highlightSound)
-                    plan.details.highlightSound = newDescriptor.GUID;
+        if (this.type != ResourceType.STATIC_MESH) {
+            ResourceType type = oldDescriptor.type;
+            boolean isFSB = type.equals(ResourceType.FILENAME);
+            byte[] oldDescBuffer, newDescBuffer;
+
+            // Music dependencies are actually the GUID dependencies of a script,
+            // so they don't have the same structure for referencing.
+            if (type.equals(ResourceType.MUSIC_SETTINGS) || type.equals(ResourceType.FILE_OF_BYTES) || isFSB) {
+                oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
+                newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
+            } else {
+                oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
+                newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
             }
-            
-            this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
+
+
+            if (this.type == ResourceType.PLAN) {
+                Plan plan = new Plan(this);
+                Data thingData = new Data(plan.thingData, this.revision);
+                Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
+                plan.thingData = thingData.data;
+
+                if (isFSB && plan.details != null) {
+                    if (oldDescriptor.GUID == plan.details.highlightSound)
+                        plan.details.highlightSound = newDescriptor.GUID;
+                }
+
+                this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
+            }
+            Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
+        } else {
+            if (this.meshInfo.fallmap.equals(oldDescriptor))
+                this.meshInfo.fallmap = newDescriptor;
+            if (this.meshInfo.lightmap.equals(oldDescriptor))
+                this.meshInfo.lightmap = newDescriptor;
+            if (this.meshInfo.risemap.equals(oldDescriptor))
+                this.meshInfo.risemap = newDescriptor;
+            for (StaticPrimitive primitive : this.meshInfo.primitives)
+                if (primitive.gmat.equals(oldDescriptor))
+                    primitive.gmat = newDescriptor;
         }
-        Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
         
         // Remove the dependency from the array if it's effectively null.
         if (newDescriptor == null || newDescriptor.GUID == 0)
@@ -209,6 +227,13 @@ public class Resource {
         return resource.compressToResource();
     }
     
+    public static byte[] compressToResource(Output data, StaticMeshInfo info) {
+        Resource resource = new Resource(data);
+        resource.meshInfo = info;
+        resource.type = ResourceType.STATIC_MESH;
+        return resource.compressToResource();
+    }
+    
     public static byte[] compressToResource(Output data, ResourceType type) {
         Resource resource = new Resource(data);
         resource.type = type;
@@ -218,7 +243,6 @@ public class Resource {
     }
     
     public byte[] compressToResource() {
-        if (this.type == ResourceType.STATIC_MESH) return this.handle.data;
         Output output = new Output(this.dependencies.size() * 0x1c + this.handle.length + 0x50);
         
         if (this.method == SerializationMethod.TEXT) {
@@ -233,13 +257,17 @@ public class Resource {
         if (this.revision.head >= 0x109) {
             output.i32f(0); // Dummy value for dependency table offset.
             if (this.revision.head >= 0x189) {
-                if (this.revision.head >= 0x271) {
-                    output.i16(this.revision.branchID);
-                    output.i16(this.revision.branchRevision);
+                if (this.type == ResourceType.STATIC_MESH)
+                    new Serializer(output).struct(this.meshInfo, StaticMeshInfo.class);
+                else {
+                    if (this.revision.head >= 0x271) {
+                        output.i16(this.revision.branchID);
+                        output.i16(this.revision.branchRevision);
+                    }
+                    if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0))
+                        output.i8(this.compressionFlags);
+                    output.bool(this.isCompressed);
                 }
-                if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0))
-                    output.i8(this.compressionFlags);
-                output.bool(this.isCompressed);
             }
             
             byte[] data = this.handle.data;
