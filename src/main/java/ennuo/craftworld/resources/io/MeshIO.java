@@ -26,11 +26,14 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.GfxMaterial;
+import ennuo.craftworld.resources.StaticMesh;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.animation.AnimationBone;
 import ennuo.craftworld.resources.structs.gfxmaterial.Box;
 import ennuo.craftworld.resources.structs.gfxmaterial.Wire;
 import ennuo.craftworld.resources.structs.mesh.Bone;
 import ennuo.craftworld.resources.structs.mesh.Morph;
+import ennuo.craftworld.resources.structs.mesh.StaticPrimitive;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import java.awt.Color;
@@ -229,6 +232,99 @@ public class MeshIO {
             
             
             
+            
+            return glb;
+        }
+        
+        public static GLB FromMesh(StaticMesh mesh) {
+            GLB glb = new GLB();
+            byte[] dataBuffer = glb.getBufferFromMesh(mesh);
+            Buffer buffer = new Buffer();
+            buffer.setByteLength(dataBuffer.length);
+            glb.gltf.addBuffers(buffer);
+            glb.buffer = dataBuffer;
+            glb.setAsset("CRAFTWORLD", "2.0");
+            
+            Mesh glMesh = new Mesh();
+            for (int i = 0; i < mesh.info.primitives.length; ++i) {
+                StaticPrimitive primitive = mesh.info.primitives[i];
+                MeshPrimitive glPrimitive = new MeshPrimitive();
+                glPrimitive.addAttributes("POSITION", 
+                        glb.createAccessor(
+                                "VERTICES", 
+                                5126, 
+                                "VEC3", 
+                                primitive.vertexStart * 0xC, 
+                                primitive.numVerts)
+                );
+
+                glPrimitive.addAttributes("NORMAL", 
+                        glb.createAccessor(
+                                "NORMALS", 
+                                5126, 
+                                "VEC3", 
+                                primitive.vertexStart * 0xC, 
+                                primitive.numVerts)
+                );
+                
+                for (int j = 0; j < 2; ++j) {
+                    glPrimitive.addAttributes("TEXCOORD_" + String.valueOf(j), 
+                            glb.createAccessor(
+                                    "TEXCOORD_" + String.valueOf(j), 
+                                    5126, 
+                                    "VEC2", 
+                                    primitive.vertexStart * 0x8, 
+                                    primitive.numVerts)
+                    );
+                }
+                
+                glPrimitive.setIndices(
+                        glb.createAccessor(
+                                "INDICES_" + i,
+                                5123, 
+                                "SCALAR", 
+                                0, 
+                                glb.gltf.getBufferViews().get(glb.getBufferView("INDICES_" + i)).getByteLength() / 2)
+                );
+                
+                String materialName = "DIFFUSE";
+                if (primitive.gmat != null) {
+                    FileEntry entry = Globals.findEntry(primitive.gmat);
+                    if (entry != null) {
+                        materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
+                        try {
+                            byte[] data = Globals.extractFile(entry.hash);
+                            if (data != null) 
+                                glPrimitive.setMaterial(glb.createMaterial(materialName, new GfxMaterial(new Resource(data))));   
+                            else glPrimitive.setMaterial(glb.createMaterial(materialName));
+                        } catch (Exception e) {
+                            glPrimitive.setMaterial(glb.createMaterial(materialName));
+                        }
+                    }
+                    else  {
+                        materialName = primitive.gmat.toString();
+                        glPrimitive.setMaterial(glb.createMaterial(materialName));
+                    }
+                }
+
+                glPrimitive.setMode(4);
+
+                glMesh.addPrimitives(glPrimitive);
+            }
+            
+            glb.gltf.addMeshes(glMesh);
+            
+            Node root = new Node();
+            root.setName("bg");
+            root.setMesh(0);
+            
+            glb.gltf.addNodes(root);
+            glb.gltf.setScene(0);
+            
+            Scene scene = new Scene();
+            scene.setName("Scene");
+            scene.addNodes(0);
+            glb.gltf.addScenes(scene);
             
             return glb;
         }
@@ -773,6 +869,47 @@ public class MeshIO {
             output.shrink();
             return output.buffer;
             
+        }
+        
+        private byte[] getBufferFromMesh(StaticMesh mesh) {
+            Output output = new Output(mesh.numVerts * 0x40 + ((mesh.numVerts - 1) * 0x8));
+            for (Vector3f vertex : mesh.vertices) {
+                output.f32LE(vertex.x);
+                output.f32LE(vertex.y);
+                output.f32LE(vertex.z);
+            }
+            createBufferView("VERTICES", 0, output.offset);
+            int normalStart = output.offset;
+            for (Vector3f normal : mesh.normals) {
+                output.f32LE(normal.x);
+                output.f32LE(normal.y);
+                output.f32LE(normal.z);
+            }
+            createBufferView("NORMALS", normalStart, output.offset - normalStart);
+            int uvStart = output.offset;
+            for (Vector2f uv : mesh.uv0) {
+                output.f32LE(uv.x);
+                output.f32LE(uv.y);
+            }
+            createBufferView("TEXCOORD_0", uvStart, output.offset - uvStart);
+            uvStart = output.offset;
+            for (Vector2f uv : mesh.uv1) {
+                output.f32LE(uv.x);
+                output.f32LE(uv.y);
+            }
+            createBufferView("TEXCOORD_1", uvStart, output.offset - uvStart);       
+            for (int i = 0; i < mesh.info.primitives.length; ++i) {
+                StaticPrimitive primitive = mesh.info.primitives[i];
+                int primitiveStart = output.offset;
+                int[] triangles = 
+                        ennuo.craftworld.resources.Mesh.getIndices(mesh.indices, primitive.indexStart, primitive.numIndices, primitive.type);
+                primitive.numVerts = getMax(triangles) + 1;
+                for (int triangle : triangles)
+                    output.i16LE((short) triangle);
+                createBufferView("INDICES_" + String.valueOf(i), primitiveStart, output.offset - primitiveStart);
+            }
+            output.shrink();
+            return output.buffer;
         }
         
         private byte[] getBufferFromMesh(ennuo.craftworld.resources.Mesh mesh) {

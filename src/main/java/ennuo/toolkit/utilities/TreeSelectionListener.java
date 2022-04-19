@@ -25,6 +25,7 @@ public class TreeSelectionListener {
         TreeSelectionListener.addService(new AnimationService());
         TreeSelectionListener.addService(new GfxMaterialService());
         TreeSelectionListener.addService(new PlanService());
+        TreeSelectionListener.addService(new StaticMeshService());
     }
     
     public static void addService(ResourceService service) {

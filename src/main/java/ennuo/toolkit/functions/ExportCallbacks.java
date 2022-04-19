@@ -9,6 +9,7 @@ import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.TranslationTable;
 import ennuo.craftworld.resources.io.MeshIO;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.StaticMesh;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
 import ennuo.craftworld.utilities.Bytes;
@@ -41,8 +42,18 @@ public class ExportCallbacks {
             true
         );
        
-        if (file != null)
-            MeshIO.GLB.FromMesh(Globals.lastSelected.entry.getResource("mesh")).export(file.getAbsolutePath());
+        StaticMesh staticMesh = Globals.lastSelected.entry.getResource("staticMesh");
+        Mesh mesh = Globals.lastSelected.entry.getResource("mesh");
+        
+        if (file != null) {
+            if (staticMesh != null) 
+                MeshIO.GLB.FromMesh(staticMesh).export(file.getAbsolutePath());
+            else if (mesh != null)
+                MeshIO.GLB.FromMesh(mesh).export(file.getAbsolutePath());
+            else
+                System.err.println("Mesh data was missing!");
+            
+        }
     }
     
     public static void exportAnimation() {

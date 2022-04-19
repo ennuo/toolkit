@@ -365,12 +365,16 @@ public class Mesh implements Serializable {
     }
     
     public int[] getIndices(int start, int count) {
+        return this.getIndices(this.indices, start, count, this.primitiveType);
+    }
+    
+    public static int[] getIndices(byte[] indices, int start, int count, byte type) {
         int[] faces = new int[count];
-        Data data = new Data(this.indices);
+        Data data = new Data(indices);
         data.offset = 0x2 * start;
         for (int i = 0; i < count; ++i)
             faces[i] = (data.i16() & 0xFFFF) >>> 0;
-        if (this.primitiveType == 5) return faces;
+        if (type == 5) return faces;
         ArrayList<Integer> triangles = new ArrayList<Integer>(count * 3);
         for (int i = -1, j = 1; i < faces.length; ++i, ++j) {
             if (i == -1 || (faces[i] == 0xFFFF)) {

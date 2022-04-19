@@ -386,6 +386,15 @@ public class Toolkit extends javax.swing.JFrame {
                         exportAnimation.setVisible(true);
                     }
                 }
+                
+                if (Globals.lastSelected.header.endsWith(".smh")) {
+                    StaticMesh mesh = Globals.lastSelected.entry.getResource("staticMesh");
+                    if (mesh != null) {
+                        exportGroup.setVisible(true);
+                        exportModelGroup.setVisible(true);
+                        exportOBJ.setVisible(false);
+                    }
+                }
 
                 if (Globals.lastSelected.header.endsWith(".mol")) {
                     Mesh mesh = Globals.lastSelected.entry.getResource("mesh");
@@ -393,6 +402,8 @@ public class Toolkit extends javax.swing.JFrame {
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
                         int count = mesh.attributeCount;
+                        if (count != 0) 
+                            exportOBJ.setVisible(true);
                         exportOBJTEXCOORD0.setVisible((count > 0));
                         exportOBJTEXCOORD1.setVisible((count > 1));
                         exportOBJTEXCOORD2.setVisible((count > 2));

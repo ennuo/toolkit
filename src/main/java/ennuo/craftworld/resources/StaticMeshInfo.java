@@ -2,9 +2,11 @@ package ennuo.craftworld.resources;
 
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.mesh.StaticPrimitive;
+import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourceDescriptor;
+import java.util.ArrayList;
 import org.joml.Vector3f;
 
 public class StaticMeshInfo implements Serializable {
@@ -30,8 +32,8 @@ public class StaticMeshInfo implements Serializable {
     public ResourceDescriptor lightmap, risemap, fallmap;
     public int primitiveCount, unknownStructCount, indexBufferSize, vertexStreamSize;
     
-    StaticPrimitive[] primitives;
-    UnknownStruct[] unknown;
+    public StaticPrimitive[] primitives;
+    public UnknownStruct[] unknown;
     
     @Override public StaticMeshInfo serialize(Serializer serializer, Serializable structure) {
         StaticMeshInfo info = (structure == null) ? new StaticMeshInfo() : (StaticMeshInfo) structure;
@@ -52,5 +54,4 @@ public class StaticMeshInfo implements Serializable {
         
         return info;
     }
-    
 }

@@ -11,6 +11,10 @@ public class StaticPrimitive implements Serializable {
     public ResourceDescriptor gmat;
     public int vertexStart, indexStart;
     public int numIndices;
+    
+    /* Not actually serialized, just used for exporting */
+    public int numVerts;
+    
     public byte type = 7;
 
     @SuppressWarnings("unchecked")
