@@ -388,6 +388,7 @@ public class Toolkit extends javax.swing.JFrame {
                 }
                 
                 if (Globals.lastSelected.header.endsWith(".smh")) {
+                    replaceDecompressed.setVisible(false);
                     StaticMesh mesh = Globals.lastSelected.entry.getResource("staticMesh");
                     if (mesh != null) {
                         exportGroup.setVisible(true);

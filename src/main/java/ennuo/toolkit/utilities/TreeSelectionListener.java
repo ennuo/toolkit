@@ -79,7 +79,7 @@ public class TreeSelectionListener {
                         (extractedData[3] & 0xFF) << 0;
             
             Resource resource = new Resource(extractedData);
-            if (resource.method == SerializationMethod.BINARY && resource.type != ResourceType.STATIC_MESH)
+            if (resource.method == SerializationMethod.BINARY)
                 entry.canReplaceDecompressed = true;
             entry.revision = resource.revision;
             entry.compressionFlags = resource.compressionFlags;
