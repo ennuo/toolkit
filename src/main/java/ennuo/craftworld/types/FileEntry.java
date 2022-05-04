@@ -1,6 +1,6 @@
 package ennuo.craftworld.types;
 
-import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
@@ -48,7 +48,7 @@ public class FileEntry {
         
         if (!resetBigProfile) {
             Slot slot = this.getResource("slot");
-            ProfileItem item = this.getResource("profileItem");
+            InventoryItem item = this.getResource("profileItem");
             this.resources.clear();
             this.setResource("slot", slot);
             this.setResource("profileItem", item);

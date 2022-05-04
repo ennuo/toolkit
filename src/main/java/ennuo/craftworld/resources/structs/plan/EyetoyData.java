@@ -20,11 +20,14 @@ public class EyetoyData implements Serializable {
     public EyetoyData serialize(Serializer serializer, Serializable structure) {
         EyetoyData eyetoy = (structure == null) ? new EyetoyData() : (EyetoyData) structure;
         
+        if (serializer.revision.head <= 0x15d)
+            return eyetoy;
+        
         eyetoy.frame = serializer.resource(eyetoy.frame, ResourceType.TEXTURE);
         eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, ResourceType.TEXTURE);
         eyetoy.colorCorrection = serializer.matrix(eyetoy.colorCorrection);
         eyetoy.colorCorrectionSrc = serializer.struct(eyetoy.colorCorrectionSrc, ColorCorrection.class);
-        if (serializer.revision.head > 0x2c3)
+        if (serializer.revision.head > 0x39f)
             eyetoy.outline = serializer.resource(eyetoy.outline, ResourceType.TEXTURE);
         
         return eyetoy;

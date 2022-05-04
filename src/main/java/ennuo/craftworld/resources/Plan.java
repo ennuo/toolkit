@@ -25,7 +25,7 @@ public class Plan implements Serializable {
     public Plan serialize(Serializer serializer, Serializable structure) {
         Plan plan = (structure == null) ? new Plan() : (Plan) structure;
         
-        if (serializer.revision.head >= 0x00D003E7)
+        if (serializer.revision.isAfterLBP3Revision(0xcb))
             plan.isUsedForStreaming = serializer.bool(plan.isUsedForStreaming);
         plan.revision = serializer.i32(plan.revision);
         plan.thingData = serializer.i8a(plan.thingData);
@@ -34,12 +34,10 @@ public class Plan implements Serializable {
         // there are, so wrapping it in an try/catch block just in case.
         
         try {
-            if (!serializer.isWriting && serializer.input.offset == serializer.input.length)
-                return plan;
-            if (serializer.revision.head >= 0x197) {
+            if (serializer.revision.head >= 0x197 && !plan.isUsedForStreaming) {
                 plan.details = serializer.struct(plan.details, InventoryDetails.class);
 
-                if ((serializer.revision.head == 0x272 && serializer.revision.branchID != 0) || serializer.revision.head > 0x2ba) {
+                if (serializer.revision.isAfterLeerdammerRevision(7) || serializer.revision.head > 0x2ba) {
                     plan.details.location = serializer.u32(plan.details.location);
                     plan.details.category = serializer.u32(plan.details.category);
                 } else {

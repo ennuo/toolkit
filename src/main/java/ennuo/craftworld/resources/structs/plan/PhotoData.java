@@ -19,7 +19,7 @@ public class PhotoData implements Serializable {
         data.icon = serializer.resource(data.icon, ResourceType.TEXTURE, true);
         data.sticker = serializer.resource(data.sticker, ResourceType.TEXTURE, true);
         data.photoMetadata = serializer.struct(data.photoMetadata, PhotoMetadata.class);
-        if (serializer.revision.head > 0x395)
+        if (serializer.revision.head > 0x3c7)
             data.painting = serializer.resource(data.painting, ResourceType.PAINTING, true);
         
         return data;

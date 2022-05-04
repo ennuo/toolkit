@@ -14,7 +14,7 @@ import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Serializer;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
@@ -27,6 +27,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -104,24 +105,21 @@ public class SlotManager extends javax.swing.JFrame {
     private final DefaultComboBoxModel<SlotEntry> groups = new DefaultComboBoxModel<>();
     private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>(); 
     
-    public SlotManager(BigProfile profile, Slot selectedSlot) {
+    public SlotManager(BigStreamingFart profile, Slot selectedSlot) {
         this.isSave = true;
-        this.entry = profile.profile;
-        this.slots = profile.slots;
+        this.entry = profile.rootProfileEntry;
+        this.slots = new ArrayList<>(profile.bigProfile.myMoonSlots.values());
         
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent e) { 
-                profile.shouldSave = true;
-                Toolkit.instance.updateWorkspace();
+                onCloseProfile(profile);
             }
         });
         
         this.closeButton.addActionListener(l -> {
-            profile.shouldSave = true;
-            Toolkit.instance.updateWorkspace();
-            this.dispose();
+            onCloseProfile(profile);
         });
         
         if (selectedSlot != null)
@@ -158,6 +156,18 @@ public class SlotManager extends javax.swing.JFrame {
             @Override public void windowClosing(WindowEvent e) { onClose(); }
         });
         this.closeButton.addActionListener(l -> this.onClose());
+    }
+    
+    private void onCloseProfile(BigStreamingFart profile) {
+        // We need to rebuild the HashMap since slots may have been added/removed
+        HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
+        for (Slot slot : this.slots)
+           slotMap.put(slot.id, slot);
+        profile.bigProfile.myMoonSlots = slotMap;
+        
+        profile.shouldSave = true;
+        Toolkit.instance.updateWorkspace();
+        this.dispose();
     }
     
     private void onClose() {

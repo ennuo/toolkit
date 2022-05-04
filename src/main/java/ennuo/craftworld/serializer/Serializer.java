@@ -7,6 +7,7 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.joml.Matrix4f;
@@ -384,6 +385,34 @@ public class Serializer {
             return value;
         }
         return clazz.cast(Serializable.serialize(this, null, clazz));
+    }
+    
+    public final <T extends Serializable> ArrayList<T> arraylist(ArrayList<T> values, Class<T> clazz) {
+        return this.arraylist(values, clazz, false);
+    }
+
+    public final <T extends Serializable> ArrayList<T> arraylist(ArrayList<T> values, Class<T> clazz, boolean isReference) {
+        if (this.isWriting) {
+            if (values == null) {
+                this.output.i32(0);
+                return values;
+            }
+            this.output.i32(values.size());
+            for (T serializable : values) {
+                if (isReference) this.reference(serializable, clazz);
+                else Serializable.serialize(this, serializable, clazz);
+            }
+            return values;
+        }
+        int count = this.input.i32();
+        ArrayList<T> output = new ArrayList<T>(count);
+        for (int i = 0; i < count; ++i) {
+            if (isReference)
+                output.add(clazz.cast(this.reference(null, clazz)));
+            else
+                output.add(clazz.cast(Serializable.serialize(this, null, clazz)));
+        }
+        return output;
     }
     
     public <T extends Serializable> T[] array(T[] values, Class<T> clazz) {

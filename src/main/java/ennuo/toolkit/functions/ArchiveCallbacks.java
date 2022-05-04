@@ -7,7 +7,7 @@ import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.FileChooser;
@@ -108,7 +108,7 @@ public class ArchiveCallbacks {
             if (data == null) return;
 
             if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE)
-                ((BigProfile) Toolkit.instance.getCurrentDB()).add(data);
+                ((BigStreamingFart) Toolkit.instance.getCurrentDB()).add(data);
             else Globals.addFile(data, archives);
         }
 

@@ -4,6 +4,7 @@ import ennuo.craftworld.ex.SerializationException;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.io.FileIO;
+import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
@@ -78,7 +79,7 @@ public class FileSave extends FileData {
                 entry.setResource("slot", slot);
                 Nodes.addNode(this.root, entry);
             }
-            for (CachedInventoryItem item : this.bigProfile.inventory) {
+            for (InventoryItem item : this.bigProfile.inventory) {
                 String title = "Some kind of object";
                 if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
                     title = item.details.userCreatedDetails.title;
@@ -115,7 +116,7 @@ public class FileSave extends FileData {
         }
         
         if (this.localProfile != null) {
-            for (CachedInventoryItem item : this.localProfile.inventory) {
+            for (InventoryItem item : this.localProfile.inventory) {
                 String title = "Some kind of object";
                 if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
                     title = item.details.userCreatedDetails.title;
@@ -127,7 +128,7 @@ public class FileSave extends FileData {
                 String folder = type.toLowerCase() + "/";
                 if (item.details.categoryIndex != -1) {
                     int index = this.localProfile.stringTable.rawIndexToSortedIndex[item.details.categoryIndex];
-                    String category = this.localProfile.stringTable.strings[index].string;
+                    String category = this.localProfile.stringTable.stringList.get(index).string;
                     if (!category.isEmpty())
                         folder += category + "/";
                 }

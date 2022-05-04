@@ -1803,7 +1803,7 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
-            new SlotManager((BigProfile)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
+            new SlotManager((BigStreamingFart)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
             return;
         }
         
@@ -1879,7 +1879,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        new SlotManager((BigProfile) this.getCurrentDB(), null).setVisible(true);
+        new SlotManager((BigStreamingFart) this.getCurrentDB(), null).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
@@ -1908,7 +1908,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new MetadataEditor(this, ((BigProfile) getCurrentDB())).setVisible(true);
+        new MetadataEditor(this, ((BigStreamingFart) getCurrentDB())).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed

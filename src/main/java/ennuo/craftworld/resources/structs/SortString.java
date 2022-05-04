@@ -5,15 +5,15 @@ import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 
-public class StringEntry implements Serializable {
+public class SortString implements Serializable {
     public static int MAX_SIZE = 0x200;
     
     public long key;
     public String string;
     public int index;
     
-    public StringEntry serialize(Serializer serializer, Serializable structure) {
-        StringEntry entry = (structure == null) ? new StringEntry() : (StringEntry) structure;
+    public SortString serialize(Serializer serializer, Serializable structure) {
+        SortString entry = (structure == null) ? new SortString() : (SortString) structure;
         
         entry.key = serializer.u32(entry.key);
         entry.string = serializer.str16(entry.string);
@@ -22,9 +22,9 @@ public class StringEntry implements Serializable {
         return entry;
     }
     
-    public StringEntry() {}
+    public SortString() {}
     
-    public StringEntry(Data data) {
+    public SortString(Data data) {
         key = data.u32();
         string = data.str16();
         index = data.i32();

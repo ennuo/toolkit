@@ -1,6 +1,7 @@
 package ennuo.toolkit.windows.editors;
 
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
@@ -20,12 +21,13 @@ import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.plan.EyetoyData;
 import ennuo.craftworld.resources.structs.plan.PhotoData;
 import ennuo.craftworld.resources.structs.plan.PhotoUser;
-import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.CreationHistory;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.resources.structs.plan.UserCreatedDetails;
+import ennuo.craftworld.types.FileEntry;
 import ennuo.toolkit.utilities.Globals;
 import ennuo.toolkit.windows.Toolkit;
 import java.nio.ByteBuffer;
@@ -40,7 +42,7 @@ import org.joml.Vector4f;
 
 public class MetadataEditor extends javax.swing.JFrame {
     
-    ArrayList<ProfileItem> itemInstances = new ArrayList<ProfileItem>();
+    ArrayList<InventoryItem> itemInstances = new ArrayList<InventoryItem>();
 
     Vector items = new Vector();
     final DefaultComboBoxModel model = new DefaultComboBoxModel(items);
@@ -53,9 +55,9 @@ public class MetadataEditor extends javax.swing.JFrame {
     PhotoUser lastUser;
     
     
-    BigProfile profile;
+    BigStreamingFart profile;
     
-    public MetadataEditor(Toolkit toolkit, BigProfile profile) {
+    public MetadataEditor(Toolkit toolkit, BigStreamingFart profile) {
         this.profile = profile;
         initComponents();
         setResizable(false);
@@ -70,9 +72,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         });
         
         
-        itemInstances = profile.inventoryCollection;
-        for (int i = 0; i < profile.inventoryCollection.size(); ++i)  {
-            InventoryDetails metadata = profile.inventoryCollection.get(i).metadata;
+        itemInstances = profile.bigProfile.inventory;
+        for (int i = 0; i < itemInstances.size(); ++i)  {
+            InventoryDetails metadata = itemInstances.get(i).details;
             if (metadata.userCreatedDetails != null && !metadata.userCreatedDetails.title.isEmpty())
                 this.items.add(metadata.userCreatedDetails.title + " | " + i);
             else this.items.add("An Item | " + i);
@@ -108,37 +110,37 @@ public class MetadataEditor extends javax.swing.JFrame {
     
     
     private void loadItemAt(int index) {
-        ProfileItem item = itemInstances.get(index);
+        InventoryItem item = itemInstances.get(index);
         
         icon.setIcon(null);
         this.itemRef.setText("");
         iconRef.setText("");
         
-        setResource(itemRef, item.resource);
+        setResource(itemRef, item.plan);
         
-        if (item.metadata.icon != null) {
-            byte[] data = Globals.extractFile(item.metadata.icon);
+        if (item.details.icon != null) {
+            byte[] data = Globals.extractFile(item.details.icon);
             if (data != null) {
                 Texture texture = new Texture(data);
                 if (texture != null) 
                     icon.setIcon(texture.getImageIcon(128, 128));
             }
-            iconRef.setText(item.metadata.icon.toString());
+            iconRef.setText(item.details.icon.toString());
         } else iconRef.setText("");
         
         creatorModel.removeAllElements();
         
-        if (item.metadata.creationHistory != null) {
+        if (item.details.creationHistory != null) {
             creationHistory.setSelected(true);
-            for (int i = 0; i < item.metadata.creationHistory.creators.length; ++i)
-                creatorModel.addElement(item.metadata.creationHistory.creators[i]);
+            for (int i = 0; i < item.details.creationHistory.creators.length; ++i)
+                creatorModel.addElement(item.details.creationHistory.creators[i]);
         } else creationHistory.setSelected(false);
         
         
-        titleKey.setText("" + item.metadata.titleKey);
-        descriptionKey.setText("" + item.metadata.descriptionKey);
-        locationKey.setText(item.metadata.translatedLocation);
-        categoryKey.setText(item.metadata.translatedCategory);
+        titleKey.setText("" + item.details.titleKey);
+        descriptionKey.setText("" + item.details.descriptionKey);
+        locationKey.setText(item.details.translatedLocation);
+        categoryKey.setText(item.details.translatedCategory);
         
         
         hearted.setSelected((item.flags | (1 << 0)) == item.flags);
@@ -149,25 +151,25 @@ public class MetadataEditor extends javax.swing.JFrame {
         hidden.setSelected((item.flags | (1 << 5)) == item.flags);
         autosaved.setSelected((item.flags | (1 << 6)) == item.flags);
         
-        unlockSlotType.setSelectedItem(item.metadata.levelUnlockSlotID.type);
-        unlockSlotID.setText("" + item.metadata.levelUnlockSlotID.ID);
+        unlockSlotType.setSelectedItem(item.details.levelUnlockSlotID.type);
+        unlockSlotID.setText("" + item.details.levelUnlockSlotID.ID);
         
-        highlightSound.setText("g" + item.metadata.highlightSound);
+        highlightSound.setText("g" + item.details.highlightSound);
         
-        byte[] color = Bytes.toBytes(item.metadata.colour);
+        byte[] color = Bytes.toBytes(item.details.colour);
         
         R.setValue(color[1] & 0xFF);
         G.setValue(color[2] & 0xFF);
         B.setValue(color[3] & 0xFF);
         
-        Date date = new Date((item.metadata.dateAdded / 2) * 1000);
+        Date date = new Date((item.details.dateAdded / 2) * 1000);
         
         timestamp.setValue(date);
         
-        if (item.metadata.userCreatedDetails != null) {
+        if (item.details.userCreatedDetails != null) {
             userCreatedDetails.setSelected(true);
-            userCreatedTitle.setText(item.metadata.userCreatedDetails.title);
-            userCreatedDescription.setText(item.metadata.userCreatedDetails.description);
+            userCreatedTitle.setText(item.details.userCreatedDetails.title);
+            userCreatedDescription.setText(item.details.userCreatedDetails.description);
         } else {
             userCreatedDetails.setSelected(false);
             userCreatedTitle.setText("");
@@ -176,26 +178,26 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         photoModel.removeAllElements();
         users.clear(); lastUser = null;
-        if (item.metadata.photoData != null) {
+        if (item.details.photoData != null) {
             photoMetadata.setSelected(true);
             
-            setResource(photoIcon, item.metadata.photoData.icon);
-            setResource(sticker, item.metadata.photoData.sticker);
-            setResource(painting, item.metadata.photoData.painting);
+            setResource(photoIcon, item.details.photoData.icon);
+            setResource(sticker, item.details.photoData.sticker);
+            setResource(painting, item.details.photoData.painting);
             
-            photoTimestamp.setValue(new Date((item.metadata.photoData.photoMetadata.timestamp * 1000)));
+            photoTimestamp.setValue(new Date((item.details.photoData.photoMetadata.timestamp * 1000)));
             
-            setResource(photo, item.metadata.photoData.photoMetadata.photo);
+            setResource(photo, item.details.photoData.photoMetadata.photo);
             
-            levelSHA1.setText("h" + item.metadata.photoData.photoMetadata.levelHash.toString());
+            levelSHA1.setText("h" + item.details.photoData.photoMetadata.levelHash.toString());
             
-            photoSlotType.setSelectedItem(item.metadata.photoData.photoMetadata.level.type);
-            photoSlotID.setText("" + item.metadata.photoData.photoMetadata.level.ID);
+            photoSlotType.setSelectedItem(item.details.photoData.photoMetadata.level.type);
+            photoSlotID.setText("" + item.details.photoData.photoMetadata.level.ID);
             
-            levelName.setText(item.metadata.photoData.photoMetadata.levelName);
+            levelName.setText(item.details.photoData.photoMetadata.levelName);
             
-            if (item.metadata.photoData.photoMetadata.users != null) {
-                PhotoUser[] users = item.metadata.photoData.photoMetadata.users;
+            if (item.details.photoData.photoMetadata.users != null) {
+                PhotoUser[] users = item.details.photoData.photoMetadata.users;
                 for (PhotoUser user : users) {
                     photoModel.addElement(user.user);
                     this.users.add(user);
@@ -219,9 +221,9 @@ public class MetadataEditor extends javax.swing.JFrame {
             Z.setValue(0f); W.setValue(0f);
         }
         
-        if (item.metadata.eyetoyData != null) {
+        if (item.details.eyetoyData != null) {
             eyetoyData.setSelected(true);
-            EyetoyData data = item.metadata.eyetoyData;
+            EyetoyData data = item.details.eyetoyData;
             setResource(frame, data.frame);
             setResource(outline, data.outline);
             setResource(alphaMask, data.alphaMask);
@@ -233,11 +235,11 @@ public class MetadataEditor extends javax.swing.JFrame {
         }
         
         
-        type.setSelectedItem(item.metadata.type);
-        subType.setSelectedItem(item.metadata.subType);
-        toolType.setSelectedItem(item.metadata.toolType);
+        type.setSelectedItem(item.details.type);
+        subType.setSelectedItem(item.details.subType);
+        toolType.setSelectedItem(item.details.toolType);
         
-        theCreator.setText(item.metadata.creator.handle);
+        theCreator.setText(item.details.creator.handle);
     }
 
     @SuppressWarnings("unchecked")
@@ -1428,9 +1430,9 @@ public class MetadataEditor extends javax.swing.JFrame {
         Toolkit.instance.updateWorkspace();
         this.combo.setEnabled(true);
         this.deleteItem.setEnabled(true);
-        ProfileItem item = new ProfileItem();
-        item.metadata.userCreatedDetails.title = "New Item " + this.internalCount;
-        this.items.add(item.metadata.userCreatedDetails.title + " | " + this.items.size());
+        InventoryItem item = new InventoryItem();
+        item.details.userCreatedDetails.title = "New Item " + this.internalCount;
+        this.items.add(item.details.userCreatedDetails.title + " | " + this.items.size());
         this.itemInstances.add(item);
         this.combo.setSelectedIndex(this.combo.getItemCount() - 1);
         loadItemAt(this.combo.getItemCount() - 1);
@@ -1458,26 +1460,26 @@ public class MetadataEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteItemActionPerformed
 
     private void saveItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveItemActionPerformed
-        ProfileItem item = this.itemInstances.get(combo.getSelectedIndex());
+        InventoryItem item = this.itemInstances.get(combo.getSelectedIndex());
         profile.shouldSave = true;
         
-        item.metadata.type = (ItemType) type.getSelectedItem();
-        item.metadata.subType = (ItemSubType) subType.getSelectedItem();
-        item.metadata.toolType = (ToolType) toolType.getSelectedItem();
+        item.details.type = (ItemType) type.getSelectedItem();
+        item.details.subType = (ItemSubType) subType.getSelectedItem();
+        item.details.toolType = (ToolType) toolType.getSelectedItem();
         
         if (userCreatedDetails.isSelected()) {
-            item.metadata.userCreatedDetails = new UserCreatedDetails();
-            item.metadata.userCreatedDetails.title = userCreatedTitle.getText();
-            item.metadata.userCreatedDetails.description = userCreatedDescription.getText();
-        } else item.metadata.userCreatedDetails = null;
+            item.details.userCreatedDetails = new UserCreatedDetails();
+            item.details.userCreatedDetails.title = userCreatedTitle.getText();
+            item.details.userCreatedDetails.description = userCreatedDescription.getText();
+        } else item.details.userCreatedDetails = null;
         
         if (creationHistory.isSelected()) {
-            item.metadata.creationHistory = new CreationHistory();
+            item.details.creationHistory = new CreationHistory();
             String[] creators = new String[creatorModel.size()];
             for (int i = 0; i < creators.length; ++i)
                 creators[i] = (String) creatorModel.get(i);
-            item.metadata.creationHistory.creators = creators;
-        } else item.metadata.creationHistory = null;
+            item.details.creationHistory.creators = creators;
+        } else item.details.creationHistory = null;
         
         if (photoMetadata.isSelected()) {
             PhotoData data = new PhotoData();
@@ -1499,24 +1501,24 @@ public class MetadataEditor extends javax.swing.JFrame {
             PhotoUser[] users = new PhotoUser[this.users.size()];
             users = this.users.toArray(users);
             data.photoMetadata.users = users;
-            item.metadata.photoData = data;            
-        } else item.metadata.photoData = null;
+            item.details.photoData = data;            
+        } else item.details.photoData = null;
         
         if (eyetoyData.isSelected()) {
             EyetoyData eyetoy = new EyetoyData();
             eyetoy.alphaMask = getResource(alphaMask.getText(), ResourceType.TEXTURE);
             eyetoy.frame = getResource(frame.getText(), ResourceType.TEXTURE);
             eyetoy.outline = getResource(outline.getText(), ResourceType.TEXTURE);
-        } else item.metadata.eyetoyData = null;
+        } else item.details.eyetoyData = null;
         
         
-        item.metadata.titleKey = StringUtils.getLong(titleKey.getText());
-        item.metadata.descriptionKey = StringUtils.getLong(descriptionKey.getText());
+        item.details.titleKey = StringUtils.getLong(titleKey.getText());
+        item.details.descriptionKey = StringUtils.getLong(descriptionKey.getText());
         
-        item.metadata.translatedLocation = locationKey.getText();
-        item.metadata.translatedCategory = categoryKey.getText();
+        item.details.translatedLocation = locationKey.getText();
+        item.details.translatedCategory = categoryKey.getText();
         
-        item.metadata.highlightSound = StringUtils.getLong(highlightSound.getText());
+        item.details.highlightSound = StringUtils.getLong(highlightSound.getText());
         
         SlotID id = new SlotID();
         id.type = (SlotType) unlockSlotType.getSelectedItem();
@@ -1542,30 +1544,28 @@ public class MetadataEditor extends javax.swing.JFrame {
         item.flags = flags;
         
         
-        item.resource = getResource(itemRef.getText(), ResourceType.PLAN);
-        item.metadata.icon = getResource(iconRef.getText(), ResourceType.TEXTURE);
+        item.plan = getResource(itemRef.getText(), ResourceType.PLAN);
+        item.details.icon = getResource(iconRef.getText(), ResourceType.TEXTURE);
         
-        item.metadata.creator.handle = theCreator.getText();
+        item.details.creator.handle = theCreator.getText();
         
-        writeColour(item.metadata);
+        writeColour(item.details);
         
-        item.metadata.dateAdded = ((Date)timestamp.getValue()).getTime() / 1000;
+        item.details.dateAdded = ((Date)timestamp.getValue()).getTime() / 1000;
 
-        /*
-        if (item.resource != null) {
-            FileEntry entry = profile.find(item.resource.hash);
-            if (entry != null) {
-                byte[] data = Globals.extractFile(item.resource);
-                if (data != null) {
-                    Resource resource = new Resource(data);
-                    //resource.replaceMetadata(item.metadata);
-                    Globals.replaceEntry(entry, resource.data);
-                    item.metadata.resource = new ResourceDescriptor(Bytes.SHA1(resource.data), ResourceType.PLAN);
-                }
-                
-            }
-        }
-        */
+//        if (item.plan != null && item.plan.hash != null) {
+//            FileEntry entry = profile.find(item.plan.hash);
+//            if (entry != null) {
+//                byte[] data = Globals.extractFile(item.plan);
+//                if (data != null) {
+//                    Resource resource = new Resource(data);
+//                    //resource.replaceMetadata(item.metadata);
+//                    Globals.replaceEntry(entry, resource.data);
+//                    item.metadata.resource = new ResourceDescriptor(Bytes.SHA1(resource.data), ResourceType.PLAN);
+//                }
+//                
+//            }
+//        }
         
 
         profile.shouldSave = true;

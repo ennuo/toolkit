@@ -8,7 +8,7 @@ import ennuo.craftworld.resources.Mesh;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
@@ -159,7 +159,7 @@ public class UtilityCallbacks {
             if (mod != null) {
 
                 if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
-                    BigProfile profile = (BigProfile) Toolkit.instance.getCurrentDB();
+                    BigStreamingFart profile = (BigStreamingFart) Toolkit.instance.getCurrentDB();
                     for (FileEntry entry: mod.entries)
                         profile.add(entry.data, true);
                 } else if (Globals.currentWorkspace == Globals.WorkspaceType.MAP) {
