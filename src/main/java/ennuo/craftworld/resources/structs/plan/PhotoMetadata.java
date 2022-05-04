@@ -16,7 +16,7 @@ public class PhotoMetadata implements Serializable {
     public String levelName;
     public SHA1 levelHash = new SHA1();
     public PhotoUser[] users;
-    public long timestamp = new Date().getTime() / 1000;
+    public long timestamp = new Date().getTime() / 1000 * 2;
     
     public PhotoMetadata serialize(Serializer serializer, Serializable structure) {
         PhotoMetadata metadata = 

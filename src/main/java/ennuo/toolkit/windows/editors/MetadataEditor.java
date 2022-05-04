@@ -139,8 +139,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         titleKey.setText("" + item.details.titleKey);
         descriptionKey.setText("" + item.details.descriptionKey);
-        locationKey.setText(item.details.translatedLocation);
-        categoryKey.setText(item.details.translatedCategory);
+        locationKey.setText(profile.bigProfile.stringTable.get(item.details.locationIndex));
+        categoryKey.setText(profile.bigProfile.stringTable.get(item.details.categoryIndex));
         
         
         hearted.setSelected((item.flags | (1 << 0)) == item.flags);
@@ -185,7 +185,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             setResource(sticker, item.details.photoData.sticker);
             setResource(painting, item.details.photoData.painting);
             
-            photoTimestamp.setValue(new Date((item.details.photoData.photoMetadata.timestamp * 1000)));
+            photoTimestamp.setValue(new Date(((item.details.photoData.photoMetadata.timestamp / 2) * 1000)));
             
             setResource(photo, item.details.photoData.photoMetadata.photo);
             
@@ -1486,7 +1486,7 @@ public class MetadataEditor extends javax.swing.JFrame {
             data.icon = getResource(photoIcon.getText(), ResourceType.TEXTURE);
             data.sticker = getResource(sticker.getText(), ResourceType.TEXTURE);
             data.painting = getResource(painting.getText(), ResourceType.PAINTING);
-            data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() / 1000;
+            data.photoMetadata.timestamp = ((Date)photoTimestamp.getValue()).getTime() / 1000 * 2;
             data.photoMetadata.photo = getResource(photo.getText(), ResourceType.TEXTURE);
             
             String hash = levelSHA1.getText();
@@ -1514,9 +1514,8 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         item.details.titleKey = StringUtils.getLong(titleKey.getText());
         item.details.descriptionKey = StringUtils.getLong(descriptionKey.getText());
-        
-        item.details.translatedLocation = locationKey.getText();
-        item.details.translatedCategory = categoryKey.getText();
+        item.details.locationIndex = (short) profile.bigProfile.stringTable.add(locationKey.getText(), 0);
+        item.details.categoryIndex = (short) profile.bigProfile.stringTable.add(categoryKey.getText(), 0);
         
         item.details.highlightSound = StringUtils.getLong(highlightSound.getText());
         
@@ -1551,7 +1550,7 @@ public class MetadataEditor extends javax.swing.JFrame {
         
         writeColour(item.details);
         
-        item.details.dateAdded = ((Date)timestamp.getValue()).getTime() / 1000;
+        item.details.dateAdded = ((Date)timestamp.getValue()).getTime() / 1000 * 2;
 
 //        if (item.plan != null && item.plan.hash != null) {
 //            FileEntry entry = profile.find(item.plan.hash);
