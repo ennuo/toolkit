@@ -142,20 +142,28 @@ public class Slot implements Serializable {
         if (serializer.revision.head >= 0x333)
             slot.planetDecorations = serializer.resource(slot.planetDecorations, ResourceType.PLAN, true);
         
+        if (serializer.revision.head < 0x188)
+                serializer.i8((byte) 0); // Unknown
+        
         if (serializer.revision.head >= 0x1df)
             slot.developerLevelType = LevelType.getValue(serializer.i32(slot.developerLevelType.value));
+        else
+            serializer.bool(false); // isStoryLevel
+        
+        if (serializer.revision.head > 0x1ad && serializer.revision.head < 0x1b9)
+                serializer.i8((byte) 0); // Unknown
         
         if (serializer.revision.head < 0x36c && 0x1b8 < serializer.revision.head)
             slot.gameProgressionState = serializer.i32(slot.gameProgressionState);
         
         if (serializer.revision.head <= 0x2c3) return slot;
         
-        if (serializer.revision.head > 0x33c)
+        if (serializer.revision.head > 0x33b)
             slot.authorLabels = serializer.array(slot.authorLabels, Label.class);
         
-        if (serializer.revision.head >= 0x2ea)
+        if (serializer.revision.head > 0x2e9)
             slot.requiredCollectables = serializer.array(slot.requiredCollectables, Collectable.class);
-        if (serializer.revision.head >= 0x2f4)
+        if (serializer.revision.head > 0x2f3)
             slot.containedCollectables = serializer.array(slot.containedCollectables, Collectable.class);
         
         if (serializer.revision.head < 0x352) return slot;
