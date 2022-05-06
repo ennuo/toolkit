@@ -154,15 +154,19 @@ public class BigStreamingFart extends FileData {
             entry.offset = offset;
             entry.size = size;
             if (resMagic == 0x42505262) this.rootProfileEntry = entry;
-            else {
-                this.entries.add(entry);
-                if (!isStreamingChunk)
-                    addNode(entry);
-            }
+            else this.entries.add(entry);
         }
         
         if (!isStreamingChunk) {
             this.parseProfile();
+            
+            // Wait until we parse the profile to add the nodes
+            // so we can add plans that aren't in the inventory properly
+            if (!isStreamingChunk)
+                for (FileEntry entry : this.entries)
+                    this.addNode(entry);
+            
+            // Save key is aligned against a 4 byte boundary
             if (data.offset % 4 != 0)
                 data.forward(4 - (data.offset % 4));
             this.saveKey = data.bytes(tableOffset - data.offset);
@@ -179,7 +183,7 @@ public class BigStreamingFart extends FileData {
                 extension = "jpg";
                 break;
             case "vop":
-                extension = "raw";
+                extension = "vop";
                 break;
             case "msh":
                 extension = "mol";
@@ -197,9 +201,16 @@ public class BigStreamingFart extends FileData {
                 extension = "png";
                 break;
         }
+        
+        if (extension.equals("bin")) return null;
+        if (extension.equals("plan")) {
+            // Don't add items if they're in our inventory
+            ResourceDescriptor plan = new ResourceDescriptor(entry.hash, ResourceType.PLAN);
+            for (InventoryItem item : this.bigProfile.inventory)
+                if (plan.equals(item.plan))
+                    return null;
+        }
 
-        if (extension.equals("plan") || extension.equals("bin"))
-            return null;
         entry.path = "resources/";
         if (extension.equals("mol"))
             entry.path += "meshes/";
@@ -217,6 +228,14 @@ public class BigStreamingFart extends FileData {
             entry.path += "materials/";
         else if (extension.equals("ssp"))
             entry.path += "skeletons/";
+        else if (extension.equals("adc"))
+            entry.path += "adventure_create_profiles/";
+        else if (extension.equals("ads"))
+            entry.path += "shared_adventure_data/";
+        else if (extension.equals("vop"))
+            entry.path += "audio/";
+        else if (extension.equals("plan"))
+            entry.path += "plans/";
         else
             entry.path += "unknown/";
 
