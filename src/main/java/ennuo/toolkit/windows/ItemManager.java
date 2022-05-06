@@ -15,6 +15,7 @@ import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SceNpId;
 import ennuo.craftworld.resources.structs.SlotID;
+import ennuo.craftworld.resources.structs.plan.CreationHistory;
 import ennuo.craftworld.resources.structs.plan.EyetoyData;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.resources.structs.plan.PhotoData;
@@ -31,9 +32,11 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -72,6 +75,8 @@ public class ItemManager extends javax.swing.JFrame {
     private InventoryDetails selectedDetails;
     private InventoryItem selectedItem;
     private final DefaultListModel model = new DefaultListModel();
+    private final DefaultListModel creators = new DefaultListModel();
+    private final DefaultListModel photoUsers = new DefaultListModel();
     
     private boolean listenForChanges = true;
     private boolean hasMadeChanges = false;
@@ -185,15 +190,15 @@ public class ItemManager extends javax.swing.JFrame {
         
         if ((version & GameVersion.LBP1) == 0) {
             this.lbp1TypesLabel.setVisible(false);
-            this.setChildrenEnabled(this.lbp1TypeContainer, false);   
+            this.lbp1TypeContainer.setVisible(false); 
         }
         else {
-            this.setChildrenEnabled(this.lbp2TypeContainer, false);  
+            this.lbp2TypeContainer.setVisible(false);
             this.lbp2TypesLabel.setVisible(false);
         }
         if ((version & GameVersion.LBP3) == 0) {
             this.lbp3TypesLabel.setVisible(false);
-            this.setChildrenEnabled(this.lbp3TypesContainer, false);   
+            this.lbp3TypesContainer.setVisible(false);
         } else {
             this.editModeToolCheckbox.setVisible(false);
             this.podToolLbp2Checkbox.setVisible(false);
@@ -231,6 +236,8 @@ public class ItemManager extends javax.swing.JFrame {
         }
         
         this.itemList.setModel(this.model);
+        this.creatorsList.setModel(this.creators);
+        this.photoUserList.setModel(this.photoUsers);
         for (InventoryDetails item : this.items)
             this.model.addElement(new ItemWrapper(item));
         
@@ -285,30 +292,23 @@ public class ItemManager extends javax.swing.JFrame {
             this.model.remove(index);
         });
         
+        this.creationHistoryCheckbox.addActionListener(e -> {
+            this.removeCreatorButton.setEnabled(false);
+            this.creationHistoryPane.setVisible(this.creationHistoryCheckbox.isSelected());
+        });
+        
+        this.creatorsList.addListSelectionListener(e -> {
+            int index = this.creatorsList.getSelectedIndex();
+            if (index == -1) this.removeCreatorButton.setEnabled(false);
+            else this.removeCreatorButton.setEnabled(true);
+        });
+        
         this.photoDataCheckbox.addActionListener(e -> {
-            if (!this.listenForChanges) return;
-            this.hasMadeChanges = true;
-            boolean isEnabled = this.photoDataCheckbox.isSelected();
-            if (isEnabled) {
-                this.photoDataPane.setVisible(true);
-                this.setChildrenEnabled(this.photoDataPane, true);
-            } else {
-                this.photoDataPane.setVisible(false);
-                this.setChildrenEnabled(this.photoDataPane, false);
-            }
+            this.photoDataPane.setVisible(this.photoDataCheckbox.isSelected());
         });
         
         this.eyetoyDataCheckbox.addActionListener(e -> {
-            if (!this.listenForChanges) return;
-            this.hasMadeChanges = true;
-            boolean isEnabled = this.eyetoyDataCheckbox.isSelected();
-            if (isEnabled) {
-                this.eyetoyDataPane.setVisible(true);
-                this.setChildrenEnabled(this.eyetoyDataPane, true);
-            } else {
-                this.eyetoyDataPane.setVisible(false);
-                this.setChildrenEnabled(this.eyetoyDataPane, false);
-            }
+            this.eyetoyDataPane.setVisible(this.eyetoyDataCheckbox.isSelected());
         });
         
         this.itemList.setSelectedIndex(0);
@@ -341,15 +341,6 @@ public class ItemManager extends javax.swing.JFrame {
                 this.titleTextEntry.setText(Globals.LAMS.translate(details.titleKey));
                 this.descriptionTextEntry.setText(Globals.LAMS.translate(details.descriptionKey));   
             }
-        }
-    }
-    
-    private void setChildrenEnabled(JPanel panel, boolean state) {
-        panel.setVisible(state);
-        for (Component child : panel.getComponents()) {
-            if (child instanceof JPanel)
-                this.setChildrenEnabled((JPanel) child, state);
-            child.setEnabled(state);   
         }
     }
     
@@ -531,6 +522,19 @@ public class ItemManager extends javax.swing.JFrame {
         this.ucdRadio.setSelected(useUCD);
         this.changeTranslationType(useUCD);
         
+        this.creators.clear();
+        this.removeCreatorButton.setEnabled(false);
+        if (details.creationHistory != null && details.creationHistory.creators != null 
+                && details.creationHistory.creators.length != 0) {
+            this.creationHistoryPane.setVisible(true);
+            this.creationHistoryCheckbox.setSelected(true);
+            for (String creator : details.creationHistory.creators)
+                this.creators.addElement(creator);
+        } else {
+            this.creationHistoryCheckbox.setSelected(false);
+            this.creationHistoryPane.setVisible(false);
+        }
+        
         // Types tab
         
         InventoryObjectType[] objectTypes = InventoryObjectType.values();
@@ -565,7 +569,7 @@ public class ItemManager extends javax.swing.JFrame {
             PhotoData data = details.photoData;
             
             this.photoDataCheckbox.setSelected(true);
-            this.setChildrenEnabled(this.photoDataPane, true);
+            this.photoDataPane.setVisible(true);
             this.photoDataPane.setVisible(true);
             
             this.photoIconResourceTextEntry.setText(data.icon != null ? data.icon.toString() : "");
@@ -587,13 +591,13 @@ public class ItemManager extends javax.swing.JFrame {
             this.photoLevelNumberSpinner.setValue(0l);
             this.photoLevelHashTextEntry.setText("");
             this.photoDataCheckbox.setSelected(false);
-            this.setChildrenEnabled(this.photoDataPane, false);
+            this.photoDataPane.setVisible(false);
             this.photoDataPane.setVisible(false);
         }
         
         if (details.eyetoyData != null) {
             this.eyetoyDataCheckbox.setSelected(true);
-            this.setChildrenEnabled(this.eyetoyDataPane, true);
+            this.eyetoyDataPane.setVisible(true);
             this.frameTextEntry.setText(details.eyetoyData.frame != null ? details.eyetoyData.frame.toString() : "");
             this.alphaMaskTextEntry.setText(details.eyetoyData.alphaMask != null ? details.eyetoyData.alphaMask.toString() : "");
             this.outlineTextEntry.setText(details.eyetoyData.outline != null ? details.eyetoyData.outline.toString() : "");
@@ -603,7 +607,7 @@ public class ItemManager extends javax.swing.JFrame {
             this.outlineTextEntry.setText("");
             
             this.eyetoyDataCheckbox.setSelected(false);
-            this.setChildrenEnabled(this.eyetoyDataPane, false);
+            this.eyetoyDataPane.setVisible(false);
             this.eyetoyDataPane.setVisible(false);
         }
         
@@ -678,6 +682,14 @@ public class ItemManager extends javax.swing.JFrame {
             details.categoryIndex = (short) this.profile.bigProfile.stringTable.add(this.categoryTextEntry.getText(), 0);
             details.locationIndex = (short) this.profile.bigProfile.stringTable.add(this.locationTextEntry.getText(), 0);
         }
+        
+        if (this.creationHistoryCheckbox.isSelected()) {
+            CreationHistory history = new CreationHistory();
+            history.creators = new String[this.creators.size()];
+            for (int i = 0; i < this.creators.size(); ++i)
+                history.creators[i] = (String) this.creators.getElementAt(i);
+            details.creationHistory = history;
+        } else details.creationHistory = null;
         
         details.type.clear();
         InventoryObjectType[] objectTypes = InventoryObjectType.values();
@@ -797,22 +809,22 @@ public class ItemManager extends javax.swing.JFrame {
         descriptionPane = new javax.swing.JScrollPane();
         descriptionTextEntry = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        iconLabel = new javax.swing.JLabel();
         iconTextEntry = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        creatorLabel = new javax.swing.JLabel();
         creatorTextEntry = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        translationTypeLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         translationKeysRadio = new javax.swing.JRadioButton();
         ucdRadio = new javax.swing.JRadioButton();
         translationKeyLabel = new javax.swing.JLabel();
         titleKeyLabel = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
+        titleDescPane = new javax.swing.JPanel();
         titleKeySpinner = new javax.swing.JSpinner();
         descKeyLabel = new javax.swing.JLabel();
         descKeySpinner = new javax.swing.JSpinner();
         categoryKeyLabel = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
+        catLocPane = new javax.swing.JPanel();
         categoryKeySpinner = new javax.swing.JSpinner();
         locationKeyLabel = new javax.swing.JLabel();
         locationKeySpinner = new javax.swing.JSpinner();
@@ -821,6 +833,13 @@ public class ItemManager extends javax.swing.JFrame {
         locationLabel = new javax.swing.JLabel();
         locationTextEntry = new javax.swing.JTextField();
         translationKeyTextEntry = new javax.swing.JTextField();
+        creationHistoryCheckbox = new javax.swing.JCheckBox();
+        creationHistoryPane = new javax.swing.JPanel();
+        creatorsLabel = new javax.swing.JLabel();
+        creatorsScrollPane = new javax.swing.JScrollPane();
+        creatorsList = new javax.swing.JList<>();
+        addCreatorButton = new javax.swing.JButton();
+        removeCreatorButton = new javax.swing.JButton();
         typeScrollPane = new javax.swing.JScrollPane();
         typesPane = new javax.swing.JPanel();
         generalTypesLabel = new javax.swing.JLabel();
@@ -1036,13 +1055,24 @@ public class ItemManager extends javax.swing.JFrame {
         descriptionTextEntry.setWrapStyleWord(true);
         descriptionPane.setViewportView(descriptionTextEntry);
 
-        jLabel1.setText("Icon:");
+        iconLabel.setText("Icon:");
+        iconLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        iconLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        iconLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
-        jLabel2.setText("Creator:");
+        creatorLabel.setText("Creator:");
+        creatorLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        creatorLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        creatorLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
-        jLabel3.setText("Translation Type:");
+        translationTypeLabel.setText("Translation Type:");
+
+        jPanel1.setMinimumSize(new java.awt.Dimension(0, 22));
+        jPanel1.setPreferredSize(new java.awt.Dimension(242, 22));
 
         translationKeysRadio.setText("Translation Keys");
+        translationKeysRadio.setMaximumSize(new java.awt.Dimension(108, 22));
+        translationKeysRadio.setMinimumSize(new java.awt.Dimension(108, 22));
         translationKeysRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 translationKeysRadioActionPerformed(evt);
@@ -1050,6 +1080,9 @@ public class ItemManager extends javax.swing.JFrame {
         });
 
         ucdRadio.setText("User Created Details");
+        ucdRadio.setMaximumSize(new java.awt.Dimension(128, 22));
+        ucdRadio.setMinimumSize(new java.awt.Dimension(128, 22));
+        ucdRadio.setPreferredSize(new java.awt.Dimension(128, 22));
         ucdRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ucdRadioActionPerformed(evt);
@@ -1061,49 +1094,58 @@ public class ItemManager extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(translationKeysRadio)
+                .addComponent(translationKeysRadio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ucdRadio)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(ucdRadio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(translationKeysRadio)
-                .addComponent(ucdRadio))
+                .addComponent(translationKeysRadio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ucdRadio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         translationKeyLabel.setText("Translation Key:");
+        translationKeyLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        translationKeyLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        translationKeyLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
         titleKeyLabel.setText("Title Key:");
+        titleKeyLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        titleKeyLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        titleKeyLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
         titleKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
         titleKeySpinner.setToolTipText("");
+        titleKeySpinner.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         descKeyLabel.setText("Description Key:");
 
         descKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        javax.swing.GroupLayout titleDescPaneLayout = new javax.swing.GroupLayout(titleDescPane);
+        titleDescPane.setLayout(titleDescPaneLayout);
+        titleDescPaneLayout.setHorizontalGroup(
+            titleDescPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(titleDescPaneLayout.createSequentialGroup()
                 .addComponent(titleKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(12, 12, 12)
                 .addComponent(descKeyLabel)
-                .addGap(18, 18, 18)
-                .addComponent(descKeySpinner))
+                .addGap(12, 12, 12)
+                .addComponent(descKeySpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        titleDescPaneLayout.setVerticalGroup(
+            titleDescPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(titleDescPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(titleKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(descKeyLabel)
                 .addComponent(descKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         categoryKeyLabel.setText("Category Key:");
+        categoryKeyLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        categoryKeyLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        categoryKeyLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
         categoryKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
@@ -1114,28 +1156,89 @@ public class ItemManager extends javax.swing.JFrame {
 
         locationKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        javax.swing.GroupLayout catLocPaneLayout = new javax.swing.GroupLayout(catLocPane);
+        catLocPane.setLayout(catLocPaneLayout);
+        catLocPaneLayout.setHorizontalGroup(
+            catLocPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(catLocPaneLayout.createSequentialGroup()
                 .addComponent(categoryKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(12, 12, 12)
                 .addComponent(locationKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(12, 12, 12)
                 .addComponent(locationKeySpinner))
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        catLocPaneLayout.setVerticalGroup(
+            catLocPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(catLocPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(categoryKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(locationKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(locationKeySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         categoryLabel.setText("Category:");
+        categoryLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        categoryLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        categoryLabel.setPreferredSize(new java.awt.Dimension(89, 16));
 
         locationLabel.setText("Location:");
+        locationLabel.setMaximumSize(new java.awt.Dimension(89, 16));
+        locationLabel.setMinimumSize(new java.awt.Dimension(89, 16));
+        locationLabel.setPreferredSize(new java.awt.Dimension(89, 16));
+
+        creationHistoryCheckbox.setText("Creation History");
+
+        creatorsLabel.setText("Creators:");
+
+        creatorsScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        creatorsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        creatorsScrollPane.setViewportView(creatorsList);
+
+        addCreatorButton.setText("Add");
+        addCreatorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCreatorButtonActionPerformed(evt);
+            }
+        });
+
+        removeCreatorButton.setText("Remove");
+        removeCreatorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeCreatorButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout creationHistoryPaneLayout = new javax.swing.GroupLayout(creationHistoryPane);
+        creationHistoryPane.setLayout(creationHistoryPaneLayout);
+        creationHistoryPaneLayout.setHorizontalGroup(
+            creationHistoryPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(creationHistoryPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(creationHistoryPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(creationHistoryPaneLayout.createSequentialGroup()
+                        .addComponent(creatorsLabel)
+                        .addGap(77, 77, 77))
+                    .addGroup(creationHistoryPaneLayout.createSequentialGroup()
+                        .addComponent(creatorsScrollPane)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(creationHistoryPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(removeCreatorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(addCreatorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())))
+        );
+        creationHistoryPaneLayout.setVerticalGroup(
+            creationHistoryPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(creationHistoryPaneLayout.createSequentialGroup()
+                .addComponent(creatorsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(creationHistoryPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(creationHistoryPaneLayout.createSequentialGroup()
+                        .addComponent(addCreatorButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeCreatorButton))
+                    .addComponent(creatorsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -1144,62 +1247,69 @@ public class ItemManager extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addComponent(translationKeyLabel)
-                    .addComponent(titleKeyLabel)
-                    .addComponent(categoryKeyLabel)
-                    .addComponent(categoryLabel)
-                    .addComponent(locationLabel)
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(translationTypeLabel)
+                    .addComponent(translationKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(titleKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(categoryKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(categoryLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(locationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(iconLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(15, 15, 15)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(iconTextEntry)
                     .addComponent(creatorTextEntry)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(titleDescPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(locationTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(catLocPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
                     .addComponent(categoryTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(translationKeyTextEntry))
-                .addContainerGap())
+                    .addComponent(translationKeyTextEntry)))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(creationHistoryCheckbox)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(creationHistoryPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(iconLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(iconTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                    .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(creatorTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
+                    .addComponent(translationTypeLabel)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(translationKeyLabel)
+                    .addComponent(translationKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(translationKeyTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleKeyLabel)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(titleKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(titleDescPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(categoryKeyLabel)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(categoryKeyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(catLocPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(categoryLabel)
+                    .addComponent(categoryLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(categoryTextEntry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(locationLabel)
+                    .addComponent(locationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(locationTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(creationHistoryCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(creationHistoryPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout detailsPaneLayout = new javax.swing.GroupLayout(detailsPane);
@@ -1238,7 +1348,7 @@ public class ItemManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(descriptionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(itemIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(5, 5, 5)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -2059,7 +2169,7 @@ public class ItemManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(othersPaneLayout.createSequentialGroup()
-                                .addComponent(colorRedSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                                .addComponent(colorRedSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(colorGreenSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2416,7 +2526,7 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(inventoryHiddenCheckbox))
                 .addGap(18, 18, 18)
                 .addComponent(autosavedCheckbox)
-                .addContainerGap(192, Short.MAX_VALUE))
+                .addContainerGap(197, Short.MAX_VALUE))
         );
         inventoryFlagsContainerLayout.setVerticalGroup(
             inventoryFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2485,7 +2595,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addComponent(inventoryFlagsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(inventoryFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         itemSettings.addTab("Inventory", inventoryPane);
@@ -2529,7 +2639,7 @@ public class ItemManager extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(itemSettings, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                    .addComponent(itemSettings, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(itemsLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2588,7 +2698,42 @@ public class ItemManager extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_userStickersCheckboxActionPerformed
 
+    private void addCreatorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorButtonActionPerformed
+        String creator = JOptionPane.showInputDialog(this, "Creator", "MM_Studio");
+        if (creator == null) return;
+        if (creator.length() > 0x14)
+            creator = creator.substring(0, 0x14);
+        
+        // Use case-insensitive comparison to see if the user is already in the list.
+        String upper = creator.toUpperCase();
+        for (int i = 0; i < this.creators.size(); ++i)
+            if (((String)this.creators.getElementAt(i)).toUpperCase().equals(upper))
+                return;
+        
+        if (this.creators.size() == 0)
+            this.removeCreatorButton.setEnabled(true);
+        
+        this.creators.addElement(creator);
+    }//GEN-LAST:event_addCreatorButtonActionPerformed
+
+    private void removeCreatorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCreatorButtonActionPerformed
+        int index = this.creatorsList.getSelectedIndex();
+        if (index == -1) return;
+        if (this.creators.size() - 1 != 0) {
+            if (index == 0)
+                this.creatorsList.setSelectedIndex(index + 1);
+            else
+                this.creatorsList.setSelectedIndex(index - 1);   
+        }
+        
+        this.creators.remove(index);
+        
+        if (this.creators.size() == 0)
+            this.removeCreatorButton.setEnabled(false);
+    }//GEN-LAST:event_removeCreatorButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addCreatorButton;
     private javax.swing.JButton addItemButton;
     private javax.swing.JButton addPhotoUserButton;
     private javax.swing.JCheckBox allowEmitCheckbox;
@@ -2597,6 +2742,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox autosavedCheckbox;
     private javax.swing.JCheckBox backgroundsCheckbox;
     private javax.swing.JCheckBox beardCheckbox;
+    private javax.swing.JPanel catLocPane;
     private javax.swing.JLabel categoryIndexLabel;
     private javax.swing.JSpinner categoryIndexSpinner;
     private javax.swing.JLabel categoryKeyLabel;
@@ -2622,7 +2768,13 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox costumeToolCheckbox;
     private javax.swing.JCheckBox costumeTweakerCheckbox;
     private javax.swing.JCheckBox costumesCheckbox;
+    private javax.swing.JCheckBox creationHistoryCheckbox;
+    private javax.swing.JPanel creationHistoryPane;
+    private javax.swing.JLabel creatorLabel;
     private javax.swing.JTextField creatorTextEntry;
+    private javax.swing.JLabel creatorsLabel;
+    private javax.swing.JList<String> creatorsList;
+    private javax.swing.JScrollPane creatorsScrollPane;
     private javax.swing.JCheckBox creatureCharactersCheckbox;
     private javax.swing.JCheckBox dangerCheckbox;
     private javax.swing.JLabel dateAddedLabel;
@@ -2663,6 +2815,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox hiddenCheckbox;
     private javax.swing.JLabel highlightSoundLabel;
     private javax.swing.JSpinner highlightSoundSpinner;
+    private javax.swing.JLabel iconLabel;
     private javax.swing.JTextField iconTextEntry;
     private javax.swing.JCheckBox instrumentCheckbox;
     private javax.swing.JPanel inventoryFlagsContainer;
@@ -2673,14 +2826,9 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JList<String> itemList;
     private javax.swing.JTabbedPane itemSettings;
     private javax.swing.JLabel itemsLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JSpinner jSpinner2;
     private javax.swing.JSpinner jSpinner3;
     private javax.swing.JSpinner jSpinner4;
@@ -2755,6 +2903,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox podToolLbp2Checkbox;
     private javax.swing.JCheckBox podsLbp1Checkbox;
     private javax.swing.JCheckBox podsLbp2Checkbox;
+    private javax.swing.JButton removeCreatorButton;
     private javax.swing.JButton removeItemButton;
     private javax.swing.JButton removePhotoUserButton;
     private javax.swing.JCheckBox restrictedDecorateCheckbox;
@@ -2773,6 +2922,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox stickerToolCheckbox;
     private javax.swing.JCheckBox stickersCheckbox;
     private javax.swing.JLabel subTypesLabel;
+    private javax.swing.JPanel titleDescPane;
     private javax.swing.JLabel titleKeyLabel;
     private javax.swing.JSpinner titleKeySpinner;
     private javax.swing.JLabel titleLabel;
@@ -2785,6 +2935,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JTextField translationKeyTextEntry;
     private javax.swing.JRadioButton translationKeysRadio;
     private javax.swing.ButtonGroup translationTypeButtonGroup;
+    private javax.swing.JLabel translationTypeLabel;
     private javax.swing.JScrollPane typeScrollPane;
     private javax.swing.JPanel typesPane;
     private javax.swing.JRadioButton ucdRadio;
