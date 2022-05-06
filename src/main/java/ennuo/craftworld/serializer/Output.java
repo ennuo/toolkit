@@ -351,7 +351,7 @@ public class Output {
      * @param value Integer to write
      * @return This output stream
      */
-    public Output varint(int value) { return this.varint((long) value); }
+    public Output varint(int value) { return this.varint(value & 0xFFFFFFFFl); }
     
     /**
      * Writes a 7-bit encoded long to the stream.
@@ -359,6 +359,7 @@ public class Output {
      * @return This output stream
      */
     public Output varint(long value) {
+        value = value & 0xFFFFFFFFFFFFFFFFl;
         if (value == -1 || value == Long.MAX_VALUE) {
             this.bytes(new byte[] {  (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x0F });
             return this;
@@ -366,11 +367,12 @@ public class Output {
             this.i8((byte) 0);
             return this;
         }
-        while (value > 0) {
+        while (true) {
             byte b = (byte)(value & 0x7fL);
-            value >>= 7L;
+            value >>>= 7L;
             if (value > 0L) b |= 128L;
             this.i8(b);
+            if (value == 0) break;
         }
         return this;
     }
