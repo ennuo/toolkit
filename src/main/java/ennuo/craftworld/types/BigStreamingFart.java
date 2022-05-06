@@ -21,6 +21,7 @@ import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.resources.enums.InventoryObjectSubType;
 import ennuo.craftworld.resources.enums.InventoryObjectType;
+import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
@@ -58,6 +59,11 @@ public class BigStreamingFart extends FileData {
      * LBP1/LBP3
      */
     public int revision = 1;
+    
+    /**
+     * Revision of the game this archive was built for.
+     */
+    public Revision gameRevision;
 
     /**
      * Which user created slots have been used so far
@@ -275,6 +281,7 @@ public class BigStreamingFart extends FileData {
     private void parseProfile() {
         Data profile = new Resource(this.rootProfileEntry.data).handle;
         this.rootProfileEntry.revision = profile.revision;
+        this.gameRevision = profile.revision;
         
         this.revision = (profile.revision.isAfterLBP3Revision(0x105)) ? 3 : 1;
         
@@ -447,11 +454,45 @@ public class BigStreamingFart extends FileData {
 
         entry.setResource("profileItem", item);
         entry.path = "items/" + InventoryObjectType.getPrimaryName(item.details.type).toLowerCase() + "/";
+        
+        if (item.details.type.contains(InventoryObjectType.USER_PLANET)) {
+            if (item.details.subType == InventoryObjectSubType.EARTH) entry.path += "earths/";
+            else if (item.details.subType == InventoryObjectSubType.MOON) entry.path += "moons/";
+            else if (item.details.subType == InventoryObjectSubType.ADVENTURE) entry.path += "adventure_maps/";
+            else if (item.details.subType == InventoryObjectSubType.EXTERNAL) entry.path += "external/";
+        }
+        
+        if (item.details.type.contains(InventoryObjectType.USER_STICKER) || item.details.type.contains(InventoryObjectType.STICKER)) {
+            if ((item.details.subType & InventoryObjectSubType.PAINTING) != 0)
+                entry.path = "items/paintings/";
+            else if (item.details.type.contains(InventoryObjectType.PHOTOBOOTH))
+                entry.path = "items/photo_booth/";
+            else if (item.details.type.contains(InventoryObjectType.EYETOY))
+                entry.path = "items/eyetoy/";
+            else if (item.details.type.contains(InventoryObjectType.USER_STICKER))
+                entry.path = "items/photos/";
+            else
+                entry.path = "items/stickers/";
+        }
+        
+        
+        
         if (item.details.type.contains(InventoryObjectType.USER_COSTUME) || item.details.type.contains(InventoryObjectType.COSTUME)) {
+            
+            if (this.gameRevision.isLBP3()) {
+                boolean isDwarf = (item.details.subType & InventoryObjectSubType.CREATURE_MASK_DWARF) != 0;
+                boolean isGiant = (item.details.subType & InventoryObjectSubType.CREATURE_MASK_GIANT) != 0;
+                if (isDwarf && isGiant)
+                    entry.path += "bird/";
+                else if (isDwarf) entry.path += "dwarf/";
+                else if (isGiant) entry.path += "giant/";
+                else if ((item.details.subType & InventoryObjectSubType.CREATURE_MASK_QUAD) != 0)
+                    entry.path += "quad/";
+                else entry.path += "sackboy/";
+            }
+            
             if ((item.details.subType | InventoryObjectSubType.FULL_COSTUME) != 0)
                 entry.path += "outfits/";
-            else
-                entry.path += "";
         }
 
         String title;
