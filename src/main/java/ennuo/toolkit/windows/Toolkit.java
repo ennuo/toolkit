@@ -9,6 +9,7 @@ import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Revision;
@@ -530,7 +531,7 @@ public class Toolkit extends javax.swing.JFrame {
         locationField = new javax.swing.JTextField();
         categoryLabel = new javax.swing.JLabel();
         categoryField = new javax.swing.JTextField();
-        pageCombo = new javax.swing.JComboBox<>();
+        pageCombo = new javax.swing.JComboBox(InventoryObjectType.values());
         subCombo = new javax.swing.JComboBox<>();
         creatorLabel = new javax.swing.JLabel();
         creatorField = new javax.swing.JTextField();
@@ -1125,7 +1126,7 @@ public class Toolkit extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(creatorField))
                         .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         itemMetadataLayout.setVerticalGroup(
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2314,7 +2315,11 @@ public class Toolkit extends javax.swing.JFrame {
 
         setPlanDescriptions(metadata);
 
-        pageCombo.setSelectedItem(metadata.type);
+        if (metadata.type.isEmpty())
+            pageCombo.setSelectedItem(InventoryObjectType.NONE);
+        else
+            pageCombo.setSelectedItem(metadata.type.iterator().next());
+        
         subCombo.setSelectedItem(metadata.subType);
         if (metadata.creator != null)
             creatorField.setText(metadata.creator.handle);
