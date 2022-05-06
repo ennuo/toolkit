@@ -7,10 +7,14 @@ import ennuo.craftworld.resources.enums.GameVersion;
 import ennuo.craftworld.resources.enums.InventoryItemFlags;
 import ennuo.craftworld.resources.enums.InventoryObjectSubType;
 import ennuo.craftworld.resources.enums.InventoryObjectType;
+import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
+import ennuo.craftworld.resources.structs.SceNpId;
+import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.EyetoyData;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.resources.structs.plan.PhotoData;
@@ -19,7 +23,9 @@ import ennuo.craftworld.resources.structs.plan.UserCreatedDetails;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileEntry;
+import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
 import java.awt.Component;
 import java.util.ArrayList;
@@ -29,6 +35,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class ItemManager extends javax.swing.JFrame {
     private class ItemWrapper {
@@ -70,6 +77,7 @@ public class ItemManager extends javax.swing.JFrame {
     private boolean hasMadeChanges = false;
     
     private JCheckBox[] typeCheckboxes;
+    private JCheckBox[] categories;
     
     public ItemManager(FileEntry entry, Plan plan) {
         this.entry = entry;
@@ -137,16 +145,44 @@ public class ItemManager extends javax.swing.JFrame {
             this.sequencerCheckbox, this.dangerCheckbox, this.eyetoyCheckbox, this.gadgetsCheckbox, this.toolsCheckbox,
             this.sackbotMeshCheckbox, this.creatureCharactersCheckbox, this.playerColorsCheckbox, this.userCostumesCheckbox,
             this.musicCheckbox, this.soundsCheckbox, this.photoboothCheckbox, this.userPlanetCheckbox, this.levelKeyCheckbox,
-            this.emittedItemCheckbox, this.gunItemCheckbox, this.npcCostumeCheckbox, this.instrumentCheckbox, this.podsCheckbox,
+            this.emittedItemCheckbox, this.gunItemCheckbox, this.npcCostumeCheckbox, this.instrumentCheckbox, this.podsLbp2Checkbox,
             this.costumeTweakerCheckbox, this.paintCheckbox, this.floodFillCheckbox, this.stickerToolCheckbox, this.costumeToolCheckbox,
             this.planToolCheckbox, this.photoToolCheckbox, this.pictureToolsCheckbox, this.communityPhotosCheckbox, this.communityObjectsCheckbox,
-            this.podsCheckbox, this.podToolLbp1Checkbox, this.editModeToolCheckbox, this.podToolLbp2Checkbox, this.earthToolCheckbox
+            this.podsLbp1Checkbox, this.podToolLbp1Checkbox, this.editModeToolCheckbox, this.podToolLbp2Checkbox, this.earthToolCheckbox
         };
+        
+        this.categories = new JCheckBox[] {
+            this.beardCheckbox,
+            this.feetCheckbox,
+            this.eyesCheckbox,
+            this.glassesCheckbox,
+            this.mouthCheckbox,
+            this.moustacheCheckbox,
+            this.noseCheckbox,
+            this.hairCheckbox,
+            this.headCheckbox,
+            this.neckCheckbox,
+            this.torsoCheckbox,
+            this.legsCheckbox,
+            this.handsCheckbox,
+            this.waistCheckbox
+        };
+        
+        // These types have unique sub types, so every time one of these 
+        // are updated, we have to refresh the UI.
+        Arrays.stream(new JCheckBox[] { 
+            this.costumesCheckbox, this.playerColorsCheckbox, this.userPlanetCheckbox,
+            this.userCostumesCheckbox, this.toolsCheckbox, this.fullCostumeCheckbox,
+            this.specialCostumeCheckbox
+        }).forEach(checkbox -> {
+            checkbox.addActionListener(listener -> this.updateSubTypeVisibility());
+        });
         
         /* Disable types that aren't applicable for game
            these items are built for.
         */
         int version = GameVersion.getFlag(this.revision);
+        
         if ((version & GameVersion.LBP1) == 0) {
             this.lbp1TypesLabel.setVisible(false);
             this.setChildrenEnabled(this.lbp1TypeContainer, false);   
@@ -158,6 +194,10 @@ public class ItemManager extends javax.swing.JFrame {
         if ((version & GameVersion.LBP3) == 0) {
             this.lbp3TypesLabel.setVisible(false);
             this.setChildrenEnabled(this.lbp3TypesContainer, false);   
+        } else {
+            this.editModeToolCheckbox.setVisible(false);
+            this.podToolLbp2Checkbox.setVisible(false);
+            this.earthToolCheckbox.setVisible(false);
         }
         
         // Hide painting field if it wasn't added yet.
@@ -182,6 +222,12 @@ public class ItemManager extends javax.swing.JFrame {
         if (!this.revision.isAfterLBP3Revision(0x105)) {
             this.guidLabel.setVisible(false);
             this.guidSpinner.setVisible(false);
+        }
+        
+        // Disable plan flags if they weren't added yet.
+        if (this.revision.head <= 0x334) {
+            this.planFlagsLabel.setVisible(false);
+            this.planFlagsContainer.setVisible(false);
         }
         
         this.itemList.setModel(this.model);
@@ -244,11 +290,9 @@ public class ItemManager extends javax.swing.JFrame {
             this.hasMadeChanges = true;
             boolean isEnabled = this.photoDataCheckbox.isSelected();
             if (isEnabled) {
-                this.selectedDetails.photoData = new PhotoData();
                 this.photoDataPane.setVisible(true);
                 this.setChildrenEnabled(this.photoDataPane, true);
             } else {
-                this.selectedDetails.photoData = null;
                 this.photoDataPane.setVisible(false);
                 this.setChildrenEnabled(this.photoDataPane, false);
             }
@@ -259,11 +303,9 @@ public class ItemManager extends javax.swing.JFrame {
             this.hasMadeChanges = true;
             boolean isEnabled = this.eyetoyDataCheckbox.isSelected();
             if (isEnabled) {
-                this.selectedDetails.eyetoyData = new EyetoyData();
                 this.eyetoyDataPane.setVisible(true);
                 this.setChildrenEnabled(this.eyetoyDataPane, true);
             } else {
-                this.selectedDetails.eyetoyData = null;
                 this.eyetoyDataPane.setVisible(false);
                 this.setChildrenEnabled(this.eyetoyDataPane, false);
             }
@@ -351,10 +393,103 @@ public class ItemManager extends javax.swing.JFrame {
         this.itemIcon.setText("No icon available.");
     }
     
-    private void setItemData() {
+    private void updateSubTypeVisibility() {
+        boolean isCostume = this.costumesCheckbox.isSelected();
+        boolean isColour = this.playerColorsCheckbox.isSelected();
+        boolean isPlanet = this.userPlanetCheckbox.isSelected();
+        boolean isFullCostume = this.fullCostumeCheckbox.isSelected() || this.specialCostumeCheckbox.isSelected();
+        boolean isOutfit = this.userCostumesCheckbox.isSelected();
+        boolean showCharacterMask = isCostume && this.revision.isLBP3();
+        boolean isTool = this.toolsCheckbox.isSelected();
+        
+        this.subTypesLabel.setVisible(!(!isCostume && !isColour && !isPlanet && !isOutfit && !showCharacterMask));
+        
+        this.costumeCategoriesLabel.setVisible(isCostume && !isFullCostume);
+        this.costumeCategoriesPane.setVisible(isCostume && !isFullCostume);
+        this.characterMaskCombo.setVisible(showCharacterMask);
+        this.characterMaskLabel.setVisible(showCharacterMask);
+        
+        this.planetTypeCombo.setVisible(isPlanet);
+        this.planetTypeLabel.setVisible(isPlanet);
+        
+        this.colorIndexLabel.setVisible(isColour);
+        this.colorIndexSpinner.setVisible(isColour);
+        
+        this.outfitFlagsLabel.setVisible(isOutfit || isCostume);
+        this.outfitFlagsPane.setVisible(isOutfit || isCostume);
+        
+        this.toolTypeLabel.setVisible(isTool);
+        this.toolTypeCombo.setVisible(isTool);
+        
+    }
+    
+    private void initializeSubTypes() {
         InventoryDetails details = this.selectedDetails;
         
-        System.out.println("SUBTYPE: " + details.subType);
+        boolean isCostume = details.type.contains(InventoryObjectType.COSTUME);
+        boolean isColour = details.type.contains(InventoryObjectType.PLAYER_COLOUR);
+        boolean isPlanet = details.type.contains(InventoryObjectType.USER_PLANET);
+        boolean isFullCostume = ((details.subType & InventoryObjectSubType.FULL_COSTUME) != 0) || 
+                                ((details.subType & InventoryObjectSubType.SPECIAL_COSTUME) != 0);
+        boolean isOutfit = details.type.contains(InventoryObjectType.USER_COSTUME);
+        boolean showCharacterMask = isCostume && this.revision.isLBP3();
+        boolean isTool = details.type.contains(InventoryObjectType.TOOL);
+        
+        this.subTypesLabel.setVisible(!(!isCostume && !isColour && !isPlanet && !isFullCostume && !isOutfit && !showCharacterMask));
+        
+        this.costumeCategoriesLabel.setVisible(isCostume && !isFullCostume);
+        this.costumeCategoriesPane.setVisible(isCostume && !isFullCostume);
+        this.characterMaskCombo.setVisible(showCharacterMask);
+        this.characterMaskLabel.setVisible(showCharacterMask);
+        
+        this.planetTypeCombo.setVisible(isPlanet);
+        this.planetTypeLabel.setVisible(isPlanet);
+        
+        this.colorIndexLabel.setVisible(isColour);
+        this.colorIndexSpinner.setVisible(isColour);
+        
+        this.outfitFlagsLabel.setVisible(isOutfit || isCostume);
+        this.outfitFlagsPane.setVisible(isOutfit || isCostume);
+        
+        this.toolTypeLabel.setVisible(isTool);
+        this.toolTypeCombo.setVisible(isTool);
+        
+        if (isCostume) {
+            for (int i = 0; i < this.categories.length; ++i)
+                this.categories[i].setSelected((details.subType & (1 << i)) != 0);
+        }
+        
+        if (showCharacterMask) {
+            boolean isDwarf = (details.subType & InventoryObjectSubType.CREATURE_MASK_DWARF) != 0;
+            boolean isGiant = (details.subType & InventoryObjectSubType.CREATURE_MASK_GIANT) != 0;
+            if (isGiant && isDwarf) this.characterMaskCombo.setSelectedIndex(3);
+            else if (isGiant) this.characterMaskCombo.setSelectedIndex(1);
+            else if (isDwarf) this.characterMaskCombo.setSelectedIndex(2);
+            else if ((details.subType & InventoryObjectSubType.CREATURE_MASK_QUAD) != 0)
+                this.characterMaskCombo.setSelectedIndex(4);
+            else
+                this.characterMaskCombo.setSelectedIndex(0);
+        }
+        
+        if (isPlanet) {
+            if (details.subType == 0) this.planetTypeCombo.setSelectedIndex(0);
+            else if (details.subType == 1) this.planetTypeCombo.setSelectedIndex(1);
+            else if (details.subType == 2) this.planetTypeCombo.setSelectedIndex(2);
+            else if (details.subType == 4) this.planetTypeCombo.setSelectedIndex(3);
+        }
+        
+        if (isColour) this.colorIndexSpinner.setValue(details.subType);
+        
+        if (isOutfit || isCostume) {
+            this.madeByMeCheckbox.setSelected((details.subType & 0x20000000) != 0);
+            this.madeByOthersCheckbox.setSelected((details.subType & 0x40000000) != 0);
+            this.fullCostumeCheckbox.setSelected((details.subType & 0x80000000) != 0);
+            this.specialCostumeCheckbox.setSelected((details.subType & 0x04000000) != 0);
+        }
+    }
+    
+    private void setItemData() {
+        InventoryDetails details = this.selectedDetails;
         
         // Details tab
         
@@ -401,78 +536,7 @@ public class ItemManager extends javax.swing.JFrame {
         InventoryObjectType[] objectTypes = InventoryObjectType.values();
         for (int i = 1; i < objectTypes.length; ++i)
             this.typeCheckboxes[i - 1].setSelected(details.type.contains(objectTypes[i]));
-        
-        boolean isCostume = details.type.contains(InventoryObjectType.COSTUME);
-        boolean isColour = details.type.contains(InventoryObjectType.PLAYER_COLOUR);
-        boolean isPlanet = details.type.contains(InventoryObjectType.USER_PLANET);
-        boolean isFullCostume = (details.subType & 0x80000000) != 0;
-        boolean isOutfit = details.type.contains(InventoryObjectType.USER_COSTUME);
-        boolean showCharacterMask = isCostume && this.revision.isLBP3();
-        
-        this.costumeCategoriesLabel.setVisible(isCostume && !isFullCostume);
-        this.costumeCategoriesPane.setVisible(isCostume && !isFullCostume);
-        this.characterMaskCombo.setVisible(showCharacterMask);
-        this.characterMaskLabel.setVisible(showCharacterMask);
-        
-        this.planetTypeCombo.setVisible(isPlanet);
-        this.planetTypeLabel.setVisible(isPlanet);
-        
-        this.colorIndexLabel.setVisible(isColour);
-        this.colorIndexSpinner.setVisible(isColour);
-        
-        this.outfitFlagsLabel.setVisible(isOutfit || isCostume);
-        this.outfitFlagsPane.setVisible(isOutfit || isCostume);
-        
-        
-        JCheckBox[] categories = {
-            this.beardCheckbox,
-            this.feetCheckbox,
-            this.eyesCheckbox,
-            this.glassesCheckbox,
-            this.mouthCheckbox,
-            this.moustacheCheckbox,
-            this.noseCheckbox,
-            this.hairCheckbox,
-            this.headCheckbox,
-            this.neckCheckbox,
-            this.torsoCheckbox,
-            this.legsCheckbox,
-            this.handsCheckbox,
-            this.waistCheckbox
-        };
-        
-        if (isCostume) {
-            for (int i = 0; i < categories.length; ++i)
-                categories[i].setSelected((details.subType & (1 << i)) != 0);
-        }
-        
-        if (showCharacterMask) {
-            boolean isDwarf = (details.subType & InventoryObjectSubType.CREATURE_MASK_DWARF) != 0;
-            boolean isGiant = (details.subType & InventoryObjectSubType.CREATURE_MASK_GIANT) != 0;
-            if (isGiant && isDwarf) this.characterMaskCombo.setSelectedIndex(3);
-            else if (isGiant) this.characterMaskCombo.setSelectedIndex(1);
-            else if (isDwarf) this.characterMaskCombo.setSelectedIndex(2);
-            else if ((details.subType & InventoryObjectSubType.CREATURE_MASK_QUAD) != 0)
-                this.characterMaskCombo.setSelectedIndex(4);
-            else
-                this.characterMaskCombo.setSelectedIndex(0);
-        }
-        
-        if (isPlanet) {
-            if (details.subType == 0) this.planetTypeCombo.setSelectedIndex(0);
-            else if (details.subType == 1) this.planetTypeCombo.setSelectedIndex(1);
-            else if (details.subType == 2) this.planetTypeCombo.setSelectedIndex(2);
-            else if (details.subType == 4) this.planetTypeCombo.setSelectedIndex(3);
-        }
-        
-        if (isColour) this.colorIndexSpinner.setValue(details.subType);
-        
-        if (isOutfit || isCostume) {
-            this.madeByMeCheckbox.setSelected((details.subType & 0x20000000) != 0);
-            this.madeByOthersCheckbox.setSelected((details.subType & 0x40000000) != 0);
-            this.fullCostumeCheckbox.setSelected((details.subType & 0x80000000) != 0);
-            this.specialCostumeCheckbox.setSelected((details.subType & 0x04000000) != 0);
-        }
+        this.initializeSubTypes();
         
         // Other tab
         
@@ -492,9 +556,8 @@ public class ItemManager extends javax.swing.JFrame {
         this.copyrightCheckbox.setSelected((details.flags & InventoryItemFlags.COPYRIGHT) != 0);
         this.unusedCheckbox.setSelected((details.flags & InventoryItemFlags.USED) == 0);
         this.hiddenCheckbox.setSelected((details.flags & InventoryItemFlags.HIDDEN_ITEM) != 0);
-        this.restrictedCheckbox.setSelected(
-                (details.flags & InventoryItemFlags.RESTRICTED_LEVEL) != 0 || 
-                (details.flags & InventoryItemFlags.RESTRICTED_POD) != 0);
+        this.restrictedDecorateCheckbox.setSelected((details.flags & InventoryItemFlags.RESTRICTED_POD) != 0);
+        this.restrictedLevelCheckbox.setSelected((details.flags & InventoryItemFlags.RESTRICTED_LEVEL) != 0);
         this.loopPreviewCheckbox.setSelected((details.flags & InventoryItemFlags.DISABLE_LOOP_PREVIEW) == 0);
         
         // Photo data tab
@@ -516,6 +579,13 @@ public class ItemManager extends javax.swing.JFrame {
             this.photoLevelNumberSpinner.setValue(metadata.level.ID);
             this.photoLevelHashTextEntry.setText(metadata.levelHash.toString());
         } else {
+            this.photoIconResourceTextEntry.setText("");
+            this.stickerResourceTextEntry.setText("");
+            this.paintingResourceTextEntry.setText("");
+            this.photoResourceTextEntry.setText("");
+            this.photoLevelTypeCombo.setSelectedIndex(0);
+            this.photoLevelNumberSpinner.setValue(0l);
+            this.photoLevelHashTextEntry.setText("");
             this.photoDataCheckbox.setSelected(false);
             this.setChildrenEnabled(this.photoDataPane, false);
             this.photoDataPane.setVisible(false);
@@ -557,6 +627,156 @@ public class ItemManager extends javax.swing.JFrame {
             this.autosavedCheckbox.setSelected((item.flags & InventoryItemFlags.AUTOSAVED) != 0);
         }
         
+    }
+    
+    private ResourceDescriptor getDescriptor(JTextField field, ResourceType type) {
+        String resource = field.getText();
+        if (StringUtils.isGUID(resource) || StringUtils.isSHA1(resource))
+            return new ResourceDescriptor(type, resource);
+        return null;
+    }
+    
+    private void saveItem(InventoryDetails details, InventoryItem item) {
+        boolean isUsingKeys = (this.revision.isAfterLeerdammerRevision(7) || this.revision.head > 0x2ba);
+        boolean isUCD = this.ucdRadio.isSelected();
+        
+        
+        // Temporarily reset translation keys
+        details.titleKey = 0;
+        details.descriptionKey = 0;
+        details.category = 0;
+        details.location = 0;
+        details.translationTag = "";
+        details.locationTag = "";
+        details.categoryTag = "";
+        
+        details.icon = this.getDescriptor(this.iconTextEntry, ResourceType.TEXTURE);
+        details.creator = new SceNpId(this.creatorTextEntry.getText());
+        
+        // Get title and description
+        if (isUCD)
+            details.userCreatedDetails = new UserCreatedDetails(this.titleTextEntry.getText(), this.descriptionTextEntry.getText());
+        else {
+            if (isUsingKeys) {
+                details.titleKey = (long) this.titleKeySpinner.getValue();
+                details.descriptionKey = (long) this.descKeySpinner.getValue();
+            } else 
+                details.translationTag = this.translationKeyTextEntry.getText();
+        }
+        
+        // Set category/theme of the item
+        if (item == null) {
+            if (isUsingKeys) {
+                details.category = (long) this.categoryKeySpinner.getValue();
+                details.location = (long) this.categoryKeySpinner.getValue();
+            } else {
+                details.categoryTag = this.categoryTextEntry.getText();
+                details.locationTag = this.locationTextEntry.getText();
+            }
+        } else {
+            // If we're editing a profile, categories/locations are resolved by index in string table
+            details.categoryIndex = (short) this.profile.bigProfile.stringTable.add(this.categoryTextEntry.getText(), 0);
+            details.locationIndex = (short) this.profile.bigProfile.stringTable.add(this.locationTextEntry.getText(), 0);
+        }
+        
+        details.type.clear();
+        InventoryObjectType[] objectTypes = InventoryObjectType.values();
+        for (int i = 1; i < objectTypes.length; ++i)
+            if (this.typeCheckboxes[i - 1].isSelected())
+                details.type.add(objectTypes[i]);
+        
+        details.subType = 0;
+        if (details.type.contains(InventoryObjectType.COSTUME)) {
+            if (this.madeByMeCheckbox.isSelected()) details.subType |= InventoryObjectSubType.MADE_BY_ME;
+            if (this.madeByOthersCheckbox.isSelected()) details.subType |= InventoryObjectSubType.MADE_BY_OTHERS;
+            if (this.fullCostumeCheckbox.isSelected()) details.subType |= InventoryObjectSubType.FULL_COSTUME;
+            if (this.specialCostumeCheckbox.isSelected()) details.subType |= InventoryObjectSubType.SPECIAL_COSTUME;
+            
+            if (!this.fullCostumeCheckbox.isSelected() && !this.specialCostumeCheckbox.isSelected()) {
+                for (int i = 0; i < this.categories.length; ++i)
+                    if (categories[i].isSelected())
+                        details.subType |= (1 << i);
+            }
+            
+            if (this.revision.isLBP3()) {
+                int mask = this.characterMaskCombo.getSelectedIndex();
+                if (mask == 1) details.subType |= InventoryObjectSubType.CREATURE_MASK_GIANT;
+                else if (mask == 2) details.subType |= InventoryObjectSubType.CREATURE_MASK_DWARF;
+                else if (mask == 3) details.subType |= InventoryObjectSubType.CREATURE_MASK_BIRD;
+                else if (mask == 4) details.subType |= InventoryObjectSubType.CREATURE_MASK_QUAD;
+            }
+        }
+        
+        if (details.type.contains(InventoryObjectType.USER_PLANET)) {
+            int index = this.planetTypeCombo.getSelectedIndex();
+            if (index != 0)
+                details.subType |= (1 << (index - 1));
+        }
+        
+        if (details.type.contains(InventoryObjectType.PLAYER_COLOUR))
+            details.subType = (int) this.colorIndexSpinner.getValue();
+        
+        details.toolType = (ToolType) this.toolTypeCombo.getSelectedItem();
+        
+        details.levelUnlockSlotID = new SlotID(
+                (SlotType) this.unlockSlotTypeCombo.getSelectedItem(),
+                (long) this.unlockSlotNumberSpinner.getValue()
+        );
+        
+        details.highlightSound = (long) this.highlightSoundSpinner.getValue();
+        
+        details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000 * 2;
+        
+        details.colour = 
+                ((Integer)this.colorRedSpinner.getValue()).longValue() << 16 |
+                ((Integer)this.colorGreenSpinner.getValue()).longValue() << 8 |
+                ((Integer)this.colorBlueSpinner.getValue()).longValue() << 0;
+
+        details.flags = 0;
+        if (!this.loopPreviewCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.DISABLE_LOOP_PREVIEW;
+        if (this.allowEmitCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.ALLOW_EMIT;
+        if (this.copyrightCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.COPYRIGHT;
+        if (this.hiddenCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.HIDDEN_ITEM; 
+        if (this.restrictedDecorateCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.RESTRICTED_POD;
+        if (this.restrictedLevelCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.RESTRICTED_LEVEL;
+        if (!this.unusedCheckbox.isSelected())
+            details.flags |= InventoryItemFlags.USED;
+        
+        if (this.photoDataCheckbox.isSelected()) {
+            PhotoData data = new PhotoData();
+            data.icon = this.getDescriptor(this.photoIconResourceTextEntry, ResourceType.TEXTURE);
+            data.sticker = this.getDescriptor(this.stickerResourceTextEntry, ResourceType.TEXTURE);
+            data.painting = this.getDescriptor(this.paintingResourceTextEntry, ResourceType.PAINTING);
+            data.photoMetadata.photo = this.getDescriptor(this.photoResourceTextEntry, ResourceType.TEXTURE);
+            data.photoMetadata.level = new SlotID(
+                (SlotType) this.photoLevelTypeCombo.getSelectedItem(),
+                (long) this.photoLevelNumberSpinner.getValue()
+            );
+            
+            String levelHash = this.photoLevelHashTextEntry.getText();
+            if (levelHash.isEmpty() || !StringUtils.isSHA1(levelHash))
+                data.photoMetadata.levelHash = new SHA1();
+            else data.photoMetadata.levelHash = new SHA1(levelHash);
+            
+        } else details.photoData = null;
+        
+        if (this.eyetoyDataCheckbox.isSelected()) {
+            EyetoyData data = new EyetoyData();
+            data.alphaMask = this.getDescriptor(this.alphaMaskTextEntry, ResourceType.TEXTURE);
+            data.frame = this.getDescriptor(this.frameTextEntry, ResourceType.TEXTURE);
+            data.outline = this.getDescriptor(this.outlineTextEntry, ResourceType.TEXTURE);
+        } else details.eyetoyData = null;
+        
+        if (this.profile != null) {
+            this.profile.shouldSave = true;
+            Toolkit.instance.updateWorkspace();
+        }
     }
   
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -626,7 +846,6 @@ public class ItemManager extends javax.swing.JFrame {
         musicCheckbox = new javax.swing.JCheckBox();
         soundsCheckbox = new javax.swing.JCheckBox();
         photoboothCheckbox = new javax.swing.JCheckBox();
-        podsCheckbox = new javax.swing.JCheckBox();
         lbp1TypesLabel = new javax.swing.JLabel();
         lbp1TypeContainer = new javax.swing.JPanel();
         paintCheckbox = new javax.swing.JCheckBox();
@@ -639,6 +858,7 @@ public class ItemManager extends javax.swing.JFrame {
         costumeToolCheckbox = new javax.swing.JCheckBox();
         podToolLbp1Checkbox = new javax.swing.JCheckBox();
         communityObjectsCheckbox = new javax.swing.JCheckBox();
+        podsLbp1Checkbox = new javax.swing.JCheckBox();
         lbp2TypesLabel = new javax.swing.JLabel();
         lbp2TypeContainer = new javax.swing.JPanel();
         sequencerCheckbox = new javax.swing.JCheckBox();
@@ -651,12 +871,13 @@ public class ItemManager extends javax.swing.JFrame {
         emittedItemCheckbox = new javax.swing.JCheckBox();
         earthToolCheckbox = new javax.swing.JCheckBox();
         podToolLbp2Checkbox = new javax.swing.JCheckBox();
+        podsLbp2Checkbox = new javax.swing.JCheckBox();
         lbp3TypesLabel = new javax.swing.JLabel();
         lbp3TypesContainer = new javax.swing.JPanel();
         sackbotMeshCheckbox = new javax.swing.JCheckBox();
         creatureCharactersCheckbox = new javax.swing.JCheckBox();
         costumeTweakerCheckbox = new javax.swing.JCheckBox();
-        jLabel4 = new javax.swing.JLabel();
+        subTypesLabel = new javax.swing.JLabel();
         costumeCategoriesPane = new javax.swing.JPanel();
         beardCheckbox = new javax.swing.JCheckBox();
         feetCheckbox = new javax.swing.JCheckBox();
@@ -685,6 +906,8 @@ public class ItemManager extends javax.swing.JFrame {
         madeByOthersCheckbox = new javax.swing.JCheckBox();
         fullCostumeCheckbox = new javax.swing.JCheckBox();
         specialCostumeCheckbox = new javax.swing.JCheckBox();
+        toolTypeLabel = new javax.swing.JLabel();
+        toolTypeCombo = new javax.swing.JComboBox(ToolType.values());
         othersPane = new javax.swing.JPanel();
         unlockSlotIDLabel = new javax.swing.JLabel();
         slotTypeLabel = new javax.swing.JLabel();
@@ -700,14 +923,14 @@ public class ItemManager extends javax.swing.JFrame {
         colorBlueSpinner = new javax.swing.JSpinner();
         highlightSoundSpinner = new javax.swing.JSpinner();
         planFlagsLabel = new javax.swing.JLabel();
-        allowEmitCheckbox = new javax.swing.JCheckBox();
-        restrictedCheckbox = new javax.swing.JCheckBox();
-        unusedCheckbox = new javax.swing.JCheckBox();
+        planFlagsContainer = new javax.swing.JPanel();
         copyrightCheckbox = new javax.swing.JCheckBox();
+        allowEmitCheckbox = new javax.swing.JCheckBox();
+        unusedCheckbox = new javax.swing.JCheckBox();
         loopPreviewCheckbox = new javax.swing.JCheckBox();
-        toolTypeLabel = new javax.swing.JLabel();
-        toolTypeCombo = new javax.swing.JComboBox(ToolType.values());
         hiddenCheckbox = new javax.swing.JCheckBox();
+        restrictedDecorateCheckbox = new javax.swing.JCheckBox();
+        restrictedLevelCheckbox = new javax.swing.JCheckBox();
         photoAndEyetoyDataScrollPane = new javax.swing.JScrollPane();
         photoAndEyetoyDataPane = new javax.swing.JPanel();
         photoDataCheckbox = new javax.swing.JCheckBox();
@@ -770,6 +993,7 @@ public class ItemManager extends javax.swing.JFrame {
         autosavedCheckbox = new javax.swing.JCheckBox();
         closeButton = new javax.swing.JButton();
         itemsLabel = new javax.swing.JLabel();
+        saveButton = new javax.swing.JButton();
 
         this.translationTypeButtonGroup.add(this.translationKeysRadio);
         this.translationTypeButtonGroup.add(this.ucdRadio);
@@ -853,7 +1077,12 @@ public class ItemManager extends javax.swing.JFrame {
 
         titleKeyLabel.setText("Title Key:");
 
+        titleKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
+        titleKeySpinner.setToolTipText("");
+
         descKeyLabel.setText("Description Key:");
+
+        descKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -864,7 +1093,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(descKeyLabel)
                 .addGap(18, 18, 18)
-                .addComponent(descKeySpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
+                .addComponent(descKeySpinner))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -876,10 +1105,14 @@ public class ItemManager extends javax.swing.JFrame {
 
         categoryKeyLabel.setText("Category Key:");
 
+        categoryKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
+
         locationKeyLabel.setText("Location Key:");
         locationKeyLabel.setMaximumSize(new java.awt.Dimension(85, 16));
         locationKeyLabel.setMinimumSize(new java.awt.Dimension(85, 16));
         locationKeyLabel.setPreferredSize(new java.awt.Dimension(85, 16));
+
+        locationKeySpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -966,7 +1199,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(locationLabel)
                     .addComponent(locationTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout detailsPaneLayout = new javax.swing.GroupLayout(detailsPane);
@@ -988,7 +1221,7 @@ public class ItemManager extends javax.swing.JFrame {
                             .addGroup(detailsPaneLayout.createSequentialGroup()
                                 .addComponent(descriptionLabel)
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(descriptionPane, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))))
+                            .addComponent(descriptionPane))))
                 .addContainerGap())
         );
         detailsPaneLayout.setVerticalGroup(
@@ -1019,253 +1252,395 @@ public class ItemManager extends javax.swing.JFrame {
         generalTypesLabel.setText("General Types:");
 
         materialsCheckbox.setText("Materials");
+        materialsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        materialsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        materialsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         objectsCheckbox.setText("Objects");
+        objectsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        objectsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        objectsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         decorationsCheckbox.setText("Decorations");
+        decorationsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        decorationsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        decorationsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         stickersCheckbox.setText("Stickers");
+        stickersCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        stickersCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        stickersCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        costumeMaterialsCheckbox.setText("Costume Materials");
+        costumeMaterialsCheckbox.setText("Skins");
+        costumeMaterialsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        costumeMaterialsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        costumeMaterialsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         jointsCheckbox.setText("Joints");
+        jointsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        jointsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        jointsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
+        jointsCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jointsCheckboxActionPerformed(evt);
+            }
+        });
 
         userObjectsCheckbox.setText("User Objects");
+        userObjectsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        userObjectsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        userObjectsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         backgroundsCheckbox.setText("Backgrounds");
+        backgroundsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        backgroundsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        backgroundsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         gameplayKitsCheckbox.setText("Gameplay Kits");
+        gameplayKitsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        gameplayKitsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        gameplayKitsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         costumesCheckbox.setText("Costumes");
+        costumesCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        costumesCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        costumesCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         userStickersCheckbox.setText("User Stickers");
+        userStickersCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        userStickersCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        userStickersCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
+        userStickersCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                userStickersCheckboxActionPerformed(evt);
+            }
+        });
 
         shapesCheckbox.setText("Shapes");
+        shapesCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        shapesCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        shapesCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         toolsCheckbox.setText("Tools");
+        toolsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        toolsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        toolsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         dangerCheckbox.setText("Danger");
+        dangerCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        dangerCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        dangerCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         eyetoyCheckbox.setText("Eyetoy");
+        eyetoyCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        eyetoyCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        eyetoyCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         gadgetsCheckbox.setText("Gadgets");
+        gadgetsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        gadgetsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        gadgetsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        playerColorsCheckbox.setText("Player Colors");
+        playerColorsCheckbox.setText("Colors");
+        playerColorsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        playerColorsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        playerColorsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         userCostumesCheckbox.setText("User Costumes");
+        userCostumesCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        userCostumesCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        userCostumesCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         musicCheckbox.setText("Music");
+        musicCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        musicCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        musicCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        soundsCheckbox.setText("Sound");
+        soundsCheckbox.setText("Sounds");
+        soundsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        soundsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        soundsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         photoboothCheckbox.setText("Photobooth");
-
-        podsCheckbox.setText("Pods");
+        photoboothCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        photoboothCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        photoboothCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         javax.swing.GroupLayout generalTypesContainerLayout = new javax.swing.GroupLayout(generalTypesContainer);
         generalTypesContainer.setLayout(generalTypesContainerLayout);
         generalTypesContainerLayout.setHorizontalGroup(
             generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(generalTypesContainerLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, generalTypesContainerLayout.createSequentialGroup()
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(generalTypesContainerLayout.createSequentialGroup()
                         .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(decorationsCheckbox)
-                            .addComponent(materialsCheckbox)
-                            .addComponent(objectsCheckbox)
-                            .addComponent(stickersCheckbox)
-                            .addComponent(costumesCheckbox))
-                        .addGap(43, 43, 43)
+                            .addComponent(decorationsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(materialsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(objectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(stickersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(costumesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)
                         .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(generalTypesContainerLayout.createSequentialGroup()
-                                .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(gameplayKitsCheckbox)
-                                    .addComponent(jointsCheckbox)
-                                    .addComponent(userObjectsCheckbox)
-                                    .addComponent(backgroundsCheckbox))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(gadgetsCheckbox)
-                                    .addComponent(eyetoyCheckbox)
-                                    .addComponent(toolsCheckbox)
-                                    .addComponent(dangerCheckbox)))
-                            .addGroup(generalTypesContainerLayout.createSequentialGroup()
-                                .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(userStickersCheckbox)
-                                    .addComponent(shapesCheckbox))
-                                .addGap(18, 18, 18)
-                                .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(playerColorsCheckbox)
-                                    .addGroup(generalTypesContainerLayout.createSequentialGroup()
-                                        .addComponent(userCostumesCheckbox)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(musicCheckbox)
-                                            .addComponent(soundsCheckbox)
-                                            .addComponent(photoboothCheckbox)
-                                            .addComponent(podsCheckbox)))))))
-                    .addComponent(costumeMaterialsCheckbox))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(gameplayKitsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jointsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(userObjectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(backgroundsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(userStickersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(shapesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(costumeMaterialsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
+                .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(generalTypesContainerLayout.createSequentialGroup()
+                        .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(gadgetsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(eyetoyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toolsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dangerCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(userCostumesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)
+                        .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(musicCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(soundsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(photoboothCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(playerColorsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         generalTypesContainerLayout.setVerticalGroup(
             generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(generalTypesContainerLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(materialsCheckbox)
+                    .addComponent(materialsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jointsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dangerCheckbox)
-                    .addComponent(musicCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(dangerCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(musicCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(objectsCheckbox)
-                    .addComponent(userObjectsCheckbox)
-                    .addComponent(eyetoyCheckbox)
-                    .addComponent(soundsCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(objectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(userObjectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(eyetoyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(soundsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(decorationsCheckbox)
-                    .addComponent(backgroundsCheckbox)
-                    .addComponent(gadgetsCheckbox)
-                    .addComponent(photoboothCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(decorationsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(backgroundsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(gadgetsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(photoboothCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(stickersCheckbox)
-                    .addComponent(gameplayKitsCheckbox)
-                    .addComponent(toolsCheckbox)
-                    .addComponent(podsCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(stickersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(gameplayKitsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toolsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(costumesCheckbox)
-                    .addComponent(userStickersCheckbox)
-                    .addComponent(playerColorsCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(costumesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(userStickersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(userCostumesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(generalTypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(costumeMaterialsCheckbox)
-                    .addComponent(shapesCheckbox)
-                    .addComponent(userCostumesCheckbox))
+                    .addComponent(costumeMaterialsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(shapesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(playerColorsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         lbp1TypesLabel.setText("LBP1 Types:");
 
         paintCheckbox.setText("Paint");
+        paintCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        paintCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        paintCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         planToolCheckbox.setText("Plan Tool");
+        planToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        planToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        planToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        communityPhotosCheckbox.setText("Community Photo Tools");
+        communityPhotosCheckbox.setText("C.Photo Tools");
+        communityPhotosCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        communityPhotosCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        communityPhotosCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         floodFillCheckbox.setText("Flood Fill");
+        floodFillCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        floodFillCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        floodFillCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         photoToolCheckbox.setText("Photo Tool");
+        photoToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        photoToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        photoToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        stickerToolCheckbox.setText("Sticker Tool");
+        stickerToolCheckbox.setText("Sticker Tools");
+        stickerToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        stickerToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        stickerToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         pictureToolsCheckbox.setText("Picture Tools");
+        pictureToolsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        pictureToolsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        pictureToolsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         costumeToolCheckbox.setText("Costume Tool");
+        costumeToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        costumeToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        costumeToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        podToolLbp1Checkbox.setText("Pod Tool (LBP1)");
+        podToolLbp1Checkbox.setText("Pod Tool");
+        podToolLbp1Checkbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        podToolLbp1Checkbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        podToolLbp1Checkbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        communityObjectsCheckbox.setText("Community Object Tools");
+        communityObjectsCheckbox.setText("C.Object Tools");
+        communityObjectsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        communityObjectsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        communityObjectsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
+
+        podsLbp1Checkbox.setText("Pods");
+        podsLbp1Checkbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        podsLbp1Checkbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        podsLbp1Checkbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         javax.swing.GroupLayout lbp1TypeContainerLayout = new javax.swing.GroupLayout(lbp1TypeContainer);
         lbp1TypeContainer.setLayout(lbp1TypeContainerLayout);
         lbp1TypeContainerLayout.setHorizontalGroup(
             lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lbp1TypeContainerLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(2, 2, 2)
                 .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(communityPhotosCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(planToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(paintCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
+                .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pictureToolsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(stickerToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(communityObjectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
+                .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(photoToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(lbp1TypeContainerLayout.createSequentialGroup()
                         .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(paintCheckbox)
-                            .addComponent(planToolCheckbox))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(costumeToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(floodFillCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)
                         .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(photoToolCheckbox)
-                            .addComponent(floodFillCheckbox))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stickerToolCheckbox)
-                            .addComponent(pictureToolsCheckbox))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(podToolLbp1Checkbox)
-                            .addComponent(costumeToolCheckbox)))
-                    .addGroup(lbp1TypeContainerLayout.createSequentialGroup()
-                        .addComponent(communityPhotosCheckbox)
-                        .addGap(18, 18, 18)
-                        .addComponent(communityObjectsCheckbox)))
-                .addGap(134, 134, 134))
+                            .addComponent(podsLbp1Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(podToolLbp1Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         lbp1TypeContainerLayout.setVerticalGroup(
             lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lbp1TypeContainerLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(paintCheckbox)
+                    .addComponent(paintCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(stickerToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(floodFillCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(stickerToolCheckbox)
-                    .addComponent(costumeToolCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(podsLbp1Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(planToolCheckbox)
-                    .addComponent(photoToolCheckbox)
-                    .addComponent(pictureToolsCheckbox)
-                    .addComponent(podToolLbp1Checkbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(planToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pictureToolsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(photoToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(podToolLbp1Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(lbp1TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(communityPhotosCheckbox)
-                    .addComponent(communityObjectsCheckbox))
+                    .addComponent(communityPhotosCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(communityObjectsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(costumeToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         lbp2TypesLabel.setText("LBP2 Types:");
 
         sequencerCheckbox.setText("Sequencer");
+        sequencerCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        sequencerCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        sequencerCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
+        sequencerCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sequencerCheckboxActionPerformed(evt);
+            }
+        });
 
         gunItemCheckbox.setText("Gun Item");
+        gunItemCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        gunItemCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        gunItemCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         editModeToolCheckbox.setText("Edit Mode Tool");
+        editModeToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        editModeToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        editModeToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        userPlanetCheckbox.setText("User Planet");
+        userPlanetCheckbox.setText("Planets");
+        userPlanetCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        userPlanetCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        userPlanetCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         npcCostumeCheckbox.setText("NPC Costume");
+        npcCostumeCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        npcCostumeCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        npcCostumeCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         levelKeyCheckbox.setText("Level Key");
+        levelKeyCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        levelKeyCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        levelKeyCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         instrumentCheckbox.setText("Instrument");
+        instrumentCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        instrumentCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        instrumentCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        emittedItemCheckbox.setText("Emitted Item");
+        emittedItemCheckbox.setText("Emitted");
+        emittedItemCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        emittedItemCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        emittedItemCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         earthToolCheckbox.setText("Earth Tool");
+        earthToolCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        earthToolCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        earthToolCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        podToolLbp2Checkbox.setText("Pod Tool (LBP2)");
+        podToolLbp2Checkbox.setText("Pod Tool");
+        podToolLbp2Checkbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        podToolLbp2Checkbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        podToolLbp2Checkbox.setPreferredSize(new java.awt.Dimension(120, 20));
+
+        podsLbp2Checkbox.setText("Pods");
+        podsLbp2Checkbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        podsLbp2Checkbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        podsLbp2Checkbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         javax.swing.GroupLayout lbp2TypeContainerLayout = new javax.swing.GroupLayout(lbp2TypeContainer);
         lbp2TypeContainer.setLayout(lbp2TypeContainerLayout);
         lbp2TypeContainerLayout.setHorizontalGroup(
             lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lbp2TypeContainerLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(2, 2, 2)
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sequencerCheckbox)
-                    .addComponent(gunItemCheckbox)
-                    .addComponent(editModeToolCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(sequencerCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(gunItemCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(editModeToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(userPlanetCheckbox)
-                    .addComponent(npcCostumeCheckbox)
-                    .addComponent(podToolLbp2Checkbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(userPlanetCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(npcCostumeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(podToolLbp2Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(instrumentCheckbox)
-                    .addComponent(earthToolCheckbox)
                     .addGroup(lbp2TypeContainerLayout.createSequentialGroup()
-                        .addComponent(levelKeyCheckbox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(emittedItemCheckbox)))
+                        .addComponent(instrumentCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(podsLbp2Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(earthToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(lbp2TypeContainerLayout.createSequentialGroup()
+                        .addComponent(levelKeyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(emittedItemCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         lbp2TypeContainerLayout.setVerticalGroup(
@@ -1273,56 +1648,66 @@ public class ItemManager extends javax.swing.JFrame {
             .addGroup(lbp2TypeContainerLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(sequencerCheckbox)
+                    .addComponent(sequencerCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(userPlanetCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(levelKeyCheckbox)
-                    .addComponent(emittedItemCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(levelKeyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(emittedItemCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(gunItemCheckbox)
-                    .addComponent(npcCostumeCheckbox)
-                    .addComponent(instrumentCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(gunItemCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(npcCostumeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(instrumentCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(podsLbp2Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
                 .addGroup(lbp2TypeContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(editModeToolCheckbox)
-                    .addComponent(podToolLbp2Checkbox)
-                    .addComponent(earthToolCheckbox))
+                    .addComponent(editModeToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(podToolLbp2Checkbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(earthToolCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         lbp3TypesLabel.setText("LBP3 Types:");
 
         sackbotMeshCheckbox.setText("Sackbot Mesh");
+        sackbotMeshCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        sackbotMeshCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        sackbotMeshCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
-        creatureCharactersCheckbox.setText("Creature Characters");
+        creatureCharactersCheckbox.setText("Creatures");
+        creatureCharactersCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        creatureCharactersCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        creatureCharactersCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         costumeTweakerCheckbox.setText("Costume Tweaker Tool");
+        costumeTweakerCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
+        costumeTweakerCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
+        costumeTweakerCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
 
         javax.swing.GroupLayout lbp3TypesContainerLayout = new javax.swing.GroupLayout(lbp3TypesContainer);
         lbp3TypesContainer.setLayout(lbp3TypesContainerLayout);
         lbp3TypesContainerLayout.setHorizontalGroup(
             lbp3TypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lbp3TypesContainerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(sackbotMeshCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(creatureCharactersCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(costumeTweakerCheckbox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(2, 2, 2)
+                .addComponent(sackbotMeshCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addComponent(creatureCharactersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addComponent(costumeTweakerCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         lbp3TypesContainerLayout.setVerticalGroup(
             lbp3TypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lbp3TypesContainerLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(lbp3TypesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(sackbotMeshCheckbox)
+                    .addComponent(sackbotMeshCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(creatureCharactersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(costumeTweakerCheckbox))
+                    .addComponent(costumeTweakerCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel4.setText("Subtypes:");
+        subTypesLabel.setText("Subtypes:");
 
         beardCheckbox.setText("Beard");
 
@@ -1398,14 +1783,14 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(headCheckbox)
                     .addComponent(handsCheckbox)
                     .addComponent(glassesCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(2, 2, 2)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(feetCheckbox)
                     .addComponent(moustacheCheckbox)
                     .addComponent(neckCheckbox)
                     .addComponent(waistCheckbox)
                     .addComponent(hairCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(2, 2, 2)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(eyesCheckbox)
                     .addComponent(noseCheckbox)
@@ -1464,6 +1849,14 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGap(0, 6, Short.MAX_VALUE))
         );
 
+        toolTypeLabel.setText("Tool Type:");
+
+        toolTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolTypeComboActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout typesPaneLayout = new javax.swing.GroupLayout(typesPane);
         typesPane.setLayout(typesPaneLayout);
         typesPaneLayout.setHorizontalGroup(
@@ -1483,25 +1876,27 @@ public class ItemManager extends javax.swing.JFrame {
                             .addComponent(characterMaskCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(planetTypeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(colorIndexSpinner)))
+                    .addComponent(outfitFlagsPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(typesPaneLayout.createSequentialGroup()
                         .addGroup(typesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(lbp2TypeContainer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, typesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(typesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(lbp1TypeContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                    .addComponent(generalTypesLabel)
-                                    .addComponent(lbp1TypesLabel)
-                                    .addComponent(generalTypesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addComponent(lbp2TypesLabel))
+                            .addComponent(generalTypesLabel)
+                            .addComponent(lbp1TypesLabel)
+                            .addComponent(lbp2TypesLabel)
+                            .addComponent(lbp1TypeContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(lbp3TypesLabel)
                             .addComponent(lbp3TypesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel4)
+                            .addComponent(subTypesLabel)
                             .addComponent(costumeCategoriesPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(typesPaneLayout.createSequentialGroup()
                                 .addGap(6, 6, 6)
-                                .addComponent(costumeCategoriesLabel)))
+                                .addComponent(costumeCategoriesLabel))
+                            .addComponent(generalTypesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(outfitFlagsPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(typesPaneLayout.createSequentialGroup()
+                        .addComponent(toolTypeLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toolTypeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         typesPaneLayout.setVerticalGroup(
@@ -1524,7 +1919,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbp3TypesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
+                .addComponent(subTypesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(costumeCategoriesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1545,6 +1940,10 @@ public class ItemManager extends javax.swing.JFrame {
                 .addComponent(outfitFlagsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(outfitFlagsPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(typesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(toolTypeLabel)
+                    .addComponent(toolTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1558,7 +1957,7 @@ public class ItemManager extends javax.swing.JFrame {
 
         slotNumberLabel.setText("Number:");
 
-        unlockSlotNumberSpinner.setModel(new javax.swing.SpinnerNumberModel(0L, 0L, null, 1L));
+        unlockSlotNumberSpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
         highlightSoundLabel.setText("Highlight Sound:");
 
@@ -1574,23 +1973,66 @@ public class ItemManager extends javax.swing.JFrame {
 
         colorBlueSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
 
-        highlightSoundSpinner.setModel(new javax.swing.SpinnerNumberModel(0L, 0L, null, 1L));
+        highlightSoundSpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
         planFlagsLabel.setText("Flags:");
 
-        allowEmitCheckbox.setText("Emittable");
+        copyrightCheckbox.setText("Copyright");
+        copyrightCheckbox.setToolTipText("Indicates that another player created this object and locked it.");
 
-        restrictedCheckbox.setText("Restricted");
+        allowEmitCheckbox.setText("Allow Emit");
+        allowEmitCheckbox.setToolTipText("Indicates that this item can be emitted.");
 
         unusedCheckbox.setText("Unused");
-
-        copyrightCheckbox.setText("Copyright");
+        unusedCheckbox.setToolTipText("Indicates that this item has never been used by the player.");
 
         loopPreviewCheckbox.setText("Loop Preview");
-
-        toolTypeLabel.setText("Tool Type:");
+        loopPreviewCheckbox.setToolTipText("Indicates that the highlight sound of this item can repeat indefinitely");
 
         hiddenCheckbox.setText("Hidden");
+
+        restrictedDecorateCheckbox.setText("Restricted (Decorate)");
+        restrictedDecorateCheckbox.setToolTipText("Indicates that this item is limited to decorate menus (adventure maps and planet decorations)");
+
+        restrictedLevelCheckbox.setText("Restricted (Level)");
+        restrictedLevelCheckbox.setToolTipText("Indicates that the item cannot be used in decorate menus, (pod decoration and adventure decoration)");
+
+        javax.swing.GroupLayout planFlagsContainerLayout = new javax.swing.GroupLayout(planFlagsContainer);
+        planFlagsContainer.setLayout(planFlagsContainerLayout);
+        planFlagsContainerLayout.setHorizontalGroup(
+            planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(planFlagsContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(restrictedDecorateCheckbox)
+                    .addComponent(loopPreviewCheckbox))
+                .addGap(6, 6, 6)
+                .addGroup(planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(allowEmitCheckbox)
+                    .addComponent(restrictedLevelCheckbox))
+                .addGap(6, 6, 6)
+                .addGroup(planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(unusedCheckbox)
+                    .addGroup(planFlagsContainerLayout.createSequentialGroup()
+                        .addComponent(copyrightCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(hiddenCheckbox)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        planFlagsContainerLayout.setVerticalGroup(
+            planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(planFlagsContainerLayout.createSequentialGroup()
+                .addGroup(planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(copyrightCheckbox)
+                    .addComponent(loopPreviewCheckbox)
+                    .addComponent(allowEmitCheckbox)
+                    .addComponent(hiddenCheckbox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(planFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(restrictedDecorateCheckbox)
+                    .addComponent(restrictedLevelCheckbox)
+                    .addComponent(unusedCheckbox)))
+        );
 
         javax.swing.GroupLayout othersPaneLayout = new javax.swing.GroupLayout(othersPane);
         othersPane.setLayout(othersPaneLayout);
@@ -1617,7 +2059,7 @@ public class ItemManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(othersPaneLayout.createSequentialGroup()
-                                .addComponent(colorRedSpinner)
+                                .addComponent(colorRedSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(colorGreenSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1625,25 +2067,9 @@ public class ItemManager extends javax.swing.JFrame {
                             .addComponent(dateAddedSpinner)
                             .addComponent(highlightSoundSpinner)))
                     .addGroup(othersPaneLayout.createSequentialGroup()
-                        .addComponent(toolTypeLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(toolTypeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(othersPaneLayout.createSequentialGroup()
-                        .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(planFlagsLabel)
-                            .addGroup(othersPaneLayout.createSequentialGroup()
-                                .addComponent(restrictedCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(copyrightCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(allowEmitCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(unusedCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(loopPreviewCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(hiddenCheckbox)))
-                        .addGap(0, 14, Short.MAX_VALUE)))
+                        .addComponent(planFlagsLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(planFlagsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         othersPaneLayout.setVerticalGroup(
@@ -1676,18 +2102,8 @@ public class ItemManager extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(planFlagsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(unusedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(loopPreviewCheckbox)
-                    .addComponent(allowEmitCheckbox)
-                    .addComponent(copyrightCheckbox)
-                    .addComponent(restrictedCheckbox)
-                    .addComponent(hiddenCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(toolTypeLabel)
-                    .addComponent(toolTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addComponent(planFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         itemSettings.addTab("Other", othersPane);
@@ -1695,6 +2111,11 @@ public class ItemManager extends javax.swing.JFrame {
         photoAndEyetoyDataScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         photoDataCheckbox.setText("Photo Data");
+        photoDataCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                photoDataCheckboxActionPerformed(evt);
+            }
+        });
 
         photoIconLabel.setText("Icon:");
 
@@ -1710,7 +2131,7 @@ public class ItemManager extends javax.swing.JFrame {
 
         photoLevelNumberLabel.setText("Number:");
 
-        photoLevelNumberSpinner.setModel(new javax.swing.SpinnerNumberModel(0L, 0L, null, 1L));
+        photoLevelNumberSpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(4294967295L), Long.valueOf(1L)));
 
         levelHashLabel.setText("Level Hash:");
 
@@ -1995,7 +2416,7 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(inventoryHiddenCheckbox))
                 .addGap(18, 18, 18)
                 .addComponent(autosavedCheckbox)
-                .addContainerGap(150, Short.MAX_VALUE))
+                .addContainerGap(192, Short.MAX_VALUE))
         );
         inventoryFlagsContainerLayout.setVerticalGroup(
             inventoryFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2064,7 +2485,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addComponent(inventoryFlagsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(inventoryFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(58, Short.MAX_VALUE))
         );
 
         itemSettings.addTab("Inventory", inventoryPane);
@@ -2073,13 +2494,20 @@ public class ItemManager extends javax.swing.JFrame {
 
         itemsLabel.setText("Items:");
 
+        saveButton.setText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(slotContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2091,6 +2519,8 @@ public class ItemManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeItemButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(saveButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(closeButton)))
                 .addContainerGap())
         );
@@ -2099,7 +2529,7 @@ public class ItemManager extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(itemSettings, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .addComponent(itemSettings, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(itemsLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2108,7 +2538,8 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addItemButton)
                     .addComponent(removeItemButton)
-                    .addComponent(closeButton))
+                    .addComponent(closeButton)
+                    .addComponent(saveButton))
                 .addContainerGap())
         );
 
@@ -2132,6 +2563,30 @@ public class ItemManager extends javax.swing.JFrame {
     private void translationKeysRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_translationKeysRadioActionPerformed
         this.changeTranslationType(false);
     }//GEN-LAST:event_translationKeysRadioActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        this.saveItem(this.selectedDetails, this.selectedItem);
+    }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void toolTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolTypeComboActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_toolTypeComboActionPerformed
+
+    private void photoDataCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_photoDataCheckboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_photoDataCheckboxActionPerformed
+
+    private void sequencerCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sequencerCheckboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_sequencerCheckboxActionPerformed
+
+    private void jointsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jointsCheckboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jointsCheckboxActionPerformed
+
+    private void userStickersCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userStickersCheckboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_userStickersCheckboxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addItemButton;
@@ -2221,7 +2676,6 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -2289,6 +2743,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JLabel photoUsersLabel;
     private javax.swing.JCheckBox photoboothCheckbox;
     private javax.swing.JCheckBox pictureToolsCheckbox;
+    private javax.swing.JPanel planFlagsContainer;
     private javax.swing.JLabel planFlagsLabel;
     private javax.swing.JLabel planLabel;
     private javax.swing.JTextField planTextField;
@@ -2298,11 +2753,14 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox playerColorsCheckbox;
     private javax.swing.JCheckBox podToolLbp1Checkbox;
     private javax.swing.JCheckBox podToolLbp2Checkbox;
-    private javax.swing.JCheckBox podsCheckbox;
+    private javax.swing.JCheckBox podsLbp1Checkbox;
+    private javax.swing.JCheckBox podsLbp2Checkbox;
     private javax.swing.JButton removeItemButton;
     private javax.swing.JButton removePhotoUserButton;
-    private javax.swing.JCheckBox restrictedCheckbox;
+    private javax.swing.JCheckBox restrictedDecorateCheckbox;
+    private javax.swing.JCheckBox restrictedLevelCheckbox;
     private javax.swing.JCheckBox sackbotMeshCheckbox;
+    private javax.swing.JButton saveButton;
     private javax.swing.JCheckBox sequencerCheckbox;
     private javax.swing.JCheckBox shapesCheckbox;
     private javax.swing.JScrollPane slotContainer;
@@ -2314,6 +2772,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JTextField stickerResourceTextEntry;
     private javax.swing.JCheckBox stickerToolCheckbox;
     private javax.swing.JCheckBox stickersCheckbox;
+    private javax.swing.JLabel subTypesLabel;
     private javax.swing.JLabel titleKeyLabel;
     private javax.swing.JSpinner titleKeySpinner;
     private javax.swing.JLabel titleLabel;

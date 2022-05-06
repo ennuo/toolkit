@@ -33,7 +33,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="slotContainer" min="-2" pref="191" max="-2" attributes="0"/>
@@ -47,6 +47,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeItemButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
+                      <Component id="saveButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -59,7 +61,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="itemSettings" pref="290" max="32767" attributes="0"/>
+                  <Component id="itemSettings" pref="289" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="itemsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -71,6 +73,7 @@
                   <Component id="addItemButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="removeItemButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="closeButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="saveButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -157,7 +160,7 @@
                                           <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="descriptionPane" pref="357" max="32767" attributes="0"/>
+                                      <Component id="descriptionPane" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -304,7 +307,7 @@
                                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="locationTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -390,7 +393,7 @@
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="descKeyLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="descKeySpinner" pref="141" max="32767" attributes="0"/>
+                                  <Component id="descKeySpinner" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -406,6 +409,12 @@
                       </Layout>
                       <SubComponents>
                         <Component class="javax.swing.JSpinner" name="titleKeySpinner">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                            </Property>
+                            <Property name="toolTipText" type="java.lang.String" value=""/>
+                          </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="descKeyLabel">
                           <Properties>
@@ -413,6 +422,11 @@
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JSpinner" name="descKeySpinner">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                            </Property>
+                          </Properties>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -447,6 +461,11 @@
                       </Layout>
                       <SubComponents>
                         <Component class="javax.swing.JSpinner" name="categoryKeySpinner">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                            </Property>
+                          </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="locationKeyLabel">
                           <Properties>
@@ -463,6 +482,11 @@
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JSpinner" name="locationKeySpinner">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                            </Property>
+                          </Properties>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -525,30 +549,31 @@
                                       <Component id="colorIndexSpinner" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
+                              <Component id="outfitFlagsPane" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="lbp2TypeContainer" alignment="1" max="32767" attributes="0"/>
-                                      <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="lbp1TypeContainer" pref="0" max="32767" attributes="0"/>
-                                              <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="lbp1TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="generalTypesContainer" alignment="0" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Component id="lbp2TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
+                                      <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lbp1TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lbp2TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lbp1TypeContainer" alignment="0" max="32767" attributes="0"/>
                                       <Component id="lbp3TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="lbp3TypesContainer" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="subTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="costumeCategoriesPane" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                                           <Component id="costumeCategoriesLabel" min="-2" max="-2" attributes="0"/>
                                       </Group>
+                                      <Component id="generalTypesContainer" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
-                              <Component id="outfitFlagsPane" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="toolTypeLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="toolTypeCombo" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -574,7 +599,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="lbp3TypesContainer" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                          <Component id="subTypesLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="costumeCategoriesLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -598,6 +623,11 @@
                           <Component id="outfitFlagsLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="outfitFlagsPane" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="toolTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="toolTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -614,8 +644,8 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -625,48 +655,38 @@
                                           <Component id="stickersCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="costumesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="gameplayKitsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="jointsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="userObjectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="backgroundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="gadgetsCheckbox" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="eyetoyCheckbox" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="toolsCheckbox" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="dangerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="userStickersCheckbox" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="shapesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="playerColorsCheckbox" min="-2" max="-2" attributes="0"/>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="userCostumesCheckbox" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                                      <Group type="103" groupAlignment="0" attributes="0">
-                                                          <Component id="musicCheckbox" min="-2" max="-2" attributes="0"/>
-                                                          <Component id="soundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                          <Component id="photoboothCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                          <Component id="podsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                      </Group>
-                                                  </Group>
-                                              </Group>
-                                          </Group>
+                                          <Component id="gameplayKitsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="jointsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="userObjectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="backgroundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="userStickersCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="shapesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Component id="costumeMaterialsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="gadgetsCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="eyetoyCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="toolsCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dangerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="userCostumesCheckbox" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="musicCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="soundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="photoboothCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Component id="playerColorsCheckbox" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -680,38 +700,37 @@
                                   <Component id="dangerCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="musicCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="objectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="userObjectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="eyetoyCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="soundsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="decorationsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="backgroundsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="gadgetsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="photoboothCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="stickersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="gameplayKitsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="toolsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="podsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="costumesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="userStickersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="playerColorsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userCostumesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="costumeMaterialsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="shapesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="userCostumesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="playerColorsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -722,111 +741,301 @@
                     <Component class="javax.swing.JCheckBox" name="materialsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Materials"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="objectsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Objects"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="decorationsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Decorations"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="stickersCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Stickers"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="costumeMaterialsCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Costume Materials"/>
+                        <Property name="text" type="java.lang.String" value="Skins"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="jointsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Joints"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jointsCheckboxActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="userObjectsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="User Objects"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="backgroundsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Backgrounds"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="gameplayKitsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Gameplay Kits"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="costumesCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Costumes"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="userStickersCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="User Stickers"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="userStickersCheckboxActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="shapesCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Shapes"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="toolsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Tools"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="dangerCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Danger"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="eyetoyCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Eyetoy"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="gadgetsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Gadgets"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="playerColorsCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Player Colors"/>
+                        <Property name="text" type="java.lang.String" value="Colors"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="userCostumesCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="User Costumes"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="musicCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Music"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="soundsCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Sound"/>
+                        <Property name="text" type="java.lang.String" value="Sounds"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="photoboothCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Photobooth"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="podsCheckbox">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Pods"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -842,36 +1051,34 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="communityPhotosCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="planToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="paintCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="pictureToolsCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="stickerToolCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="communityObjectsCheckbox" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="photoToolCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="paintCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="planToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="photoToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="costumeToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="floodFillCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="stickerToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="pictureToolsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="podsLbp1Checkbox" min="-2" max="-2" attributes="0"/>
                                           <Component id="podToolLbp1Checkbox" min="-2" max="-2" attributes="0"/>
-                                          <Component id="costumeToolCheckbox" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="communityPhotosCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="communityObjectsCheckbox" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -881,21 +1088,22 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="paintCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="floodFillCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                                   <Component id="stickerToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="costumeToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="floodFillCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Component id="podsLbp1Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="planToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="photoToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="pictureToolsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="podToolLbp1Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="communityPhotosCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="communityObjectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="costumeToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -906,51 +1114,155 @@
                     <Component class="javax.swing.JCheckBox" name="paintCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Paint"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="planToolCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Plan Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="communityPhotosCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Community Photo Tools"/>
+                        <Property name="text" type="java.lang.String" value="C.Photo Tools"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="floodFillCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Flood Fill"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="photoToolCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Photo Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="stickerToolCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Sticker Tool"/>
+                        <Property name="text" type="java.lang.String" value="Sticker Tools"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="pictureToolsCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Picture Tools"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="costumeToolCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Costume Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="podToolLbp1Checkbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Pod Tool (LBP1)"/>
+                        <Property name="text" type="java.lang.String" value="Pod Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="communityObjectsCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Community Object Tools"/>
+                        <Property name="text" type="java.lang.String" value="C.Object Tools"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="podsLbp1Checkbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Pods"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -966,25 +1278,29 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="sequencerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="gunItemCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="editModeToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="userPlanetCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Component id="npcCostumeCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="podToolLbp2Checkbox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="instrumentCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="instrumentCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                      <Component id="podsLbp2Checkbox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                                   <Component id="earthToolCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="levelKeyCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Component id="emittedItemCheckbox" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -1002,13 +1318,14 @@
                                   <Component id="levelKeyCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="emittedItemCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="gunItemCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="npcCostumeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="instrumentCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="podsLbp2Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="editModeToolCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="podToolLbp2Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1023,51 +1340,158 @@
                     <Component class="javax.swing.JCheckBox" name="sequencerCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Sequencer"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sequencerCheckboxActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="gunItemCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Gun Item"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="editModeToolCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Edit Mode Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="userPlanetCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="User Planet"/>
+                        <Property name="text" type="java.lang.String" value="Planets"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="npcCostumeCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="NPC Costume"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="levelKeyCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Level Key"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="instrumentCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Instrument"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="emittedItemCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Emitted Item"/>
+                        <Property name="text" type="java.lang.String" value="Emitted"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="earthToolCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Earth Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="podToolLbp2Checkbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Pod Tool (LBP2)"/>
+                        <Property name="text" type="java.lang.String" value="Pod Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="podsLbp2Checkbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Pods"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -1083,13 +1507,13 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Component id="sackbotMeshCheckbox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Component id="creatureCharactersCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="costumeTweakerCheckbox" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="costumeTweakerCheckbox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1111,21 +1535,48 @@
                     <Component class="javax.swing.JCheckBox" name="sackbotMeshCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Sackbot Mesh"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="creatureCharactersCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Creature Characters"/>
+                        <Property name="text" type="java.lang.String" value="Creatures"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="costumeTweakerCheckbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Costume Tweaker Tool"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[120, 20]"/>
+                        </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="javax.swing.JLabel" name="jLabel4">
+                <Component class="javax.swing.JLabel" name="subTypesLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Subtypes:"/>
                   </Properties>
@@ -1189,7 +1640,7 @@
                                   <Component id="handsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="glassesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="feetCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="moustacheCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1197,7 +1648,7 @@
                                   <Component id="waistCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="hairCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="eyesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="noseCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1400,6 +1851,25 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Component class="javax.swing.JLabel" name="toolTypeLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Tool Type:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="toolTypeCombo">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                      <StringArray count="0"/>
+                    </Property>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toolTypeComboActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(ToolType.values())"/>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
           </SubComponents>
@@ -1441,7 +1911,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="colorRedSpinner" max="32767" attributes="0"/>
+                                      <Component id="colorRedSpinner" pref="174" max="32767" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="colorGreenSpinner" min="-2" pref="131" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -1451,30 +1921,11 @@
                                   <Component id="highlightSoundSpinner" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="toolTypeLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="toolTypeCombo" max="32767" attributes="0"/>
-                          </Group>
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="restrictedCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="copyrightCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="allowEmitCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="unusedCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="loopPreviewCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="hiddenCheckbox" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="0" pref="14" max="32767" attributes="0"/>
+                              <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="planFlagsContainer" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1515,20 +1966,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="unusedCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                          <Component id="loopPreviewCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="allowEmitCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="copyrightCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="restrictedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="hiddenCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="toolTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="toolTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace pref="19" max="32767" attributes="0"/>
+                      <Component id="planFlagsContainer" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1563,7 +2002,7 @@
             <Component class="javax.swing.JSpinner" name="unlockSlotNumberSpinner">
               <Properties>
                 <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                  <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
                 </Property>
               </Properties>
             </Component>
@@ -1613,7 +2052,7 @@
             <Component class="javax.swing.JSpinner" name="highlightSoundSpinner">
               <Properties>
                 <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                  <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
                 </Property>
               </Properties>
             </Component>
@@ -1622,52 +2061,98 @@
                 <Property name="text" type="java.lang.String" value="Flags:"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="allowEmitCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Emittable"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="restrictedCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Restricted"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="unusedCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Unused"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="copyrightCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Copyright"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="loopPreviewCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Loop Preview"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="toolTypeLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Tool Type:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JComboBox" name="toolTypeCombo">
-              <Properties>
-                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="0"/>
-                </Property>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(ToolType.values())"/>
-                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="hiddenCheckbox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Hidden"/>
-              </Properties>
-            </Component>
+            <Container class="javax.swing.JPanel" name="planFlagsContainer">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="restrictedDecorateCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="loopPreviewCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="allowEmitCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Component id="restrictedLevelCheckbox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="unusedCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="copyrightCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="hiddenCheckbox" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="copyrightCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="loopPreviewCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="allowEmitCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="hiddenCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="restrictedDecorateCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="restrictedLevelCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="unusedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="copyrightCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Copyright"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that another player created this object and locked it."/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="allowEmitCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Allow Emit"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that this item can be emitted."/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="unusedCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Unused"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that this item has never been used by the player."/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="loopPreviewCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Loop Preview"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that the highlight sound of this item can repeat indefinitely"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="hiddenCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Hidden"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="restrictedDecorateCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restricted (Decorate)"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that this item is limited to decorate menus (adventure maps and planet decorations)"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="restrictedLevelCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restricted (Level)"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Indicates that the item cannot be used in decorate menus, (pod decoration and adventure decoration)"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JScrollPane" name="photoAndEyetoyDataScrollPane">
@@ -1727,6 +2212,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Photo Data"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="photoDataCheckboxActionPerformed"/>
+                  </Events>
                 </Component>
                 <Container class="javax.swing.JPanel" name="photoDataPane">
 
@@ -1886,7 +2374,7 @@
                     <Component class="javax.swing.JSpinner" name="photoLevelNumberSpinner">
                       <Properties>
                         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                          <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                          <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
                         </Property>
                       </Properties>
                     </Component>
@@ -2209,7 +2697,7 @@
                       <Component id="inventoryFlagsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="inventoryFlagsContainer" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="59" max="32767" attributes="0"/>
+                      <EmptySpace pref="58" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2271,7 +2759,7 @@
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="autosavedCheckbox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="150" max="32767" attributes="0"/>
+                          <EmptySpace pref="192" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2347,6 +2835,14 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Items:"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="saveButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Save"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
