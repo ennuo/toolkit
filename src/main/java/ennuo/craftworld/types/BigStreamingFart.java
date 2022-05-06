@@ -236,6 +236,8 @@ public class BigStreamingFart extends FileData {
             entry.path += "audio/";
         else if (extension.equals("plan"))
             entry.path += "plans/";
+        else if (extension.equals("ptg"))
+            entry.path += "paintings/";
         else
             entry.path += "unknown/";
 
