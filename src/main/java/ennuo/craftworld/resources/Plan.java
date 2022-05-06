@@ -10,6 +10,7 @@ import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.toolkit.utilities.Globals;
+import java.util.HashSet;
 
 public class Plan implements Serializable {
     public boolean isUsedForStreaming;
@@ -17,8 +18,15 @@ public class Plan implements Serializable {
     public byte[] thingData;
     public InventoryDetails details = new InventoryDetails();
     
+    /**
+     * Cache of dependencies in thing data, so we don't have
+     * to parse it.
+     */
+    public HashSet<ResourceDescriptor> dependencyCache;
+    
     public Plan(){}
     public Plan(Resource resource) {
+        this.dependencyCache = new HashSet<>(resource.dependencies);
         this.serialize(new Serializer(resource.handle), this);
     }
 
@@ -64,6 +72,12 @@ public class Plan implements Serializable {
             plan.details = null;
             System.err.println("There was an error processing inventory details.");
         }
+        
+        // Remove dependencies of inventory item details,
+        // since dependency cache should only be dependencies
+        // in the thing data.
+        //for (ResourceDescriptor descriptor : serializer.dependencies)
+        //    this.dependencyCache.remove(descriptor);
         
         return plan;
     }

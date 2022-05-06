@@ -530,8 +530,8 @@ public class Toolkit extends javax.swing.JFrame {
         locationField = new javax.swing.JTextField();
         categoryLabel = new javax.swing.JLabel();
         categoryField = new javax.swing.JTextField();
-        pageCombo = new javax.swing.JComboBox(ennuo.craftworld.resources.enums.ItemType.values());
-        subCombo = new javax.swing.JComboBox(ennuo.craftworld.resources.enums.ItemSubType.values());
+        pageCombo = new javax.swing.JComboBox<>();
+        subCombo = new javax.swing.JComboBox<>();
         creatorLabel = new javax.swing.JLabel();
         creatorField = new javax.swing.JTextField();
         progressBar = new javax.swing.JProgressBar();
@@ -1908,7 +1908,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new MetadataEditor(this, ((BigStreamingFart) getCurrentDB())).setVisible(true);
+        new ItemManager((BigStreamingFart) this.getCurrentDB()).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed

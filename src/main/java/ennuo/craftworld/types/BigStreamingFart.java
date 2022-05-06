@@ -9,7 +9,6 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.enums.Crater;
-import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.InventoryItem;
@@ -20,6 +19,8 @@ import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.InventoryObjectSubType;
+import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
@@ -424,23 +425,23 @@ public class BigStreamingFart extends FileData {
         if (entry == null) return;
 
         entry.setResource("profileItem", item);
-        entry.path = "items/" + item.details.type.name().toLowerCase() + "/";
-        if (item.details.type.equals(ItemType.USER_COSTUMES) || item.details.type.equals(ItemType.COSTUMES)) {
-            if (item.details.subType.equals(ItemType.ALL))
+        entry.path = "items/" + InventoryObjectType.getPrimaryName(item.details.type).toLowerCase() + "/";
+        if (item.details.type.contains(InventoryObjectType.USER_COSTUME) || item.details.type.contains(InventoryObjectType.COSTUME)) {
+            if ((item.details.subType | InventoryObjectSubType.FULL_COSTUME) != 0)
                 entry.path += "outfits/";
             else
-                entry.path += item.details.subType.name().toLowerCase() + "/";
+                entry.path += "";
         }
 
         String title;
         if (item.details.userCreatedDetails != null && item.details.userCreatedDetails.title != null)
             title = item.details.userCreatedDetails.title;
         else {
-            if (item.details.type == ItemType.USER_PHOTOS)
+            if (item.details.type.contains(InventoryObjectType.USER_STICKER))
                 title = "A Photo";
-            else if (item.details.type == ItemType.POD)
+            else if (item.details.type.contains(InventoryObjectType.USER_POD))
                 title = "A Pod";
-            else if (item.details.type == ItemType.COSTUMES || item.details.type == ItemType.USER_COSTUMES)
+            else if (item.details.type.contains(InventoryObjectType.USER_COSTUME) || item.details.type.contains(InventoryObjectType.COSTUME))
                 title = "A Costume";
             else
                 title = "Some kind of object";

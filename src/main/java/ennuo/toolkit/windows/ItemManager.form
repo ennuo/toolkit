@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="translationTypeButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="this.translationTypeButtonGroup.add(this.translationKeysRadio);&#xa;this.translationTypeButtonGroup.add(this.ucdRadio);"/>
+      </AuxValues>
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="Item Manager"/>
@@ -34,7 +41,6 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="itemSettings" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="addItemButton" min="-2" max="-2" attributes="0"/>
@@ -53,7 +59,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="itemSettings" pref="285" max="32767" attributes="0"/>
+                  <Component id="itemSettings" pref="290" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="itemsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -96,11 +102,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Add Item"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addItemButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="removeItemButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Remove"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeItemButtonActionPerformed"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JTabbedPane" name="itemSettings">
       <AccessibilityProperties>
@@ -109,7 +121,10 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JPanel" name="detailsPane">
+        <Container class="javax.swing.JScrollPane" name="detailsScrollPane">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Details">
@@ -118,203 +133,362 @@
             </Constraint>
           </Constraints>
 
-          <Layout>
-            <DimensionLayout dim="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="titleTextEntry" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="descriptionPane" pref="351" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="creatorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="iconLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="titleKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="descKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="creatorTextEntry" alignment="1" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="titleKeySpinner" pref="119" max="32767" attributes="0"/>
-                                          <Component id="descKeySpinner" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="categoryLabel" max="32767" attributes="0"/>
-                                          <Component id="locationLabel" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="categoryTextEntry" pref="166" max="32767" attributes="0"/>
-                                          <Component id="locationTextEntry" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Component id="iconTextEntry" alignment="1" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-            <DimensionLayout dim="1">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="titleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="titleTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="descriptionPane" min="-2" pref="78" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="iconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="iconTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="creatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="creatorTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="titleKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="titleKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="categoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="categoryTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="descKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="descKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                              <Component id="locationTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-          </Layout>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="itemIcon">
-              <Properties>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="No icon available."/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="titleLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Title:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="titleTextEntry">
-            </Component>
-            <Component class="javax.swing.JLabel" name="descriptionLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Description:"/>
-              </Properties>
-            </Component>
-            <Container class="javax.swing.JScrollPane" name="descriptionPane">
-              <AuxValues>
-                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-              </AuxValues>
+            <Container class="javax.swing.JPanel" name="detailsPane">
 
-              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jPanel2" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="titleTextEntry" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" attributes="0">
+                                          <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="descriptionPane" pref="357" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="titleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="titleTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="descriptionPane" min="-2" pref="78" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jPanel2" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
               <SubComponents>
-                <Component class="javax.swing.JTextArea" name="descriptionTextEntry">
+                <Component class="javax.swing.JLabel" name="itemIcon">
                   <Properties>
-                    <Property name="columns" type="int" value="20"/>
-                    <Property name="lineWrap" type="boolean" value="true"/>
-                    <Property name="rows" type="int" value="5"/>
-                    <Property name="wrapStyleWord" type="boolean" value="true"/>
+                    <Property name="horizontalAlignment" type="int" value="0"/>
+                    <Property name="text" type="java.lang.String" value="No icon available."/>
                   </Properties>
                 </Component>
+                <Component class="javax.swing.JLabel" name="titleLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Title:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="titleTextEntry">
+                </Component>
+                <Component class="javax.swing.JLabel" name="descriptionLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Description:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JScrollPane" name="descriptionPane">
+                  <Properties>
+                    <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+                    <Property name="verticalScrollBarPolicy" type="int" value="21"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                  <SubComponents>
+                    <Component class="javax.swing.JTextArea" name="descriptionTextEntry">
+                      <Properties>
+                        <Property name="columns" type="int" value="20"/>
+                        <Property name="lineWrap" type="boolean" value="true"/>
+                        <Property name="rows" type="int" value="5"/>
+                        <Property name="wrapStyleWord" type="boolean" value="true"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="jPanel2">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="translationKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="iconTextEntry" max="32767" attributes="0"/>
+                                  <Component id="creatorTextEntry" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jPanel4" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="locationTextEntry" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="jPanel5" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="categoryTextEntry" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="translationKeyTextEntry" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="iconTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="creatorTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="translationKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="translationKeyTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="titleKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="categoryKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jPanel5" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="categoryLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryTextEntry" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="jLabel1">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Icon:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="iconTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="jLabel2">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Creator:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="creatorTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="jLabel3">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Translation Type:"/>
+                      </Properties>
+                    </Component>
+                    <Container class="javax.swing.JPanel" name="jPanel1">
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="translationKeysRadio" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="ucdRadio" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="translationKeysRadio" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="ucdRadio" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JRadioButton" name="translationKeysRadio">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Translation Keys"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="translationKeysRadioActionPerformed"/>
+                          </Events>
+                        </Component>
+                        <Component class="javax.swing.JRadioButton" name="ucdRadio">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="User Created Details"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ucdRadioActionPerformed"/>
+                          </Events>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Component class="javax.swing.JLabel" name="translationKeyLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Translation Key:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="titleKeyLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Title Key:"/>
+                      </Properties>
+                    </Component>
+                    <Container class="javax.swing.JPanel" name="jPanel4">
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="titleKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="descKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="descKeySpinner" pref="141" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="titleKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JSpinner" name="titleKeySpinner">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="descKeyLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Description Key:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="descKeySpinner">
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Component class="javax.swing.JLabel" name="categoryKeyLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Category Key:"/>
+                      </Properties>
+                    </Component>
+                    <Container class="javax.swing.JPanel" name="jPanel5">
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="categoryKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="locationKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="locationKeySpinner" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                  <Component id="categoryKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JSpinner" name="categoryKeySpinner">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="locationKeyLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Location Key:"/>
+                            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[85, 16]"/>
+                            </Property>
+                            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[85, 16]"/>
+                            </Property>
+                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[85, 16]"/>
+                            </Property>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="locationKeySpinner">
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Component class="javax.swing.JLabel" name="categoryLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Category:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="categoryTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="locationLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Location:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="locationTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="translationKeyTextEntry">
+                    </Component>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JLabel" name="iconLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Icon:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="iconTextEntry">
-            </Component>
-            <Component class="javax.swing.JLabel" name="creatorLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Creator:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="creatorTextEntry">
-            </Component>
-            <Component class="javax.swing.JLabel" name="titleKeyLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Title Key:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="descKeyLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Desc. Key:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JSpinner" name="titleKeySpinner">
-              <Properties>
-                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                </Property>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JSpinner" name="descKeySpinner">
-              <Properties>
-                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                </Property>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="categoryLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Category:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="categoryTextEntry">
-            </Component>
-            <Component class="javax.swing.JLabel" name="locationLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Location:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="locationTextEntry">
-            </Component>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JScrollPane" name="typePane">
+        <Container class="javax.swing.JScrollPane" name="typeScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -328,28 +502,55 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Container class="javax.swing.JPanel" name="typesContainer">
+            <Container class="javax.swing.JPanel" name="typesPane">
 
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="lbp2TypeContainer" alignment="1" max="32767" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="lbp1TypeContainer" pref="0" max="32767" attributes="0"/>
-                                      <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lbp1TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="generalTypesContainer" alignment="0" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="characterMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="planetTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="colorIndexLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="outfitFlagsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="lbp2TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="characterMaskCombo" max="32767" attributes="0"/>
+                                      <Component id="planetTypeCombo" max="32767" attributes="0"/>
+                                      <Component id="colorIndexSpinner" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <Component id="lbp3TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lbp3TypesContainer" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="lbp2TypeContainer" alignment="1" max="32767" attributes="0"/>
+                                      <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="lbp1TypeContainer" pref="0" max="32767" attributes="0"/>
+                                              <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="lbp1TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="generalTypesContainer" alignment="0" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Component id="lbp2TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="lbp3TypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lbp3TypesContainer" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="costumeCategoriesPane" alignment="0" max="32767" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                          <Component id="costumeCategoriesLabel" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="outfitFlagsPane" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -372,6 +573,31 @@
                           <Component id="lbp3TypesLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="lbp3TypesContainer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="costumeCategoriesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="costumeCategoriesPane" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="characterMaskLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="characterMaskCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="planetTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="planetTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="colorIndexLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="colorIndexSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="outfitFlagsLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="outfitFlagsPane" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -639,7 +865,11 @@
                                           <Component id="costumeToolCheckbox" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="communityPhotosCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="communityPhotosCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="communityObjectsCheckbox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                               <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
                           </Group>
@@ -663,7 +893,10 @@
                                   <Component id="podToolLbp1Checkbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="communityPhotosCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="communityPhotosCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="communityObjectsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -713,6 +946,11 @@
                     <Component class="javax.swing.JCheckBox" name="podToolLbp1Checkbox">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Pod Tool (LBP1)"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="communityObjectsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Community Object Tools"/>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -887,6 +1125,1213 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Component class="javax.swing.JLabel" name="jLabel4">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Subtypes:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="costumeCategoriesPane">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="eyesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="feetCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="beardCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="moustacheCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="mouthCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="noseCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="torsoCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="legsCheckbox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="headCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="neckCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="waistCheckbox" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="hairCheckbox" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Component id="handsCheckbox" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="glassesCheckbox" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="beardCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="mouthCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="headCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="handsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="glassesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="feetCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="moustacheCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="neckCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="waistCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hairCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="eyesCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="noseCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="torsoCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="legsCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="beardCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Beard"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="feetCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Feet"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="eyesCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Eyes"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="glassesCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Glasses"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="hairCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Hair"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="noseCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Nose"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="moustacheCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Moustache"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="mouthCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Mouth"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="neckCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Neck"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="headCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Head"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="torsoCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Torso"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="legsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Legs"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="handsCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Hands"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="waistCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Waist"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="costumeCategoriesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Costume Categories:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="characterMaskLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Character Mask:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="characterMaskCombo">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                      <StringArray count="5">
+                        <StringItem index="0" value="SACKBOY"/>
+                        <StringItem index="1" value="GIANT"/>
+                        <StringItem index="2" value="DWARF"/>
+                        <StringItem index="3" value="BIRD"/>
+                        <StringItem index="4" value="QUAD"/>
+                      </StringArray>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="planetTypeLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Planet Type:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="planetTypeCombo">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                      <StringArray count="4">
+                        <StringItem index="0" value="EARTH"/>
+                        <StringItem index="1" value="MOON"/>
+                        <StringItem index="2" value="ADVENTURE"/>
+                        <StringItem index="3" value="EXTERNAL"/>
+                      </StringArray>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="colorIndexLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Color Index:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JSpinner" name="colorIndexSpinner">
+                  <Properties>
+                    <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                      <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="outfitFlagsLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Outfit Flags:"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="outfitFlagsPane">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="madeByMeCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="madeByOthersCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="fullCostumeCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="specialCostumeCheckbox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="madeByMeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="madeByOthersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="fullCostumeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="specialCostumeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="madeByMeCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Made by me"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="madeByOthersCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Made by others"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="fullCostumeCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Full Costume"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="specialCostumeCheckbox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Special Costume"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="othersPane">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Other">
+                <Property name="tabTitle" type="java.lang.String" value="Other"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="slotNumberLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="slotTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="unlockSlotTypeCombo" max="32767" attributes="0"/>
+                                  <Component id="unlockSlotNumberSpinner" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="highlightSoundLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="unlockSlotIDLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="dateAddedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="colorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="colorRedSpinner" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="colorGreenSpinner" min="-2" pref="131" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="colorBlueSpinner" min="-2" pref="116" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="dateAddedSpinner" max="32767" attributes="0"/>
+                                  <Component id="highlightSoundSpinner" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="toolTypeLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="toolTypeCombo" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="restrictedCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="copyrightCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="allowEmitCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="unusedCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="loopPreviewCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="hiddenCheckbox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="0" pref="14" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="unlockSlotIDLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="slotTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="unlockSlotTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="slotNumberLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="unlockSlotNumberSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="highlightSoundLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="highlightSoundSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="dateAddedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dateAddedSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="colorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="colorRedSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="colorGreenSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="colorBlueSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="unusedCheckbox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="loopPreviewCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="allowEmitCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="copyrightCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="restrictedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="hiddenCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="toolTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="toolTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="19" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="unlockSlotIDLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Unlock Slot ID:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="slotTypeLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Type:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="unlockSlotTypeCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(SlotType.values())"/>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="slotNumberLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Number:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="unlockSlotNumberSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="highlightSoundLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Highlight Sound:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="dateAddedLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Date Added:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="dateAddedSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="now" stepSize="5" type="date"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="colorLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Color (RGB):"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="colorRedSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" maximum="255" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="colorGreenSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" maximum="255" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="colorBlueSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" maximum="255" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="highlightSoundSpinner">
+              <Properties>
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="planFlagsLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Flags:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="allowEmitCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Emittable"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="restrictedCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Restricted"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="unusedCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Unused"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="copyrightCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Copyright"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="loopPreviewCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Loop Preview"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="toolTypeLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Tool Type:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="toolTypeCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(ToolType.values())"/>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="hiddenCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Hidden"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JScrollPane" name="photoAndEyetoyDataScrollPane">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Photo Data">
+                <Property name="tabTitle" type="java.lang.String" value="Photo Data"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="photoAndEyetoyDataPane">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="photoDataPane" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="photoDataCheckbox" min="-2" max="-2" attributes="0"/>
+                                      <Component id="eyetoyDataCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="eyetoyDataPane" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="photoDataCheckbox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="photoDataPane" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="eyetoyDataCheckbox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="eyetoyDataPane" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="photoDataCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Photo Data"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="photoDataPane">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="photoLevelNumberLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="photoLevelTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="photoLevelNumberSpinner" max="32767" attributes="0"/>
+                                          <Component id="photoLevelTypeCombo" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="levelHashLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="photoLevelHashTextEntry" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="paintingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="stickerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="photoIconLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="photoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="photoLevelLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="stickerResourceTextEntry" alignment="1" max="32767" attributes="0"/>
+                                          <Component id="paintingResourceTextEntry" alignment="1" max="32767" attributes="0"/>
+                                          <Component id="photoResourceTextEntry" max="32767" attributes="0"/>
+                                          <Component id="photoIconResourceTextEntry" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="photoUsersLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="jPanel3" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="photoIconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoIconResourceTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="stickerLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="stickerResourceTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="paintingResourceTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="paintingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="photoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoResourceTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="photoLevelLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="photoLevelTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoLevelTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="photoLevelNumberLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoLevelNumberSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="levelHashLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoLevelHashTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="photoUsersLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="photoIconLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Icon:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="photoIconResourceTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="stickerLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sticker:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="stickerResourceTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="paintingLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Painting:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="paintingResourceTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="photoLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Photo:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="photoResourceTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="photoLevelLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Level:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="photoLevelTypeLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Type:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JComboBox" name="photoLevelTypeCombo">
+                      <Properties>
+                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                          <StringArray count="0"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(SlotType.values())"/>
+                        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="photoLevelNumberLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Number:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSpinner" name="photoLevelNumberSpinner">
+                      <Properties>
+                        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                          <SpinnerModel initial="0" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="levelHashLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Level Hash:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="photoLevelHashTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="photoUsersLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Users:"/>
+                      </Properties>
+                    </Component>
+                    <Container class="javax.swing.JPanel" name="jPanel3">
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="addPhotoUserButton" min="-2" pref="74" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="removePhotoUserButton" min="-2" pref="75" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="photoUserListScrollPane" min="-2" pref="161" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="photoUserBoundsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="photoUserLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="photoUserPsidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="photoUserTextEntry" max="32767" attributes="0"/>
+                                      <Component id="photoPsidTextField" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="jSpinner3" pref="113" max="32767" attributes="0"/>
+                                              <Component id="jSpinner2" max="32767" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="jSpinner4" pref="114" max="32767" attributes="0"/>
+                                              <Component id="jSpinner5" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="photoUserPsidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoPsidTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="photoUserLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="photoUserBoundsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jSpinner2" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jSpinner5" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Component id="photoUserListScrollPane" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="jSpinner3" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jSpinner4" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="addPhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="removePhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Container class="javax.swing.JScrollPane" name="photoUserListScrollPane">
+                          <AuxValues>
+                            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                          <SubComponents>
+                            <Component class="javax.swing.JList" name="photoUserList">
+                              <Properties>
+                                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                                  <StringArray count="0"/>
+                                </Property>
+                                <Property name="selectionMode" type="int" value="0"/>
+                              </Properties>
+                              <AuxValues>
+                                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                              </AuxValues>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                        <Component class="javax.swing.JLabel" name="photoUserPsidLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="PSID:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="photoPsidTextField">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="photoUserLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="User:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="photoUserTextEntry">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="photoUserBoundsLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Bounds:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="jSpinner2">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
+                            </Property>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="jSpinner3">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
+                            </Property>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="jSpinner4">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
+                            </Property>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JSpinner" name="jSpinner5">
+                          <Properties>
+                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                              <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
+                            </Property>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="removePhotoUserButton">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Remove"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="addPhotoUserButton">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Add"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JCheckBox" name="eyetoyDataCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Eyetoy Data"/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JPanel" name="eyetoyDataPane">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="alphaMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="outlineLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="frameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="frameTextEntry" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="alphaMaskTextEntry" max="32767" attributes="0"/>
+                                  <Component id="outlineTextEntry" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="frameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="frameTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="alphaMaskLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="alphaMaskTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="outlineLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="outlineTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="frameLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Frame:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="frameTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="alphaMaskLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Alpha Mask:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="alphaMaskTextEntry">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="outlineLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Outline:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="outlineTextEntry">
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="inventoryPane">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Inventory">
+                <Property name="tabTitle" type="java.lang.String" value="Inventory"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="planLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="guidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="uidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="guidSpinner" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="uidSpinner" max="32767" attributes="0"/>
+                                  <Component id="planTextField" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="inventoryFlagsContainer" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="inventoryFlagsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="categoryIndexLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="categoryIndexSpinner" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="planLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="planTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="guidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="guidSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="uidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="uidSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="categoryIndexLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="categoryIndexSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="inventoryFlagsLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="inventoryFlagsContainer" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="59" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="planLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Plan:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="planTextField">
+            </Component>
+            <Component class="javax.swing.JLabel" name="guidLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="GUID:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="uidLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="UID:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="guidSpinner">
+            </Component>
+            <Component class="javax.swing.JSpinner" name="uidSpinner">
+            </Component>
+            <Component class="javax.swing.JLabel" name="categoryIndexLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="User Category Index:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSpinner" name="categoryIndexSpinner">
+            </Component>
+            <Component class="javax.swing.JLabel" name="inventoryFlagsLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Flags:"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JPanel" name="inventoryFlagsContainer">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="uploadedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="heartedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="unsavedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="cheatCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="erroredCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="inventoryHiddenCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="autosavedCheckbox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="150" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="heartedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cheatCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="erroredCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="autosavedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="uploadedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="unsavedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="inventoryHiddenCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="heartedCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Hearted"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="cheatCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cheat"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="unsavedCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Unsaved"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="erroredCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Errored"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="uploadedCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Uploaded"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="inventoryHiddenCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Hidden"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="autosavedCheckbox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Autosaved"/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
           </SubComponents>

@@ -10,6 +10,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -26,6 +27,7 @@ public class Serializer {
     
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
+    public HashSet<ResourceDescriptor> dependencies = new HashSet<>();
     
     private int nextReference = 1;
     
@@ -339,17 +341,23 @@ public class Serializer {
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
         if (this.isWriting) {
             this.output.resource(value);
+            this.dependencies.add(value);
             return value;
         }
-        return this.input.resource(type);
+        ResourceDescriptor descriptor = this.input.resource(type);
+        this.dependencies.add(descriptor);
+        return descriptor;
     }
     
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean useSingleByteFlag) {
         if (this.isWriting) {
             this.output.resource(value, useSingleByteFlag);
+            this.dependencies.add(value);
             return value;
         }
-        return this.input.resource(type, useSingleByteFlag);
+        ResourceDescriptor descriptor = this.input.resource(type, useSingleByteFlag);
+        this.dependencies.add(descriptor);
+        return descriptor;
     }
     
     public <T extends Serializable> T reference(T value, Class<T> clazz) {

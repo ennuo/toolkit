@@ -3,6 +3,7 @@ package ennuo.craftworld.types.savedata;
 import ennuo.craftworld.ex.SerializationException;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.Revision;
@@ -88,7 +89,7 @@ public class FileSave extends FileData {
                 if (title.isEmpty()) title = "Some kind of object";
                 
                 
-                String type = item.details.type.name();
+                String type = InventoryObjectType.getPrimaryName(item.details.type);
                 String folder = type.toLowerCase() + "/";
                 /*
                 if (item.details.type == ItemType.USER_COSTUMES || item.details.type == ItemType.COSTUMES)
@@ -124,7 +125,7 @@ public class FileSave extends FileData {
                     title = Globals.LAMS.translate(item.details.titleKey);
                 if (title.isEmpty()) title = "Some kind of object";
                 
-                String type = item.details.type.name();
+                String type = InventoryObjectType.getPrimaryName(item.details.type);
                 String folder = type.toLowerCase() + "/";
                 if (item.details.categoryIndex != -1) {
                     int index = this.localProfile.stringTable.rawIndexToSortedIndex[item.details.categoryIndex];

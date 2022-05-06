@@ -1,9 +1,9 @@
 package ennuo.craftworld.resources.structs.plan;
 
 import ennuo.craftworld.resources.TranslationTable;
+import ennuo.craftworld.resources.enums.InventoryObjectSubType;
+import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.types.data.ResourceDescriptor;
-import ennuo.craftworld.resources.enums.ItemSubType;
-import ennuo.craftworld.resources.enums.ItemType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
@@ -13,6 +13,7 @@ import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.toolkit.utilities.Globals;
 import java.util.Date;
+import java.util.EnumSet;
 
 public class InventoryDetails implements Serializable {
     public static int MAX_SIZE = 0x800;
@@ -30,8 +31,8 @@ public class InventoryDetails implements Serializable {
     public long highlightSound;
     public long colour;
     
-    public ItemType type = ItemType.CREATED_OBJECTS;
-    public ItemSubType subType = ItemSubType.NONE;
+    public EnumSet<InventoryObjectType> type;
+    public int subType = InventoryObjectSubType.NONE;
     
     public long titleKey, descriptionKey;
     
@@ -80,8 +81,13 @@ public class InventoryDetails implements Serializable {
             details.highlightSound = serializer.u32(details.highlightSound);
             details.colour = serializer.u32(details.colour);
             
-            details.type = ItemType.getValue(serializer.u32(details.type.value), serializer.revision.head);
-            details.subType = ItemSubType.getValue(serializer.u32(details.subType.value), details.type);
+            
+            if (serializer.isWriting)
+                serializer.output.i32(InventoryObjectType.getFlags(details.type));
+            else
+                details.type = InventoryObjectType.fromFlags(serializer.input.i32(), serializer.revision);
+            
+            details.subType = serializer.i32(details.subType);
             
             details.titleKey = serializer.u32(details.titleKey);
             details.descriptionKey = serializer.u32(details.descriptionKey);
@@ -124,8 +130,13 @@ public class InventoryDetails implements Serializable {
                 details.primaryIndex = (short) serializer.i32f(details.primaryIndex);
             
             serializer.i32f(0); // Pad
-            details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision.head);
-            details.subType = ItemSubType.getValue(serializer.u32f(details.subType.value), details.type);
+            
+            if (serializer.isWriting)
+                serializer.output.i32f(InventoryObjectType.getFlags(details.type));
+            else
+                details.type = InventoryObjectType.fromFlags(serializer.input.i32f(), serializer.revision);
+            details.subType = serializer.i32f(details.subType);
+            
             if (head > 0x196)
                 details.toolType = ToolType.getValue((byte) serializer.i32f(details.toolType.value));
             details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
@@ -223,8 +234,12 @@ public class InventoryDetails implements Serializable {
         details.fluffCost = serializer.i32f(details.fluffCost);
         
         details.colour = serializer.u32f(details.colour);
-        details.type = ItemType.getValue(serializer.u32f(details.type.value), serializer.revision.head);
-        details.subType = ItemSubType.getValue(serializer.u32f(details.subType.value), details.type);
+        
+        if (serializer.isWriting)
+            serializer.output.i32f(InventoryObjectType.getFlags(details.type));
+        else
+            details.type = InventoryObjectType.fromFlags(serializer.input.i32f(), serializer.revision);
+        details.subType = serializer.i32f(details.subType);
         details.toolType = ToolType.getValue((byte) serializer.i32f(details.toolType.value));
 
         details.creator = serializer.struct(details.creator, SceNpId.class);
