@@ -411,7 +411,7 @@ public class BigStreamingFart extends FileData {
         item.details = metadata;
         if (metadata != null && metadata.dateAdded == 0)
             metadata.dateAdded = new Date().getTime() / 1000;
-        item.UID = this.bigProfile.inventory.size() | 0x80000000;
+        item.UID = (this.bigProfile.inventory.size() + 1) | 0x80000000;
         item.flags = 0;
         
         this.bigProfile.inventory.add(item);
