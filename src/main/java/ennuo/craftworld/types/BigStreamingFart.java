@@ -19,6 +19,7 @@ import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.swing.Nodes;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.CostumePieceCategory;
 import ennuo.craftworld.resources.enums.InventoryObjectSubType;
 import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.structs.Revision;
@@ -218,35 +219,25 @@ public class BigStreamingFart extends FileData {
         }
 
         entry.path = "resources/";
-        if (extension.equals("mol"))
-            entry.path += "meshes/";
-        else if (extension.equals("tex") || extension.equals("jpg") || extension.equals("png"))
-            entry.path += "textures/";
-        else if (extension.equals("raw"))
-            entry.path += "audio/";
-        else if (extension.equals("gmt"))
-            entry.path += "gfx_materials/";
-        else if (extension.equals("anm"))
-            entry.path += "animations/";
-        else if (extension.equals("bev"))
-            entry.path += "bevels/";
-        else if (extension.equals("mat"))
-            entry.path += "materials/";
-        else if (extension.equals("ssp"))
-            entry.path += "skeletons/";
-        else if (extension.equals("adc"))
-            entry.path += "adventure_create_profiles/";
-        else if (extension.equals("ads"))
-            entry.path += "shared_adventure_data/";
-        else if (extension.equals("vop"))
-            entry.path += "audio/";
-        else if (extension.equals("plan"))
-            entry.path += "plans/";
-        else if (extension.equals("ptg"))
-            entry.path += "paintings/";
-        else
-            entry.path += "unknown/";
-
+        switch (extension) {
+            case "mol": entry.path += "meshes/"; break;
+            case "tex": case "jpg": case "png":
+                entry.path += "textures/"; break;
+            case "vop":  entry.path += "audio/"; break;
+            case "gmt": entry.path += "gfx_materials/"; break;
+            case "anm": entry.path += "animations/"; break;
+            case "bev": entry.path += "bevels/"; break;
+            case "mat": entry.path += "materials/"; break;
+            case "ssp": entry.path += "skeletons/"; break;
+            case "adc": entry.path += "adventure_create_profiles/"; break;
+            case "ads": entry.path += "shared_adventure_data/"; break;
+            case "plan": entry.path += "plans/"; break;
+            case "ptg": entry.path += "paintings/"; break;
+            case "smh": entry.path += "static_meshes/"; break;
+            case "mus": entry.path += "music_settings/"; break;
+            default: entry.path += "unknown/"; break;
+        }
+        
         entry.path += entry.offset + "." + extension;
 
         return Nodes.addNode(root, entry);
@@ -491,8 +482,10 @@ public class BigStreamingFart extends FileData {
                 else entry.path += "sackboy/";
             }
             
-            if ((item.details.subType | InventoryObjectSubType.FULL_COSTUME) != 0)
+            if ((item.details.subType & InventoryObjectSubType.FULL_COSTUME) != 0)
                 entry.path += "outfits/";
+            else
+                entry.path += (CostumePieceCategory.getPrimaryName(CostumePieceCategory.fromFlags(item.details.subType)) + "/");
         }
 
         String title;
