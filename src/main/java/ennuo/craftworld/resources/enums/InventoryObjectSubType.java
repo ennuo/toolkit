@@ -1,5 +1,7 @@
 package ennuo.craftworld.resources.enums;
 
+import java.util.EnumSet;
+
 public final class InventoryObjectSubType {
     public static final int NONE = 0x0;
 
@@ -25,9 +27,27 @@ public final class InventoryObjectSubType {
     public static final int FULL_COSTUME = 0x80000000;
     public static final int MADE_BY_ANYONE = MADE_BY_ME | MADE_BY_OTHERS;
     
-    public String getTypeString(int type, int subType) {
-        //if ((type & InventoryObjectType.PLAYER_COLOUR) != 0)
-        //    return String.format("PLAYER_COLOUR_%2d", subType);
-        return null;
+    public static String getTypeString(EnumSet<InventoryObjectType> type, int subType) {
+        if (type.isEmpty()) return "NONE";
+        if (type.contains(InventoryObjectType.PLAYER_COLOUR))
+           return String.format("PLAYER_COLOUR_%2d", subType);
+        if (type.contains(InventoryObjectType.COSTUME) || type.contains(InventoryObjectType.USER_COSTUME)) {
+            if ((subType & FULL_COSTUME) != 0) return "OUTFIT";
+            if ((subType & SPECIAL_COSTUME) != 0) return "SPECIAL";
+            CostumePieceCategory[] categories = CostumePieceCategory.values(); 
+            for (int i = 0; i < categories.length; ++i)
+                if ((subType & (1 << i)) != 0)
+                    return categories[i].name();
+            return "NONE";
+        }
+        if (type.contains(InventoryObjectType.STICKER) && ((subType & PAINTING) != 0))
+            return "PAINTING";
+        if (type.contains(InventoryObjectType.USER_PLANET)) {
+            if (subType == EARTH) return "EARTH";
+            else if (subType == MOON) return "MOON";
+            else if (subType == ADVENTURE) return "ADVENTURE";
+            else if (subType == EXTERNAL) return "EXTERNAL";
+        }
+        return "NONE";
     }
 }
