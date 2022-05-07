@@ -1,5 +1,6 @@
 package ennuo.craftworld.types;
 
+import ennuo.craftworld.resources.AdventureCreateProfile;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.utilities.Images;
@@ -524,12 +525,15 @@ public class BigStreamingFart extends FileData {
         Nodes.addNode(this.root, entry);
     }
 
-    private void addSlotNode(Slot slot) {
+    private void addSlotNode(Slot slot) { this.addSlotNode(slot, null); }
+    private void addSlotNode(Slot slot, FileNode adventureNode) {
         if (slot != null) {
-            this.bigProfile.myMoonSlots.put(slot.id, slot);
+            if (adventureNode == null)
+                this.bigProfile.myMoonSlots.put(slot.id, slot);
             slot.revision = revision;
             boolean isAdventure = slot.id.type.equals(SlotType.ADVENTURE_PLANET_LOCAL);
-            boolean isLevel = slot.id.type.equals(SlotType.USER_CREATED_STORED_LOCAL);
+            boolean isLevel = slot.id.type.equals(SlotType.USER_CREATED_STORED_LOCAL) || slot.id.type.equals(SlotType.ADVENTURE_LEVEL_LOCAL);
+            if (!isLevel && !isAdventure) return;
             if (isAdventure && (slot.adventure == null || slot.adventure.hash == null))  return;
             if (isLevel  && (slot.root == null || slot.root.hash == null)) return;
             
@@ -537,9 +541,12 @@ public class BigStreamingFart extends FileData {
             if (isAdventure) entry = this.find(slot.adventure.hash);
             else entry = this.find(slot.root.hash);
             
+            Resource root = null;
             if (entry != null) {
-                entry.setResource("slot", slot);
-                int revision = new Resource(extract(entry.hash)).revision.head;
+                if (adventureNode == null)
+                    entry.setResource("slot", slot);
+                root = new Resource(extract(entry.hash));
+                int revision = root.revision.head;
                 if (slot.icon != null && slot.icon.hash != null) {
                     FileEntry iconEntry = find(slot.icon.hash);
                     if (iconEntry != null) {
@@ -557,11 +564,23 @@ public class BigStreamingFart extends FileData {
                 if (title.isEmpty())
                     title = (isAdventure) ? "Unnamed Adventure" : "Unnamed Level";
                 if (isAdventure)
-                    entry.path = "adventures/" + title + ".adc";
-                else
-                    entry.path = "levels/" + title + ".bin";
+                    entry.path = "adventures/" + title + "/adventure.adc";
+                else entry.path = "levels/" + title + ".bin";
+                        
                 
-                Nodes.addNode(this.root, entry);
+                FileNode node = Nodes.addNode(adventureNode == null ? this.root : adventureNode, entry);
+                // Bit hacky, should implement relative paths maybe?
+                if (adventureNode != null) {
+                    entry.path = adventureNode.path + "levels/" + title + ".bin";
+                    node.path = entry.path;
+                }
+                
+                if (isAdventure && root != null) {
+                    FileNode parent = (FileNode) node.getParent();
+                    AdventureCreateProfile profile = new Serializer(root.handle).struct(null, AdventureCreateProfile.class);
+                    for (Slot childSlot : profile.adventureSlots.values())
+                        this.addSlotNode(childSlot, parent);
+                }
             }
         }
     }

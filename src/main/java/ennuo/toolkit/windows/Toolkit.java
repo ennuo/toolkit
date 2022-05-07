@@ -445,8 +445,11 @@ public class Toolkit extends javax.swing.JFrame {
                         editSlotContext.setVisible(true);
                 }
                 
-                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE && !isDependencyTree)
-                    editSlotContext.setVisible(true);
+                if (Globals.lastSelected.header.endsWith(".bin") && Globals.currentWorkspace == WorkspaceType.PROFILE && !isDependencyTree) {
+                    Slot slot = Globals.lastSelected.entry.getResource("slot");
+                    if (slot != null)
+                       editSlotContext.setVisible(true); 
+                }
 
                 if (Globals.lastSelected.header.endsWith(".trans")) {
                     exportGroup.setVisible(true);
@@ -1817,7 +1820,9 @@ public class Toolkit extends javax.swing.JFrame {
         }
         
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
-            new SlotManager((BigStreamingFart)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
+            Slot slot = Globals.lastSelected.entry.getResource("slot");
+            if (slot == null) return;
+            new SlotManager((BigStreamingFart)this.getCurrentDB(), slot).setVisible(true);
             return;
         }
         
