@@ -12,6 +12,7 @@ import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.craftworld.resources.structs.Revision;
@@ -84,6 +85,8 @@ public class ItemManager extends javax.swing.JFrame {
     private final DefaultListModel creators = new DefaultListModel();
     private final DefaultListModel photoUsers = new DefaultListModel();
     
+    private SHA1 originalDetailsHash;
+    
     private JCheckBox[] typeCheckboxes;
     private JCheckBox[] categories;
     
@@ -130,11 +133,16 @@ public class ItemManager extends javax.swing.JFrame {
     }
     
     private void onClosePlan() {
-        int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
-        if (result == JOptionPane.YES_OPTION) {
-            this.saveItem(this.plan.details, null);
-            Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
-            this.entry.resetResources();
+        InventoryDetails newDetails = new InventoryDetails();
+        this.saveItem(newDetails, null);
+        SHA1 newHash = newDetails.generateHashCode(this.revision);
+        if (!newHash.equals(this.originalDetailsHash)) {
+            int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                plan.details = newDetails;
+                Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
+                this.entry.resetResources();
+            }
         }
         this.dispose();
     }
@@ -543,6 +551,7 @@ public class ItemManager extends javax.swing.JFrame {
     
     private void setItemData() {
         InventoryDetails details = this.selectedDetails;
+        this.originalDetailsHash = this.selectedDetails.generateHashCode(this.revision);
         
         // Details tab
         
@@ -808,6 +817,7 @@ public class ItemManager extends javax.swing.JFrame {
         details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000;
         
         details.colour = 
+                0xFF << 24 |
                 ((Integer)this.colorRedSpinner.getValue()).longValue() << 16 |
                 ((Integer)this.colorGreenSpinner.getValue()).longValue() << 8 |
                 ((Integer)this.colorBlueSpinner.getValue()).longValue() << 0;
