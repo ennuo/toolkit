@@ -365,10 +365,11 @@ public class Serializer {
         ResourceDescriptor descriptor = this.input.resource(type);
         
         // We only need to add the dependency when reading,
-        // because the output stream already handles dependencies,
+        // because the output stream alrea  dy handles dependencies,
         // weird inconsistency, but yeah.
         
-        this.dependencies.add(descriptor);
+        if (descriptor != null)
+            this.dependencies.add(descriptor);
         return descriptor;
     }
     
@@ -378,7 +379,8 @@ public class Serializer {
             return value;
         }
         ResourceDescriptor descriptor = this.input.resource(type, useSingleByteFlag);
-        this.dependencies.add(descriptor);
+        if (descriptor != null)
+            this.dependencies.add(descriptor);
         return descriptor;
     }
     
