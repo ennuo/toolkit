@@ -280,6 +280,13 @@ public class InventoryDetails implements Serializable {
         return details;
     }
     
+    public SHA1 generateHashCode(Revision revision) {
+        // I wonder how slow this is...
+        Serializer serializer = new Serializer(MAX_SIZE, revision, (byte) 0);
+        serializer.struct(this, InventoryDetails.class);
+        return SHA1.fromBuffer(serializer.getBuffer());
+    }
+    
     private void updateTranslations() {
         if (this.translationTag != null && !this.translationTag.isEmpty()) {
             this.titleKey = 
