@@ -77,6 +77,11 @@ public class BigStreamingFart extends FileData {
      * not actually fully supported as of right now.
      */
     private boolean isFAR5 = false;
+    
+    /**
+     * Used for names of items added to profile.
+     */
+    private int lastOffset = 0;
 
     public BigStreamingFart(File file) {
         this.path = file.getAbsolutePath();
@@ -160,6 +165,7 @@ public class BigStreamingFart extends FileData {
             FileEntry entry = new FileEntry(dataBuffer, hash);
             entry.timestamp = 0;
             entry.offset = offset;
+            this.lastOffset += size;
             entry.size = size;
             if (resMagic == 0x42505262) this.rootProfileEntry = entry;
             else this.entries.add(entry);
@@ -327,6 +333,9 @@ public class BigStreamingFart extends FileData {
         Resource resource = new Resource(data);
         
         FileEntry entry = new FileEntry(data, hash);
+        entry.offset = this.lastOffset;
+        this.lastOffset += data.length;
+        
         this.entries.add(entry);
 
         this.shouldSave = true;
@@ -391,6 +400,25 @@ public class BigStreamingFart extends FileData {
 
         Slot slot = entry.getResource("slot");
         InventoryItem item = entry.getResource("profileItem");
+        FileEntry parentAdventure = entry.getResource("parentAdventure");
+        
+        if (parentAdventure != null) {
+            byte[] adventureData = parentAdventure.data;
+            if (data != null) {
+                ResourceDescriptor old = new ResourceDescriptor(entry.hash, ResourceType.LEVEL);
+                Resource resource = new Resource(adventureData);
+                AdventureCreateProfile profile = new Serializer(resource.handle).struct(null, AdventureCreateProfile.class);
+                for (Slot adventureSlot : profile.adventureSlots.values())
+                    if (adventureSlot.root != null && adventureSlot.root.equals(old)) {
+                        adventureSlot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+                        break;
+                    }
+                byte[] built = profile.build(resource.revision, resource.compressionFlags);
+                parentAdventure.hash = SHA1.fromBuffer(built);
+                parentAdventure.data = built;
+                parentAdventure.size = built.length;
+            }
+        }
 
         if (item != null) {
             ResourceDescriptor newRes = new ResourceDescriptor(hash, ResourceType.PLAN);
@@ -525,17 +553,17 @@ public class BigStreamingFart extends FileData {
         Nodes.addNode(this.root, entry);
     }
 
-    private void addSlotNode(Slot slot) { this.addSlotNode(slot, null); }
-    private void addSlotNode(Slot slot, FileNode adventureNode) {
+    private FileNode addSlotNode(Slot slot) { return this.addSlotNode(slot, null); }
+    private FileNode addSlotNode(Slot slot, FileNode adventureNode) {
         if (slot != null) {
             if (adventureNode == null)
                 this.bigProfile.myMoonSlots.put(slot.id, slot);
             slot.revision = revision;
             boolean isAdventure = slot.id.type.equals(SlotType.ADVENTURE_PLANET_LOCAL);
             boolean isLevel = slot.id.type.equals(SlotType.USER_CREATED_STORED_LOCAL) || slot.id.type.equals(SlotType.ADVENTURE_LEVEL_LOCAL);
-            if (!isLevel && !isAdventure) return;
-            if (isAdventure && (slot.adventure == null || slot.adventure.hash == null))  return;
-            if (isLevel  && (slot.root == null || slot.root.hash == null)) return;
+            if (!isLevel && !isAdventure) return null;
+            if (isAdventure && (slot.adventure == null || slot.adventure.hash == null))  return null;
+            if (isLevel  && (slot.root == null || slot.root.hash == null)) return null;
             
             FileEntry entry = null;
             if (isAdventure) entry = this.find(slot.adventure.hash);
@@ -578,11 +606,17 @@ public class BigStreamingFart extends FileData {
                 if (isAdventure && root != null) {
                     FileNode parent = (FileNode) node.getParent();
                     AdventureCreateProfile profile = new Serializer(root.handle).struct(null, AdventureCreateProfile.class);
-                    for (Slot childSlot : profile.adventureSlots.values())
-                        this.addSlotNode(childSlot, parent);
+                    for (Slot childSlot : profile.adventureSlots.values()) {
+                        FileNode child = this.addSlotNode(childSlot, parent);
+                        if (child != null)
+                            child.entry.setResource("parentAdventure", entry);
+                    }
                 }
+                
+                return node;
             }
         }
+        return null;
     }
 
     public void setSaveKeyRootHash(SHA1 hash) {
