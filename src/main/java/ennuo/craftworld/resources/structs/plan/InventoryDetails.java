@@ -7,6 +7,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
+import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SceNpId;
@@ -65,11 +66,6 @@ public class InventoryDetails implements Serializable {
     
     public long location;
     public long category;
-    
-    /**
-     * Sometimes this is set
-     */
-    private int pad;
     
     public String translatedTitle = "";
     public String translatedDescription;
@@ -139,7 +135,7 @@ public class InventoryDetails implements Serializable {
             if (head > 0x194)
                 details.primaryIndex = (short) serializer.i32f(details.primaryIndex);
             
-            details.pad = serializer.i32f(details.pad); // Pad
+            serializer.i32f(0); // Pad
             
             if (serializer.isWriting)
                 serializer.output.i32f(InventoryObjectType.getFlags(details.type));
@@ -232,7 +228,7 @@ public class InventoryDetails implements Serializable {
         details.lastUsed = serializer.i32f(details.lastUsed);
         details.numUses = serializer.i32f(details.numUses);
         if (head > 0x234)
-            details.pad = serializer.i32f(details.pad);
+            serializer.i32f(0); // Pad
 
 
         details.dateAdded = serializer.i64f(details.dateAdded);
