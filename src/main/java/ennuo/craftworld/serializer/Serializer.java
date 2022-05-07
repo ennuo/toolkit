@@ -1,5 +1,6 @@
 package ennuo.craftworld.serializer;
 
+import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
@@ -23,13 +24,21 @@ public class Serializer {
     public Output output;
     
     public Revision revision;
-    public int compressionFlags;
+    public byte compressionFlags;
     
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
     public HashSet<ResourceDescriptor> dependencies = new HashSet<>();
     
     private int nextReference = 1;
+    
+    public Serializer(Resource resource) {
+        this.input = resource.handle;
+        this.revision = resource.revision;
+        this.dependencies = new HashSet<>(resource.dependencies);
+        this.compressionFlags = resource.compressionFlags;
+        this.isWriting = false;
+    }
     
     public Serializer(Data data) {
         this.input = data;
@@ -42,12 +51,14 @@ public class Serializer {
         this.output = data;
         this.revision = data.revision;
         this.compressionFlags = data.compressionFlags;
+        this.dependencies = data.dependencies;
         this.isWriting = true;
     }
     
     public Serializer(int size, Revision revision, byte compressionFlags) {
         this.isWriting = true;
         this.output = new Output(size, revision);
+        this.dependencies = output.dependencies;
         this.revision = revision;
         this.output.compressionFlags = compressionFlags;
         this.compressionFlags = compressionFlags;
@@ -341,10 +352,14 @@ public class Serializer {
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
         if (this.isWriting) {
             this.output.resource(value);
-            this.dependencies.add(value);
             return value;
         }
         ResourceDescriptor descriptor = this.input.resource(type);
+        
+        // We only need to add the dependency when reading,
+        // because the output stream already handles dependencies,
+        // weird inconsistency, but yeah.
+        
         this.dependencies.add(descriptor);
         return descriptor;
     }
@@ -352,7 +367,6 @@ public class Serializer {
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean useSingleByteFlag) {
         if (this.isWriting) {
             this.output.resource(value, useSingleByteFlag);
-            this.dependencies.add(value);
             return value;
         }
         ResourceDescriptor descriptor = this.input.resource(type, useSingleByteFlag);

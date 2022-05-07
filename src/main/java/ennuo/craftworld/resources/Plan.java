@@ -9,6 +9,7 @@ import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
+import ennuo.craftworld.utilities.KMPMatchUtilities;
 import ennuo.toolkit.utilities.Globals;
 import java.util.HashSet;
 
@@ -26,12 +27,17 @@ public class Plan implements Serializable {
     
     public Plan(){}
     public Plan(Resource resource) {
-        this.dependencyCache = new HashSet<>(resource.dependencies);
-        this.serialize(new Serializer(resource.handle), this);
+        this.serialize(new Serializer(resource), this);
     }
 
     public Plan serialize(Serializer serializer, Serializable structure) {
         Plan plan = (structure == null) ? new Plan() : (Plan) structure;
+        
+        // We only want to maintain thing data dependencies in this stream
+        if (!serializer.isWriting) {
+            this.dependencyCache = new HashSet<>(serializer.dependencies);
+            serializer.dependencies.clear();
+        }
         
         if (serializer.revision.isAfterLBP3Revision(0xcb))
             plan.isUsedForStreaming = serializer.bool(plan.isUsedForStreaming);
@@ -73,11 +79,26 @@ public class Plan implements Serializable {
             System.err.println("There was an error processing inventory details.");
         }
         
-        // Remove dependencies of inventory item details,
-        // since dependency cache should only be dependencies
-        // in the thing data.
-        //for (ResourceDescriptor descriptor : serializer.dependencies)
-        //    this.dependencyCache.remove(descriptor);
+        if (!serializer.isWriting) {
+            // Remove dependencies of inventory item details,
+            // since dependency cache should only be dependencies
+            // in the thing data.
+            for (ResourceDescriptor descriptor : serializer.dependencies) {
+                ResourceType type = descriptor.type;
+                // These are the only types that appear in inventory item details.
+                if (type.equals(ResourceType.TEXTURE) || type.equals(ResourceType.FILENAME) || type.equals(ResourceType.PAINTING)) {
+                    byte[] pattern = null;
+                    // This is GUID only
+                    if (type.equals(ResourceType.FILENAME))
+                        pattern = Bytes.createGUID(descriptor.GUID, serializer.compressionFlags);
+                    else
+                        pattern = Bytes.createResourceReference(descriptor, serializer.revision, serializer.compressionFlags);
+                    boolean isInThingData = KMPMatchUtilities.indexOf(this.thingData, pattern) != -1;
+                    if (!isInThingData)
+                        this.dependencyCache.remove(descriptor);
+                }
+            }
+        }
         
         return plan;
     }
@@ -104,9 +125,16 @@ public class Plan implements Serializable {
     }
     
     public byte[] build(Revision revision, byte compressionFlags, boolean shouldCompress) {
-        int dataSize = InventoryDetails.MAX_SIZE + this.thingData.length;
+        int dataSize = InventoryDetails.MAX_SIZE + this.thingData.length + 0x8;
         Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         this.serialize(serializer, this);
+        
+        // Re-add dependencies from thing data.
+        for (ResourceDescriptor descriptor : this.dependencyCache) {
+            serializer.dependencies.add(descriptor);
+            serializer.output.dependencies.add(descriptor);
+        }
+        
         if (shouldCompress)
             return Resource.compressToResource(serializer.output, ResourceType.PLAN);
         return serializer.getBuffer();

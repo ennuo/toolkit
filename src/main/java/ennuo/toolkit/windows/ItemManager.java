@@ -134,8 +134,8 @@ public class ItemManager extends javax.swing.JFrame {
         if (result == JOptionPane.YES_OPTION) {
             this.saveItem(this.plan.details, null);
             Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
+            this.entry.resetResources();
         }
-        this.entry.resetResources();
         this.dispose();
     }
     
