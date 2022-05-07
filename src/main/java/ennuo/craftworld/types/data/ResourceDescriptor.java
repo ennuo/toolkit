@@ -34,13 +34,17 @@ public class ResourceDescriptor {
     @Override public int hashCode() { return this.toString().hashCode(); }
 
     @Override public boolean equals(Object o) {
-        if (o == null) return false;
-        return ((ResourceDescriptor) o).toString().equals(toString());
+        if (o == this) return true;
+        if (!(o instanceof ResourceDescriptor)) return false;
+        ResourceDescriptor descriptor = (ResourceDescriptor)o;
+        return descriptor.toString().equals(this.toString());
     }
 
     @Override public String toString() {
-        if (hash != null) return "h" + this.hash.toString();
-        else if (GUID != -1) return "g" + GUID;
+        if (this.hash != null)
+            return "h" + this.hash.toString();
+        else if (this.GUID != -1)
+            return "g" + this.GUID;
         return "null";
     }
 }
