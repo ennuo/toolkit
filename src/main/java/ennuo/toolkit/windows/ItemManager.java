@@ -29,6 +29,8 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -97,6 +99,8 @@ public class ItemManager extends javax.swing.JFrame {
         
         this.setSize(this.itemSettings.getSize().width, this.getSize().height);
         this.setContentPane(this.itemSettings);
+        
+        this.closeButton.addActionListener(e -> { this.dispose(); });
     }
     
     public ItemManager(BigStreamingFart profile) {
@@ -107,6 +111,15 @@ public class ItemManager extends javax.swing.JFrame {
             this.items.add(item.details);
         this.revision = new Resource(profile.rootProfileEntry.data).revision;
         this.setup();
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent e) { onCloseProfile(); }
+        });
+        this.closeButton.addActionListener(e -> { this.onCloseProfile(); });
+    }
+    
+    private void onCloseProfile() {
+        this.dispose();
     }
     
     /**
@@ -122,7 +135,8 @@ public class ItemManager extends javax.swing.JFrame {
             this.revision = new Resource(data).revision;
             this.items.add(plan.details);
         });
-       
+        
+        this.closeButton.addActionListener(e -> { this.dispose(); });
 
         this.setup();
     }
