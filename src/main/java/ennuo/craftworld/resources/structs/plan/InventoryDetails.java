@@ -75,6 +75,9 @@ public class InventoryDetails implements Serializable {
         
         int head = serializer.revision.head;
         
+        if (serializer.isWriting && details.highlightSound != 0)
+            serializer.dependencies.add(new ResourceDescriptor(details.highlightSound, ResourceType.FILENAME));
+        
         if (serializer.revision.head > 0x37c) {
             details.dateAdded = serializer.i64d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
