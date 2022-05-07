@@ -18,7 +18,7 @@ public class PlanService implements ResourceService  {
         Plan plan = entry.getResource("item");
         if (plan == null) {
             try { 
-                plan = new Serializer(new Resource(data).handle).struct(null, Plan.class); 
+                plan = new Plan(new Resource(data));
                 entry.setResource("item", plan); 
             }
             catch (Exception e) { 
