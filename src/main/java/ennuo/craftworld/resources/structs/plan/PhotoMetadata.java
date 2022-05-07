@@ -26,7 +26,7 @@ public class PhotoMetadata implements Serializable {
         metadata.level = serializer.struct(metadata.level, SlotID.class);
         metadata.levelName = serializer.str16(metadata.levelName);
         metadata.levelHash = serializer.sha1(metadata.levelHash);
-        metadata.timestamp = serializer.u32d(metadata.timestamp);
+        metadata.timestamp = serializer.i64d(metadata.timestamp);
         metadata.users = serializer.array(metadata.users, PhotoUser.class);
         
         return metadata;

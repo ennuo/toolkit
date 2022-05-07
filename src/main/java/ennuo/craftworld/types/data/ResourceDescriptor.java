@@ -2,7 +2,6 @@ package ennuo.craftworld.types.data;
 
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.structs.SHA1;
-import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.StringUtils;
 
 public class ResourceDescriptor {
@@ -31,6 +30,8 @@ public class ResourceDescriptor {
         this.hash = hash;
         this.type = type;
     }
+    
+    @Override public int hashCode() { return this.toString().hashCode(); }
 
     @Override public boolean equals(Object o) {
         if (o == null) return false;

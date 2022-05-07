@@ -420,7 +420,7 @@ public class Data {
                 break;
             i++;
         }
-        return result;
+        return result >>> 0;
     }
 
     /**

@@ -2,6 +2,7 @@ package ennuo.craftworld.types.savedata;
 
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
@@ -9,13 +10,14 @@ import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.data.ResourceDescriptor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
 public class BigProfile implements Serializable {
-    public CachedInventoryItem[] inventory;
+    public ArrayList<InventoryItem> inventory;
     public SHA1[] vitaCrossDependencyHashes;
-    public StringTable stringTable;
+    public StringLookupTable stringTable;
     public boolean fromProductionBuild;
     public HashMap<SlotID, Slot> myMoonSlots;
     
@@ -31,11 +33,11 @@ public class BigProfile implements Serializable {
     public Serializable serialize(Serializer serializer, Serializable structure) {
         BigProfile profile = (structure == null) ? new BigProfile() : (BigProfile) structure;
         
-        profile.inventory = serializer.array(profile.inventory, CachedInventoryItem.class);
+        profile.inventory = serializer.arraylist(profile.inventory, InventoryItem.class);
         
         // Maybe I should see if I can abuse reflection or something
         // to handle arrays, or I can just write all the ones I need already.
-        if (0x3ea < serializer.revision.head) {
+        if (serializer.revision.head > 0x3ea) {
             if (serializer.isWriting) {
                 if (this.vitaCrossDependencyHashes != null) {
                     serializer.output.i32(this.vitaCrossDependencyHashes.length);
@@ -53,7 +55,7 @@ public class BigProfile implements Serializable {
         if (serializer.revision.head >= 0x3ef)
             profile.creatorDataLabels = serializer.array(profile.creatorDataLabels, DataLabel.class);
         
-        profile.stringTable = serializer.struct(profile.stringTable, StringTable.class);
+        profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
         if (serializer.revision.head > 0x3b5)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
         

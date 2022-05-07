@@ -1,5 +1,6 @@
 package ennuo.toolkit.windows;
 
+import ennuo.craftworld.resources.AdventureCreateProfile;
 import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.SlotList;
@@ -14,7 +15,7 @@ import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Serializer;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
@@ -27,6 +28,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -39,6 +41,13 @@ public class SlotManager extends javax.swing.JFrame {
         EMPTY_SLOT = new Slot();
         EMPTY_SLOT.id = new SlotID(SlotType.DEVELOPER, 0);
         EMPTY_SLOT.title = "None";
+    }
+    
+    private enum EditorType {
+        SAVE,
+        PACK,
+        SLOT_LIST,
+        ADVENTURE
     }
     
     
@@ -60,16 +69,9 @@ public class SlotManager extends javax.swing.JFrame {
     private int game = 1;
     
     /**
-     * Whether or not the current instance of the slot editor
-     * is editing a profile.
+     * The type of file we're editing.
      */
-    private boolean isSave = false;
-    
-    /**
-     * Whether or not the current instance of the slot editor
-     * is editing a pack file.
-     */
-    private boolean isPack = false;
+    private EditorType type;
     
     private class SlotEntry {
         private SlotID id;
@@ -96,6 +98,7 @@ public class SlotManager extends javax.swing.JFrame {
     
     public ArrayList<Slot> slots;
     public ArrayList<PackItem> packs;
+    private AdventureCreateProfile adventure;
     
     private PackItem selectedItem;
     private Slot selectedSlot;
@@ -104,24 +107,21 @@ public class SlotManager extends javax.swing.JFrame {
     private final DefaultComboBoxModel<SlotEntry> groups = new DefaultComboBoxModel<>();
     private final DefaultComboBoxModel<SlotEntry> links = new DefaultComboBoxModel<>(); 
     
-    public SlotManager(BigProfile profile, Slot selectedSlot) {
-        this.isSave = true;
-        this.entry = profile.profile;
-        this.slots = profile.slots;
+    public SlotManager(BigStreamingFart profile, Slot selectedSlot) {
+        this.type = EditorType.SAVE;
+        this.entry = profile.rootProfileEntry;
+        this.slots = new ArrayList<>(profile.bigProfile.myMoonSlots.values());
         
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent e) { 
-                profile.shouldSave = true;
-                Toolkit.instance.updateWorkspace();
+                onCloseProfile(profile);
             }
         });
         
         this.closeButton.addActionListener(l -> {
-            profile.shouldSave = true;
-            Toolkit.instance.updateWorkspace();
-            this.dispose();
+            onCloseProfile(profile);
         });
         
         if (selectedSlot != null)
@@ -129,6 +129,7 @@ public class SlotManager extends javax.swing.JFrame {
     }
     
     public SlotManager(FileEntry entry, SlotList slotList) {
+        this.type = EditorType.SLOT_LIST;
         this.slots = new ArrayList<>(Arrays.asList(slotList.slots));
         this.entry = entry;
         
@@ -140,8 +141,22 @@ public class SlotManager extends javax.swing.JFrame {
         this.closeButton.addActionListener(l -> this.onClose());
     }
     
+    public SlotManager(FileEntry entry, AdventureCreateProfile profile) {
+        this.type = EditorType.ADVENTURE;
+        this.slots = new ArrayList<>(profile.adventureSlots.values());
+        this.entry = entry;
+        this.adventure = profile;
+            
+        this.setup();
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent e) { onClose(); }
+        });
+        this.closeButton.addActionListener(l -> this.onClose());
+    }
+    
     public SlotManager(FileEntry entry, Pack pack) {
-        this.isPack = true;
+        this.type = EditorType.PACK;
         
         this.slots = new ArrayList<>(pack.packs.length);
         this.packs = new ArrayList<>(pack.packs.length);
@@ -160,14 +175,32 @@ public class SlotManager extends javax.swing.JFrame {
         this.closeButton.addActionListener(l -> this.onClose());
     }
     
+    private void onCloseProfile(BigStreamingFart profile) {
+        // We need to rebuild the HashMap since slots may have been added/removed
+        HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
+        for (Slot slot : this.slots)
+           slotMap.put(slot.id, slot);
+        profile.bigProfile.myMoonSlots = slotMap;
+        
+        profile.shouldSave = true;
+        Toolkit.instance.updateWorkspace();
+        this.dispose();
+    }
+    
     private void onClose() {
         int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
-            if (this.isPack) {
+            if (this.type == EditorType.PACK) {
                 Pack pack = new Pack();
                 pack.packs = this.packs.stream().toArray(PackItem[]::new);
                 Globals.replaceEntry(this.entry, pack.build(this.entry.revision, this.entry.compressionFlags));
-            } else {
+            } else if (this.type == EditorType.ADVENTURE) {
+                HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
+                for (Slot slot : this.slots)
+                   slotMap.put(slot.id, slot);
+                adventure.adventureSlots = slotMap;
+                Globals.replaceEntry(this.entry, adventure.build(this.entry.revision, this.entry.compressionFlags));
+            } else if (this.type == EditorType.SLOT_LIST) {
                 SlotList list = new SlotList();
                 list.slots = this.slots.stream().toArray(Slot[]::new);
                 Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
@@ -188,8 +221,8 @@ public class SlotManager extends javax.swing.JFrame {
         this.groupCombo.setModel(this.groups);
         this.linkCombo.setModel(this.links);
         
-        if (!this.isPack)
-            this.slotSettings.setEnabledAt(3, false);
+        if (!(this.type == EditorType.PACK))
+            this.slotSettings.remove(3);
         
         for (Slot slot : this.slots)
             this.model.addElement(slot);
@@ -206,13 +239,13 @@ public class SlotManager extends javax.swing.JFrame {
         this.setupDetailsListeners();
         this.setupDataListeners();
         this.setupSettingsListeners();
-        if (this.isPack)
+        if (this.type == EditorType.PACK)
             this.setupDLCListeners();
         
         this.slotList.addListSelectionListener(listener -> {
             int index = this.slotList.getSelectedIndex();
             if (index == -1) return;
-            if (this.isPack) 
+            if (this.type == EditorType.PACK) 
                 this.selectedItem = this.packs.get(index);
             this.selectedSlot = (Slot) this.model.getElementAt(index);
             this.setSlotData();
@@ -227,7 +260,7 @@ public class SlotManager extends javax.swing.JFrame {
             
             Slot slot = new Slot();
             
-            if (this.isPack) {
+            if (this.type == EditorType.PACK) {
                 slot.id.type = SlotType.DLC_PACK;
                 
                 PackItem item = new PackItem();
@@ -239,14 +272,16 @@ public class SlotManager extends javax.swing.JFrame {
                 
                 this.packs.add(item);
             }
-            else if (this.isSave)
+            else if (this.type == EditorType.SAVE)
                 slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
+            else if (this.type == EditorType.ADVENTURE)
+                slot.id.type = SlotType.ADVENTURE_AREA_LEVEL;
             else
                 slot.id.type = SlotType.DEVELOPER;
             
             slot.id.ID = this.getNextAvailableSlot(slot.id.type);
             
-            if (this.isSave)
+            if (this.type == EditorType.SAVE)
                 slot.location = Crater.valueOf("SLOT_" + (slot.id.ID % 82) + "_LBP" + this.game).value;
             else
                 slot.location = Crater.valueOf("SLOT_" + SlotManager.RNG.nextInt(82) + "_LBP" + this.game).value;
@@ -274,7 +309,7 @@ public class SlotManager extends javax.swing.JFrame {
             
             this.model.remove(index);
             this.slots.remove(index);
-            if (this.isPack)
+            if (this.type == EditorType.PACK)
                 this.packs.remove(index);
             
             this.setupLinks();
@@ -610,7 +645,7 @@ public class SlotManager extends javax.swing.JFrame {
         
         /* DLC page */
         
-        if (this.isPack) {
+        if (this.type == EditorType.PACK) {
             PackItem item = this.selectedItem;
             this.contentsTypeCombo.setSelectedItem(item.contentsType);
             if (item.mesh != null)

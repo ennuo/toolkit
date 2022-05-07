@@ -9,6 +9,8 @@ import ennuo.craftworld.resources.*;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.swing.*;
 import ennuo.craftworld.resources.Plan;
+import ennuo.craftworld.resources.enums.InventoryObjectSubType;
+import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.structs.Revision;
@@ -428,6 +430,12 @@ public class Toolkit extends javax.swing.JFrame {
                         editSlotContext.setVisible(true);
                 }
                 
+                if (Globals.lastSelected.header.endsWith(".adc") && !isDependencyTree) {
+                    AdventureCreateProfile profile = Globals.lastSelected.entry.getResource("adventure");
+                    if (profile != null)
+                        editSlotContext.setVisible(true);
+                }
+                
                 if (Flags.ENABLE_ITEM_MANAGER) {
                     if (Globals.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
                         Plan plan = Globals.lastSelected.entry.getResource("item");
@@ -536,10 +544,10 @@ public class Toolkit extends javax.swing.JFrame {
         locationField = new javax.swing.JTextField();
         categoryLabel = new javax.swing.JLabel();
         categoryField = new javax.swing.JTextField();
-        pageCombo = new javax.swing.JComboBox(ennuo.craftworld.resources.enums.ItemType.values());
-        subCombo = new javax.swing.JComboBox(ennuo.craftworld.resources.enums.ItemSubType.values());
+        pageCombo = new javax.swing.JComboBox(InventoryObjectType.values());
         creatorLabel = new javax.swing.JLabel();
         creatorField = new javax.swing.JTextField();
+        subCombo = new javax.swing.JTextField();
         progressBar = new javax.swing.JProgressBar();
         toolkitMenu = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -1095,11 +1103,13 @@ public class Toolkit extends javax.swing.JFrame {
 
         pageCombo.setEnabled(false);
 
-        subCombo.setEnabled(false);
-
         creatorLabel.setText("Creator");
 
         creatorField.setEditable(false);
+
+        subCombo.setEditable(false);
+        subCombo.setAutoscrolls(false);
+        subCombo.setEnabled(false);
 
         javax.swing.GroupLayout itemMetadataLayout = new javax.swing.GroupLayout(itemMetadata);
         itemMetadata.setLayout(itemMetadataLayout);
@@ -1107,39 +1117,37 @@ public class Toolkit extends javax.swing.JFrame {
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(itemMetadataLayout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, itemMetadataLayout.createSequentialGroup()
-                            .addGap(6, 6, 6)
-                            .addComponent(LAMSMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(StringMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(descriptionLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, itemMetadataLayout.createSequentialGroup()
-                            .addComponent(iconLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, itemMetadataLayout.createSequentialGroup()
-                            .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(descriptionField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, itemMetadataLayout.createSequentialGroup()
-                            .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(locationLabel)
-                                .addComponent(categoryLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(locationField)
-                                .addComponent(categoryField))))
-                    .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(creatorField))
-                        .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(LAMSMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(StringMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionLabel)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(iconLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationLabel)
+                            .addComponent(categoryLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationField)
+                            .addComponent(categoryField)))
+                    .addComponent(pageCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(subCombo))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         itemMetadataLayout.setVerticalGroup(
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1176,7 +1184,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
@@ -1816,8 +1824,14 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
+        boolean isAdventure = Globals.lastSelected.entry.getResource("adventure") != null;
+        if (isAdventure) {
+            new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.<AdventureCreateProfile>getResource("adventure")).setVisible(true);
+            return;
+        }
+        
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
-            new SlotManager((BigProfile)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
+            new SlotManager((BigStreamingFart)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
             return;
         }
         
@@ -1893,7 +1907,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        new SlotManager((BigProfile) this.getCurrentDB(), null).setVisible(true);
+        new SlotManager((BigStreamingFart) this.getCurrentDB(), null).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
@@ -1922,7 +1936,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new MetadataEditor(this, ((BigProfile) getCurrentDB())).setVisible(true);
+        new ItemManager((BigStreamingFart) this.getCurrentDB()).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed
@@ -2364,8 +2378,12 @@ public class Toolkit extends javax.swing.JFrame {
 
         setPlanDescriptions(metadata);
 
-        pageCombo.setSelectedItem(metadata.type);
-        subCombo.setSelectedItem(metadata.subType);
+        if (metadata.type.isEmpty())
+            pageCombo.setSelectedItem(InventoryObjectType.NONE);
+        else 
+            pageCombo.setSelectedItem(metadata.type.iterator().next());
+        subCombo.setText(InventoryObjectSubType.getTypeString(metadata.type, metadata.subType));
+        
         if (metadata.creator != null)
             creatorField.setText(metadata.creator.handle);
         else creatorField.setText("");
@@ -2645,7 +2663,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem scanFileArchive;
     private javax.swing.JMenuItem scanRawData;
     public javax.swing.JTextField search;
-    private javax.swing.JComboBox<String> subCombo;
+    private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JScrollPane tableContainer;
     public javax.swing.JLabel texture;

@@ -34,7 +34,7 @@ public class Resource {
     public Resource(Output output) {
         output.shrink();
         this.revision = output.revision;
-        this.dependencies = output.dependencies;
+        this.dependencies = new ArrayList<>(output.dependencies);
         this.method = SerializationMethod.BINARY;
         this.compressionFlags = output.compressionFlags;
         this.handle = new Data(output.buffer, output.revision);

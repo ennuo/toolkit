@@ -8,6 +8,12 @@ public class UserCreatedDetails implements Serializable {
     
     public String title;
     public String description;
+    
+    public UserCreatedDetails() {};
+    public UserCreatedDetails(String title, String description) {
+        this.title = title;
+        this.description = description;
+    }
 
     public UserCreatedDetails serialize(Serializer serializer, Serializable structure) {
         UserCreatedDetails details = 

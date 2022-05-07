@@ -6,7 +6,7 @@ import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileArchive;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
@@ -152,7 +152,7 @@ public class Globals {
     public static byte[] extractFile(SHA1 hash) {
         FileData db = Toolkit.instance.getCurrentDB();
         if (currentWorkspace == WorkspaceType.PROFILE) {
-            byte[] data = ((BigProfile) db).extract(hash);
+            byte[] data = ((BigStreamingFart) db).extract(hash);
             if (data != null) return data;
         } else if (currentWorkspace == WorkspaceType.MOD) {
             byte[] data = ((Mod) db).extract(hash);
@@ -189,7 +189,7 @@ public class Globals {
 
     public static boolean addFile(byte[] data) {
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
-            ((BigProfile) Toolkit.instance.getCurrentDB()).add(data);
+            ((BigStreamingFart) Toolkit.instance.getCurrentDB()).add(data);
             Toolkit.instance.updateWorkspace();
             return true;
         }

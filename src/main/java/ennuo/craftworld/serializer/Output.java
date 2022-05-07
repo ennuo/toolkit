@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -23,7 +24,7 @@ public class Output {
     public Revision revision = new Revision(0x271);
     public byte compressionFlags = 0;
 
-    public ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
+    public HashSet<ResourceDescriptor> dependencies = new HashSet<ResourceDescriptor>();
 
     /**
      * Creates a memory output stream with specified size.
@@ -95,18 +96,6 @@ public class Output {
         // NOTE(Aidan): For legacy reasons.
         if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
             this.compressionFlags = 0x7;
-    }
-
-    /**
-     * Checks whether or not a resource is already marked as a dependency.
-     * @param dependency Dependency
-     * @return True if the dependency already exists
-     */
-    private boolean hasDependency(ResourceDescriptor dependency) {
-        for (ResourceDescriptor descriptor: this.dependencies)
-            if (descriptor.equals(dependency))
-                return true;
-        return false;
     }
     
     /**
@@ -362,7 +351,7 @@ public class Output {
      * @param value Integer to write
      * @return This output stream
      */
-    public Output varint(int value) { return this.varint((long) value); }
+    public Output varint(int value) { return this.varint(value & 0xFFFFFFFFl); }
     
     /**
      * Writes a 7-bit encoded long to the stream.
@@ -370,6 +359,7 @@ public class Output {
      * @return This output stream
      */
     public Output varint(long value) {
+        value = value & 0xFFFFFFFFFFFFFFFFl;
         if (value == -1 || value == Long.MAX_VALUE) {
             this.bytes(new byte[] {  (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x0F });
             return this;
@@ -377,11 +367,12 @@ public class Output {
             this.i8((byte) 0);
             return this;
         }
-        while (value > 0) {
+        while (true) {
             byte b = (byte)(value & 0x7fL);
-            value >>= 7L;
+            value >>>= 7L;
             if (value > 0L) b |= 128L;
             this.i8(b);
+            if (value == 0) break;
         }
         return this;
     }
@@ -450,13 +441,11 @@ public class Output {
             if (value.hash != null) {
                 this.i8(HASH);
                 this.sha1(value.hash);
-                if (!this.hasDependency(value))
-                    this.dependencies.add(value);
+                this.dependencies.add(value);
             } else if (value.GUID != -1 && value.GUID != 0) {
                 this.i8(GUID);
                 this.u32(value.GUID);
-                if (!this.hasDependency(value))
-                    this.dependencies.add(value);
+                this.dependencies.add(value);
             }
             else this.i8((byte) 0);
         } else this.i8((byte) 0);

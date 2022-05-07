@@ -6,9 +6,17 @@ import ennuo.craftworld.serializer.Serializer;
 // NOTE(Aidan): This structure isn't technically accurate,
 // but it serves well enough for the purposes of serialization.
 
-public class SceNpId implements Serializable {
+public class SceNpId implements Serializable {  
     public String handle;
     public String platformType;
+    
+    public SceNpId() {};
+    public SceNpId(String psid) {
+        if (psid == null) return;
+        if (psid.length() > 0x14)
+            psid = psid.substring(0, 0x14);
+        this.handle = psid;
+    }
 
     public SceNpId serialize(Serializer serializer, Serializable structure) {
         SceNpId id = (structure == null) ? new SceNpId() : (SceNpId) structure;

@@ -7,8 +7,10 @@ import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -25,6 +27,7 @@ public class Serializer {
     
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
+    public HashSet<ResourceDescriptor> dependencies = new HashSet<>();
     
     private int nextReference = 1;
     
@@ -338,17 +341,23 @@ public class Serializer {
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
         if (this.isWriting) {
             this.output.resource(value);
+            this.dependencies.add(value);
             return value;
         }
-        return this.input.resource(type);
+        ResourceDescriptor descriptor = this.input.resource(type);
+        this.dependencies.add(descriptor);
+        return descriptor;
     }
     
     public ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean useSingleByteFlag) {
         if (this.isWriting) {
             this.output.resource(value, useSingleByteFlag);
+            this.dependencies.add(value);
             return value;
         }
-        return this.input.resource(type, useSingleByteFlag);
+        ResourceDescriptor descriptor = this.input.resource(type, useSingleByteFlag);
+        this.dependencies.add(descriptor);
+        return descriptor;
     }
     
     public <T extends Serializable> T reference(T value, Class<T> clazz) {
@@ -384,6 +393,34 @@ public class Serializer {
             return value;
         }
         return clazz.cast(Serializable.serialize(this, null, clazz));
+    }
+    
+    public final <T extends Serializable> ArrayList<T> arraylist(ArrayList<T> values, Class<T> clazz) {
+        return this.arraylist(values, clazz, false);
+    }
+
+    public final <T extends Serializable> ArrayList<T> arraylist(ArrayList<T> values, Class<T> clazz, boolean isReference) {
+        if (this.isWriting) {
+            if (values == null) {
+                this.output.i32(0);
+                return values;
+            }
+            this.output.i32(values.size());
+            for (T serializable : values) {
+                if (isReference) this.reference(serializable, clazz);
+                else Serializable.serialize(this, serializable, clazz);
+            }
+            return values;
+        }
+        int count = this.input.i32();
+        ArrayList<T> output = new ArrayList<T>(count);
+        for (int i = 0; i < count; ++i) {
+            if (isReference)
+                output.add(clazz.cast(this.reference(null, clazz)));
+            else
+                output.add(clazz.cast(Serializable.serialize(this, null, clazz)));
+        }
+        return output;
     }
     
     public <T extends Serializable> T[] array(T[] values, Class<T> clazz) {

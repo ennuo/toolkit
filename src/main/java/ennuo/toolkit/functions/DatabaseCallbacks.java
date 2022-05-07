@@ -6,13 +6,13 @@ import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.Resource;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.utilities.StringUtils;
-import ennuo.craftworld.resources.structs.ProfileItem;
+import ennuo.craftworld.resources.structs.InventoryItem;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.swing.FileData;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
-import ennuo.craftworld.types.BigProfile;
+import ennuo.craftworld.types.BigStreamingFart;
 import ennuo.craftworld.types.FileDB;
 import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.mods.Mod;
@@ -367,15 +367,15 @@ public class DatabaseCallbacks {
         }
 
         if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
-            BigProfile profile = (BigProfile) Toolkit.instance.getCurrentDB();
+            BigStreamingFart profile = (BigStreamingFart) Toolkit.instance.getCurrentDB();
             for (FileNode node: Globals.entries) {
                 FileEntry entry = node.entry;
                 node.removeFromParent();
                 if (entry == null) continue;
                 Slot slot = entry.getResource("slot");
-                if (slot != null) profile.slots.remove(slot);
-                ProfileItem item = entry.getResource("profileItem");
-                if (item != null) profile.inventoryCollection.remove(item);
+                if (slot != null) profile.bigProfile.myMoonSlots.remove(slot.id);
+                InventoryItem item = entry.getResource("profileItem");
+                if (item != null) profile.bigProfile.inventory.remove(item);
                 profile.entries.remove(entry);
                 profile.shouldSave = true;
             }
