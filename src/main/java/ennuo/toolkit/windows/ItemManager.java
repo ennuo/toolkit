@@ -586,7 +586,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.allowEmitCheckbox.setSelected((details.flags & InventoryItemFlags.ALLOW_EMIT) != 0);
         this.copyrightCheckbox.setSelected((details.flags & InventoryItemFlags.COPYRIGHT) != 0);
         this.unusedCheckbox.setSelected((details.flags & InventoryItemFlags.USED) == 0);
-        this.hiddenCheckbox.setSelected((details.flags & InventoryItemFlags.HIDDEN_ITEM) != 0);
+        this.hiddenCheckbox.setSelected((details.flags & InventoryItemFlags.HIDDEN_PLAN) != 0);
         this.restrictedDecorateCheckbox.setSelected((details.flags & InventoryItemFlags.RESTRICTED_POD) != 0);
         this.restrictedLevelCheckbox.setSelected((details.flags & InventoryItemFlags.RESTRICTED_LEVEL) != 0);
         this.loopPreviewCheckbox.setSelected((details.flags & InventoryItemFlags.DISABLE_LOOP_PREVIEW) == 0);
@@ -660,7 +660,7 @@ public class ItemManager extends javax.swing.JFrame {
             this.cheatCheckbox.setSelected((item.flags & InventoryItemFlags.CHEAT) != 0);
             this.unsavedCheckbox.setSelected((item.flags & InventoryItemFlags.UNSAVED) != 0);
             this.erroredCheckbox.setSelected((item.flags & InventoryItemFlags.ERRORED) != 0);
-            this.inventoryHiddenCheckbox.setSelected((item.flags & InventoryItemFlags.HIDDEN_ITEM) != 0);
+            this.inventoryHiddenCheckbox.setSelected((item.flags & InventoryItemFlags.HIDDEN_PLAN) != 0);
             this.autosavedCheckbox.setSelected((item.flags & InventoryItemFlags.AUTOSAVED) != 0);
         }
         
@@ -826,6 +826,29 @@ public class ItemManager extends javax.swing.JFrame {
             data.outline = this.getDescriptor(this.outlineTextEntry, ResourceType.TEXTURE);
             details.eyetoyData = data;
         } else details.eyetoyData = null;
+        
+        if (item != null) {
+            item.plan = this.getDescriptor(this.planTextField, ResourceType.PLAN);
+            item.GUID = (int) this.guidSpinner.getValue();
+            item.UID = (int) this.uidSpinner.getValue();
+            item.userCategoryIndex = (int) this.categoryIndexSpinner.getValue();
+            
+            item.flags = 0;
+            if (this.heartedCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.HEARTED;
+            if (this.cheatCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.CHEAT;
+            if (this.erroredCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.ERRORED;
+            if (this.autosavedCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.AUTOSAVED;
+            if (this.uploadedCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.UPLOADED;
+            if (this.unsavedCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.UNSAVED;
+            if (this.inventoryHiddenCheckbox.isSelected())
+                item.flags |= InventoryItemFlags.HIDDEN_ITEM;
+        }
         
         if (this.profile != null) {
             this.profile.shouldSave = true;
@@ -2570,7 +2593,11 @@ public class ItemManager extends javax.swing.JFrame {
 
         uidLabel.setText("UID:");
 
+        guidSpinner.setModel(new javax.swing.SpinnerNumberModel());
+
         categoryIndexLabel.setText("User Category Index:");
+
+        categoryIndexSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
 
         inventoryFlagsLabel.setText("Flags:");
 
@@ -2770,6 +2797,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.items.add(details);
         if (this.inventory != null) {
             InventoryItem item = new InventoryItem();
+            item.UID = this.profile.getNextUID();
             item.details = details;
             this.inventory.add(item);
         }

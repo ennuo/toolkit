@@ -372,6 +372,16 @@ public class BigStreamingFart extends FileData {
 
         this.addNode(entry);
     }
+    
+    public int getNextUID() {
+        int UID = 1;
+        for (InventoryItem item : this.bigProfile.inventory) {
+            int fixedUID = item.UID & ~0x80000000;
+            if (fixedUID > UID)
+                UID = fixedUID;
+        }
+        return (UID + 1) | 0x80000000;
+    }
 
     public boolean edit(FileEntry entry, byte[] data) {
         this.shouldSave = true;
@@ -411,7 +421,7 @@ public class BigStreamingFart extends FileData {
         item.details = metadata;
         if (metadata != null && metadata.dateAdded == 0)
             metadata.dateAdded = new Date().getTime() / 1000;
-        item.UID = (this.bigProfile.inventory.size() + 1) | 0x80000000;
+        item.UID = this.getNextUID();
         item.flags = 0;
         
         this.bigProfile.inventory.add(item);
