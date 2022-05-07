@@ -209,7 +209,7 @@ public class BigStreamingFart extends FileData {
                 break;
         }
         
-        if (extension.equals("bin")) return null;
+        if (extension.equals("bin") || extension.equals("adc")) return null;
         if (extension.equals("plan")) {
             // Don't add items if they're in our inventory
             ResourceDescriptor plan = new ResourceDescriptor(entry.hash, ResourceType.PLAN);
@@ -397,8 +397,12 @@ public class BigStreamingFart extends FileData {
             item.details.resource = newRes;
         }
 
-        if (slot != null)
-            slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        if (slot != null) {
+            if (slot.id.type.equals(SlotType.ADVENTURE_PLANET_LOCAL))
+                slot.adventure = new ResourceDescriptor(hash, ResourceType.ADVENTURE_CREATE_PROFILE);
+            else
+                slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        }
 
         entry.hash = hash;
         entry.data = data;
@@ -524,9 +528,15 @@ public class BigStreamingFart extends FileData {
         if (slot != null) {
             this.bigProfile.myMoonSlots.put(slot.id, slot);
             slot.revision = revision;
-            if (slot.root == null)
-                return;
-            FileEntry entry = find(slot.root.hash);
+            boolean isAdventure = slot.id.type.equals(SlotType.ADVENTURE_PLANET_LOCAL);
+            boolean isLevel = slot.id.type.equals(SlotType.USER_CREATED_STORED_LOCAL);
+            if (isAdventure && (slot.adventure == null || slot.adventure.hash == null))  return;
+            if (isLevel  && (slot.root == null || slot.root.hash == null)) return;
+            
+            FileEntry entry = null;
+            if (isAdventure) entry = this.find(slot.adventure.hash);
+            else entry = this.find(slot.root.hash);
+            
             if (entry != null) {
                 entry.setResource("slot", slot);
                 int revision = new Resource(extract(entry.hash)).revision.head;
@@ -545,8 +555,12 @@ public class BigStreamingFart extends FileData {
 
                 String title = slot.title;
                 if (title.isEmpty())
-                    title = "Unnamed Level";
-                entry.path = "slots/" + title + ".bin";
+                    title = (isAdventure) ? "Unnamed Adventure" : "Unnamed Level";
+                if (isAdventure)
+                    entry.path = "adventures/" + title + ".adc";
+                else
+                    entry.path = "levels/" + title + ".bin";
+                
                 Nodes.addNode(this.root, entry);
             }
         }

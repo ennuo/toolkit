@@ -34,11 +34,18 @@ public enum SlotType {
     }
     
     public boolean isGroup() {
-       return this.equals(SlotType.DEVELOPER_GROUP) || this.equals(SlotType.LOCAL_GROUP) || this.equals(SlotType.DLC_PACK);
+       return this.equals(SlotType.DEVELOPER_GROUP) || 
+              this.equals(SlotType.LOCAL_GROUP) || 
+              this.equals(SlotType.DLC_PACK) ||
+              this.equals(SlotType.DEVELOPER_ADVENTURE_AREA) ||
+              this.equals(SlotType.ADVENTURE_AREA_LEVEL);
     }
     
     public boolean isLink() {
-        return this.equals(SlotType.DEVELOPER) || this.equals(SlotType.DLC_LEVEL);
+        return this.equals(SlotType.DEVELOPER) || 
+               this.equals(SlotType.DLC_LEVEL) ||
+               this.equals(SlotType.ADVENTURE_LEVEL_LOCAL) ||
+               this.equals(SlotType.DEVELOPER_ADVENTURE);
     }
     
 }

@@ -425,6 +425,12 @@ public class Toolkit extends javax.swing.JFrame {
                         editSlotContext.setVisible(true);
                 }
                 
+                if (Globals.lastSelected.header.endsWith(".adc") && !isDependencyTree) {
+                    AdventureCreateProfile profile = Globals.lastSelected.entry.getResource("adventure");
+                    if (profile != null)
+                        editSlotContext.setVisible(true);
+                }
+                
                 if (Flags.ENABLE_ITEM_MANAGER) {
                     if (Globals.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
                         Plan plan = Globals.lastSelected.entry.getResource("item");
@@ -1804,6 +1810,12 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
+        boolean isAdventure = Globals.lastSelected.entry.getResource("adventure") != null;
+        if (isAdventure) {
+            new SlotManager(Globals.lastSelected.entry, Globals.lastSelected.entry.<AdventureCreateProfile>getResource("adventure")).setVisible(true);
+            return;
+        }
+        
         if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
             new SlotManager((BigStreamingFart)this.getCurrentDB(), Globals.lastSelected.entry.getResource("slot")).setVisible(true);
             return;

@@ -7,7 +7,6 @@ import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.swing.FileModel;
 import ennuo.craftworld.swing.FileNode;
 import ennuo.craftworld.types.FileEntry;
-import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.toolkit.utilities.services.*;
 import ennuo.toolkit.utilities.services.ResourceService;
 import ennuo.toolkit.windows.Toolkit;
@@ -26,6 +25,7 @@ public class TreeSelectionListener {
         TreeSelectionListener.addService(new GfxMaterialService());
         TreeSelectionListener.addService(new PlanService());
         TreeSelectionListener.addService(new StaticMeshService());
+        TreeSelectionListener.addService(new AdventureService());
     }
     
     public static void addService(ResourceService service) {
