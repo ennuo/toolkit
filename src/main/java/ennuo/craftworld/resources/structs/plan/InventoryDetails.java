@@ -7,6 +7,8 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
+import ennuo.craftworld.resources.structs.Revision;
+import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SceNpId;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Serializable;
@@ -63,6 +65,11 @@ public class InventoryDetails implements Serializable {
     
     public long location;
     public long category;
+    
+    /**
+     * Sometimes this is set
+     */
+    private int pad;
     
     public String translatedTitle = "";
     public String translatedDescription;
@@ -132,7 +139,7 @@ public class InventoryDetails implements Serializable {
             if (head > 0x194)
                 details.primaryIndex = (short) serializer.i32f(details.primaryIndex);
             
-            serializer.i32f(0); // Pad
+            details.pad = serializer.i32f(details.pad); // Pad
             
             if (serializer.isWriting)
                 serializer.output.i32f(InventoryObjectType.getFlags(details.type));
@@ -192,11 +199,8 @@ public class InventoryDetails implements Serializable {
             if (head > 0x204)
                 details.allowEmit = serializer.bool(details.allowEmit);
 
-            if (head > 0x221) {
-                // Fake long!
-                serializer.i32f(0);
-                details.dateAdded = serializer.u32f(details.dateAdded);
-            }
+            if (head > 0x221)
+                details.dateAdded = serializer.i64f(details.dateAdded);
             
             if (head > 0x222)
                 details.shareable = serializer.bool(details.shareable);
@@ -228,11 +232,10 @@ public class InventoryDetails implements Serializable {
         details.lastUsed = serializer.i32f(details.lastUsed);
         details.numUses = serializer.i32f(details.numUses);
         if (head > 0x234)
-            serializer.i32f(0); // Pad
+            details.pad = serializer.i32f(details.pad);
 
-        // Fake long!
-        serializer.u32f(0);
-        details.dateAdded = serializer.u32f(details.dateAdded);
+
+        details.dateAdded = serializer.i64f(details.dateAdded);
         
         details.fluffCost = serializer.i32f(details.fluffCost);
         

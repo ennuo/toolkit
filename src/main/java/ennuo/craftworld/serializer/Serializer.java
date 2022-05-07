@@ -141,6 +141,14 @@ public class Serializer {
         return this.input.i64();
     }
     
+    public long i64f(long value) {
+        if (this.isWriting) {
+            this.output.i64f(value);
+            return value;
+        }
+        return this.input.i64f();
+    }
+    
     public int[] i32a(int[] values) {
         if (this.isWriting) {
             this.output.i32a(values);
