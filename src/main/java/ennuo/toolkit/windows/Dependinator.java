@@ -22,7 +22,7 @@ public class Dependinator extends javax.swing.JFrame {
     private ArrayList<ResourceDescriptor> modifications;
     private ArrayList<ResourceDescriptor> removed = new ArrayList<>();
     
-    private  DefaultListModel model = new DefaultListModel();
+    private DefaultListModel model = new DefaultListModel();
     
     public Dependinator(Toolkit toolkit, FileEntry entry) {
         this.initComponents();
@@ -104,8 +104,9 @@ public class Dependinator extends javax.swing.JFrame {
 
         // If the resource type is music settings or fsb (filename), it can only take in GUIDs
         if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
-            || newDescriptor.type.equals(ResourceType.FILENAME))
-            || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) && !isGUID) {
+            || newDescriptor.type.equals(ResourceType.FILENAME)
+            || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) 
+            || newDescriptor.type.equals(ResourceType.SAMPLE)) && !isGUID) {
             this.updateDescriptorButton.setEnabled(false);
             return;
         }
