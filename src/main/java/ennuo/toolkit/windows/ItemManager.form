@@ -2369,6 +2369,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="photoDataPane" max="32767" attributes="0"/>
+                              <Component id="eyetoyDataPane" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="photoDataCheckbox" min="-2" max="-2" attributes="0"/>
@@ -2376,7 +2377,6 @@
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
-                              <Component id="eyetoyDataPane" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2448,11 +2448,16 @@
                                           <Component id="photoIconResourceTextEntry" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
+                                  <Component id="jPanel3" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="photoUsersLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="jPanel3" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="photoTimestampLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                                      <Component id="photoTimestamp" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -2497,6 +2502,11 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="levelHashLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="photoLevelHashTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="photoTimestampLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoTimestamp" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="photoUsersLabel" min="-2" max="-2" attributes="0"/>
@@ -2589,36 +2599,39 @@
                               <Group type="102" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <Component id="addPhotoUserButton" min="-2" pref="74" max="-2" attributes="0"/>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="removePhotoUserButton" min="-2" pref="75" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="photoUserListScrollPane" min="-2" pref="161" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="photoUserBoundsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="photoUserLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="photoUserPsidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="photoUserTextEntry" max="32767" attributes="0"/>
-                                      <Component id="photoPsidTextField" max="32767" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="jSpinner3" pref="113" max="32767" attributes="0"/>
-                                              <Component id="jSpinner2" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="jSpinner4" pref="114" max="32767" attributes="0"/>
-                                              <Component id="jSpinner5" max="32767" attributes="0"/>
+                                          <Component id="photoUserListScrollPane" min="-2" pref="199" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="photoUserPsidLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserBoundsLabel" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="addPhotoUserButton" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="removePhotoUserButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="boundsZSpinner" min="-2" pref="113" max="-2" attributes="0"/>
+                                          <EmptySpace max="32767" attributes="0"/>
+                                          <Component id="boundsWSpinner" min="-2" pref="114" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="photoPsidTextEntry" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="photoUserTextEntry" alignment="0" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          <Component id="boundsXSpinner" min="-2" pref="113" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="boundsYSpinner" min="-2" pref="114" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="savePhotoUserButton" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2630,7 +2643,7 @@
                                       <Group type="102" attributes="0">
                                           <Group type="103" groupAlignment="3" attributes="0">
                                               <Component id="photoUserPsidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                              <Component id="photoPsidTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoPsidTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="3" attributes="0">
@@ -2640,20 +2653,26 @@
                                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="3" attributes="0">
                                               <Component id="photoUserBoundsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                              <Component id="jSpinner2" alignment="3" min="-2" max="-2" attributes="0"/>
-                                              <Component id="jSpinner5" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="boundsXSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="boundsYSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="boundsZSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="boundsWSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <Component id="photoUserListScrollPane" pref="0" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jSpinner3" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jSpinner4" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="addPhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="removePhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="addPhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="removePhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="savePhotoUserButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2684,7 +2703,7 @@
                             <Property name="text" type="java.lang.String" value="PSID:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JTextField" name="photoPsidTextField">
+                        <Component class="javax.swing.JTextField" name="photoPsidTextEntry">
                         </Component>
                         <Component class="javax.swing.JLabel" name="photoUserLabel">
                           <Properties>
@@ -2698,46 +2717,72 @@
                             <Property name="text" type="java.lang.String" value="Bounds:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="jSpinner2">
+                        <Component class="javax.swing.JSpinner" name="boundsXSpinner">
                           <Properties>
                             <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
                               <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
                             </Property>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="jSpinner3">
+                        <Component class="javax.swing.JSpinner" name="boundsZSpinner">
                           <Properties>
                             <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
                               <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
                             </Property>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="jSpinner4">
+                        <Component class="javax.swing.JSpinner" name="boundsWSpinner">
                           <Properties>
                             <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
                               <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
                             </Property>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="jSpinner5">
+                        <Component class="javax.swing.JSpinner" name="boundsYSpinner">
                           <Properties>
                             <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
                               <SpinnerModel initial="0.0" numberType="java.lang.Float" stepSize="1.0" type="number"/>
                             </Property>
-                          </Properties>
-                        </Component>
-                        <Component class="javax.swing.JButton" name="removePhotoUserButton">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="Remove"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="addPhotoUserButton">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Add"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addPhotoUserButtonActionPerformed"/>
+                          </Events>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="removePhotoUserButton">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Remove"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removePhotoUserButtonActionPerformed"/>
+                          </Events>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="savePhotoUserButton">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Save"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="savePhotoUserButtonActionPerformed"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="javax.swing.JLabel" name="photoTimestampLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Timestamp:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSpinner" name="photoTimestamp">
+                      <Properties>
+                        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                          <SpinnerModel initial="now" stepSize="5" type="date"/>
+                        </Property>
+                      </Properties>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Component class="javax.swing.JCheckBox" name="eyetoyDataCheckbox">

@@ -20,6 +20,7 @@ import ennuo.craftworld.resources.structs.plan.EyetoyData;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.resources.structs.plan.PhotoData;
 import ennuo.craftworld.resources.structs.plan.PhotoMetadata;
+import ennuo.craftworld.resources.structs.plan.PhotoUser;
 import ennuo.craftworld.resources.structs.plan.UserCreatedDetails;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.BigStreamingFart;
@@ -28,17 +29,15 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.joml.Vector4f;
 
 public class ItemManager extends javax.swing.JFrame {
     private class ItemWrapper {
@@ -77,9 +76,6 @@ public class ItemManager extends javax.swing.JFrame {
     private final DefaultListModel model = new DefaultListModel();
     private final DefaultListModel creators = new DefaultListModel();
     private final DefaultListModel photoUsers = new DefaultListModel();
-    
-    private boolean listenForChanges = true;
-    private boolean hasMadeChanges = false;
     
     private JCheckBox[] typeCheckboxes;
     private JCheckBox[] categories;
@@ -256,42 +252,6 @@ public class ItemManager extends javax.swing.JFrame {
             this.setItemData();
         });
         
-        this.addItemButton.addActionListener(e -> {
-            if (this.items.size() == 0) {
-                this.removeItemButton.setEnabled(true);
-                this.itemSettings.setEnabled(true);
-                this.itemSettings.setSelectedIndex(0);
-            }
-            
-            InventoryDetails details = new InventoryDetails();
-
-            this.items.add(details);
-            if (this.inventory != null) {
-                InventoryItem item = new InventoryItem();
-                item.details = details;
-                this.inventory.add(item);
-            }
-            
-            this.model.addElement(details);
-            this.itemList.setSelectedValue(details, true);
-        });
-        
-        this.removeItemButton.addActionListener(e -> {
-            int index = this.itemList.getSelectedIndex();
-            if (this.model.size() - 1 != 0) {
-                if (index == 0)
-                    this.itemList.setSelectedIndex(index + 1);
-                else
-                    this.itemList.setSelectedIndex(index - 1);   
-            } else {
-                this.removeItemButton.setEnabled(false);
-                this.itemSettings.setSelectedIndex(-1);
-                this.itemSettings.setEnabled(false);
-            }
-            
-            this.model.remove(index);
-        });
-        
         this.creationHistoryCheckbox.addActionListener(e -> {
             this.removeCreatorButton.setEnabled(false);
             this.creationHistoryPane.setVisible(this.creationHistoryCheckbox.isSelected());
@@ -303,6 +263,22 @@ public class ItemManager extends javax.swing.JFrame {
             else this.removeCreatorButton.setEnabled(true);
         });
         
+        this.photoUserList.addListSelectionListener(e -> {
+            int index = this.photoUserList.getSelectedIndex();
+            
+            this.resetPhotoUser(index != -1);
+            if (index == -1) return;
+            
+            PhotoUser user = (PhotoUser) this.photoUsers.get(index);
+            
+            this.boundsXSpinner.setValue(user.bounds.x);
+            this.boundsYSpinner.setValue(user.bounds.y);
+            this.boundsZSpinner.setValue(user.bounds.z);
+            this.boundsWSpinner.setValue(user.bounds.w);
+            this.photoUserTextEntry.setText(user.user);
+            this.photoPsidTextEntry.setText(user.PSID);
+        });
+        
         this.photoDataCheckbox.addActionListener(e -> {
             this.photoDataPane.setVisible(this.photoDataCheckbox.isSelected());
         });
@@ -312,6 +288,57 @@ public class ItemManager extends javax.swing.JFrame {
         });
         
         this.itemList.setSelectedIndex(0);
+    }
+    
+    private void persistPhotoUser() {
+        int index = this.photoUserList.getSelectedIndex();
+        if (index == -1) return;
+        PhotoUser user = (PhotoUser) this.photoUsers.get(index);
+        
+        user.user = this.photoUserTextEntry.getText();
+        user.bounds = new Vector4f(
+            (float) this.boundsXSpinner.getValue(),
+            (float) this.boundsYSpinner.getValue(),
+            (float) this.boundsZSpinner.getValue(),
+            (float) this.boundsWSpinner.getValue()       
+        );
+        
+        
+        // Make sure the user doesn't edit the PSID to match another.
+        
+        String psid = this.photoPsidTextEntry.getText();
+        if (psid.length() > 0x14)
+            psid = psid.substring(0, 0x14);
+        
+        // Use case-insensitive comparison to see if the user is already in the list.
+        String upper = psid.toUpperCase();
+        for (int i = 0; i < this.photoUsers.size(); ++i)
+            if (((PhotoUser)this.photoUsers.getElementAt(i)).PSID.toUpperCase().equals(upper)) {
+                this.photoPsidTextEntry.setText(user.PSID);
+                this.photoUserList.repaint();
+                return;
+            }
+        
+        user.PSID = psid;
+        
+        this.photoUserList.repaint();
+    }
+    
+    private void resetPhotoUser(boolean state) {
+        this.boundsXSpinner.setEnabled(state);
+        this.boundsYSpinner.setEnabled(state);
+        this.boundsZSpinner.setEnabled(state);
+        this.boundsWSpinner.setEnabled(state);
+        this.photoUserTextEntry.setEnabled(state);
+        this.photoPsidTextEntry.setEnabled(state);
+        this.removePhotoUserButton.setEnabled(state);
+        this.savePhotoUserButton.setEnabled(state);
+        this.boundsXSpinner.setValue(0.0f);
+        this.boundsYSpinner.setValue(0.0f);
+        this.boundsZSpinner.setValue(0.0f);
+        this.boundsWSpinner.setValue(0.0f);
+        this.photoUserTextEntry.setText("");
+        this.photoPsidTextEntry.setText("");
     }
     
     private void updateTranslations() {
@@ -547,7 +574,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.unlockSlotTypeCombo.setSelectedItem(details.levelUnlockSlotID.type);
         this.unlockSlotNumberSpinner.setValue(details.levelUnlockSlotID.ID);
         this.highlightSoundSpinner.setValue(details.highlightSound);
-        this.dateAddedSpinner.setValue(new Date(details.dateAdded / 2 * 1000));
+        this.dateAddedSpinner.setValue(new Date(details.dateAdded * 1000));
         
         byte[] color = Bytes.toBytes(details.colour);
         this.colorRedSpinner.setValue(color[1] & 0xFF);
@@ -565,6 +592,8 @@ public class ItemManager extends javax.swing.JFrame {
         this.loopPreviewCheckbox.setSelected((details.flags & InventoryItemFlags.DISABLE_LOOP_PREVIEW) == 0);
         
         // Photo data tab
+        this.photoUsers.clear();
+        this.resetPhotoUser(false);
         if (details.photoData != null) {
             PhotoData data = details.photoData;
             
@@ -582,6 +611,10 @@ public class ItemManager extends javax.swing.JFrame {
             this.photoLevelTypeCombo.setSelectedItem(metadata.level.type);
             this.photoLevelNumberSpinner.setValue(metadata.level.ID);
             this.photoLevelHashTextEntry.setText(metadata.levelHash.toString());
+            this.photoTimestamp.setValue(new Date(metadata.timestamp * 1000));
+            if (metadata.users != null)
+                for (PhotoUser user : metadata.users)
+                    this.photoUsers.addElement(user);
         } else {
             this.photoIconResourceTextEntry.setText("");
             this.stickerResourceTextEntry.setText("");
@@ -589,9 +622,9 @@ public class ItemManager extends javax.swing.JFrame {
             this.photoResourceTextEntry.setText("");
             this.photoLevelTypeCombo.setSelectedIndex(0);
             this.photoLevelNumberSpinner.setValue(0l);
-            this.photoLevelHashTextEntry.setText("");
+            this.photoLevelHashTextEntry.setText("0000000000000000000000000000000000000000");
+            this.photoTimestamp.setValue(new Date());
             this.photoDataCheckbox.setSelected(false);
-            this.photoDataPane.setVisible(false);
             this.photoDataPane.setVisible(false);
         }
         
@@ -737,7 +770,7 @@ public class ItemManager extends javax.swing.JFrame {
         
         details.highlightSound = (long) this.highlightSoundSpinner.getValue();
         
-        details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000 * 2;
+        details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000;
         
         details.colour = 
                 ((Integer)this.colorRedSpinner.getValue()).longValue() << 16 |
@@ -776,6 +809,14 @@ public class ItemManager extends javax.swing.JFrame {
                 data.photoMetadata.levelHash = new SHA1();
             else data.photoMetadata.levelHash = new SHA1(levelHash);
             
+            data.photoMetadata.timestamp = ((Date)this.photoTimestamp.getValue()).getTime() / 1000;
+            
+            PhotoUser[] users = new PhotoUser[this.photoUsers.size()];
+            for (int i = 0; i < this.photoUsers.size(); ++i)
+                users[i] = (PhotoUser) this.photoUsers.getElementAt(i);
+            data.photoMetadata.users = users;
+            
+            details.photoData = data;
         } else details.photoData = null;
         
         if (this.eyetoyDataCheckbox.isSelected()) {
@@ -783,6 +824,7 @@ public class ItemManager extends javax.swing.JFrame {
             data.alphaMask = this.getDescriptor(this.alphaMaskTextEntry, ResourceType.TEXTURE);
             data.frame = this.getDescriptor(this.frameTextEntry, ResourceType.TEXTURE);
             data.outline = this.getDescriptor(this.outlineTextEntry, ResourceType.TEXTURE);
+            details.eyetoyData = data;
         } else details.eyetoyData = null;
         
         if (this.profile != null) {
@@ -974,16 +1016,19 @@ public class ItemManager extends javax.swing.JFrame {
         photoUserListScrollPane = new javax.swing.JScrollPane();
         photoUserList = new javax.swing.JList<>();
         photoUserPsidLabel = new javax.swing.JLabel();
-        photoPsidTextField = new javax.swing.JTextField();
+        photoPsidTextEntry = new javax.swing.JTextField();
         photoUserLabel = new javax.swing.JLabel();
         photoUserTextEntry = new javax.swing.JTextField();
         photoUserBoundsLabel = new javax.swing.JLabel();
-        jSpinner2 = new javax.swing.JSpinner();
-        jSpinner3 = new javax.swing.JSpinner();
-        jSpinner4 = new javax.swing.JSpinner();
-        jSpinner5 = new javax.swing.JSpinner();
-        removePhotoUserButton = new javax.swing.JButton();
+        boundsXSpinner = new javax.swing.JSpinner();
+        boundsZSpinner = new javax.swing.JSpinner();
+        boundsWSpinner = new javax.swing.JSpinner();
+        boundsYSpinner = new javax.swing.JSpinner();
         addPhotoUserButton = new javax.swing.JButton();
+        removePhotoUserButton = new javax.swing.JButton();
+        savePhotoUserButton = new javax.swing.JButton();
+        photoTimestampLabel = new javax.swing.JLabel();
+        photoTimestamp = new javax.swing.JSpinner();
         eyetoyDataCheckbox = new javax.swing.JCheckBox();
         eyetoyDataPane = new javax.swing.JPanel();
         frameLabel = new javax.swing.JLabel();
@@ -2256,17 +2301,34 @@ public class ItemManager extends javax.swing.JFrame {
 
         photoUserBoundsLabel.setText("Bounds:");
 
-        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
+        boundsXSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
-        jSpinner3.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
+        boundsZSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
-        jSpinner4.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
+        boundsWSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
-        jSpinner5.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
-
-        removePhotoUserButton.setText("Remove");
+        boundsYSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
         addPhotoUserButton.setText("Add");
+        addPhotoUserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPhotoUserButtonActionPerformed(evt);
+            }
+        });
+
+        removePhotoUserButton.setText("Remove");
+        removePhotoUserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removePhotoUserButtonActionPerformed(evt);
+            }
+        });
+
+        savePhotoUserButton.setText("Save");
+        savePhotoUserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                savePhotoUserButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -2276,28 +2338,31 @@ public class ItemManager extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(addPhotoUserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(removePhotoUserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(photoUserListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(photoUserBoundsLabel)
-                    .addComponent(photoUserLabel)
-                    .addComponent(photoUserPsidLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(photoUserTextEntry)
-                    .addComponent(photoPsidTextField)
+                        .addComponent(photoUserListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(photoUserPsidLabel)
+                            .addComponent(photoUserLabel)
+                            .addComponent(photoUserBoundsLabel)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jSpinner3, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
-                            .addComponent(jSpinner2))
+                        .addComponent(addPhotoUserButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removePhotoUserButton)))
+                .addGap(12, 12, 12)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(boundsZSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(boundsWSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(photoPsidTextEntry)
+                    .addComponent(photoUserTextEntry)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(boundsXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jSpinner4, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
-                            .addComponent(jSpinner5))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(boundsYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(savePhotoUserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2307,7 +2372,7 @@ public class ItemManager extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(photoUserPsidLabel)
-                            .addComponent(photoPsidTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(photoPsidTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(6, 6, 6)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(photoUserLabel)
@@ -2315,17 +2380,25 @@ public class ItemManager extends javax.swing.JFrame {
                         .addGap(6, 6, 6)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(photoUserBoundsLabel)
-                            .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(boundsXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(boundsYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(boundsZSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(boundsWSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(photoUserListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addPhotoUserButton)
-                    .addComponent(removePhotoUserButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(addPhotoUserButton)
+                        .addComponent(removePhotoUserButton))
+                    .addComponent(savePhotoUserButton))
+                .addContainerGap())
         );
+
+        photoTimestampLabel.setText("Timestamp:");
+
+        photoTimestamp.setModel(new javax.swing.SpinnerDateModel());
 
         javax.swing.GroupLayout photoDataPaneLayout = new javax.swing.GroupLayout(photoDataPane);
         photoDataPane.setLayout(photoDataPaneLayout);
@@ -2360,10 +2433,14 @@ public class ItemManager extends javax.swing.JFrame {
                             .addComponent(paintingResourceTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(photoResourceTextEntry)
                             .addComponent(photoIconResourceTextEntry)))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(photoDataPaneLayout.createSequentialGroup()
                         .addComponent(photoUsersLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(photoDataPaneLayout.createSequentialGroup()
+                        .addComponent(photoTimestampLabel)
+                        .addGap(16, 16, 16)
+                        .addComponent(photoTimestamp)))
                 .addContainerGap())
         );
         photoDataPaneLayout.setVerticalGroup(
@@ -2399,6 +2476,10 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGroup(photoDataPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(levelHashLabel)
                     .addComponent(photoLevelHashTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(photoDataPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(photoTimestampLabel)
+                    .addComponent(photoTimestamp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(photoUsersLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2457,12 +2538,12 @@ public class ItemManager extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(photoAndEyetoyDataPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(photoDataPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(eyetoyDataPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(photoAndEyetoyDataPaneLayout.createSequentialGroup()
                         .addGroup(photoAndEyetoyDataPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(photoDataCheckbox)
                             .addComponent(eyetoyDataCheckbox))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(eyetoyDataPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         photoAndEyetoyDataPaneLayout.setVerticalGroup(
@@ -2659,11 +2740,42 @@ public class ItemManager extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeItemButtonActionPerformed
-        // TODO add your handling code here:
+        int index = this.itemList.getSelectedIndex();
+        if (this.model.size() - 1 != 0) {
+            if (index == 0)
+                this.itemList.setSelectedIndex(index + 1);
+            else
+                this.itemList.setSelectedIndex(index - 1);   
+        } else {
+            this.removeItemButton.setEnabled(false);
+            this.itemSettings.setSelectedIndex(-1);
+            this.itemSettings.setEnabled(false);
+        }
+
+        this.items.remove(index);
+        if (this.inventory != null)
+            this.inventory.remove(index);
+        this.model.remove(index);
     }//GEN-LAST:event_removeItemButtonActionPerformed
 
     private void addItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemButtonActionPerformed
-        // TODO add your handling code here:
+        if (this.items.size() == 0) {
+            this.removeItemButton.setEnabled(true);
+            this.itemSettings.setEnabled(true);
+            this.itemSettings.setSelectedIndex(0);
+        }
+
+        InventoryDetails details = new InventoryDetails();
+
+        this.items.add(details);
+        if (this.inventory != null) {
+            InventoryItem item = new InventoryItem();
+            item.details = details;
+            this.inventory.add(item);
+        }
+
+        this.model.addElement(new ItemWrapper(details));
+        this.itemList.setSelectedValue(details, true);
     }//GEN-LAST:event_addItemButtonActionPerformed
 
     private void ucdRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ucdRadioActionPerformed
@@ -2700,7 +2812,7 @@ public class ItemManager extends javax.swing.JFrame {
 
     private void addCreatorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorButtonActionPerformed
         String creator = JOptionPane.showInputDialog(this, "Creator", "MM_Studio");
-        if (creator == null) return;
+        if (creator == null || creator.isEmpty()) return;
         if (creator.length() > 0x14)
             creator = creator.substring(0, 0x14);
         
@@ -2709,9 +2821,6 @@ public class ItemManager extends javax.swing.JFrame {
         for (int i = 0; i < this.creators.size(); ++i)
             if (((String)this.creators.getElementAt(i)).toUpperCase().equals(upper))
                 return;
-        
-        if (this.creators.size() == 0)
-            this.removeCreatorButton.setEnabled(true);
         
         this.creators.addElement(creator);
     }//GEN-LAST:event_addCreatorButtonActionPerformed
@@ -2732,6 +2841,41 @@ public class ItemManager extends javax.swing.JFrame {
             this.removeCreatorButton.setEnabled(false);
     }//GEN-LAST:event_removeCreatorButtonActionPerformed
 
+    private void savePhotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savePhotoUserButtonActionPerformed
+        this.persistPhotoUser();
+    }//GEN-LAST:event_savePhotoUserButtonActionPerformed
+
+    private void removePhotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePhotoUserButtonActionPerformed
+        int index = this.photoUserList.getSelectedIndex();
+        if (index == -1) return;
+        if (this.photoUsers.size() - 1 != 0) {
+            if (index == 0)
+                this.photoUserList.setSelectedIndex(index + 1);
+            else
+                this.photoUserList.setSelectedIndex(index - 1);   
+        }
+        
+        this.photoUsers.remove(index);
+        
+        if (this.photoUsers.size() == 0)
+            this.removeCreatorButton.setEnabled(false);
+    }//GEN-LAST:event_removePhotoUserButtonActionPerformed
+
+    private void addPhotoUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPhotoUserButtonActionPerformed
+        String user = JOptionPane.showInputDialog(this, "User", "MM_Studio");
+        if (user == null || user.isEmpty()) return;
+        if (user.length() > 0x14)
+            user = user.substring(0, 0x14);
+        
+        // Use case-insensitive comparison to see if the user is already in the list.
+        String upper = user.toUpperCase();
+        for (int i = 0; i < this.photoUsers.size(); ++i)
+            if (((PhotoUser)this.photoUsers.getElementAt(i)).PSID.toUpperCase().equals(upper))
+                return;
+        
+        this.photoUsers.addElement(new PhotoUser(user));
+    }//GEN-LAST:event_addPhotoUserButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCreatorButton;
     private javax.swing.JButton addItemButton;
@@ -2742,6 +2886,10 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox autosavedCheckbox;
     private javax.swing.JCheckBox backgroundsCheckbox;
     private javax.swing.JCheckBox beardCheckbox;
+    private javax.swing.JSpinner boundsWSpinner;
+    private javax.swing.JSpinner boundsXSpinner;
+    private javax.swing.JSpinner boundsYSpinner;
+    private javax.swing.JSpinner boundsZSpinner;
     private javax.swing.JPanel catLocPane;
     private javax.swing.JLabel categoryIndexLabel;
     private javax.swing.JSpinner categoryIndexSpinner;
@@ -2829,10 +2977,6 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JSpinner jSpinner2;
-    private javax.swing.JSpinner jSpinner3;
-    private javax.swing.JSpinner jSpinner4;
-    private javax.swing.JSpinner jSpinner5;
     private javax.swing.JCheckBox jointsCheckbox;
     private javax.swing.JPanel lbp1TypeContainer;
     private javax.swing.JLabel lbp1TypesLabel;
@@ -2879,8 +3023,10 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JSpinner photoLevelNumberSpinner;
     private javax.swing.JComboBox<String> photoLevelTypeCombo;
     private javax.swing.JLabel photoLevelTypeLabel;
-    private javax.swing.JTextField photoPsidTextField;
+    private javax.swing.JTextField photoPsidTextEntry;
     private javax.swing.JTextField photoResourceTextEntry;
+    private javax.swing.JSpinner photoTimestamp;
+    private javax.swing.JLabel photoTimestampLabel;
     private javax.swing.JCheckBox photoToolCheckbox;
     private javax.swing.JLabel photoUserBoundsLabel;
     private javax.swing.JLabel photoUserLabel;
@@ -2910,6 +3056,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox restrictedLevelCheckbox;
     private javax.swing.JCheckBox sackbotMeshCheckbox;
     private javax.swing.JButton saveButton;
+    private javax.swing.JButton savePhotoUserButton;
     private javax.swing.JCheckBox sequencerCheckbox;
     private javax.swing.JCheckBox shapesCheckbox;
     private javax.swing.JScrollPane slotContainer;
