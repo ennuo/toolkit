@@ -31,7 +31,7 @@ public class InventoryDetails implements Serializable {
     public long highlightSound;
     public long colour;
     
-    public EnumSet<InventoryObjectType> type;
+    public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType = InventoryObjectSubType.NONE;
     
     public long titleKey, descriptionKey;
@@ -59,7 +59,7 @@ public class InventoryDetails implements Serializable {
     public ToolType toolType = ToolType.NONE;
     public byte flags;
     
-    public boolean makeSizeProportional;
+    public boolean makeSizeProportional = true;
     
     public long location;
     public long category;
@@ -76,7 +76,7 @@ public class InventoryDetails implements Serializable {
         int head = serializer.revision.head;
         
         if (serializer.revision.head > 0x37c) {
-            details.dateAdded = serializer.i64(details.dateAdded);
+            details.dateAdded = serializer.i64d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
             details.highlightSound = serializer.u32(details.highlightSound);
             details.colour = serializer.u32(details.colour);

@@ -16,7 +16,7 @@ public class PhotoMetadata implements Serializable {
     public String levelName;
     public SHA1 levelHash = new SHA1();
     public PhotoUser[] users;
-    public long timestamp = new Date().getTime() / 1000 * 2;
+    public long timestamp = new Date().getTime() / 1000;
     
     public PhotoMetadata serialize(Serializer serializer, Serializable structure) {
         PhotoMetadata metadata = 
@@ -26,7 +26,7 @@ public class PhotoMetadata implements Serializable {
         metadata.level = serializer.struct(metadata.level, SlotID.class);
         metadata.levelName = serializer.str16(metadata.levelName);
         metadata.levelHash = serializer.sha1(metadata.levelHash);
-        metadata.timestamp = serializer.i64(metadata.timestamp);
+        metadata.timestamp = serializer.i64d(metadata.timestamp);
         metadata.users = serializer.array(metadata.users, PhotoUser.class);
         
         return metadata;

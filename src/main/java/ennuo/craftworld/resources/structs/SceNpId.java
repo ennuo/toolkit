@@ -12,6 +12,7 @@ public class SceNpId implements Serializable {
     
     public SceNpId() {};
     public SceNpId(String psid) {
+        if (psid == null) return;
         if (psid.length() > 0x14)
             psid = psid.substring(0, 0x14);
         this.handle = psid;
