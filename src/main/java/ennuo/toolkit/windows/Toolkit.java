@@ -326,6 +326,7 @@ public class Toolkit extends javax.swing.JFrame {
         dependencyGroup.setVisible(false);
         exportModGroup.setVisible(false);
         exportBackupGroup.setVisible(false);
+        exportAsBackupGUID.setVisible(false);
         exportAnimation.setVisible(false);
         exportModelGroup.setVisible(false);
         exportGroup.setVisible(false);
@@ -375,8 +376,12 @@ public class Toolkit extends javax.swing.JFrame {
                     if (Globals.lastSelected.entry.dependencies != null && Globals.lastSelected.entry.dependencies.size() != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
-                        if (Globals.lastSelected.header.endsWith(".bin") || Globals.lastSelected.header.endsWith(".plan"))
+                        if (Globals.lastSelected.header.endsWith(".bin") || Globals.lastSelected.header.endsWith(".plan")) {
                             exportBackupGroup.setVisible(true);
+                            if (Globals.lastSelected.entry.GUID != -1) {
+                                exportAsBackupGUID.setVisible(true);
+                            }
+                        }
                         replaceDependencies.setVisible(true);
                         dependencyGroup.setVisible(true);
                     }
@@ -494,6 +499,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportAnimation = new javax.swing.JMenuItem();
         exportBackupGroup = new javax.swing.JMenu();
         exportAsBackup = new javax.swing.JMenuItem();
+        exportAsBackupGUID = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -800,6 +806,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         exportBackupGroup.add(exportAsBackup);
+
+        exportAsBackupGUID.setText("GUID");
+        exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsBackupGUIDActionPerformed(evt);
+            }
+        });
+        exportBackupGroup.add(exportAsBackupGUID);
 
         exportGroup.add(exportBackupGroup);
 
@@ -2070,7 +2084,17 @@ public class Toolkit extends javax.swing.JFrame {
         ArchiveCallbacks.integrityCheck();
     }//GEN-LAST:event_fileArchiveIntegrityCheckActionPerformed
 
-    private void exportAsBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupActionPerformed
+
+    enum ExportMode {
+        GUID,
+        Hash
+    }
+
+    private void exportAsBackupActionPerformed(java.awt.event.ActionEvent evt) {
+        exportAsBackupTpl(ExportMode.Hash);
+    }
+    
+    private void exportAsBackupTpl(ExportMode mode) {
         FileEntry entry = Globals.lastSelected.entry;
         String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
 
@@ -2089,17 +2113,39 @@ public class Toolkit extends javax.swing.JFrame {
         slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
         
         // NOTE(Aidan): Cheap trick, but it's what I'm doing for now.
-        Resource resource = new Resource(Globals.extractFile(entry.hash));
+        Resource resource = null;
+        switch (mode) {
+            case Hash:
+                resource = new Resource(Globals.extractFile(entry.hash));
+                break;
+            case GUID:
+                resource = new Resource(Globals.extractFile(entry.GUID));
+                break;
+        }
         Mod mod = new Mod();
         SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
 
         archive.entries = mod.entries;
         
-        if (entry.path.endsWith(".bin")) 
-            slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        if (entry.path.endsWith(".bin"))
+            switch (mode) {
+                case Hash:
+                    slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+                    break;
+                case GUID:
+                    slot.root = new ResourceDescriptor(entry.GUID, ResourceType.LEVEL);
+                    break;
+            }
         else if (entry.path.endsWith(".plan")) {
             Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
-            level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
+            switch (mode) {
+                case Hash:
+                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
+                    break;
+                case GUID:
+                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(entry.GUID, ResourceType.PLAN));
+                    break;
+            }
             byte[] levelData = level.compressToResource();
             archive.add(levelData);
             slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
@@ -2284,6 +2330,10 @@ public class Toolkit extends javax.swing.JFrame {
         ItemManager manager = new ItemManager(entry, plan);
         manager.setVisible(true);
     }//GEN-LAST:event_editItemContextActionPerformed
+
+    private void exportAsBackupGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupGUIDActionPerformed
+        exportAsBackupTpl(ExportMode.GUID);
+    }//GEN-LAST:event_exportAsBackupGUIDActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
@@ -2531,6 +2581,7 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAnimation;
     private javax.swing.JMenuItem exportAsBackup;
+    private javax.swing.JMenuItem exportAsBackupGUID;
     private javax.swing.JMenuItem exportAsMod;
     private javax.swing.JMenuItem exportAsModGUID;
     private javax.swing.JMenu exportBackupGroup;
