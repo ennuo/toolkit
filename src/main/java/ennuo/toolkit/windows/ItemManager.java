@@ -1,7 +1,9 @@
 package ennuo.toolkit.windows;
 
+import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.resources.Resource;
+import ennuo.craftworld.resources.SlotList;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.GameVersion;
 import ennuo.craftworld.resources.enums.InventoryItemFlags;
@@ -11,9 +13,11 @@ import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
 import ennuo.craftworld.resources.structs.InventoryItem;
+import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.SceNpId;
+import ennuo.craftworld.resources.structs.Slot;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.CreationHistory;
 import ennuo.craftworld.resources.structs.plan.EyetoyData;
@@ -34,6 +38,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -99,8 +104,14 @@ public class ItemManager extends javax.swing.JFrame {
         
         this.setSize(this.itemSettings.getSize().width, this.getSize().height);
         this.setContentPane(this.itemSettings);
+       
         
-        this.closeButton.addActionListener(e -> { this.dispose(); });
+        this.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent e) { onClosePlan(); }
+        });
+        this.closeButton.addActionListener(e -> {
+            this.onClosePlan();
+        });
     }
     
     public ItemManager(BigStreamingFart profile) {
@@ -116,6 +127,16 @@ public class ItemManager extends javax.swing.JFrame {
             @Override public void windowClosing(WindowEvent e) { onCloseProfile(); }
         });
         this.closeButton.addActionListener(e -> { this.onCloseProfile(); });
+    }
+    
+    private void onClosePlan() {
+        int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            this.saveItem(this.plan.details, null);
+            Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
+        }
+        this.entry.resetResources();
+        this.dispose();
     }
     
     private void onCloseProfile() {
