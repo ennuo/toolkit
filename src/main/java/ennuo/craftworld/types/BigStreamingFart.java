@@ -28,6 +28,7 @@ import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.resources.structs.plan.InventoryDetails;
 import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.savedata.BigProfile;
+import ennuo.toolkit.utilities.Globals;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -414,9 +415,7 @@ public class BigStreamingFart extends FileData {
                         break;
                     }
                 byte[] built = profile.build(resource.revision, resource.compressionFlags);
-                parentAdventure.hash = SHA1.fromBuffer(built);
-                parentAdventure.data = built;
-                parentAdventure.size = built.length;
+                Globals.replaceEntry(parentAdventure, built);
             }
         }
 
