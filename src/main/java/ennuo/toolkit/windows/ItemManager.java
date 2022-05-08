@@ -470,11 +470,13 @@ public class ItemManager extends javax.swing.JFrame {
         this.characterMaskCombo.setVisible(showCharacterMask);
         this.characterMaskLabel.setVisible(showCharacterMask);
         
-        this.planetTypeCombo.setVisible(isPlanet);
-        this.planetTypeLabel.setVisible(isPlanet);
+        boolean canShowPlanetCombo = isPlanet && !isCostume && !isColour && !isOutfit;
+        this.planetTypeCombo.setVisible(canShowPlanetCombo);
+        this.planetTypeLabel.setVisible(canShowPlanetCombo);
         
-        this.colorIndexLabel.setVisible(isColour);
-        this.colorIndexSpinner.setVisible(isColour);
+        boolean canShowColorIndex = isColour && !isCostume && !isPlanet && !isOutfit;
+        this.colorIndexLabel.setVisible(canShowColorIndex);
+        this.colorIndexSpinner.setVisible(canShowColorIndex);
         
         this.outfitFlagsLabel.setVisible(isOutfit || isCostume);
         this.outfitFlagsPane.setVisible(isOutfit || isCostume);
@@ -503,11 +505,13 @@ public class ItemManager extends javax.swing.JFrame {
         this.characterMaskCombo.setVisible(showCharacterMask);
         this.characterMaskLabel.setVisible(showCharacterMask);
         
-        this.planetTypeCombo.setVisible(isPlanet);
-        this.planetTypeLabel.setVisible(isPlanet);
+        boolean canShowPlanetCombo = isPlanet && !isCostume && !isColour && !isOutfit;
+        this.planetTypeCombo.setVisible(canShowPlanetCombo);
+        this.planetTypeLabel.setVisible(canShowPlanetCombo);
         
-        this.colorIndexLabel.setVisible(isColour);
-        this.colorIndexSpinner.setVisible(isColour);
+        boolean canShowColorIndex = isColour && !isCostume && !isPlanet && !isOutfit;
+        this.colorIndexLabel.setVisible(canShowColorIndex);
+        this.colorIndexSpinner.setVisible(canShowColorIndex);
         
         this.outfitFlagsLabel.setVisible(isOutfit || isCostume);
         this.outfitFlagsPane.setVisible(isOutfit || isCostume);
