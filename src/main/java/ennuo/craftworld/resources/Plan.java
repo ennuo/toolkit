@@ -23,7 +23,7 @@ public class Plan implements Serializable {
      * Cache of dependencies in thing data, so we don't have
      * to parse it.
      */
-    public HashSet<ResourceDescriptor> dependencyCache;
+    private HashSet<ResourceDescriptor> dependencyCache;
     
     public Plan(){}
     public Plan(Resource resource) {
@@ -93,9 +93,9 @@ public class Plan implements Serializable {
                         pattern = Bytes.createGUID(descriptor.GUID, serializer.compressionFlags);
                     else
                         pattern = Bytes.createResourceReference(descriptor, serializer.revision, serializer.compressionFlags);
-                    boolean isInThingData = KMPMatchUtilities.indexOf(this.thingData, pattern) != -1;
+                    boolean isInThingData = KMPMatchUtilities.indexOf(plan.thingData, pattern) != -1;
                     if (!isInThingData)
-                        this.dependencyCache.remove(descriptor);
+                        plan.dependencyCache.remove(descriptor);
                 }
             }
         }
