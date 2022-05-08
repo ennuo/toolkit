@@ -2,7 +2,6 @@ package ennuo.toolkit.utilities.services;
 
 import ennuo.craftworld.resources.AdventureCreateProfile;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.serializer.Serializer;
 import ennuo.craftworld.types.FileEntry;
 import javax.swing.JTree;
 
@@ -14,7 +13,7 @@ public class AdventureService implements ResourceService  {
         AdventureCreateProfile profile = entry.getResource("adventure");
         if (profile == null) {
             try { 
-                profile = new Serializer(new Resource(data).handle).struct(null, AdventureCreateProfile.class);
+                profile = new AdventureCreateProfile(new Resource(data));
                 entry.setResource("adventure", profile);
             }
             catch (Exception e) { System.err.println("There was an error processing RAdventureCreateProfile file."); }

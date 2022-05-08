@@ -407,7 +407,7 @@ public class BigStreamingFart extends FileData {
             if (data != null) {
                 ResourceDescriptor old = new ResourceDescriptor(entry.hash, ResourceType.LEVEL);
                 Resource resource = new Resource(adventureData);
-                AdventureCreateProfile profile = new Serializer(resource.handle).struct(null, AdventureCreateProfile.class);
+                AdventureCreateProfile profile = new AdventureCreateProfile(resource);
                 for (Slot adventureSlot : profile.adventureSlots.values())
                     if (adventureSlot.root != null && adventureSlot.root.equals(old)) {
                         adventureSlot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
