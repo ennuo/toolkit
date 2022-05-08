@@ -205,8 +205,8 @@ public class SlotManager extends javax.swing.JFrame {
                 list.slots = this.slots.stream().toArray(Slot[]::new);
                 Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
             }
+            this.entry.resetResources();
         }
-        this.entry.resetResources();
         this.dispose();
     }
     
