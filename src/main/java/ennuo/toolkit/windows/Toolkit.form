@@ -173,6 +173,15 @@
                 <Property name="text" type="java.lang.String" value="Mod"/>
               </Properties>
               <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="exportAsModCustom">
+                  <Properties>
+                    <Property name="actionCommand" type="java.lang.String" value="Custom"/>
+                    <Property name="label" type="java.lang.String" value="Custom"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModCustomActionPerformed"/>
+                  </Events>
+                </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsMod">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Hash"/>

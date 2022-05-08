@@ -494,6 +494,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportGLTF = new javax.swing.JMenuItem();
         exportLAMSContext = new javax.swing.JMenuItem();
         exportModGroup = new javax.swing.JMenu();
+        exportAsModCustom = new javax.swing.JMenuItem();
         exportAsMod = new javax.swing.JMenuItem();
         exportAsModGUID = new javax.swing.JMenuItem();
         exportAnimation = new javax.swing.JMenuItem();
@@ -769,6 +770,15 @@ public class Toolkit extends javax.swing.JFrame {
 
         exportModGroup.setText("Mod");
 
+        exportAsModCustom.setActionCommand("Custom");
+        exportAsModCustom.setLabel("Custom");
+        exportAsModCustom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsModCustomActionPerformed(evt);
+            }
+        });
+        exportModGroup.add(exportAsModCustom);
+
         exportAsMod.setText("Hash");
         exportAsMod.setToolTipText("");
         exportAsMod.addActionListener(new java.awt.event.ActionListener() {
@@ -808,6 +818,8 @@ public class Toolkit extends javax.swing.JFrame {
         exportBackupGroup.add(exportAsBackup);
 
         exportAsBackupGUID.setText("GUID");
+        exportAsBackupGUID.setActionCommand("exportAsBackupGUID");
+        exportAsBackupGUID.setName(""); // NOI18N
         exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsBackupGUIDActionPerformed(evt);
@@ -2194,7 +2206,7 @@ public class Toolkit extends javax.swing.JFrame {
                 part = Bytes.Combine(part, new byte[] { 0x46, 0x41, 0x52, 0x34 });
             FileIO.write(part, (Path.of(saveDirectory.toString(), String.valueOf(i))).toString());
         }
-    }//GEN-LAST:event_exportAsBackupActionPerformed
+    }                                              
 
     private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
 
@@ -2334,6 +2346,10 @@ public class Toolkit extends javax.swing.JFrame {
     private void exportAsBackupGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupGUIDActionPerformed
         exportAsBackupTpl(ExportMode.GUID);
     }//GEN-LAST:event_exportAsBackupGUIDActionPerformed
+
+    private void exportAsModCustomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModCustomActionPerformed
+        new AssetExporter(Globals.lastSelected.entry).setVisible(true);
+    }//GEN-LAST:event_exportAsModCustomActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
@@ -2583,6 +2599,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportAsBackup;
     private javax.swing.JMenuItem exportAsBackupGUID;
     private javax.swing.JMenuItem exportAsMod;
+    private javax.swing.JMenuItem exportAsModCustom;
     private javax.swing.JMenuItem exportAsModGUID;
     private javax.swing.JMenu exportBackupGroup;
     private javax.swing.JMenuItem exportDDS;
