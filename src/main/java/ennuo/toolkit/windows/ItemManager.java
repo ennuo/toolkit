@@ -1505,11 +1505,6 @@ public class ItemManager extends javax.swing.JFrame {
         jointsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
         jointsCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
         jointsCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
-        jointsCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jointsCheckboxActionPerformed(evt);
-            }
-        });
 
         userObjectsCheckbox.setText("User Objects");
         userObjectsCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
@@ -1535,11 +1530,6 @@ public class ItemManager extends javax.swing.JFrame {
         userStickersCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
         userStickersCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
         userStickersCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
-        userStickersCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                userStickersCheckboxActionPerformed(evt);
-            }
-        });
 
         shapesCheckbox.setText("Shapes");
         shapesCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
@@ -1784,11 +1774,6 @@ public class ItemManager extends javax.swing.JFrame {
         sequencerCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
         sequencerCheckbox.setMinimumSize(new java.awt.Dimension(120, 20));
         sequencerCheckbox.setPreferredSize(new java.awt.Dimension(120, 20));
-        sequencerCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sequencerCheckboxActionPerformed(evt);
-            }
-        });
 
         gunItemCheckbox.setText("Gun Item");
         gunItemCheckbox.setMaximumSize(new java.awt.Dimension(120, 20));
@@ -1935,32 +1920,74 @@ public class ItemManager extends javax.swing.JFrame {
         subTypesLabel.setText("Subtypes:");
 
         beardCheckbox.setText("Beard");
+        beardCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        beardCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        beardCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         feetCheckbox.setText("Feet");
+        feetCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        feetCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        feetCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         eyesCheckbox.setText("Eyes");
+        eyesCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        eyesCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        eyesCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         glassesCheckbox.setText("Glasses");
+        glassesCheckbox.setMaximumSize(new java.awt.Dimension(95, 20));
+        glassesCheckbox.setMinimumSize(new java.awt.Dimension(95, 20));
+        glassesCheckbox.setPreferredSize(new java.awt.Dimension(95, 20));
 
         hairCheckbox.setText("Hair");
+        hairCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        hairCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        hairCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         noseCheckbox.setText("Nose");
+        noseCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        noseCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        noseCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         moustacheCheckbox.setText("Moustache");
+        moustacheCheckbox.setMaximumSize(new java.awt.Dimension(95, 20));
+        moustacheCheckbox.setMinimumSize(new java.awt.Dimension(95, 20));
+        moustacheCheckbox.setPreferredSize(new java.awt.Dimension(95, 20));
 
         mouthCheckbox.setText("Mouth");
+        mouthCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        mouthCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        mouthCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         neckCheckbox.setText("Neck");
+        neckCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        neckCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        neckCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         headCheckbox.setText("Head");
+        headCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        headCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        headCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         torsoCheckbox.setText("Torso");
+        torsoCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        torsoCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        torsoCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         legsCheckbox.setText("Legs");
+        legsCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        legsCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        legsCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         handsCheckbox.setText("Hands");
+        handsCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        handsCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        handsCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         waistCheckbox.setText("Waist");
+        waistCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        waistCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        waistCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
         javax.swing.GroupLayout costumeCategoriesPaneLayout = new javax.swing.GroupLayout(costumeCategoriesPane);
         costumeCategoriesPane.setLayout(costumeCategoriesPaneLayout);
@@ -1969,58 +1996,58 @@ public class ItemManager extends javax.swing.JFrame {
             .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(eyesCheckbox)
-                    .addComponent(feetCheckbox)
-                    .addComponent(beardCheckbox))
-                .addGap(20, 20, 20)
+                    .addComponent(eyesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(feetCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(beardCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(moustacheCheckbox)
-                    .addComponent(mouthCheckbox)
-                    .addComponent(noseCheckbox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(mouthCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(neckCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(noseCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
-                        .addComponent(torsoCheckbox)
-                        .addGap(18, 18, 18)
-                        .addComponent(legsCheckbox))
+                        .addComponent(torsoCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(legsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
                         .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(headCheckbox)
-                            .addComponent(neckCheckbox))
-                        .addGap(18, 18, 18)
+                            .addComponent(headCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(waistCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(5, 5, 5)
                         .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
-                                .addComponent(waistCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(hairCheckbox))
+                                .addComponent(handsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addComponent(glassesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
-                                .addComponent(handsCheckbox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(glassesCheckbox)))))
+                                .addComponent(hairCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addComponent(moustacheCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         costumeCategoriesPaneLayout.setVerticalGroup(
             costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(costumeCategoriesPaneLayout.createSequentialGroup()
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(beardCheckbox)
-                    .addComponent(mouthCheckbox)
-                    .addComponent(headCheckbox)
-                    .addComponent(handsCheckbox)
-                    .addComponent(glassesCheckbox))
+                    .addComponent(beardCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mouthCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(headCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(handsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(glassesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(2, 2, 2)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(feetCheckbox)
-                    .addComponent(moustacheCheckbox)
-                    .addComponent(neckCheckbox)
-                    .addComponent(waistCheckbox)
-                    .addComponent(hairCheckbox))
+                    .addComponent(feetCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(neckCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(waistCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hairCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(moustacheCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(2, 2, 2)
                 .addGroup(costumeCategoriesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(eyesCheckbox)
-                    .addComponent(noseCheckbox)
-                    .addComponent(torsoCheckbox)
-                    .addComponent(legsCheckbox))
+                    .addComponent(eyesCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(noseCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(torsoCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(legsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2041,12 +2068,24 @@ public class ItemManager extends javax.swing.JFrame {
         outfitFlagsLabel.setText("Outfit Flags:");
 
         madeByMeCheckbox.setText("Made by me");
+        madeByMeCheckbox.setMaximumSize(new java.awt.Dimension(100, 20));
+        madeByMeCheckbox.setMinimumSize(new java.awt.Dimension(100, 20));
+        madeByMeCheckbox.setPreferredSize(new java.awt.Dimension(100, 20));
 
         madeByOthersCheckbox.setText("Made by others");
+        madeByOthersCheckbox.setMaximumSize(new java.awt.Dimension(110, 20));
+        madeByOthersCheckbox.setMinimumSize(new java.awt.Dimension(110, 20));
+        madeByOthersCheckbox.setPreferredSize(new java.awt.Dimension(110, 20));
 
         fullCostumeCheckbox.setText("Full Costume");
+        fullCostumeCheckbox.setMaximumSize(new java.awt.Dimension(105, 20));
+        fullCostumeCheckbox.setMinimumSize(new java.awt.Dimension(105, 20));
+        fullCostumeCheckbox.setPreferredSize(new java.awt.Dimension(105, 20));
 
         specialCostumeCheckbox.setText("Special Costume");
+        specialCostumeCheckbox.setMaximumSize(new java.awt.Dimension(115, 20));
+        specialCostumeCheckbox.setMinimumSize(new java.awt.Dimension(115, 20));
+        specialCostumeCheckbox.setPreferredSize(new java.awt.Dimension(115, 20));
 
         javax.swing.GroupLayout outfitFlagsPaneLayout = new javax.swing.GroupLayout(outfitFlagsPane);
         outfitFlagsPane.setLayout(outfitFlagsPaneLayout);
@@ -2054,33 +2093,25 @@ public class ItemManager extends javax.swing.JFrame {
             outfitFlagsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(outfitFlagsPaneLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(madeByMeCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(madeByOthersCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fullCostumeCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(specialCostumeCheckbox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(madeByMeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(madeByOthersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(fullCostumeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(specialCostumeCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         outfitFlagsPaneLayout.setVerticalGroup(
             outfitFlagsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(outfitFlagsPaneLayout.createSequentialGroup()
-                .addGroup(outfitFlagsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(madeByMeCheckbox)
-                    .addComponent(madeByOthersCheckbox)
-                    .addComponent(fullCostumeCheckbox)
-                    .addComponent(specialCostumeCheckbox))
-                .addGap(0, 6, Short.MAX_VALUE))
+            .addGroup(outfitFlagsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(madeByMeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(madeByOthersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(fullCostumeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(specialCostumeCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         toolTypeLabel.setText("Tool Type:");
-
-        toolTypeCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toolTypeComboActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout typesPaneLayout = new javax.swing.GroupLayout(typesPane);
         typesPane.setLayout(typesPaneLayout);
@@ -2169,7 +2200,7 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGroup(typesPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(toolTypeLabel)
                     .addComponent(toolTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         typeScrollPane.setViewportView(typesPane);
@@ -2341,11 +2372,6 @@ public class ItemManager extends javax.swing.JFrame {
         photoAndEyetoyDataScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         photoDataCheckbox.setText("Photo Data");
-        photoDataCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                photoDataCheckboxActionPerformed(evt);
-            }
-        });
 
         photoIconLabel.setText("Icon:");
 
@@ -2869,26 +2895,6 @@ public class ItemManager extends javax.swing.JFrame {
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         this.saveItem(this.selectedDetails, this.selectedItem);
     }//GEN-LAST:event_saveButtonActionPerformed
-
-    private void toolTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolTypeComboActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_toolTypeComboActionPerformed
-
-    private void photoDataCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_photoDataCheckboxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_photoDataCheckboxActionPerformed
-
-    private void sequencerCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sequencerCheckboxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_sequencerCheckboxActionPerformed
-
-    private void jointsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jointsCheckboxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jointsCheckboxActionPerformed
-
-    private void userStickersCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userStickersCheckboxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_userStickersCheckboxActionPerformed
 
     private void addCreatorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCreatorButtonActionPerformed
         String creator = JOptionPane.showInputDialog(this, "Creator", "MM_Studio");
