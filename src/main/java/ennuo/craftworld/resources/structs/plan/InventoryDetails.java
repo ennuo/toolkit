@@ -32,7 +32,7 @@ public class InventoryDetails implements Serializable {
     public long dateAdded = new Date().getTime() / 1000;
     public SlotID levelUnlockSlotID = new SlotID();
     public long highlightSound;
-    public long colour;
+    public int colour;
     
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType = InventoryObjectSubType.NONE;
@@ -85,7 +85,7 @@ public class InventoryDetails implements Serializable {
             details.dateAdded = serializer.i64d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
             details.highlightSound = serializer.u32(details.highlightSound);
-            details.colour = serializer.u32(details.colour);
+            details.colour = serializer.i32(details.colour);
             
             
             if (serializer.isWriting)
@@ -157,7 +157,7 @@ public class InventoryDetails implements Serializable {
                 serializer.str8(null); // Path to highlight sound?
 
             if (head > 0x156)
-                details.colour = serializer.u32f(details.colour);
+                details.colour = serializer.i32f(details.colour);
 
             if (head > 0x161) {
                 details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
@@ -235,7 +235,7 @@ public class InventoryDetails implements Serializable {
         
         details.fluffCost = serializer.i32f(details.fluffCost);
         
-        details.colour = serializer.u32f(details.colour);
+        details.colour = serializer.i32f(details.colour);
         
         if (serializer.isWriting)
             serializer.output.i32f(InventoryObjectType.getFlags(details.type));

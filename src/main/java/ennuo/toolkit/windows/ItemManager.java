@@ -621,6 +621,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.dateAddedSpinner.setValue(new Date(details.dateAdded * 1000));
         
         byte[] color = Bytes.toBytes(details.colour);
+        this.colorAlphaSpinner.setValue(color[0] & 0xFF);
         this.colorRedSpinner.setValue(color[1] & 0xFF);
         this.colorGreenSpinner.setValue(color[2] & 0xFF);
         this.colorBlueSpinner.setValue(color[3] & 0xFF);
@@ -817,10 +818,10 @@ public class ItemManager extends javax.swing.JFrame {
         details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000;
         
         details.colour = 
-                0xFF << 24 |
-                ((Integer)this.colorRedSpinner.getValue()).longValue() << 16 |
-                ((Integer)this.colorGreenSpinner.getValue()).longValue() << 8 |
-                ((Integer)this.colorBlueSpinner.getValue()).longValue() << 0;
+                ((Integer)this.colorAlphaSpinner.getValue()).intValue() << 24 |
+                ((Integer)this.colorRedSpinner.getValue()).intValue() << 16 |
+                ((Integer)this.colorGreenSpinner.getValue()).intValue() << 8 |
+                ((Integer)this.colorBlueSpinner.getValue()).intValue() << 0;
 
         details.flags = 0;
         if (!this.loopPreviewCheckbox.isSelected())
@@ -1060,6 +1061,7 @@ public class ItemManager extends javax.swing.JFrame {
         hiddenCheckbox = new javax.swing.JCheckBox();
         restrictedDecorateCheckbox = new javax.swing.JCheckBox();
         restrictedLevelCheckbox = new javax.swing.JCheckBox();
+        colorAlphaSpinner = new javax.swing.JSpinner();
         photoAndEyetoyDataScrollPane = new javax.swing.JScrollPane();
         photoAndEyetoyDataPane = new javax.swing.JPanel();
         photoDataCheckbox = new javax.swing.JCheckBox();
@@ -2188,7 +2190,7 @@ public class ItemManager extends javax.swing.JFrame {
 
         dateAddedSpinner.setModel(new javax.swing.SpinnerDateModel());
 
-        colorLabel.setText("Color (RGB):");
+        colorLabel.setText("Color (RGBA):");
 
         colorRedSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
 
@@ -2257,6 +2259,8 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(unusedCheckbox)))
         );
 
+        colorAlphaSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
+
         javax.swing.GroupLayout othersPaneLayout = new javax.swing.GroupLayout(othersPane);
         othersPane.setLayout(othersPaneLayout);
         othersPaneLayout.setHorizontalGroup(
@@ -2282,11 +2286,13 @@ public class ItemManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(othersPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(othersPaneLayout.createSequentialGroup()
-                                .addComponent(colorRedSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
+                                .addComponent(colorRedSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(colorGreenSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(colorGreenSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(colorBlueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(colorBlueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(colorAlphaSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
                             .addComponent(dateAddedSpinner)
                             .addComponent(highlightSoundSpinner)))
                     .addGroup(othersPaneLayout.createSequentialGroup()
@@ -2321,12 +2327,13 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(colorLabel)
                     .addComponent(colorRedSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(colorGreenSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(colorBlueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(colorBlueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(colorAlphaSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(planFlagsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(planFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         itemSettings.addTab("Other", othersPane);
@@ -2974,6 +2981,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JLabel characterMaskLabel;
     private javax.swing.JCheckBox cheatCheckbox;
     private javax.swing.JButton closeButton;
+    private javax.swing.JSpinner colorAlphaSpinner;
     private javax.swing.JSpinner colorBlueSpinner;
     private javax.swing.JSpinner colorGreenSpinner;
     private javax.swing.JLabel colorIndexLabel;
