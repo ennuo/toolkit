@@ -436,12 +436,10 @@ public class Toolkit extends javax.swing.JFrame {
                         editSlotContext.setVisible(true);
                 }
                 
-                if (Flags.ENABLE_ITEM_MANAGER) {
-                    if (Globals.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
-                        Plan plan = Globals.lastSelected.entry.getResource("item");
-                        if (plan != null)
-                            editItemContext.setVisible(true);
-                    }
+                if (Globals.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
+                    Plan plan = Globals.lastSelected.entry.getResource("item");
+                    if (plan != null)
+                        editItemContext.setVisible(true);
                 }
                 
                 if (Globals.lastSelected.header.endsWith(".pck") && !isDependencyTree) {

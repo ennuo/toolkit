@@ -20,6 +20,7 @@ import ennuo.craftworld.types.FileEntry;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
+import ennuo.toolkit.windows.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

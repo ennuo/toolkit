@@ -34,6 +34,7 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
+import ennuo.toolkit.windows.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -141,7 +142,7 @@ public class ItemManager extends javax.swing.JFrame {
             if (result == JOptionPane.YES_OPTION) {
                 plan.details = newDetails;
                 Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
-                this.entry.resetResources();
+                this.entry.resetResources(false);
             }
         }
         this.dispose();

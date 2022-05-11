@@ -36,6 +36,15 @@ public class StringLookupTable implements Serializable {
         return null;
     }
     
+    public int find(long key) {
+        for (int i = 0; i < this.stringList.size(); ++i) {
+            SortString string = this.stringList.get(i);
+            if (string.key == key)
+                return string.index;
+        }
+        return -1;
+    }
+    
     public int find(String key) {
         for (int i = 0; i < this.stringList.size(); ++i) {
             SortString string = this.stringList.get(i);

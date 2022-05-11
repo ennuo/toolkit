@@ -422,6 +422,18 @@ public class BigStreamingFart extends FileData {
         if (item != null) {
             ResourceDescriptor newRes = new ResourceDescriptor(hash, ResourceType.PLAN);
             item.plan = newRes;
+            
+            try {
+                Plan plan = new Plan(new Resource(data));
+                item.details = plan.details;
+                plan.details.locationIndex = (short) this.bigProfile.stringTable.find(plan.details.location);
+                plan.details.categoryIndex = (short) this.bigProfile.stringTable.find(plan.details.category);
+            } catch (Exception ex) {
+                System.err.println("An error occurred parsing inventory details, ignoring...");
+                // I'm not going to stop you from using invalid data,
+                // but that ain't updating the cached details.
+            }
+            
             item.details.resource = newRes;
         }
 

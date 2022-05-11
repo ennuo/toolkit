@@ -54,7 +54,6 @@ public class EasterEgg {
         if (toolkit.debugMenu.isVisible()) {
             toolkit.setTitle(toolkit.getTitle() + " | Debug");
             Flags.ENABLE_NEW_SAVEDATA = true;
-            Flags.ENABLE_ITEM_MANAGER = true;
         }
     }
 }
