@@ -623,7 +623,6 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        debugItemManager = new javax.swing.JMenuItem();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
@@ -1621,14 +1620,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         debugMenu.setText("Debug");
 
-        debugItemManager.setText("Item Manager");
-        debugItemManager.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugItemManagerActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugItemManager);
-
         debugLoadProfileBackup.setText("Load Profile Backup");
         debugLoadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2330,11 +2321,6 @@ public class Toolkit extends javax.swing.JFrame {
         manager.setVisible(true);
     }//GEN-LAST:event_manageArchivesActionPerformed
 
-    private void debugItemManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugItemManagerActionPerformed
-        ItemManager manager = new ItemManager();
-        manager.setVisible(true);
-    }//GEN-LAST:event_debugItemManagerActionPerformed
-
     private void editItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItemContextActionPerformed
         FileEntry entry = Globals.lastSelected.entry;
         Plan plan = entry.getResource("item");
@@ -2568,7 +2554,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
     private javax.swing.JMenuItem customCollector;
-    private javax.swing.JMenuItem debugItemManager;
     private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
