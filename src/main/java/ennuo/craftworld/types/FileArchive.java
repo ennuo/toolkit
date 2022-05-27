@@ -39,7 +39,7 @@ public class FileArchive {
     
     public boolean shouldSave = false;
 
-    public byte[] fat;
+    public byte[] saveKey;
 
     public byte[] hashTable;
     public long tableOffset;
@@ -125,8 +125,8 @@ public class FileArchive {
                 int fatSize = this.archiveType == ArchiveType.FAR4 ?
                     0x84 : 0xAC;
                 archive.seek(this.tableOffset - fatSize);
-                this.fat = new byte[fatSize];
-                archive.read(this.fat);
+                this.saveKey = new byte[fatSize];
+                archive.read(this.saveKey);
 
                 if (this.archiveType == ArchiveType.FAR4)
                     archive.seek(this.file.length() - 0x1c);
@@ -236,46 +236,47 @@ public class FileArchive {
     }
     
     public void setFatResourceType(ResourceType type) {
-        if (this.fat == null) this.setFatDataSource(new SHA1());
-        System.arraycopy(Bytes.toBytes(type.value), 0, this.fat, this.fat.length - 0x4c, 4);
+        if (this.saveKey == null) this.setFatDataSource(new SHA1());
+        System.arraycopy(Bytes.toBytes(type.value), 0, this.saveKey, this.saveKey.length - 0x4c, 4);
     }
     
     public void setFatRevision(Revision revision) {
-        if (this.fat == null) this.setFatDataSource(new SHA1());
+        if (this.saveKey == null) this.setFatDataSource(new SHA1());
         boolean isVita = revision.isVita();
         byte[] head = (isVita) ? Bytes.toBytesLE(revision.head) : Bytes.toBytes(revision.head);
         int branchDescription = revision.branchID << 0x10 | revision.branchRevision;
         byte[] branch = (isVita) ? Bytes.toBytesLE(branchDescription) : Bytes.toBytes(branchDescription);
-        System.arraycopy(head, 0, this.fat, 0, 4);
-        System.arraycopy(branch, 0, this.fat, 4, 4);
+        System.arraycopy(head, 0, this.saveKey, 0, 4);
+        System.arraycopy(branch, 0, this.saveKey, 4, 4);
     }
     
     public void setFatDataSource(SHA1 hash) {
         if (this.archiveType == ArchiveType.FARC || hash == null) return;
-        if (this.fat == null) {
-            this.fat = new byte[(this.archiveType == ArchiveType.FAR4) ? 0x84 : 0xAC];
+        if (this.saveKey == null) {
+            this.saveKey = new byte[(this.archiveType == ArchiveType.FAR4) ? 0x84 : 0xAC];
             if (this.archiveType == ArchiveType.FAR4)
-                this.fat[11] = 1;
+                this.saveKey[11] = 1;
         }
-        int start = this.fat.length - 0x3C;
+        int start = this.saveKey.length - 0x3C;
         byte[] hashBuffer = hash.getHash();
         for (int i = start; i < start + 0x14; ++i)
-            this.fat[i] = hashBuffer[i - start];
+            this.saveKey[i] = hashBuffer[i - start];
     }
     
-    public void swapFatEndianness() {
+    public void swapSaveKeyEndianness() {
         if (this.archiveType != ArchiveType.FAR4) return;
-        Bytes.swap32(this.fat, 0x00);
-        Bytes.swap32(this.fat, 0x34);
-        Bytes.swap32(this.fat, 0x38);
+        Bytes.swap32(this.saveKey, 0x00);
+        Bytes.swap32(this.saveKey, 0x04);
+        Bytes.swap32(this.saveKey, 0x34);
+        Bytes.swap32(this.saveKey, 0x38);
     }
     
-    public SHA1 getFatDataSource() {
-        if (this.archiveType == ArchiveType.FARC || this.fat == null) return null;
-        int start = this.fat.length - 0x3C;
+    public SHA1 getSaveKeyRoot() {
+        if (this.archiveType == ArchiveType.FARC || this.saveKey == null) return null;
+        int start = this.saveKey.length - 0x3C;
         byte[] hash = new byte[0x14];
         for (int i = start; i < start + 0x14; ++i)
-            hash[i - start] = this.fat[i];
+            hash[i - start] = this.saveKey[i];
         return new SHA1(hash);
     }
     
@@ -285,7 +286,7 @@ public class FileArchive {
             return null;
         }
         
-        if (this.fat == null) this.setFatDataSource(new SHA1());
+        if (this.saveKey == null) this.setFatDataSource(new SHA1());
         
         int dataSize = this.entries
                 .stream()
@@ -296,7 +297,7 @@ public class FileArchive {
         entries = this.entries.toArray(entries);
         Arrays.sort(entries, (e1, e2) -> e1.hash.toString().compareTo(e2.hash.toString()));
         
-        Output output = new Output(dataSize + (0x1C * this.entries.size()) + this.fat.length + 0x80);
+        Output output = new Output(dataSize + (0x1C * this.entries.size()) + this.saveKey.length + 0x80);
         
         for (FileEntry entry : entries)
             output.bytes(entry.data);
@@ -304,7 +305,7 @@ public class FileArchive {
         if (output.offset % 4 != 0)
             output.pad(4 - (output.offset % 4)); // padding for xxtea encryption
         
-        output.bytes(this.fat);
+        output.bytes(this.saveKey);
         
         int lastBufferOffset = 0;
         for (FileEntry entry : entries) {
@@ -360,11 +361,11 @@ public class FileArchive {
             }
 
             if (this.archiveType != ArchiveType.FARC) {
-                if (this.fat == null) this.setFatDataSource(new SHA1());
-                offset -= this.fat.length;
+                if (this.saveKey == null) this.setFatDataSource(new SHA1());
+                offset -= this.saveKey.length;
                 if ((offset + output.offset) % 4 != 0)
                     output.pad(4 - (((int) offset + output.offset) % 4)); // padding for xxtea encryption
-                output.bytes(this.fat);
+                output.bytes(this.saveKey);
             }
 
             int bufferOffset = (int) this.tableOffset;

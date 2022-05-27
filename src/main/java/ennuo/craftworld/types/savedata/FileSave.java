@@ -181,7 +181,7 @@ public class FileSave extends FileData {
         catch (SerializationException ex) { return null; }
         for (FileEntry entry : archive.entries)
             this.resources.put(entry.hash, entry.data);
-        SHA1 dataSourceHash = archive.getFatDataSource();
+        SHA1 dataSourceHash = archive.getSaveKeyRoot();
         if (this.resources.containsKey(dataSourceHash)) {
             Resource source = new Resource(this.resources.get(dataSourceHash));
             this.resources.remove(dataSourceHash);
