@@ -132,11 +132,19 @@ public class Bytes {
         output.shrink();
         return output.buffer;
     }
+    
+    public static byte[] getIntegerBuffer(long value, byte compressionFlags) {
+        Output output = new Output(0x5);
+        output.compressionFlags = compressionFlags;
+        output.u32(value);
+        output.shrink();
+        return output.buffer;
+    }
 
     public static byte[] createResourceReference(ResourceDescriptor res, Revision revision, byte compressionFlags) {
         Output output = new Output(0x1C + 0x4, revision);
         output.compressionFlags = compressionFlags;
-        output.resource(res);
+        output.resource(res, true);
         output.shrink();
         return output.buffer;
     }

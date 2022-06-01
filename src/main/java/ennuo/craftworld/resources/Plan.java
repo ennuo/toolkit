@@ -116,7 +116,7 @@ public class Plan implements Serializable {
         Data thingData = new Data(this.thingData);
         
         byte[] descriptorBuffer = Bytes.createResourceReference(descriptor, revision, compressionFlags);
-        byte[] guidBuffer = new Output(0x8, this.revision).u32(GUID).shrink().buffer;
+        byte[] guidBuffer = Bytes.getIntegerBuffer(GUID, compressionFlags);
         
         Bytes.ReplaceAll(thingData, descriptorBuffer, new byte[] { 00 });
         Bytes.ReplaceAll(thingData, guidBuffer, new byte[] { 00 });
