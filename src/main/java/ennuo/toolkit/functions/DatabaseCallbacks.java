@@ -121,7 +121,8 @@ public class DatabaseCallbacks {
         
         JTree tree = Toolkit.instance.getCurrentTree();
         
-        FileData db = (FileDB) Toolkit.instance.getCurrentDB();
+        
+        FileData db = Toolkit.instance.getCurrentDB();
         
         long nextGUID = db.lastGUID + 1;
         
