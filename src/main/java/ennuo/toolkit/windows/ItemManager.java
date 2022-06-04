@@ -129,9 +129,16 @@ public class ItemManager extends javax.swing.JFrame {
         this.closeButton.addActionListener(e -> { this.onCloseProfile(); });
     }
     
-    private void onClosePlan() {
+    private InventoryDetails getNewDetails() {
         InventoryDetails newDetails = new InventoryDetails();
+        if (this.selectedDetails.creator != null)
+            newDetails.creator = this.selectedDetails.creator.clone();
         this.saveItem(newDetails, null);
+        return newDetails;
+    }
+    
+    private void onClosePlan() {
+        InventoryDetails newDetails = this.getNewDetails();
         SHA1 newHash = newDetails.generateHashCode(this.revision);
         
         if (!newHash.equals(this.originalDetailsHash)) {
@@ -710,9 +717,7 @@ public class ItemManager extends javax.swing.JFrame {
             this.autosavedCheckbox.setSelected((item.flags & InventoryItemFlags.AUTOSAVED) != 0);
         }
         
-        InventoryDetails newDetails = new InventoryDetails();
-        this.saveItem(newDetails, null);
-        this.originalDetailsHash = newDetails.generateHashCode(this.revision);
+        this.originalDetailsHash = this.getNewDetails().generateHashCode(this.revision);
     }
     
     private ResourceDescriptor getDescriptor(JTextField field, ResourceType type) {
