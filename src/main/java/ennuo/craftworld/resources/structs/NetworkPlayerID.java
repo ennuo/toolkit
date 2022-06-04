@@ -30,6 +30,14 @@ public class NetworkPlayerID implements Serializable {
         return id;
     }
     
+    @Override public NetworkPlayerID clone() {
+        NetworkPlayerID id = new NetworkPlayerID();
+        id.handle = new NetworkOnlineID(id.handle.toString());
+        id.opt = this.opt.clone();
+        id.reserved = this.reserved.clone();
+        return id;
+    }
+    
     @Override public boolean equals(Object other) {
         if (other == this) return true;
         if (!(other instanceof NetworkPlayerID)) return false;

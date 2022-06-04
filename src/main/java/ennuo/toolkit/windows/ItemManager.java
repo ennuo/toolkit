@@ -131,7 +131,11 @@ public class ItemManager extends javax.swing.JFrame {
     
     private void onClosePlan() {
         InventoryDetails newDetails = new InventoryDetails();
+        
+        if (this.selectedDetails.creator != null)
+            newDetails.creator = this.selectedDetails.creator.clone();
         this.saveItem(newDetails, null);
+        
         SHA1 newHash = newDetails.generateHashCode(this.revision);
         if (!newHash.equals(this.originalDetailsHash)) {
             int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
