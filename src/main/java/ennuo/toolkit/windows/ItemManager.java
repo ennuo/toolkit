@@ -131,12 +131,9 @@ public class ItemManager extends javax.swing.JFrame {
     
     private void onClosePlan() {
         InventoryDetails newDetails = new InventoryDetails();
-        
-        if (this.selectedDetails.creator != null)
-            newDetails.creator = this.selectedDetails.creator.clone();
         this.saveItem(newDetails, null);
-        
         SHA1 newHash = newDetails.generateHashCode(this.revision);
+        
         if (!newHash.equals(this.originalDetailsHash)) {
             int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
@@ -556,7 +553,6 @@ public class ItemManager extends javax.swing.JFrame {
     
     private void setItemData() {
         InventoryDetails details = this.selectedDetails;
-        this.originalDetailsHash = this.selectedDetails.generateHashCode(this.revision);
         
         // Details tab
         
@@ -714,6 +710,9 @@ public class ItemManager extends javax.swing.JFrame {
             this.autosavedCheckbox.setSelected((item.flags & InventoryItemFlags.AUTOSAVED) != 0);
         }
         
+        InventoryDetails newDetails = new InventoryDetails();
+        this.saveItem(newDetails, null);
+        this.originalDetailsHash = newDetails.generateHashCode(this.revision);
     }
     
     private ResourceDescriptor getDescriptor(JTextField field, ResourceType type) {
