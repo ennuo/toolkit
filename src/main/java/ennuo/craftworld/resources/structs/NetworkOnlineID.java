@@ -38,8 +38,8 @@ public class NetworkOnlineID implements Serializable {
     public void setData(String data) {
         if (data == null)
             throw new NullPointerException("Data cannot be null!");
-        if (data.length() != 16)
-            throw new IllegalArgumentException("Data must be 16 bytes in length!");
+        if (data.length() > 16)
+            throw new IllegalArgumentException("PSID can only be between 0 and 16 characters!");
         this.data = new byte[16];
         System.arraycopy(data.getBytes(StandardCharsets.US_ASCII), 0, this.data, 0, data.length());
     }
