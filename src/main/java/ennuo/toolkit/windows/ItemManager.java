@@ -790,7 +790,9 @@ public class ItemManager extends javax.swing.JFrame {
             history.creators = new String[this.creators.size()];
             for (int i = 0; i < this.creators.size(); ++i)
                 history.creators[i] = (String) this.creators.getElementAt(i);
-            details.creationHistory = history;
+            if (history.creators.length == 0)
+                details.creationHistory = null;
+            else details.creationHistory = history;
         } else details.creationHistory = null;
         
         details.type.clear();
