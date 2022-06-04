@@ -743,10 +743,14 @@ public class ItemManager extends javax.swing.JFrame {
         if (creator.length() > 0x10)
             creator = creator.substring(0, 0x10);
         
-        // I don't keep track of the extra data aside from the PSID,
-        // so patch it if it exists.
-        if (details.creator == null) details.creator = new NetworkPlayerID(creator);
-        else details.creator.handle.setData(creator);
+        if (creator.isEmpty()) 
+            details.creator = null;
+        else {
+            // I don't keep track of the extra data aside from the PSID,
+            // so patch it if it exists.
+            if (details.creator == null) details.creator = new NetworkPlayerID(creator);
+            else details.creator.handle.setData(creator);
+        }
         
         // Get title and description
         if (isUCD) {
