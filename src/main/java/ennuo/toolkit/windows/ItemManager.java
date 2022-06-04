@@ -42,6 +42,9 @@ import javax.swing.JTextField;
 import org.joml.Vector4f;
 
 public class ItemManager extends javax.swing.JFrame {
+    private static final String DEFAULT_TITLE = "Some kind of object";
+    private static final String DEFAULT_DESCRIPTION = "No description was provided.";
+    
     private class ItemWrapper {
         private InventoryDetails details;
         
@@ -61,7 +64,7 @@ public class ItemManager extends javax.swing.JFrame {
                     return uad.title;
             }
             
-            return "Some kind of object";
+            return DEFAULT_TITLE;
         }
     }
     
@@ -385,20 +388,20 @@ public class ItemManager extends javax.swing.JFrame {
             this.descriptionTextEntry.setEnabled(true);
             UserCreatedDetails ucd = details.userCreatedDetails;
             if (ucd == null) {
-                this.titleTextEntry.setText("Some kind of object");
-                this.descriptionTextEntry.setText("No description was provided.");
+                this.titleTextEntry.setText(DEFAULT_TITLE);
+                this.descriptionTextEntry.setText(DEFAULT_DESCRIPTION);
             } else {
                 if (ucd.title == null || ucd.title.isEmpty())
-                    this.titleTextEntry.setText("Some kind of object");
+                    this.titleTextEntry.setText(DEFAULT_TITLE);
                 else this.titleTextEntry.setText(ucd.title);
                 if (ucd.description == null || ucd.description.isEmpty())
-                    this.descriptionTextEntry.setText("No description was provided.");
+                    this.descriptionTextEntry.setText(DEFAULT_DESCRIPTION);
                 else this.descriptionTextEntry.setText(ucd.description);
             }
         } else {
             this.titleTextEntry.setEnabled(false);
             this.descriptionTextEntry.setEnabled(false);
-            this.titleTextEntry.setText("Some kind of object");
+            this.titleTextEntry.setText(DEFAULT_TITLE);
             this.descriptionTextEntry.setText("A valid translation table needs to be loaded for the title and description to appear. Alternatively, remove the translation keys, and set your own title/description.");
 
             if (Globals.LAMS != null) {
@@ -738,8 +741,18 @@ public class ItemManager extends javax.swing.JFrame {
         else details.creator.handle.setData(this.creatorTextEntry.getText());
         
         // Get title and description
-        if (isUCD)
-            details.userCreatedDetails = new UserCreatedDetails(this.titleTextEntry.getText(), this.descriptionTextEntry.getText());
+        if (isUCD) {
+            String title = this.titleTextEntry.getText();
+            String description = this.descriptionTextEntry.getText();
+            
+            if (title.equals(DEFAULT_TITLE)) title = null;
+            if (description.equals(DEFAULT_DESCRIPTION)) description = null;
+            
+            if (title == null && description == null)
+                details.userCreatedDetails = null;
+            else
+                details.userCreatedDetails = new UserCreatedDetails(title, description);
+        }
         else {
             if (isUsingKeys) {
                 details.titleKey = (long) this.titleKeySpinner.getValue();
