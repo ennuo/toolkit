@@ -735,10 +735,15 @@ public class ItemManager extends javax.swing.JFrame {
         
         details.icon = this.getDescriptor(this.iconTextEntry, ResourceType.TEXTURE);
         
+        // Make sure the creator is trimmed to max length
+        String creator = this.creatorTextEntry.getText();
+        if (creator.length() > 0x10)
+            creator = creator.substring(0, 0x10);
+        
         // I don't keep track of the extra data aside from the PSID,
         // so patch it if it exists.
-        if (details.creator == null) details.creator = new NetworkPlayerID(this.creatorTextEntry.getText());
-        else details.creator.handle.setData(this.creatorTextEntry.getText());
+        if (details.creator == null) details.creator = new NetworkPlayerID(creator);
+        else details.creator.handle.setData(creator);
         
         // Get title and description
         if (isUCD) {
