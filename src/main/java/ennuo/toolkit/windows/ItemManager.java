@@ -752,7 +752,7 @@ public class ItemManager extends javax.swing.JFrame {
         if (item == null) {
             if (isUsingKeys) {
                 details.category = (long) this.categoryKeySpinner.getValue();
-                details.location = (long) this.categoryKeySpinner.getValue();
+                details.location = (long) this.locationKeySpinner.getValue();
             } else {
                 details.categoryTag = this.categoryTextEntry.getText();
                 details.locationTag = this.locationTextEntry.getText();
