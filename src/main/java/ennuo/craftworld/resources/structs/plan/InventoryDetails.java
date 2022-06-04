@@ -7,10 +7,9 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
-import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
-import ennuo.craftworld.resources.structs.SceNpId;
+import ennuo.craftworld.resources.structs.NetworkPlayerID;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.serializer.Serializable;
 import ennuo.craftworld.serializer.Serializer;
@@ -20,10 +19,6 @@ import java.util.EnumSet;
 
 public class InventoryDetails implements Serializable {
     public static int MAX_SIZE = 0x800;
-    
-    public ResourceDescriptor resource;
-    public int inventoryFlags;
-    public long tempGUID;
     
     public String translationTag = "";
     public String categoryTag = "";
@@ -57,7 +52,7 @@ public class InventoryDetails implements Serializable {
     public boolean shareable;
     public boolean copyright;
     
-    public SceNpId creator;
+    public NetworkPlayerID creator;
     
     public ToolType toolType = ToolType.NONE;
     public byte flags;
@@ -108,7 +103,7 @@ public class InventoryDetails implements Serializable {
             details.categoryIndex = serializer.i16(details.categoryIndex);
             details.primaryIndex = serializer.i16(details.primaryIndex);
             
-            details.creator = serializer.reference(details.creator, SceNpId.class);
+            details.creator = serializer.reference(details.creator, NetworkPlayerID.class);
             
             details.toolType = ToolType.getValue(serializer.i8(details.toolType.value));
             details.flags = serializer.i8(details.flags);
@@ -178,7 +173,7 @@ public class InventoryDetails implements Serializable {
 
             if (head > 0x181) {
                 details.copyright = serializer.bool(details.copyright);
-                details.creator = serializer.struct(details.creator, SceNpId.class);
+                details.creator = serializer.struct(details.creator, NetworkPlayerID.class);
             }
 
             if (head > 0x1aa) {
@@ -244,7 +239,7 @@ public class InventoryDetails implements Serializable {
         details.subType = serializer.i32f(details.subType);
         details.toolType = ToolType.getValue((byte) serializer.i32f(details.toolType.value));
 
-        details.creator = serializer.struct(details.creator, SceNpId.class);
+        details.creator = serializer.struct(details.creator, NetworkPlayerID.class);
 
         details.allowEmit = serializer.bool(details.allowEmit);
         details.shareable = serializer.bool(details.shareable);

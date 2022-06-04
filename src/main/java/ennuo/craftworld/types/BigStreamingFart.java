@@ -433,8 +433,6 @@ public class BigStreamingFart extends FileData {
                 // I'm not going to stop you from using invalid data,
                 // but that ain't updating the cached details.
             }
-            
-            item.details.resource = newRes;
         }
 
         if (slot != null) {

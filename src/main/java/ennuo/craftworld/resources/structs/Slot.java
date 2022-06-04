@@ -30,7 +30,7 @@ public class Slot implements Serializable {
     public Vector4f location = new Vector4f(0.75f, 0.67f, 0.06f, 0);
     public int revision = 1;
     
-    public SceNpOnlineId authorID;
+    public NetworkOnlineID authorID;
     public String authorName = "";
     public String translationTag = "";
     
@@ -110,7 +110,7 @@ public class Slot implements Serializable {
         
         slot.location = serializer.v4(slot.location);
         
-        slot.authorID = serializer.struct(slot.authorID, SceNpOnlineId.class);
+        slot.authorID = serializer.struct(slot.authorID, NetworkOnlineID.class);
         
         if (serializer.revision.head >= 0x13b)
             slot.authorName = serializer.str16(slot.authorName);

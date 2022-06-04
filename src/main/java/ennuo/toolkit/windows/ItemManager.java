@@ -1,9 +1,7 @@
 package ennuo.toolkit.windows;
 
-import ennuo.craftworld.resources.Pack;
 import ennuo.craftworld.resources.Plan;
 import ennuo.craftworld.resources.Resource;
-import ennuo.craftworld.resources.SlotList;
 import ennuo.craftworld.resources.Texture;
 import ennuo.craftworld.resources.enums.GameVersion;
 import ennuo.craftworld.resources.enums.InventoryItemFlags;
@@ -12,13 +10,10 @@ import ennuo.craftworld.resources.enums.InventoryObjectType;
 import ennuo.craftworld.resources.enums.ResourceType;
 import ennuo.craftworld.resources.enums.SlotType;
 import ennuo.craftworld.resources.enums.ToolType;
-import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.structs.InventoryItem;
-import ennuo.craftworld.resources.structs.PackItem;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
-import ennuo.craftworld.resources.structs.SceNpId;
-import ennuo.craftworld.resources.structs.Slot;
+import ennuo.craftworld.resources.structs.NetworkPlayerID;
 import ennuo.craftworld.resources.structs.SlotID;
 import ennuo.craftworld.resources.structs.plan.CreationHistory;
 import ennuo.craftworld.resources.structs.plan.EyetoyData;
@@ -34,13 +29,11 @@ import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.StringUtils;
 import ennuo.toolkit.utilities.Globals;
-import ennuo.toolkit.windows.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -575,7 +568,7 @@ public class ItemManager extends javax.swing.JFrame {
         else this.iconTextEntry.setText("");
         
         if (details.creator != null)
-            this.creatorTextEntry.setText(details.creator.handle);
+            this.creatorTextEntry.setText(details.creator.toString());
         else
             this.creatorTextEntry.setText("");
         
@@ -738,7 +731,11 @@ public class ItemManager extends javax.swing.JFrame {
         details.categoryTag = "";
         
         details.icon = this.getDescriptor(this.iconTextEntry, ResourceType.TEXTURE);
-        details.creator = new SceNpId(this.creatorTextEntry.getText());
+        
+        // I don't keep track of the extra data aside from the PSID,
+        // so patch it if it exists.
+        if (details.creator == null) details.creator = new NetworkPlayerID(this.creatorTextEntry.getText());
+        else details.creator.handle.setData(this.creatorTextEntry.getText());
         
         // Get title and description
         if (isUCD)

@@ -2390,7 +2390,7 @@ public class Toolkit extends javax.swing.JFrame {
         subCombo.setText(InventoryObjectSubType.getTypeString(metadata.type, metadata.subType));
         
         if (metadata.creator != null)
-            creatorField.setText(metadata.creator.handle);
+            creatorField.setText(metadata.creator.toString());
         else creatorField.setText("");
         
         entryModifiers.setEnabledAt(1, true);

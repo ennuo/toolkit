@@ -8,7 +8,6 @@ import ennuo.craftworld.utilities.Bytes;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.joml.Matrix4f;
@@ -133,7 +132,7 @@ public class Output {
      */
     public Output str(String value) { 
         if (value == null) return this;
-        return this.bytes(value.getBytes()); 
+        return this.bytes(value.getBytes(StandardCharsets.US_ASCII)); 
     }
     
     /**
@@ -144,6 +143,8 @@ public class Output {
      */
     public Output str(String value, int size) {
         if (value == null) return this.bytes(new byte[size]);
+        if (value.length() > size)
+            return this.str(value.substring(0, size));
         this.str(value);
         this.pad(size - value.length());
         return this;

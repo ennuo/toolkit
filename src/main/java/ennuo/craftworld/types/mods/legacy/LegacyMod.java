@@ -126,7 +126,6 @@ public class LegacyMod {
                 InventoryDetails item = new Serializer(data).struct(null, InventoryDetails.class);
                 item.location = data.u32();
                 item.category = data.u32();
-                item.resource = data.resource(ResourceType.PLAN, true);
                 item.translatedLocation = data.str16();
                 item.translatedCategory = data.str16();
                 if (revision > 4) {

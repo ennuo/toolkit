@@ -8,7 +8,7 @@ import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -430,7 +430,7 @@ public class Data {
      */
     public String str(int size) {
         if (size == 0) return "";
-        return new String(this.bytes(size)).replace("\0", "");
+        return new String(this.bytes(size), StandardCharsets.US_ASCII).replace("\0", "");
     }
 
     /**
@@ -441,7 +441,7 @@ public class Data {
         int size = this.i32();
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0) size *= 2;
         byte[] data = this.bytes(size);
-        return new String(data, Charset.forName("UTF-16BE"));
+        return new String(data, StandardCharsets.UTF_16BE);
     }
 
     /**
