@@ -216,7 +216,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
         
-        this.game = (this.entry.revision.head > 0x010503EF) ? 3 : 1;
+        this.game = this.entry.revision.isAfterLBP3Revision(0x105) ? 3 : 1;
         
         this.slotList.setModel(this.model);
         this.groupCombo.setModel(this.groups);
