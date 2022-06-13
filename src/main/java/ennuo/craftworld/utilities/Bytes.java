@@ -190,7 +190,7 @@ public class Bytes {
         return result;
     }
 
-    public static byte[] SHA1(byte[] bytes) {
+    public static SHA1 SHA1(byte[] bytes) {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-1");
@@ -198,7 +198,7 @@ public class Bytes {
             Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, (String) null, ex);
             return null;
         }
-        return digest.digest(bytes);
+        return new SHA1(digest.digest(bytes));
     }
 
     public static byte[][] Split(byte[] data, int size) {
