@@ -13,13 +13,28 @@ import java.util.HashMap;
 import javax.swing.JProgressBar;
 
 public class FileDB extends FileData {
-    public boolean isLBP3 = true;
-    public int header = 21496064;
+    /**
+     * Default revision used for LBP1/2 FileDB
+     */
+    public static final int LBP1 = 0x100;
+    
+    /**
+     * Default revision used for LBP3 FileDB
+     * - Uses u32 instead of u64 for timestamps
+     * - Uses u16 instead of u32 for file path size
+     */
+    public static final int LBP3 = (0x148 << 0x10) | FileDB.LBP1;
+    
+    public int revision = FileDB.LBP1;
   
+    // Shouldn't actually need this, throw an exception during constructor
+    // and handle it in the function calling it.
     public boolean isParsed = false;
   
+    // Implement iterable for this?
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
   
+    // There really shouldn't be a SHA1 lookup
     public HashMap<SHA1, FileEntry> SHA1Lookup = new HashMap<>();
     public HashMap<Long, FileEntry> GUIDLookup = new HashMap<>();
     
@@ -63,7 +78,6 @@ public class FileDB extends FileData {
      */
     public FileDB() {
         this.type = "FileDB";
-        this.isLBP3 = true;
         this.isParsed = true;
     }
     
@@ -96,8 +110,8 @@ public class FileDB extends FileData {
         else System.out.println("Started processing FileDB from byte array.");
         long begin = System.currentTimeMillis();
 
-        this.header = data.i32();
-        this.isLBP3 = isLBP3(this.header);
+        this.revision = data.i32();
+        boolean compress = FileDB.isCompressed(this.revision);
         int count = data.i32();
 
         if (bar != null) {
@@ -120,9 +134,8 @@ public class FileDB extends FileData {
         for (int i = 0; i < count; i++) {
             if (bar != null) bar.setValue(i);
                         
-            String path = data.str(this.isLBP3 ? data.i16() : data.i32());
-            if (!this.isLBP3) data.forward(4); 
-            int timestamp = data.i32();
+            String path = data.str(compress ? data.i16() : data.i32());
+            int timestamp = compress ? data.i32() : ((int) data.i64());
             int size = data.i32();
             SHA1 hash = data.sha1();
             long GUID = data.u32();
@@ -342,14 +355,17 @@ public class FileDB extends FileData {
             .mapToInt(element -> element.path.length())
             .reduce(0, (total, element) -> total + element);
         Output output = new Output(0x8 + (0x28 * this.entries.size()) + pathSize);
-        output.i32(this.header);
+        output.i32(this.revision);
         output.i32(this.entries.size());
+        boolean compress = FileDB.isCompressed(this.revision);
         for (FileEntry entry : this.entries) {
-            if (this.isLBP3) output.i16((short) entry.path.length());
+            if (compress) output.i16((short) entry.path.length());
             else output.i32(entry.path.length());
             output.str(entry.path);
-            if (!this.isLBP3) output.i32(0);
-            output.u32(entry.timestamp);
+            
+            if (compress) output.u32(entry.timestamp);
+            else output.i64(entry.timestamp);
+
             output.i32(entry.size);
             output.sha1(entry.hash);
             output.u32(entry.GUID);
@@ -381,24 +397,12 @@ public class FileDB extends FileData {
     }
   
     /**
-     * Checks if the FileDB is from LBP3 based on the magic header.
-     * @param header FileDB magic header
-     * @return Whether or not the magic dictates that the RFileDB is LBP3
+     * Checks if the FileDB uses smaller data types for path and timestamp
+     * @param revision FileDB revision
+     * @return Whether or not the FileDB uses compressed data types
      */
-    public static final boolean isLBP3(int header) {
-        switch (header) {
-            case 256:
-                System.out.println("Detected: LBP1/2 .MAP File");
-                return false;
-            case 21496064:
-                System.out.println("Detected: LBP3 .MAP File");
-                return true;
-            case 936:
-                System.out.println("Detected LBP Vita .MAP File");
-                return false;
-        } 
-        System.out.println("Detected Unknown .MAP File");
-        return false;
+    public static final boolean isCompressed(int revision) {
+        return (revision >> 0x10) >= 0x148;
     }
   
     /**
