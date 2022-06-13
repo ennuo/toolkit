@@ -1,6 +1,7 @@
 package ennuo.craftworld.serializer;
 
 import ennuo.craftworld.resources.enums.CompressionFlags;
+import ennuo.craftworld.resources.structs.GUID;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.types.data.ResourceDescriptor;
@@ -411,6 +412,11 @@ public class Output {
     public Output sha1(SHA1 hash) { 
         if (hash == null) return this.bytes(new byte[0x14]);
         return this.bytes(hash.getHash()); 
+    }
+    
+    public Output guid(GUID guid) {
+        if (guid == null) return this.u32(0);
+        return this.u32(guid.getValue());
     }
 
     /**
