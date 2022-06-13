@@ -10,9 +10,10 @@ import ennuo.craftworld.swing.FileNode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import javax.swing.JProgressBar;
 
-public class FileDB extends FileData {
+public class FileDB extends FileData implements Iterable<FileEntry> {
     /**
      * Default revision used for LBP1/2 FileDB
      */
@@ -31,7 +32,6 @@ public class FileDB extends FileData {
     // and handle it in the function calling it.
     public boolean isParsed = false;
   
-    // Implement iterable for this?
     public ArrayList<FileEntry> entries = new ArrayList<FileEntry>();
   
     // There really shouldn't be a SHA1 lookup
@@ -395,6 +395,8 @@ public class FileDB extends FileData {
         }
         return false;
     }
+    
+    @Override public Iterator<FileEntry> iterator() { return this.entries.iterator(); }
   
     /**
      * Checks if the FileDB uses smaller data types for path and timestamp
