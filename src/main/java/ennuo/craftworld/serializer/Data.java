@@ -4,6 +4,7 @@ import ennuo.craftworld.resources.enums.CompressionFlags;
 import ennuo.craftworld.types.data.ResourceDescriptor;
 import ennuo.craftworld.resources.io.FileIO;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.structs.GUID;
 import ennuo.craftworld.resources.structs.Revision;
 import ennuo.craftworld.resources.structs.SHA1;
 import java.nio.ByteBuffer;
@@ -370,6 +371,10 @@ public class Data {
      * @return SHA1 hash read from the stream
      */
     public SHA1 sha1() { return new SHA1(this.bytes(0x14)); }
+    
+    public GUID guid() {
+        return new GUID(this.u32());
+    }
 
     /**
      * Reads a resource reference from the stream with a short flag.
