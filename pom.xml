@@ -20,7 +20,7 @@
             <configuration>
                <archive>
                   <manifest>
-                     <mainClass>ennuo.toolkit.Launcher</mainClass>
+                     <mainClass>toolkit.Launcher</mainClass>
                   </manifest>
                </archive>
                <descriptorRefs>
