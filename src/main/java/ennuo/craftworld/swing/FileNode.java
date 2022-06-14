@@ -1,6 +1,7 @@
 package ennuo.craftworld.swing;
 
-import ennuo.craftworld.types.FileEntry;
+import ennuo.craftworld.types.databases.FileEntry;
+
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;

@@ -10,13 +10,15 @@ import ennuo.craftworld.resources.structs.GUID;
 import ennuo.craftworld.resources.structs.SHA1;
 import ennuo.craftworld.serializer.Data;
 import ennuo.craftworld.serializer.Output;
+import ennuo.craftworld.swing.DatabaseType;
+import ennuo.craftworld.swing.FileData;
 
 /**
  * The FileDB is a resource used by the game for assigning
  * paths and unique identifiers to resources stored in the
  * associated archives.
  */
-public class FileDB implements Iterable<FileEntry> {
+public class FileDB extends FileData implements Iterable<FileDBRow> {
     /**
      * Default capacity for entry array when none is provided.
      */
@@ -27,16 +29,10 @@ public class FileDB implements Iterable<FileEntry> {
      */
     private static final long MIN_SAFE_GUID = 0x00180000;
 
-    /**
-     * Original source of the FileDB when read from disk,
-     * used for saving.
-     */
-    private File file;
-
     private int revision;
-    private ArrayList<FileEntry> entries;
+    private ArrayList<FileDBRow> entries;
 
-    private HashMap<GUID, FileEntry> lookup;
+    private HashMap<GUID, FileDBRow> lookup;
 
     /**
      * Creates a FileDB with specified version and capacity.
@@ -44,6 +40,7 @@ public class FileDB implements Iterable<FileEntry> {
      * @param capacity Capacity of underlying entry array
      */
     public FileDB(int revision, int capacity) {
+        super(null, DatabaseType.FILE_DATABASE);
         this.revision = revision;
         if (capacity < 0)
             throw new IllegalArgumentException("Cannot allocate entry array with negative count!");
@@ -64,7 +61,7 @@ public class FileDB implements Iterable<FileEntry> {
      * @param file FileDB source file
      */
     public FileDB(File file) {
-        this.file = file;
+        super(file, DatabaseType.FILE_DATABASE);
         final Data stream = new Data(file.getAbsolutePath());
         this.process(stream);
     }
@@ -102,14 +99,14 @@ public class FileDB implements Iterable<FileEntry> {
                     FileDB.getFolderFromExtension(path), sha1.toString(), path);
             }
 
-            FileEntry entry = new FileEntry(this, path, timestamp, size, sha1, guid);
+            FileDBRow entry = new FileDBRow(this, path, timestamp, size, sha1, guid);
             
             this.entries.add(entry);
             this.lookup.put(guid, entry);
         }
     }
 
-    @Override public Iterator<FileEntry> iterator() { return this.entries.iterator(); }
+    @Override public Iterator<FileDBRow> iterator() { return this.entries.iterator(); }
 
     /**
      * Checks if a GUID exists in the database.
@@ -128,33 +125,33 @@ public class FileDB implements Iterable<FileEntry> {
     public boolean exists(long guid) { return this.exists(new GUID(guid)); }
 
     /**
-     * Gets a FileEntry with specified GUID.
+     * Gets a FileDBRow with specified GUID.
      * @param guid GUID to find
-     * @return FileEntry with GUID
+     * @return FileDBRow with GUID
      */
-    public FileEntry get(GUID guid) {
+    @Override public FileDBRow get(GUID guid) {
         if (this.lookup.containsKey(guid))
             return this.lookup.get(guid);
         return null;
     }
 
     /**
-     * Gets a FileEntry with specified GUID.
+     * Gets a FileDBRow with specified GUID.
      * @param guid GUID to find
-     * @return FileEntry with GUID
+     * @return FileDBRow with GUID
      */
-    public FileEntry get(long guid) { return this.get(new GUID(guid)); }
+    @Override public FileDBRow get(long guid) { return this.get(new GUID(guid)); }
 
     /**
      * Gets a file name by path/name.
      * @param path Path/name of entry to find
      * @return Entry found
      */
-    public FileEntry get(String path) {
+    @Override public FileDBRow get(String path) {
         if (path == null)
             throw new NullPointerException("Can't find null path!");
         path = path.toLowerCase(); // Ignore cases
-        for (FileEntry entry : this.entries)
+        for (FileDBRow entry : this.entries)
             if (entry.getPath().toLowerCase().contains(path))
                 return entry;
         return null;
@@ -165,7 +162,7 @@ public class FileDB implements Iterable<FileEntry> {
      * @param guid GUID to remove
      */
     public void remove(GUID guid) {
-        final FileEntry entry = this.get(guid);
+        final FileDBRow entry = this.get(guid);
         if (entry == null) return;
         this.lookup.remove(guid);
         this.entries.remove(entry);
@@ -185,7 +182,7 @@ public class FileDB implements Iterable<FileEntry> {
      */
     protected void onGUIDChange(GUID oldGUID, GUID newGUID) {
         if (oldGUID.equals(newGUID)) return;
-        FileEntry entry = this.get(oldGUID);
+        FileDBRow entry = this.get(oldGUID);
         if (entry == null)
             throw new IllegalArgumentException("Entry with GUID does not exist!");
         this.lookup.remove(oldGUID);
@@ -193,47 +190,47 @@ public class FileDB implements Iterable<FileEntry> {
     }
 
     /**
-     * Creates a new FileEntry in this database with specified path and GUID
+     * Creates a new FileDBRow in this database with specified path and GUID
      * @param path Location in database
      * @param guid Unique identifier for entry
-     * @return Constructed FileEntry
+     * @return Constructed FileDBRow
      */
-    public FileEntry newFileEntry(String path, GUID guid) {
+    public FileDBRow newFileDBRow(String path, GUID guid) {
         if (this.lookup.containsKey(guid))
             throw new IllegalArgumentException("GUID already exists in database!");
-        final FileEntry entry = new FileEntry(this, path, 0, 0, SHA1.empty(), guid);
+        final FileDBRow entry = new FileDBRow(this, path, 0, 0, SHA1.empty(), guid);
         this.entries.add(entry);
         this.lookup.put(guid, entry);
         return entry;
     }
 
     /**
-     * Creates a new FileEntry in this database with specified path and next available GUID.
+     * Creates a new FileDBRow in this database with specified path and next available GUID.
      * @param path Location in database
-     * @return Constructed FileEntry
+     * @return Constructed FileDBRow
      */
-    public FileEntry newFileEntry(String path) {
-        return this.newFileEntry(path, this.getNextGUID());
+    public FileDBRow newFileDBRow(String path) {
+        return this.newFileDBRow(path, this.getNextGUID());
     }
 
     /**
-     * Creates a new FileEntry in this database with specified path and GUID
+     * Creates a new FileDBRow in this database with specified path and GUID
      * @param path Location in database
      * @param guid Unique identifier for entry
-     * @return Constructed FileEntry
+     * @return Constructed FileDBRow
      */
-    public FileEntry newFileEntry(String path, long guid) {
-        return this.newFileEntry(path, new GUID(guid));
+    public FileDBRow newFileDBRow(String path, long guid) {
+        return this.newFileDBRow(path, new GUID(guid));
     }
 
 
     /**
-     * Creates a new FileEntry in this database from another entry.
+     * Creates a new FileDBRow in this database from another entry.
      * @param entry Entry to use as base
-     * @return Constructed FileEntry
+     * @return Constructed FileDBRow
      */
-    public FileEntry newFileEntry(FileEntry entry) {
-        FileEntry newEntry = this.newFileEntry(entry.getPath(), entry.getGUID());
+    public FileDBRow newFileDBRow(FileDBRow entry) {
+        FileDBRow newEntry = this.newFileDBRow(entry.getPath(), entry.getGUID());
         newEntry.setDetails(entry);
         return newEntry;
     }
@@ -243,11 +240,11 @@ public class FileDB implements Iterable<FileEntry> {
      * @param patch Update data
      */
     public void patch(FileDB patch) {
-        for (FileEntry entry : patch) {
+        for (FileDBRow entry : patch) {
             if (this.exists(entry.getGUID()))
                 this.get(entry.getGUID()).setDetails(entry);
             else
-                this.newFileEntry(entry);
+                this.newFileDBRow(entry);
         }
     }
 
@@ -276,13 +273,12 @@ public class FileDB implements Iterable<FileEntry> {
     public int getEntryCount() {
         return this.entries.size();
     }
-
+    
     /**
-     * Saves this database to disk.
-     * @param path Path to save file to
-     * @return Whether or not this operation was successful
+     * Serializes the current state of the FileDB.
+     * @return Serialized database
      */
-    public boolean save(String path) {
+    public byte[] build() {
         // Just figure the GUIDs should be in ascending order.
         entries.sort((l, r) -> Long.compare(l.getGUID().getValue(), r.getGUID().getValue()));
 
@@ -290,11 +286,13 @@ public class FileDB implements Iterable<FileEntry> {
             .stream()
             .mapToInt(element -> element.getPath().length())
             .reduce(0, (total, element) -> total + element);
-        Output stream = new Output(0x8 + (0x28 * this.entries.size()) + pathSize);
+        
+        boolean isLBP3 = (this.revision >> 0x10) >= 0x148;
+        int baseEntrySize = (isLBP3) ? 0x22 : 0x28;
+        Output stream = new Output(0x8 + (baseEntrySize * this.entries.size()) + pathSize);
         stream.i32(this.revision);
         stream.i32(this.entries.size());
-        boolean isLBP3 = (this.revision >> 0x10) >= 0x148;
-        for (FileEntry entry : this.entries) {
+        for (FileDBRow entry : this.entries) {
             int length = entry.getPath().length();
             if (isLBP3)
                 stream.i16((short) length);
@@ -303,26 +301,27 @@ public class FileDB implements Iterable<FileEntry> {
             
             stream.str(entry.getPath(), length);
 
-            if (isLBP3) stream.u32(entry.getLastModified());
-            else stream.i64(entry.getLastModified());
+            if (isLBP3) stream.u32(entry.getDate());
+            else stream.i64(entry.getDate());
 
             stream.u32(entry.getSize());
             stream.sha1(entry.getSHA1());
             stream.guid(entry.getGUID());
         }
-        // Shrink since we may have overestimated the size.
-        stream.shrink();
-        return FileIO.write(stream.buffer, path);
+        return stream.buffer;
     }
 
     /**
      * Saves this database to disk.
+     * @param file File to save to
      * @return Whether or not this operation was successful
      */
-    public boolean save() {
-        if (this.file == null)
+    @Override public boolean save(File file) {
+        if (file == null)
             throw new IllegalStateException("Can't save to non-existent file!");
-        return this.save(this.file.getAbsolutePath());
+        boolean success = FileIO.write(this.build(), file.getAbsolutePath());
+        if (success) this.hasChanges = false;
+        return success;
     }
 
     /**

@@ -1,35 +1,35 @@
 package ennuo.craftworld.swing;
 
-import ennuo.craftworld.types.FileEntry;
+import ennuo.craftworld.types.databases.FileDBRow;
+import ennuo.craftworld.types.databases.FileEntry;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 public class Nodes {
-  public static int childIndex(FileNode node, String term) {
-    Enumeration<TreeNode> children = node.children();
-    DefaultMutableTreeNode child = null;
-    int index = -1;
-    while (children.hasMoreElements() && index < 0) {
-      child = (DefaultMutableTreeNode)children.nextElement();
-      if (child.getUserObject() != null && term.equals(child.getUserObject()))
-        index = node.getIndex(child); 
-    } 
-    return index;
-  }
-  
-  public static void loadChildren(ArrayList<FileNode> nodes, FileNode fishNode, boolean isFiltered) {
-    if (fishNode.getChildCount(isFiltered, false) >= 0)
-      for (Enumeration<TreeNode> e = fishNode.children(); e.hasMoreElements(); ) {
-        FileNode node = (FileNode)e.nextElement();
-        if (!node.isVisible && isFiltered)
-          continue; 
-        nodes.add(node);
-        loadChildren(nodes, node, isFiltered);
-      }  
-  }
+    public static int childIndex(FileNode node, String header) {
+        int index = -1;
+        Enumeration<TreeNode> children = node.children();
+        while (index != 0 && children.hasMoreElements()) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            if (header.equals(child.getUserObject()))
+                index = node.getIndex(child);
+        }
+        return index;
+    }
+    
+    public static void loadChildren(ArrayList<FileNode> nodes, FileNode node, boolean isFiltered) {
+        if (node.getChildCount(isFiltered, false) == 0) return;
+        Enumeration<TreeNode> children = node.children();
+        while (children.hasMoreElements()) {
+            FileNode child = (FileNode) children.nextElement();
+            if (!node.isVisible && isFiltered) continue;
+            nodes.add(child);
+            Nodes.loadChildren(nodes, child, isFiltered);
+        }
+    }
   
   public static int filter(FileNode root, SearchParameters params) {
       int visibleCount = 0;
@@ -40,10 +40,11 @@ public class Nodes {
             if (node.entry != null) {
                 if (params.pointer != null) {
                     if (params.pointer.hash != null) 
-                        isVisible = node.entry.hash.equals(params.pointer.hash);
-                    else isVisible = node.entry.GUID == params.pointer.GUID;
+                        isVisible = node.entry.getSHA1().equals(params.pointer.hash);
+                    else if (node.entry instanceof FileDBRow)
+                        isVisible = ((FileDBRow)node.entry).getGUID().equals(params.pointer.GUID);
                 }
-                else if (node.entry.path.contains(params.path)) 
+                else if (node.entry.getPath().contains(params.path)) 
                     isVisible = true;
                 node.isVisible = isVisible;  
                 if (isVisible)
@@ -62,7 +63,7 @@ public class Nodes {
   public static FileNode addNode(FileNode node, FileEntry entry, String override) {
     String[] strings;
     if (entry != null)
-        strings = entry.path.split("/");
+        strings = entry.getPath().split("/");
     else
         strings = override.split("/");
     String relativePath = "";
