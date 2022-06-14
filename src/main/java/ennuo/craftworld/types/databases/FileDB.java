@@ -18,7 +18,7 @@ import ennuo.craftworld.swing.FileData;
  * paths and unique identifiers to resources stored in the
  * associated archives.
  */
-public class FileDB extends FileData implements Iterable<FileDBRow> {
+public class FileDB extends FileData<GUID> implements Iterable<FileDBRow> {
     /**
      * Default capacity for entry array when none is provided.
      */
@@ -62,8 +62,16 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
      */
     public FileDB(File file) {
         super(file, DatabaseType.FILE_DATABASE);
-        final Data stream = new Data(file.getAbsolutePath());
-        this.process(stream);
+        this.process(new Data(file.getAbsolutePath()));
+    }
+    
+    /**
+     * Reads a FileDB from a byte array.
+     * @param data FileDB source buffer
+     */
+    public FileDB(byte[] data) {
+        super(null, DatabaseType.FILE_DATABASE);
+        this.process(new Data(data));
     }
 
     /**
@@ -140,7 +148,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
      * @param guid GUID to find
      * @return FileDBRow with GUID
      */
-    @Override public FileDBRow get(long guid) { return this.get(new GUID(guid)); }
+    public FileDBRow get(long guid) { return this.get(new GUID(guid)); }
 
     /**
      * Gets a file name by path/name.

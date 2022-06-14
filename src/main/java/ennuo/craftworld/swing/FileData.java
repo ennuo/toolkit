@@ -6,7 +6,7 @@ import ennuo.craftworld.types.databases.FileEntry;
 
 import java.io.File;
 
-public abstract class FileData {
+public abstract class FileData<Key> {
     /**
      * Path of database on disk.
      */
@@ -81,15 +81,9 @@ public abstract class FileData {
         return success;
     }
     
-    public FileEntry get(SHA1 hash) {
-        throw new UnsupportedOperationException(String.format("Unable to search for SHA1 on database of type %s", this.type));
+    public FileEntry get(Key key) {
+        throw new UnsupportedOperationException(String.format("Unable to search for key on database of type %s", this.type));
     }
-    
-    public FileEntry get(GUID guid) {
-        throw new UnsupportedOperationException(String.format("Unable to search for GUID on database of type %s", this.type));
-    }
-    
-    public FileEntry get(long guid) { return this.get(new GUID(guid)); }
     
     public FileEntry get(String path) {
         throw new UnsupportedOperationException(String.format("Unable to search for path on database of type %s", this.type));
