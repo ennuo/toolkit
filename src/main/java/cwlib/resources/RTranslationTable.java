@@ -1,20 +1,26 @@
 package cwlib.resources;
 
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
-import toolkit.utilities.Globals;
-
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.util.FileIO;
+
+/**
+ * Resource that holds all translations
+ * used in the game.
+ */
 public class RTranslationTable {
     /**
      * Calculates LAMS key ID from translation tag.
      * @param tag Translation tag
      * @return Hashed key from translation tag
      */
-    public static long makeLamsKeyID(String tag) {
+    public static final long makeLamsKeyID(String tag) {
         long v0 = 0, v1 = 0xC8509800L;
         for (int i = 32; i > 0; --i) {
             long c = 0x20;
@@ -35,60 +41,47 @@ public class RTranslationTable {
         
         return (v0 + v1 * 0xDEADBEEFL) & 0xFFFFFFFFL;
     }
-    
-    private Map<Long, String> lookup;
 
     /**
-     * Creates translation table from data instance.
-     * @param data Translation table data source
+     * LAMS -> Text pairs
      */
-    public RTranslationTable(MemoryInputStream data) { this.process(data); }
+    private HashMap<Long, String> lookup;
 
     /**
-     * Parses RTranslationTable from data instance.
-     * @param data Translation table data source
-     */    
-    private void process(MemoryInputStream data) {
-        System.out.println("Started processing Translation Table...");
-        long begin = System.currentTimeMillis();
+     * Processes a translation table from a buffer.
+     * @param data Buffer to process
+     */
+    public RTranslationTable(byte[] data) {
+        MemoryInputStream stream = new MemoryInputStream(data);
+        int dataLength = stream.getLength();
 
-        int count = data.i32();
-        System.out.println(String.format("Entry Count: %d", count));
+        int count = stream.i32();
 
-        int tableOffset = 4 + (count * 8);
-        this.lookup = new HashMap<Long, String>(count);
+        int tableOffset = 0x4 + (count * 0x8);
+        this.lookup = new HashMap<>(count);
         for (int i = 0; i < count; ++i) {
-            long key = data.u32();
-            int offset = data.i32();
-            int old = data.offset;
+            long key = stream.u32();
+            int stringStart = stream.i32();
 
-            data.seek(tableOffset + offset + 2);
-            while (data.offset != data.length) {
-                if (data.i16() == -257)
+            int oldOffset = stream.getOffset();
+
+            stream.seek(tableOffset + stringStart + 2, SeekMode.Begin);
+            while (stream.getOffset() != dataLength)
+                if (stream.u16() == 0xFEFF)
                     break;
-            }
+            
+            int stringEnd = stream.getOffset() - 2;
+            stream.seek(tableOffset + stringStart, SeekMode.Begin);
 
-            int dest = data.offset - 2;
-            data.seek(tableOffset + offset);
+            String text = new String(stream.bytes(stringEnd - stream.getOffset()), StandardCharsets.UTF_16);
+            this.lookup.put(key, text);
 
-            String str = new String(data.bytes(dest - data.offset), StandardCharsets.UTF_16);
-
-            data.seek(old);
-
-            this.lookup.put(key, str);
+            stream.seek(oldOffset, SeekMode.Begin);
         }
-
-        long end = System.currentTimeMillis();
-        System.out.println(
-            String.format("Finished processing %s! (%s s %s ms)",
-                "TranslationTable",
-                ((end - begin) / 1000),
-                (end - begin))
-        );
     }
-    
+
     /**
-     * Gets translated string from translation tag, e.g: COSTUME_TORSO
+     * Gets translated string from translation tag, e.g: COSTUME_TORSO.
      * @param tag Translation tag
      * @return Translated string
      */
@@ -101,8 +94,8 @@ public class RTranslationTable {
      * @param key LAMS Key ID
      * @return Translated string
      */
-    public String translate(int key) { return this.translate((long) key); }
-    
+    public String translate(int key) { return this.translate(key & 0xFFFFFFFFl); }
+
     /**
      * Gets translated string from key.
      * @param key LAMS Key ID
@@ -111,22 +104,15 @@ public class RTranslationTable {
     public String translate(long key) {
         if (this.lookup.containsKey(key))
             return this.lookup.get(key);
-        return "";
+        return null;
     }
-    
+
     /**
-     * Exports Translation Table as a text document.
-     * @return UTF-8 byte buffer
+     * Write the translation table to a JSON file on disk.
+     * @param path Path to export to
      */
-    public byte[] export() {
-        int dataSize = this.lookup.values()
-                .stream()
-                .mapToInt(element -> element.length())
-                .reduce(0, (total, element) -> total + element) * 2;
-        MemoryOutputStream output = new MemoryOutputStream(dataSize);
-        for (Map.Entry<Long, String> entry : this.lookup.entrySet())
-            output.str(entry.getKey() + "\n\t" + entry.getValue() + "\n");
-        output.shrink();
-        return output.buffer;
+    public void export(String path) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        FileIO.write(gson.toJson(this.lookup).getBytes(StandardCharsets.UTF_8), path);
     }
 }
