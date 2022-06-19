@@ -1,165 +1,70 @@
 package cwlib.io.streams;
 
-import cwlib.enums.CompressionFlags;
-import cwlib.types.data.GUID;
-import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
-import cwlib.types.data.ResourceReference;
-import cwlib.util.Bytes;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashSet;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class MemoryOutputStream {
-    public byte[] buffer;
-    public int offset;
-    public int length;
-    
-    public Revision revision = new Revision(0x271);
-    public byte compressionFlags = 0;
+import cwlib.io.ValueEnum;
+import cwlib.enums.CompressionFlags;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.util.Bytes;
+import cwlib.types.data.GUID;
+import cwlib.types.data.SHA1;
 
-    public HashSet<ResourceReference> dependencies = new HashSet<ResourceReference>();
+/**
+ * Big-endian binary output stream.
+ */
+public class MemoryOutputStream {
+    private byte[] buffer;
+
+    private int offset = 0;
+    private int length;
+    private byte compressionFlags;
+
+    private boolean isLittleEndian = false;
 
     /**
      * Creates a memory output stream with specified size.
-     * @param size Size of buffer to create
+     * @param size Size of stream
      */
-    public MemoryOutputStream(int size) { 
-        this.buffer = new byte[size]; 
+    public MemoryOutputStream(int size) {
         this.length = size;
-    }
-    
-    /**
-     * Creates a memory output stream with specified size and revision.
-     * @param size Size of buffer to create
-     * @param revision Revision of stream
-     */
-    public MemoryOutputStream(int size, int revision) {
         this.buffer = new byte[size];
-        this.revision = new Revision(revision);
-        this.length = size;
-        
-        // NOTE(Aidan): For legacy reasons.
-        if (this.revision.head == 0x272 || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
     }
-    
+
     /**
-     * Creates a memory output stream with specified size and revision.
-     * @param size Size of buffer to create
-     * @param revision Revision of stream
+     * Creates a memory output stream with specified size and compression flags.
+     * @param size Size of stream
+     * @param compressionFlags Flags for compression methods used
      */
-    public MemoryOutputStream(int size, Revision revision) {
-        this.buffer = new byte[size];
-        this.revision = revision;
-        this.length = size;
-        
-        // NOTE(Aidan): For legacy reasons.
-        if (this.revision.head == 0x272 || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
+    public MemoryOutputStream(int size, byte compressionFlags) {
+        this(size);
+        this.compressionFlags = compressionFlags;
     }
-    
+
     /**
-     * Creates a memory output stream with specified size and revision.
-     * @param size Size of buffer to create
-     * @param revision Revision of stream
-     * @param branch Branch descriptor of stream
-     */
-    public MemoryOutputStream(int size, int revision, int branch) {
-        this.buffer = new byte[size];
-        this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
-        this.length = size;
-        
-        // NOTE(Aidan): For legacy reasons.
-        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
-    }
-    
-    /**
-     * Creates a memory output stream with specified size and revision.
-     * @param size Size of buffer to create
-     * @param revision Revision of stream
-     * @param branchID ID of branch of this stream.
-     * @param branchRevision Revision of the branch.
-     */
-    public MemoryOutputStream(int size, int revision, int branchID, int branchRevision) {
-        this.buffer = new byte[size];
-        this.revision = new Revision(revision, branchID, branchRevision);
-        this.length = size;
-        
-        // NOTE(Aidan): For legacy reasons.
-        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
-    }
-    
-    /**
-     * Writes a UTF-16 character array to the stream.
-     * @param value String value to write
+     * Writes an arbitrary number of bytes to the stream.
+     * @param value Bytes to write
      * @return This output stream
      */
-    public MemoryOutputStream str16(String value) {
-        if (value == null || value.equals("")) { this.i32(0); return this; }
-        int size = value.length();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
-        this.i32(size);
-        this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
+    public final MemoryOutputStream bytes(byte[] value) {
+        System.arraycopy(value, 0, this.buffer, this.offset, value.length);
+        this.offset += value.length;
         return this;
     }
 
     /**
-     * Writes a character array to the stream.
-     * @param value String value to write
+     * Writes a byte array to the stream.
+     * @param value Bytes to write
      * @return This output stream
      */
-    public MemoryOutputStream str8(String value) {
-        if (value == null || value.equals("")) { this.i32(0); return this; }
-        int size = value.length();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size *= 2;
-        this.i32(size);
-        this.str(value);
-        return this;
-    }
-    
-    /**
-     * Writes a string to the stream.
-     * @param value String value to write
-     * @return This output stream
-     */
-    public MemoryOutputStream str(String value) { 
-        if (value == null) return this;
-        return this.bytes(value.getBytes(StandardCharsets.US_ASCII)); 
-    }
-    
-    /**
-     * Writes a fixed string with padded size to the stream.
-     * @param value String value to write
-     * @param size Fixed size of string
-     * @return This output stream
-     */
-    public MemoryOutputStream str(String value, int size) {
-        if (value == null) return this.bytes(new byte[size]);
-        if (value.length() > size)
-            return this.str(value.substring(0, size));
-        this.str(value);
-        this.pad(size - value.length());
-        return this;
-    }
-    
-    /**
-     * Writes an arbitrary number of bytes to the stream.
-     * @param bytes Bytes to write
-     * @return This output stream
-     */
-    public MemoryOutputStream bytes(byte[] bytes) {
-        for (int i = 0; i < bytes.length; ++offset, ++i)
-            buffer[offset] = bytes[i];
-        return this;
+    public final MemoryOutputStream bytearray(byte[] value) {
+        this.i32(value.length);
+        return this.bytes(value);
     }
 
     /**
@@ -167,113 +72,123 @@ public class MemoryOutputStream {
      * @param value Boolean to write
      * @return This output stream
      */
-    public MemoryOutputStream bool(boolean value) { return this.u8(value == true ? 1 : 0); }
-
-    /**
-     * Writes a series of null characters to the stream.
-     * @param size Number of bytes to write
-     * @return This output stream
-     */
-    public MemoryOutputStream pad(int size) {
-        for (int i = 0; i < size; ++i)
-            this.i8((byte) 0);
-        return this;
+    public final MemoryOutputStream bool(boolean value) {
+        return this.u8(value == true ? 1 : 0);
     }
 
-    /**
-     * Writes an integer as a byte to the stream.
-     * @param value Byte to write
-     * @return This output stream
-     */
-    public MemoryOutputStream u8(int value) { return this.i8((byte) value); }
-    
     /**
      * Writes a byte to the stream.
      * @param value Byte to write
      * @return This output stream
      */
-    public MemoryOutputStream i8(byte value) {
-        buffer[offset] = value;
-        offset += 1;
-        return this;
-    }
-    
-    /**
-     * Writes an array of bytes to the stream.
-     * @param values Bytes to write
-     * @return This output stream
-     */
-    public MemoryOutputStream i8a(byte[] values) {
-        if (values == null) { this.i32(0); return this; }
-        this.i32(values.length);
-        for (byte value : values)
-            this.i8(value);
+    public final MemoryOutputStream i8(byte value) {
+        this.buffer[this.offset++] = value;
         return this;
     }
 
     /**
-     * Writes a 32-bit integer to the stream, encoded depending on the revision.
-     * @param value Integer to write
+     * Writes an integer to the stream as a byte.
+     * @param value Byte to write
      * @return This output stream
      */
-    public MemoryOutputStream i32(int value) {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            return this.varint(value);
-        else return this.i32f(value);
-    }
-    
-    /**
-     * Writes an array of 32-bit integers to the stream, encoded depending on the revision.
-     * @param values Integers to write
-     * @return This output stream
-     */
-    public MemoryOutputStream i32a(int[] values) {
-        this.i32(values.length);
-        for (int value : values)
-            this.i32(value);
-        return this;
-    }
-    
-    /**
-     * Writes an array of unsigned 32-bit integers to the stream, encoded depending on the revision.
-     * @param values Integers to write
-     * @return This output stream
-     */
-    public MemoryOutputStream u32a(long[] values) {
-        this.i32(values.length);
-        for (long value : values)
-            this.u32(value);
+    public final MemoryOutputStream u8(int value) {
+        this.buffer[this.offset++] = (byte) (value & 0xFF);
         return this;
     }
 
     /**
-     * Writes a long as an unsigned integer to the stream, encoded depending on the revision.
+     * Writes a short to the stream.
+     * @param value Short to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream i16(short value) {
+        if (this.isLittleEndian)
+            return this.bytes(Bytes.toBytesLE(value));
+        return this.bytes(Bytes.toBytesBE(value));
+    }
+
+    /**
+     * Writes an integer to the stream as an unsigned short.
+     * @param value Short to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream u16(int value) {
+        return this.i16((short) (value & 0xFFFF));
+    }
+
+    /**
+     * Writes a 24-bit unsigned integer to the stream.
      * @param value Integer to write
      * @return This output stream
      */
-    public MemoryOutputStream u32(long value) {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            return this.varint(value);
-        else return this.u32f(value);
+    public final MemoryOutputStream u24(int value) {
+        value &= 0xFFFFFF;
+        byte[] b;
+        if (this.isLittleEndian) {
+            b = new byte[] {
+                (byte) (value & 0xFF),
+                (byte) (value >>> 8),
+                (byte) (value >>> 16),
+            };
+        } else {
+            b = new byte[] {
+                (byte) (value >>> 16), 
+                (byte) (value >>> 8), 
+                (byte) (value & 0xFF)
+            };
+        }
+        return this.bytes(b);
     }
-    
+
     /**
-     * Writes a long to the stream, encoded depending on the revision.
-     * @param value Long to write
+     * Writes a 32-bit integer to the stream, compressed depending on flags.
+     * @param value Integer to write
+     * @param force32 Whether or not to write as a 32-bit integer, regardless of compression flags.
      * @return This output stream
      */
-    public MemoryOutputStream i64(long value) {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            return this.varint(value);
-        else return this.i64f(value);
+    public final MemoryOutputStream i32(int value, boolean force32) {
+        if (!force32 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(value & 0xFFFFFFFFl);
+        if (this.isLittleEndian)
+            return this.bytes(Bytes.toBytesLE(value));
+        return this.bytes(Bytes.toBytesBE(value));
     }
-    
+
     /**
-     * Writes a long to the stream as 64-bit regardless of revision.
-     * @param value Long to write
+     * Writes a long as a 32-bit integer to the stream, compressed depending on flags.
+     * @param value Integer to write
+     * @param force32 Whether or not to write as a 32-bit integer, regardless of compression flags.
      * @return This output stream
      */
-    public MemoryOutputStream i64f(long value) { 
+    public final MemoryOutputStream u32(long value, boolean force32) {
+        if (!force32 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(value & 0xFFFFFFFFl);
+        if (this.isLittleEndian)
+            return this.bytes(Bytes.toBytesLE((int) (value & 0xFFFFFFFF)));
+        return this.bytes(Bytes.toBytesBE((int) (value & 0xFFFFFFFF)));
+    }
+
+    /**
+     * Writes a long to the stream, compressed depending on flags.
+     * @param value Long to write
+     * @param force64 Whether or not to write as a 32-bit integer, regardless of compression flags.
+     * @return This output stream
+     */
+    public final MemoryOutputStream i64(long value, boolean force64) {
+        if (!force64 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(value);
+        if (this.isLittleEndian) {
+            return this.bytes(new byte[] {
+                (byte) (value),
+                (byte) (value >>> 8),
+                (byte) (value >>> 16),
+                (byte) (value >>> 24),
+                (byte) (value >>> 32),
+                (byte) (value >>> 40),
+                (byte) (value >>> 48),
+                (byte) (value >>> 56),
+            });
+        }
         return this.bytes(new byte[] {
             (byte) (value >>> 56),
             (byte) (value >>> 48),
@@ -285,109 +200,163 @@ public class MemoryOutputStream {
             (byte) (value)
         });
     }
-    
+
     /**
-     * Writes a long as an unsigned integer to the stream in little endian.
+     * Writes an integer to the stream.
      * @param value Integer to write
      * @return This output stream
      */
-    public MemoryOutputStream u32LE(long value) {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            return this.varint(value);
-        else return this.u32LEf(value);
-    }
-    
-    /**
-     * Writes a short to the stream
-     * @param value Short to write
-     * @return This output stream
-     */
-    public MemoryOutputStream i16(short value) { return this.bytes(Bytes.toBytes(value)); }
-    
-    /**
-     * Writes an array of shorts to the stream.
-     * @param values Shorts to write
-     * @return This output stream
-     */
-    public MemoryOutputStream i16a(short[] values) {
-        this.i32(values.length);
-        for (short value : values)
-            this.i16(value);
-        return this;
-    }
-    
-    /**
-     * Writes a short to the stream in little endian.
-     * @param value Short to write
-     * @return This output stream
-     */
-    public MemoryOutputStream i16LE(short value) {
-        byte[] bytes = Bytes.toBytes(value);
-        this.i8(bytes[1]); this.i8(bytes[0]);
-        return this;
-    }
+    public final MemoryOutputStream i32(int value) { return this.i32(value, false); }
 
     /**
-     * Writes an integer to the stream as 32-bit regardless of revision.
+     * Writes a long as an unsigned integer to the stream.
      * @param value Integer to write
      * @return This output stream
      */
-    public MemoryOutputStream i32f(int value) { return this.bytes(Bytes.toBytes(value)); }
+    public final MemoryOutputStream u32(long value) { return this.u32(value, false); }
 
     /**
-     * Writes a long as an unsigned integer to the stream as 32-bit regardless of revision.
-     * @param value Unsigned integer to write
-     * @return This output stream
-     */
-    public MemoryOutputStream u32f(long value) { return this.bytes(Bytes.toBytes(value)); }
-    
-    /**
-     * Writes a long as an unsigned integer to the stream as 32-bit in little endian regardless of revision.
-     * @param value Unsigned integer to write
-     * @return This output stream
-     */
-    public MemoryOutputStream u32LEf(long value) { return this.bytes(Bytes.toBytesLE(value)); }
-
-    /**
-     * Writes a 7-bit encoded integer to the stream.
-     * @param value Integer to write
-     * @return This output stream
-     */
-    public MemoryOutputStream varint(int value) { return this.varint(value & 0xFFFFFFFFl); }
-    
-    /**
-     * Writes a 7-bit encoded long to the stream.
+     * Writes a long to the stream.
      * @param value Long to write
      * @return This output stream
      */
-    public MemoryOutputStream varint(long value) {
+    public final MemoryOutputStream i64(long value) { return this.i64(value, false); }
+
+    /**
+     * Writes a variable length quantity to the stream.
+     * @param value Long to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream uleb128(long value) {
         value = value & 0xFFFFFFFFFFFFFFFFl;
         if (value == -1 || value == Long.MAX_VALUE) {
-            this.bytes(new byte[] {  (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x0F });
-            return this;
-        } else if (value == 0) {
-            this.i8((byte) 0);
+            this.bytes(new byte[] { -1, -1, -1, -1, 0xF }); // 0xFFFFFF0F
             return this;
         }
+        if (value == 0) return this.u8(0);
         while (true) {
-            byte b = (byte)(value & 0x7fL);
-            value >>>= 7L;
-            if (value > 0L) b |= 128L;
+            byte b = (byte) (value & 0x7fl);
+            value >>>= 7l;
+            if (value > 0l) b |= 128l;
             this.i8(b);
             if (value == 0) break;
         }
         return this;
     }
-    
+
     /**
-     * Writes a Matrix4x4 to the stream, encoded depending on the revision.
-     * @param value Matrix to write
+     * Writes a 16-bit integer array to the stream.
+     * @param values Short array to write
      * @return This output stream
      */
-    public MemoryOutputStream matrix(Matrix4f value) {
+    public final MemoryOutputStream shortarray(short[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (short value : values)
+            this.i16(value);
+        return this;
+    }
+
+    /**
+     * Writes a 32-bit integer array to the stream.
+     * @param values Integer array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream intarray(int[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (int value : values)
+            this.i32(value);
+        return this;
+    }
+
+    /**
+     * Writes a 64-bit integer array to the stream.
+     * @param values Long array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream longarray(long[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (long value : values)
+            this.i64(value);
+        return this;
+    }
+
+    /**
+     * Writes a 32 bit floating point number to the stream.
+     * @param value Float to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream f32(float value) {
+        return this.i32(Float.floatToIntBits(value), true);
+    }
+
+    /**
+     * Writes a 32-bit floating point number array to the stream.
+     * @param values Float array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream floatarray(float[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (float value : values)
+            this.f32(value);
+        return this;
+    }
+
+    /**
+     * Writes a 2-dimensional floating point vector to the stream.
+     * @param value Vector2f to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream v2(Vector2f value) { 
+        if (value == null) value = new Vector2f().zero();
+        this.f32(value.x); 
+        this.f32(value.y); 
+        return this;
+    }
+    
+    /**
+     * Writes a 3-dimensional floating point vector to the stream.
+     * @param value Vector3f to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream v3(Vector3f value) {
+        if (value == null) value = new Vector3f().zero();
+        this.f32(value.x);
+        this.f32(value.y);
+        this.f32(value.z);
+        return this;
+    }
+
+    /**
+     * Writes a 4-dimensional floating point vector to the stream.
+     * @param value Vector4f to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream v4(Vector4f value) {
+        if (value == null) value = new Vector4f().zero();
+        this.f32(value.x);
+        this.f32(value.y);
+        this.f32(value.z);
+        this.f32(value.w);
+        return this;
+    }
+
+    /**
+     * Writes a Matrix4x4 to the stream, compressed depending on flags.
+     * @param value Matrix4x4 to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream m44(Matrix4f value) {
+        if (value == null) value = new Matrix4f().identity();
+
         float[] identity = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+        
         float[] values = new float[16];
         value.get(values);
+        
         int flags = 0xFFFF;
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0) {
             flags = 0;
@@ -403,134 +372,130 @@ public class MemoryOutputStream {
         
         return this;
     }
-    
+
+    /**
+     * Writes a string of fixed size to the stream.
+     * @param value String to write
+     * @param size Fixed size of string
+     * @return This output stream
+     */
+    public final MemoryOutputStream str(String value, int size) {
+        if (value == null) return this.bytes(new byte[size]);
+        this.bytes(value.getBytes());
+        this.pad(size - value.length());
+        return this;
+    }
+
+    /**
+     * Writes a wide string of fixed size to the stream.
+     * @param value String to write
+     * @param size Fixed size of string
+     * @return This output stream
+     */
+    public final MemoryOutputStream wstr(String value, int size) {
+        if (value == null) return this.bytes(new byte[size]);
+        this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
+        this.pad((size * 2) - (value.length() * 2));
+        return this;
+    }
+
+    /**
+     * Writes a length-prefixed string to the stream.
+     * @param value String to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream str(String value) {
+        if (value == null) return this.i32(0);
+        int size = value.length();
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
+            size *= 2;
+        this.i32(size);
+        return this.bytes(value.getBytes());
+    }
+
+    /**
+     * Writes a length-prefixed wide string to the stream.
+     * @param value String to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream wstr(String value) {
+        if (value == null) return this.i32(0);
+        int size = value.length();
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
+            size *= 2;
+        this.i32(size);
+        return this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
+    }
+
     /**
      * Writes a SHA1 hash to the stream.
-     * @param hash SHA1 hash to write
+     * @param value SHA1 hash to write
      * @return This output stream
      */
-    public MemoryOutputStream sha1(SHA1 hash) { 
-        if (hash == null) return this.bytes(new byte[0x14]);
-        return this.bytes(hash.getHash()); 
-    }
-    
-    public MemoryOutputStream guid(GUID guid) {
-        if (guid == null) return this.u32(0);
-        return this.u32(guid.getValue());
+    public final MemoryOutputStream sha1(SHA1 value) {
+        return this.bytes(value.getHash());
     }
 
     /**
-     * Writes a resource reference to the stream with a short flag.
-     * @param value Resource reference to write
+     * Writes a GUID (uint32_t) to the stream.
+     * @param value GUID to write
+     * @param force32 Whether or not to read as a 32 bit integer, regardless of compression flags.
      * @return This output stream
      */
-    public MemoryOutputStream resource(ResourceReference value) { return this.resource(value, false); }
-    
-    /**
-     * Writes a resource reference to the stream with either a byte or short flag.
-     * @param value Resource reference to write
-     * @param skipFlags Whether resource flags should be written
-     * @return This output stream
-     */
-    public MemoryOutputStream resource(ResourceReference value, boolean skipFlags) {
-        byte HASH = 1, GUID = 2;
-        if (this.revision.head <= 0x18B) {
-            HASH = 2;
-            GUID = 1;
-        }
-        
-        if (this.revision.head > 0x22e && !skipFlags) {
-            if (value == null) this.i32(0);
-            else this.i32(value.flags);
-        }
-        
-        if (value != null) {
-            if (value.hash != null) {
-                this.i8(HASH);
-                this.sha1(value.hash);
-                this.dependencies.add(value);
-            } else if (value.GUID != -1 && value.GUID != 0) {
-                this.i8(GUID);
-                this.u32(value.GUID);
-                this.dependencies.add(value);
-            }
-            else this.i8((byte) 0);
-        } else this.i8((byte) 0);
-        
-        return this;
+    public final MemoryOutputStream guid(GUID value, boolean force32) {
+        if (value == null) return this.u32(0, force32);
+        return this.u32(value.getValue(), force32);
     }
 
     /**
-     * Writes a 32 bit floating point number to the stream.
-     * @param value Float to write 
+     * Writes a GUID (uint32_t) to the stream.
+     * @param value GUID to write
      * @return This output stream
      */
-    public MemoryOutputStream f32(float value) { 
-        return this.bytes(Bytes.toBytes(Float.floatToIntBits(value))); 
-    }
-    
+    public final MemoryOutputStream guid(GUID value) { return this.guid(value, false); }
+
+
     /**
-     * Writes a 32 bit floating point number to the stream in little endian.
-     * @param value Float to write
+     * Writes an 8-bit enum value to the stream.
+     * @param <T> Type of enum
+     * @param value Enum value
      * @return This output stream
      */
-    public MemoryOutputStream f32LE(float value) {
-        int bits = Float.floatToRawIntBits(value);
-        byte[] byteBuffer = ByteBuffer
-                .allocate(4)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(bits)
-                .array();
-        this.bytes(byteBuffer);
-        return this;
+    public final <T extends Enum<T> & ValueEnum<Byte>> MemoryOutputStream enum8(T value) {
+        return this.i8(value.getValue().byteValue());
     }
 
     /**
-     * Writes an array of 32 bit floating point numbers to the stream.
-     * @param values Floats to write
+     * Writes an 32-bit enum value to the stream.
+     * @param <T> Type of enum
+     * @param value Enum value
      * @return This output stream
      */
-    public MemoryOutputStream f32a(float[] values) {
-        if (values == null) { this.i32(0); return this; }
+    public final <T extends Enum<T> & ValueEnum<Integer>> MemoryOutputStream enum32(T value) {
+        return this.i32(value.getValue().intValue());
+    }
+
+    /**
+     * Writes an 32-bit enum value to the stream.
+     * @param <T> Type of enum
+     * @param value Enum value
+     * @return This output stream
+     */
+    public final <T extends Enum<T> & ValueEnum<Byte>> MemoryOutputStream enumarray(T[] values) {
+        if (values == null) return this.i32(0);
         this.i32(values.length);
-        for (float value : values)
-            this.f32(value);
+        for (T value : values)
+            this.enum8(value);
         return this;
     }
 
     /**
-     * Writes a 2-dimensional floating point vector to the stream.
-     * @param value Vector2f to write
+     * Writes a series of null characters to the stream.
+     * @param size Number of bytes to write
      * @return This output stream
      */
-    public MemoryOutputStream v2(Vector2f value) { 
-        this.f32(value.x); 
-        this.f32(value.y); 
-        return this;
-    }
-    
-    /**
-     * Writes a 3-dimensional floating point vector to the stream.
-     * @param value Vector3f to write
-     * @return This output stream
-     */
-    public MemoryOutputStream v3(Vector3f value) {
-        this.f32(value.x);
-        this.f32(value.y);
-        this.f32(value.z);
-        return this;
-    }
-
-    /**
-     * Writes a 4-dimensional floating point vector to the stream.
-     * @param value Vector4f to write
-     * @return This output stream
-     */
-    public MemoryOutputStream v4(Vector4f value) {
-        this.f32(value.x);
-        this.f32(value.y);
-        this.f32(value.z);
-        this.f32(value.w);
+    public final MemoryOutputStream pad(int size) {
+        this.offset += size;
         return this;
     }
 
@@ -538,8 +503,56 @@ public class MemoryOutputStream {
      * Shrinks the size of the buffer to the current offset.
      * @return This output stream
      */
-    public MemoryOutputStream shrink() { 
+    public final MemoryOutputStream shrink() {
         this.buffer = Arrays.copyOfRange(this.buffer, 0, this.offset); 
         return this;
     }
+
+    /**
+     * Seeks to position relative to seek mode.
+     * @param offset Offset relative to seek position
+     * @param mode Seek origin
+     */
+    public final void seek(int offset, SeekMode mode) {
+        if (mode == null)
+            throw new NullPointerException("SeekMode cannot be null!");
+        if (offset < 0) throw new IllegalArgumentException("Can't seek to negative offsets.");
+        switch (mode) {
+            case Begin: {
+                if (offset >= this.length)
+                    throw new IllegalArgumentException("Can't seek past stream length.");
+                this.offset = offset;
+                break;
+            }
+            case Relative: {
+                int newOffset = this.offset + offset;
+                if (newOffset >= this.length || newOffset < 0)
+                    throw new IllegalArgumentException("Can't seek outside bounds of stream.");
+                this.offset = newOffset;
+                break;
+            }
+            case End: {
+                if (offset < 0 || this.length - offset < 0)
+                    throw new IllegalArgumentException("Can't seek outside bounds of stream.");
+                this.offset = this.length - offset;
+                break;
+            }
+        }
+    }
+
+    /**
+     * Seeks ahead in stream relative to offset.
+     * @param offset Offset to go to
+     */
+    public final void seek(int offset) { 
+        this.seek(offset, SeekMode.Relative);
+    }
+
+    public final byte[] getBuffer() { return this.buffer; }
+    public final int getOffset() { return this.offset; }
+    public final int getLength() { return this.length; }
+    public final byte getCompressionFlags() { return this.compressionFlags; }
+    public final boolean isLittleEndian() { return this.isLittleEndian; }
+
+    public final void setLittleEndian(boolean value) { this.isLittleEndian = value; }
 }

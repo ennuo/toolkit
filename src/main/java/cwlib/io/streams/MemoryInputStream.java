@@ -1,431 +1,337 @@
 package cwlib.io.streams;
 
-import cwlib.enums.CompressionFlags;
-import cwlib.types.data.ResourceReference;
-import cwlib.util.FileIO;
-import cwlib.enums.ResourceType;
-import cwlib.types.data.GUID;
-import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Array;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import cwlib.io.ValueEnum;
+import cwlib.enums.CompressionFlags;
+import cwlib.util.Bytes;
+import cwlib.util.FileIO;
+import cwlib.types.data.GUID;
+import cwlib.types.data.SHA1;
+
+/**
+ * Big-endian binary input stream.
+ */
 public class MemoryInputStream {
-    public String path;
-
-    public byte[] data;
-    public int offset;
-    public int length;
-    
-    public Revision revision = new Revision(0x271);
-    public byte compressionFlags = 0;
-
-    /**
-     * Creates a memory input stream from byte array
-     * @param data Byte array to use as source
-     */
-    public MemoryInputStream(byte[] data) { 
-        this.setData(data);
+    public static enum SeekMode {
+        Begin,
+        Relative,
+        End
     }
     
+    private final byte[] buffer;
+
+    private int offset = 0;
+    private final int length;
+    private byte compressionFlags;
+
+    private boolean isLittleEndian = false;
+
     /**
-     * Creates a memory input stream from byte array with specified revision.
-     * @param data Byte array to use as source
-     * @param revision Revision of the stream
+     * Creates a memory input stream from byte array.
+     * @param buffer Byte array to use as source
      */
-    public MemoryInputStream(byte[] data, int revision) {
-        this.setData(data);
-        this.revision = new Revision(revision);
-        
-        // NOTE(Aidan): For legacy reasons.
-        if (this.revision.head == 0x272 || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
+    public MemoryInputStream(byte[] buffer) {
+        if (buffer == null)
+            throw new NullPointerException("Buffer supplied to MemoryInputStream cannot be null!");
+        this.buffer = buffer;
+        this.length = buffer.length;
     }
 
     /**
-     * Creates a memory input stream from byte array with specified revision.
-     * @param data Byte array to use as source
-     * @param revision Revision of the stream
-     * @param branch Branch descriptor of the stream.
+     * Creates a memory input stream from byte array with compression flags.
+     * @param buffer Byte array to use as source
+     * @param compressionFlags Flags for compression methods used
      */
-    public MemoryInputStream(byte[] data, int revision, int branch) {
-        this.setData(data);
-        this.revision = new Revision(revision, branch >> 0x10, branch & 0xFFFF);
-        
-        // NOTE(Aidan): For legacy reasons.
-        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
+    public MemoryInputStream(byte[] buffer, byte compressionFlags) {
+        this(buffer);
+        this.compressionFlags = compressionFlags;
     }
-    
-    /**
-     * Creates a memory input stream from byte array with specified revision.
-     * @param data Byte array to use as source
-     * @param revision Revision of the stream
-     * @param branchID ID of branch of this stream.
-     * @param branchRevision Revision of the branch.
-     */
-    public MemoryInputStream(byte[] data, int revision, int branchID, int branchRevision) {
-        this.setData(data);
-        this.revision = new Revision(revision, branchID, branchRevision);
-        
-        // NOTE(Aidan): For legacy reasons.
-        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
-    }
-    
-    /**
-     * Creates a memory input stream from byte array with specified revision.
-     * @param data Byte array to use as source
-     * @param revision Revision of the stream
-     */
-    public MemoryInputStream(byte[] data, Revision revision) {
-        this.setData(data);
-        this.revision = revision;
-        
-        // NOTE(Aidan): For legacy reasons.
-        if ((this.revision.head == 0x272 && this.revision.branchID != 0) || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
-    }
-    
+
     /**
      * Creates a memory input stream from file at path.
-     * @param path Path of the file to read
+     * @param path Location to read data from
      */
     public MemoryInputStream(String path) {
-        this.path = path;
-        byte[] data = FileIO.read(path);
-        this.setData(data);
+        if (path == null)
+            throw new NullPointerException("Path supplied to MemoryInputStream cannot be null!");
+        final byte[] data = FileIO.read(path);
+        if (data == null)
+            throw new IllegalArgumentException("File provided could not be read!");
+        this.buffer = data;
+        this.length = data.length;
     }
 
     /**
-     * Creates a memory input stream from file at path with specified revision.
-     * @param path Path of the file to read
-     * @param revision Revision of the stream
+     * Creates a memory input stream from file at path with compression flags.
+     * @param path Location to read data from
+     * @param compressionFlags Flags for compression methods used
      */
-    public MemoryInputStream(String path, int revision) {
-        this.path = path;
-        this.revision = new Revision(revision);
-        byte[] data = FileIO.read(path);
-        this.setData(data);
-        
-        // NOTE(Aidan): For legacy reasons.
-        if (this.revision.head == 0x272 || this.revision.head > 0x297)
-            this.compressionFlags = 0x7;
-    }
-
-    /**
-     * Resets this stream with specified buffer.
-     * @param buffer Data buffer to use as a stream source
-     */
-    public void setData(byte[] buffer) {
-        this.data = buffer;
-        if (this.data != null)
-            this.length = buffer.length;
-        else this.length = 0;
-        this.offset = 0;
+    public MemoryInputStream(String path, byte compressionFlags) {
+        this(path);
+        this.compressionFlags = compressionFlags;
     }
 
     /**
      * Reads an arbitrary number of bytes from the stream.
+     * @param size Number of bytes to read from the stream
      * @return Bytes read from the stream
      */
-    public byte[] bytes(int size) {
+    public final byte[] bytes(int size) {
         this.offset += size;
-        if ((this.offset >= (data.length + 1)) || size == 0) 
-            return new byte[] {};
-        return Arrays.copyOfRange(this.data, this.offset - size, this.offset);
+        return Arrays.copyOfRange(this.buffer, this.offset - size, this.offset);
+    }
+
+    /**
+     * Reads a byte array from the stream.
+     * @return Bytes read from the stream
+     */
+    public final byte[] bytearray() {
+        int size = this.i32();
+        return this.bytes(size);
     }
 
     /**
      * Reads a boolean from the stream.
      * @return Boolean read from the stream
      */
-    public boolean bool() { return this.i8() != 0; }
+    public final boolean bool() { return (this.i8() != 0); }
 
     /**
      * Reads a byte from the stream.
      * @return Byte read from the stream
      */
-    public byte i8() {
-        this.offset++;
-        return this.data[this.offset - 1];
-    }
-    
-    /**
-     * Reads an array of bytes from the stream
-     * @return Array of bytes read from the stream
-     */
-    public byte[] i8a() {
-        byte[] values = new byte[this.i32()];
-        for (int i = 0; i < values.length; ++i)
-            values[i] = this.i8();
-        return values;
-    }
+    public final byte i8() { return this.buffer[this.offset++]; }
 
     /**
-     * Peeks at the next integer in the stream without advancing.
-     * @return Integer read from the stream
+     * Reads an unsigned byte from the stream as an integer.
+     * @return Byte read from the stream
      */
-    public int peek() {
-        int offset = this.offset;
-        int value = this.i32();
-        this.seek(offset);
-        return value;
-    }
-    
-    /**
-     * Reads a 16 bit floating point number from the stream.
-     * @return Float read from the stream
-     */
-    public float f16() {
-        short half = this.i16();
-        return Float.intBitsToFloat(((half & 0x8000) << 16) | (((half & 0x7c00) + 0x1C000) << 13) | ((half & 0x03FF) << 13));
-    }
+    public final int u8() { return this.buffer[this.offset++] & 0xFF; }
 
     /**
      * Reads a short from the stream.
      * @return Short read from the stream
      */
-    public short i16() {
-        byte[] buffer = this.bytes(2);
-        return (short)((buffer[0] << 8) | buffer[1] & 0xFF);
-    }
-    
-    /**
-     * Reads an array of shorts from the stream.
-     * @return Array of shorts read from the stream
-     */
-    public short[] i16a() {
-        short[] values = new short[this.i32()];
-        for (int i = 0; i < values.length; ++i)
-            values[i] = this.i16();
-        return values;
+    public final short i16() { 
+        byte[] bytes = this.bytes(2);
+        if (this.isLittleEndian) return Bytes.toShortLE(bytes);
+        return Bytes.toShortBE(bytes);
     }
 
     /**
-     * Reads an unsigned short from the stream.
+     * Reads an unsigned short from the stream as an integer.
      * @return Short read from the stream
      */
-    public int u16() {
-        byte[] buffer = this.bytes(2);
-        return buffer[0] << 8 & 0xFF00 | buffer[1] & 0xFF;
-    }
-    
+    public final int u16() { return (this.i16() & 0xFFFF); } 
+
     /**
-     * Reads a 24-bit integer from the stream
+     * Reads an unsigned 24-bit integer from the stream.
      * @return Integer read from the stream
      */
-    public int i24() {
-        byte[] buffer = this.bytes(3);
-        return (buffer[0] & 0xFF) << 16 | (buffer[1] & 0xFF) << 8 | buffer[2] & 0xFF;
+    public final int u24() {
+        final byte[] b = this.bytes(3);
+        if (this.isLittleEndian)
+            return (b[2] & 0xFF) << 16 | (b[1] & 0xFF) << 8 | b[0] & 0xFF;
+        return (b[0] & 0xFF) << 16 | (b[1] & 0xFF) << 8 | b[2] & 0xFF;
     }
 
     /**
-     * Reads a 32-bit integer from the stream, encoded depending on the revision.
+     * Reads a 32-bit integer from the stream, compressed depending on flags.
+     * @param force32 Whether or not to read as a 32-bit integer, regardless of compression flags.
      * @return Integer read from the stream
      */
-    public int i32() {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
-            return this.i32f();
-        return (int) (this.varint() & 0xFFFFFFFF);
-    }
-    
-    /**
-     * Reads a 64-bit long from the stream, encoded depending on the revision.
-     * @return Long read from the stream
-     */
-    public long i64() {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
-            return this.i64f();
-        return this.varint();
-    }
-    
-    /**
-     * Reads a long from the stream.
-     * @return Long read from the stream
-     */
-    public long i64f() {
-        byte[] buffer = this.bytes(8);
-        return (buffer[0] & 0xFFL) << 56L |
-               (buffer[1] & 0xFFL) << 48L |
-               (buffer[2] & 0xFFL) << 40L |
-               (buffer[3] & 0xFFL) << 32L |
-               (buffer[4] & 0xFFL) << 24L |
-               (buffer[5] & 0xFFL) << 16L |
-               (buffer[6] & 0xFFL) << 8L |
-               (buffer[7] & 0xFFL) << 0L;
-    }
-    
-    /**
-     * Reads an array of 32-bit integers from the stream, encoded depending on the revision.
-     * @return Array of integers read from the stream
-     */
-    public int[] i32a() {
-        int[] values = new int[this.i32()];
-        for (int i = 0; i < values.length; ++i)
-            values[i] = this.i32();
-        return values;
-    }
-    
-    /**
-     * Reads an array of unsigned 32-bit integers from the stream, encoded depending on the revision.
-     * @return Array of unsigned integers read from the stream
-     */
-    public long[] u32a() {
-        long[] values = new long[this.i32()];
-        for (int i = 0; i < values.length; ++i)
-            values[i] = this.u32();
-        return values;
+    public final int i32(boolean force32) {
+        if (force32 || (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0) {
+            byte[] bytes = this.bytes(4);
+            if (this.isLittleEndian) return Bytes.toIntegerLE(bytes);
+            return Bytes.toIntegerBE(bytes);
+        }
+        return (int) (this.uleb128() & 0xFFFFFFFF);
     }
 
     /**
-     * Reads a long as an unsigned integer from the stream, encoded depending on the revision.
+     * Reads a long as an unsigned integer from the stream, compressed depending on flags.
+     * @param force64 Whether or not to read as a 32-bit integer, regardless of compression flags.
      * @return Unsigned integer read from the stream
      */
-    public long u32() {
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
-            return this.u32f();
-        return this.varint();
+    public final long u32(boolean force32) {
+        if (force32 || (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
+            return this.i32(true) & 0xFFFFFFFFl;
+        return this.uleb128();
+    }
+
+    /**
+     * Reads a long from the stream, compressed depending on flags.
+     * @param force64 Whether or not to read as a 64-bit long, regardless of compression flags.
+     * @return Long read from the stream
+     */
+    public final long i64(boolean force64) {
+        if (force64 || (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0) {
+            final byte[] b = this.bytes(8);
+            if (this.isLittleEndian) {
+                return	(b[7] & 0xFFL) << 56L |
+                        (b[6] & 0xFFL) << 48L |
+                        (b[5] & 0xFFL) << 40L |
+                        (b[4] & 0xFFL) << 32L |
+                        (b[3] & 0xFFL) << 24L |
+                        (b[2] & 0xFFL) << 16L |
+                        (b[1] & 0xFFL) << 8L |
+                        (b[0] & 0xFFL) << 0L;
+            }
+            return	(b[0] & 0xFFL) << 56L |
+                    (b[1] & 0xFFL) << 48L |
+                    (b[2] & 0xFFL) << 40L |
+                    (b[3] & 0xFFL) << 32L |
+                    (b[4] & 0xFFL) << 24L |
+                    (b[5] & 0xFFL) << 16L |
+                    (b[6] & 0xFFL) << 8L |
+                    (b[7] & 0xFFL) << 0L;
+        }
+        return this.uleb128();
     }
 
     /**
      * Reads an integer from the stream.
      * @return Integer read from the stream
      */
-    public int i32f() {
-        byte[] buffer = this.bytes(4);
-        return buffer[0] << 24 | (buffer[1] & 0xFF) << 16 | (buffer[2] & 0xFF) << 8 | buffer[3] & 0xFF;
+    public final int i32() { return this.i32(false); }
+
+    /**
+     * Reads a long as an unsigned integer from the stream.
+     * @return Unsigned integer read from the stream
+     */
+    public final long u32() { return this.u32(false); }
+
+    /**
+     * Reads a long from the stream.
+     * @return Long read from the stream
+     */
+    public final long i64() { return this.i64(false); }
+
+    /**
+     * Reads a variable length quantity from the stream.
+     * @return Long value read from the stream
+     */
+    public final long uleb128() {
+        long result = 0, i = 0;
+        while (true) {
+            long b = (long) (this.u8() & 0xFFl);
+            result |= (b & 0x7fl) << 7l * i;
+            if ((b & 0x80l) == 0l)
+                break;
+            ++i;
+        }
+        return result >>> 0;
     }
 
     /**
-     * Reads a long as an unsigned integer from the stream as 32-bit regardless of revision.
-     * @return Unsigned integer read from the stream
+     * Reads a 16-bit integer array from the stream.
+     * @return Short array read from the stream
      */
-    public long u32f() {
-        return ByteBuffer.wrap(this.bytes(4))
-            .order(ByteOrder.BIG_ENDIAN)
-            .getInt() & 0xFFFFFFFFL;
+    public final short[] shortarray() {
+        int count = this.i32();
+        short[] elements = new short[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.i16();
+        return elements;
+    }
+
+    /**
+     * Reads a 32-bit integer array from the stream.
+     * @return Integer array read from the stream
+     */
+    public final int[] intarray() {
+        int count = this.i32();
+        int[] elements = new int[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.i32();
+        return elements;
+    }
+
+    /**
+     * Reads a 64-bit integer array from the stream.
+     * @return Long array read from the stream
+     */
+    public final long[] longarray() {
+        int count = this.i32();
+        long[] elements = new long[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.i64();
+        return elements;
+    }
+
+    /**
+     * Reads a 16 bit floating point number from the stream.
+     * @return Float read from the stream
+     */
+    public final float f16() {
+        short half = this.i16();
+        return Float.intBitsToFloat(((half & 0x8000) << 16) | (((half & 0x7c00) + 0x1C000) << 13) | ((half & 0x03FF) << 13));
     }
 
     /**
      * Reads a 32 bit floating point number from the stream.
      * @return Float read from the stream
      */
-    public float f32() { return Float.intBitsToFloat(this.i32f()); }
+    public final float f32() { return Float.intBitsToFloat(this.i32(true)); }
 
     /**
-     * Reads an array of 32 bit floating point numbers from the stream.
-     * @return Array of floats read from the stream
+     * Reads a 32-bit floating point number array from the stream.
+     * @return Float array read from the stream
      */
-    public float[] f32a() {
-        float[] values = new float[this.i32()];
-        for (int i = 0; i < values.length; ++i)
-            values[i] = this.f32();
-        return values;
+    public final float[] floatarray() {
+        int count = this.i32();
+        float[] elements = new float[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.f32();
+        return elements;
     }
 
     /**
      * Reads a 2-dimensional floating point vector from the stream.
      * @return Vector2f read from the stream
      */
-    public Vector2f v2() { return new Vector2f(this.f32(), this.f32()); }
+    public final Vector2f v2() { return new Vector2f(this.f32(), this.f32()); }
 
     /**
      * Reads a 3-dimensional floating point vector from the stream.
      * @return Vector3f read from the stream
      */
-    public Vector3f v3() { return new Vector3f(this.f32(), this.f32(), this.f32()); }
+    public final Vector3f v3() { return new Vector3f(this.f32(), this.f32(), this.f32()); }
 
     /**
      * Reads a 4-dimensional floating point vector from the stream.
      * @return Vector4f read from the stream
      */
-    public Vector4f v4() { return new Vector4f(this.f32(), this.f32(), this.f32(), this.f32()); }
+    public final Vector4f v4() { return new Vector4f(this.f32(), this.f32(), this.f32(), this.f32()); }
 
     /**
-     * Reads a Matrix4x4 from the stream, encoded depending on the revision.
+     * Reads a Matrix4x4 from the stream, compressed depending on flags.
      * @return Matrix4x4 read from the stream
      */
-    public Matrix4f matrix() {
-        float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+    public Matrix4f m44() {
+        final float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
         int flags = 0xFFFF;
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)
             flags = this.i16();
+        
         for (int i = 0; i < 16; ++i)
             if (((flags >>> i) & 1) != 0)
                 matrix[i] = this.f32();
         
-        Matrix4f mat = new Matrix4f();
+        final Matrix4f mat = new Matrix4f();
         mat.set(matrix);
         return mat;
-    }
-    
-    /**
-     * Reads a SHA1 hash from the stream.
-     * @return SHA1 hash read from the stream
-     */
-    public SHA1 sha1() { return new SHA1(this.bytes(0x14)); }
-    
-    public GUID guid() {
-        return new GUID(this.u32());
-    }
-
-    /**
-     * Reads a resource reference from the stream with a short flag.
-     * @param type Type of resource reference
-     * @return Resource reference read from the stream
-     */
-    public ResourceReference resource(ResourceType type) { return this.resource(type, false); }
-
-    /**
-     * Reads a resource reference from the stream
-     * @param resourceType Type of resource reference
-     * @param skipFlags Whether or not to skip resource flags in parsing
-     * @return Resource reference read from the stream
-     */
-    public ResourceReference resource(ResourceType resourceType, boolean skipFlags) {
-        byte HASH = 1, GUID = 2;
-        if (this.revision.head <= 0x18B) {
-            HASH = 2;
-            GUID = 1;
-        }
-
-        byte type = 0; int flags = 0;
-        
-        if (this.revision.head > 0x22e && !skipFlags) flags = this.i32();
-        type = this.i8();
-        
-        ResourceReference resource = new ResourceReference();
-        resource.type = resourceType;
-        resource.flags = flags;
-
-        if (type == GUID) resource.GUID = this.u32();
-        else if (type == HASH) resource.hash = this.sha1();
-        else return null;
-
-        return resource;
-    }
-
-    /**
-     * Reads a 7-bit encoded long from the stream.
-     * @return Long value read from the stream
-     */
-    public long varint() {
-        long result = 0, i = 0;
-        while (true) {
-            long b = (long) (this.i8() & 0xFFL);
-            result |= (b & 0x7FL) << 7L * i;
-            if ((b & 0x80L) == 0L)
-                break;
-            i++;
-        }
-        return result >>> 0;
     }
 
     /**
@@ -433,56 +339,156 @@ public class MemoryInputStream {
      * @param size Size of string to read
      * @return String value read from the stream
      */
-    public String str(int size) {
+    public final String str(int size) {
         if (size == 0) return "";
-        return new String(this.bytes(size), StandardCharsets.US_ASCII).replace("\0", "");
+        return new String(this.bytes(size)).replace("\0", "");
     }
 
     /**
-     * Reads a UTF-16 character array from the stream.
-     * @return UTF-16 string value read from the stream
+     * Reads a wide string of specified size from the stream.
+     * @param size Size of string to read
+     * @return String value read from the stream
      */
-    public String str16() {
-        int size = this.i32();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0) size *= 2;
-        byte[] data = this.bytes(size);
-        return new String(data, StandardCharsets.UTF_16BE);
+    public final String wstr(int size) {
+        if (size == 0) return "";
+        return new String(this.bytes(size * 2), Charset.forName("UTF-16BE")).replace("\0", "");
     }
 
     /**
-     * Reads a character array from the stream.
-     * @return UTF-8 string read from the stream
+     * Reads a length-prefixed string from the stream.
+     * @return String value read from the stream
      */
-    public String str8() {
+    public final String str() {
         int size = this.i32();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0) size /= 2;
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
+            size /= 2;
         return this.str(size);
     }
 
     /**
-     * Overwrites bytes from current offset.
-     * @param values Byte values to write
+     * Reads a length-prefixed wide string from the stream.
+     * @return String value read from the stream
      */
-    public void overwrite(byte[] values) {
-        for (int i = 0; i < values.length; i++)
-            this.data[this.offset + i] = values[i];
+    public final String wstr() {
+        int size = this.i32();
+        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
+            size /= 2;
+        return this.wstr(size);
     }
 
     /**
-     * Sets offset in stream to specified position
-     * @param pos Position in stream to seek to
+     * Reads a SHA1 hash from the stream.
+     * @return SHA1 hash read from the stream
      */
-    public void seek(int pos) { this.offset = pos; }
+    public final SHA1 sha1() { return new SHA1(this.bytes(0x14)); }
 
     /**
-     * Moves forward by number of bytes
-     * @param count Number of bytes to skip
+     * Reads a GUID (uint32_t) from the stream.
+     * @return GUID read from the stream
      */
-    public void forward(int count) { this.offset += count; }
+    public final GUID guid() { return this.guid(false); }
 
     /**
-     * Moves backward by a number of bytes
-     * @param count Number of bytes to rewind
+     * Reads a GUID (uint32_t) from the stream.
+     * @param force32 Whether or not to read as a 32 bit integer, regardless of compression flags.
+     * @return GUID read from the stream
      */
-    public void rewind(int count) { this.offset -= count; }
+    public final GUID guid(boolean force32) {
+        long number = this.u32(force32);
+        if (number == 0) return null;
+        return new GUID(number); 
+    }
+
+    /**
+     * Reads an 8-bit integer from the stream and resolves the enum value.
+     * @param <T> Type of enum
+     * @param enumeration Enum class
+     * @return Resolved enum constant
+     */
+    public final <T extends Enum<T> & ValueEnum<Byte>> T enum8(Class<T> enumeration) {
+        byte number = this.i8();
+        List<T> constants = Arrays.asList(enumeration.getEnumConstants());
+        for (T constant : constants)
+            if (constant.getValue().equals(number))
+                return constant;
+        return null;
+    }
+
+    /**
+     * Reads an 32-bit integer from the stream and resolves the enum value.
+     * @param <T> Type of enum
+     * @param enumeration Enum class
+     * @return Resolved enum constant
+     */
+    public final <T extends Enum<T> & ValueEnum<Integer>> T enum32(Class<T> enumeration) {
+        int number = this.i32();
+        List<T> constants = Arrays.asList(enumeration.getEnumConstants());
+        for (T constant : constants)
+            if (constant.getValue().equals(number))
+                return constant;
+        return null;
+    }
+
+    /**
+     * Reads a series of 8-bit integers from the stream and resolves them
+     * as an enum array.
+     * @param <T> Type of enum
+     * @param enumeration Enum class
+     * @return Resolved enum constant
+     */
+    @SuppressWarnings("unchecked")
+    public final <T extends Enum<T> & ValueEnum<Byte>> T[] enumarray(Class<T> enumeration) {
+        int count = this.i32();
+        T[] elements = (T[]) Array.newInstance(enumeration, count);
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.enum8(enumeration);
+        return elements;
+    }
+
+    /**
+     * Seeks to position relative to seek mode.
+     * @param offset Offset relative to seek position
+     * @param mode Seek origin
+     */
+    public final void seek(int offset, SeekMode mode) {
+        if (mode == null)
+            throw new NullPointerException("SeekMode cannot be null!");
+        if (offset < 0) throw new IllegalArgumentException("Can't seek to negative offsets.");
+        switch (mode) {
+            case Begin: {
+                if (offset >= this.length)
+                    throw new IllegalArgumentException("Can't seek past stream length.");
+                this.offset = offset;
+                break;
+            }
+            case Relative: {
+                int newOffset = this.offset + offset;
+                if (newOffset >= this.length || newOffset < 0)
+                    throw new IllegalArgumentException("Can't seek outside bounds of stream.");
+                this.offset = newOffset;
+                break;
+            }
+            case End: {
+                if (offset < 0 || this.length - offset < 0)
+                    throw new IllegalArgumentException("Can't seek outside bounds of stream.");
+                this.offset = this.length - offset;
+                break;
+            }
+        }
+    }
+
+    /**
+     * Seeks ahead in stream relative to offset.
+     * @param offset Offset to go to
+     */
+    public final void seek(int offset) { 
+        this.seek(offset, SeekMode.Relative);
+    }
+
+    public final boolean isLittleEndian() { return this.isLittleEndian; }
+    public final byte[] getBuffer() { return this.buffer; }
+    public final int getOffset() { return this.offset; }
+    public final int getLength() { return this.length; }
+    public final byte getCompressionFlags() { return this.compressionFlags; }
+    public void setLittleEndian(boolean value) { this.isLittleEndian = value; }
 }
