@@ -41,7 +41,7 @@ public abstract class Fart {
      */
     protected HashMap<SHA1, byte[]> queue = new HashMap<>(32);
 
-    public Fat[] entries;
+    protected Fat[] entries;
 
     /**
      * Structure to map SHA1s to their respective entries in the archive,
@@ -177,7 +177,7 @@ public abstract class Fart {
             stream.u32(entry.getOffset());
             stream.i32(entry.getSize());
         }
-        return stream.buffer;
+        return stream.getBuffer();
     }
 
     /**
