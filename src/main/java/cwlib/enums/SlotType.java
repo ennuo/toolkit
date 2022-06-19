@@ -1,6 +1,8 @@
 package cwlib.enums;
 
-public enum SlotType {
+import cwlib.io.ValueEnum;
+
+public enum SlotType implements ValueEnum<Integer> {
     DEVELOPER(0),
     USER_CREATED_ON_SERVER(1),
     USER_CREATED_STORED_LOCAL(2),
@@ -18,34 +20,25 @@ public enum SlotType {
     USER_ADVENTURE_PLANET_PUBLISHED(14),
     ADVENTURE_PLANET_LOCAL(15),
     ADVENTURE_LEVEL_LOCAL(16),
-    ADVENTURE_AREA_LEVEL(17),
-    MAX(18);
-    
-    public final int value;
-    
-    private SlotType(int value) { this.value = value; }
-    
-    public static SlotType getValue(int value) {
+    ADVENTURE_AREA_LEVEL(17);
+
+    private final int value;
+    private SlotType(int value) {
+        this.value = value;
+    }
+
+    public Integer getValue() { return this.value; }
+
+    /**
+     * Attempts to get a SlotType from value.
+     * @param value Slot type value
+     * @return SlotType
+     */
+    public static SlotType fromValue(int value) {
         for (SlotType type : SlotType.values()) {
             if (type.value == value) 
                 return type;
         }
         return SlotType.DEVELOPER;
     }
-    
-    public boolean isGroup() {
-       return this.equals(SlotType.DEVELOPER_GROUP) || 
-              this.equals(SlotType.LOCAL_GROUP) || 
-              this.equals(SlotType.DLC_PACK) ||
-              this.equals(SlotType.DEVELOPER_ADVENTURE_AREA) ||
-              this.equals(SlotType.ADVENTURE_AREA_LEVEL);
-    }
-    
-    public boolean isLink() {
-        return this.equals(SlotType.DEVELOPER) || 
-               this.equals(SlotType.DLC_LEVEL) ||
-               this.equals(SlotType.ADVENTURE_LEVEL_LOCAL) ||
-               this.equals(SlotType.DEVELOPER_ADVENTURE);
-    }
-    
 }

@@ -8,14 +8,14 @@ import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.SlotID;
 
 public class PackPresets {
-    public static Pack Theme(String name, String description, String author, ResourceReference icon) {
+    public static Pack Group(String name, String description, String author, ResourceReference icon) {
         Pack item = new Pack();
-        item.contentsType = ContentsType.THEME;
+        item.contentsType = ContentsType.GROUP;
         item.mesh = new ResourceReference(0x6a1a, ResourceType.MESH);
         
         item.slot.id = new SlotID(SlotType.DLC_PACK, 0x340);
         
-        item.slot.title = name;
+        item.slot.name = name;
         item.slot.description = description;
         
         item.slot.icon = icon;
@@ -33,9 +33,9 @@ public class PackPresets {
         item.mesh = new ResourceReference(0x3e86, ResourceType.MESH);
         
         item.slot.id = new SlotID(SlotType.DLC_LEVEL, 0x66062);
-        item.slot.primaryLinkGroup = new SlotID(SlotType.DLC_PACK, 0x340);
+        item.slot.group = new SlotID(SlotType.DLC_PACK, 0x340);
         
-        item.slot.title = name;
+        item.slot.name = name;
         item.slot.description = description;
         
         item.slot.icon = icon;

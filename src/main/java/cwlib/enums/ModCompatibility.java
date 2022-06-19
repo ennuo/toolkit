@@ -12,15 +12,15 @@ public enum ModCompatibility {
     PS4(8),
     ALL(31);
     
-    public final int value;
+    private final int value;
     private ModCompatibility(int value) { this.value = value; } 
     
-    public static ModCompatibility getValue(int value) {
+    public int getValue() { return this.value; }
+    public static ModCompatibility fromValue(int value) {
         for (ModCompatibility type : ModCompatibility.values()) {
             if (type.value == value) 
                 return type;
         }
         return ModCompatibility.ALL;
     }
-    
 }

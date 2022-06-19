@@ -1,7 +1,13 @@
 package cwlib.enums;
 
-public enum ToolType {
-    
+import cwlib.io.ValueEnum;
+
+/**
+ * Used in conjunction with InventoryItemDetails
+ * to tell the game that the specified item is a tool
+ * that has a certain function.
+ */
+public enum ToolType implements ValueEnum<Byte> {    
     NONE(0),
     CURSOR(1),
     VERTEX_EDIT(2),
@@ -50,10 +56,16 @@ public enum ToolType {
     ADVENTURE_RESET(45),
     ADVENTURE_SAVE(46);
     
-    public final byte value;
+    private final byte value;
     private ToolType(int value) { this.value = (byte) value; }
+    public Byte getValue() { return this.value; }
     
-    public static ToolType getValue(byte value) {
+    /**
+     * Attempts to get a ToolType from value.
+     * @param value Tool type value
+     * @return ToolType
+     */
+    public static ToolType fromValue(byte value) {
         for (ToolType type : ToolType.values()) {
             if (type.value == value) 
                 return type;

@@ -1,5 +1,8 @@
-package cwlib.structs.things;
+package cwlib.enums;
 
+/**
+ * Revisions for when parts were added to the game.
+ */
 public class PartHistory {
     public static final int BODY = 0x1;
     public static final int JOINT = 0x2;
@@ -42,7 +45,7 @@ public class PartHistory {
     public static final int PHYSICS_TWEAK = 0x27;
     public static final int NPC = 0x28;
     public static final int SWITCH_INPUT = 0x29;
-    public static final int MICRO_CHIP = 0x2a;
+    public static final int MICROCHIP = 0x2a;
     public static final int MATERIAL_TWEAK = 0x2b;
     public static final int MATERIAL_OVERRIDE = 0x2c;
     public static final int INSTRUMENT = 0x2d;

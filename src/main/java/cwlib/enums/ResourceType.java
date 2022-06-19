@@ -1,10 +1,15 @@
 package cwlib.enums;
 
-public enum ResourceType {
+import cwlib.io.ValueEnum;
+
+/**
+ * All valid resource types used by the
+ * LittleBigPlanet games.
+ */
+public enum ResourceType implements ValueEnum<Integer> {
     INVALID(null, 0),
     TEXTURE("TEX", 1),
     GTF_TEXTURE("GTF", 1),
-    GXT_TEXTURE("GXT", 1),
     MESH("MSH", 2),
     PIXEL_SHADER(null, 3),
     VERTEX_SHADER(null, 4),
@@ -72,14 +77,22 @@ public enum ResourceType {
     DATA_LABELS("DLA", 66),
     ADVENTURE_MAPS("ADM", 67);
     
-    public final String header;
-    public final int value;
+    private final String header;
+    private final int value;
     
     private ResourceType(String magic, int value) {
         this.header = magic;
         this.value = value;
     }
+
+    public String getHeader() { return this.header; }
+    public Integer getValue() { return this.value; }
     
+    /**
+     * Attempts to get a valid ResourceType from a 3-byte magic header.
+     * @param value Magic header
+     * @return Resource type
+     */
     public static ResourceType fromMagic(String value) {
         if (value.length() > 3)
             value = value.substring(0, 3);
@@ -91,6 +104,11 @@ public enum ResourceType {
         return ResourceType.INVALID;
     }
     
+    /**
+     * Attempts to get a valid ResourceType from the value index.
+     * @param value Resource value index
+     * @return Resource type
+     */
     public static ResourceType fromType(int value) {
         for (ResourceType type : ResourceType.values()) {
             if (type.value == value) 

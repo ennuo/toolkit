@@ -9,11 +9,12 @@ public enum SerializationType {
     GXT_SIMPLE("s"),
     GXT_EXTENDED("S");
     
-    public final String value;
+    private final String value;
     
     private SerializationType(String value) { this.value = value; }
     
-    public static SerializationType getValue(String value) {
+    public String getValue() { return this.value; }
+    public static SerializationType fromValue(String value) {
         for (SerializationType type : SerializationType.values()) {
             if (value.equals(type.value)) 
                 return type;

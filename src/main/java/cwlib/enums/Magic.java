@@ -58,6 +58,7 @@ public enum Magic {
     DATA_LABELS("DLAb"),
     ADVENTURE_MAPS("ADMb");
     
-    public final String value;
+    private final String value;
     private Magic(String value) { this.value = value; }
+    public String getValue() { return this.value; }
 }

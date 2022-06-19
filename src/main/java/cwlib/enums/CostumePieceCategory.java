@@ -18,7 +18,7 @@ public enum CostumePieceCategory {
     HANDS,
     WAIST;
     
-    public static int getFlags(EnumSet<InventoryObjectType> set) {
+    public static int getFlags(EnumSet<CostumePieceCategory> set) {
         int flags = 0;
         CostumePieceCategory[] categories = CostumePieceCategory.values();
         for (int i = 0; i < categories.length; ++i) {

@@ -11,13 +11,10 @@ public class SlotPresets {
     public static Slot Crater(ResourceReference level, int ID) {
         Slot slot = new Slot();
 
-        SlotID slotID = new SlotID();
-        slotID.type = SlotType.USER_CREATED_STORED_LOCAL;
-        slotID.ID = ID;
-        
-        
+        SlotID slotID = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, ID);
+
         slot.id = slotID;
-        slot.location = Crater.valueOf("SLOT_" + ID).value;
+        slot.location = Crater.valueOf("SLOT_" + ID).getValue();
         
         slot.root = level;
         

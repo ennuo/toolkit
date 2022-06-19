@@ -169,11 +169,13 @@ public enum Crater {
 	SLOT_80_LBP3(-0.97560966f, 0.20564793f, -0.076776974f),
 	SLOT_81_LBP3(0.83252716f, -0.5501321f, 0.06521601f);
 
-
-    
-    public final Vector4f value;
-    
+    private final Vector4f value;
     private Crater(float x, float y, float z) {
         this.value = new Vector4f(x, y, z, 0);
+    }
+
+    public Vector4f getValue() { 
+        // In case something tries to edit the value contained
+        return new Vector4f(this.value); 
     }
 }

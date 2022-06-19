@@ -1,31 +1,42 @@
 package cwlib.enums;
 
+import cwlib.io.ValueEnum;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceReference;
 
-public enum ContentsType {
-    THEME(0, 27162),
-    PACK(1, 68653),
-    LEVEL(2, 16006),
-    COSTUME(3, 68653),
-    ADVENTURE(5, 642431);
+/**
+ * Represents a type of DLC content slot.
+ */
+public enum ContentsType implements ValueEnum<Integer> {
+    GROUP(0, CommonMeshes.POLAROID_GUID),
+    PLANS(1, CommonMeshes.BUBBLE_GUID),
+    LEVEL(2, CommonMeshes.LEVEL_BADGE_GUID),
+    COSTUME(3, CommonMeshes.BUBBLE_GUID),
+    ADVENTURE(5, CommonMeshes.ADVENTURE_BADGE_GUID);
     
-    public final int value;
-    private final long badgeMeshGUID;
+    private final int value;
+
+    /**
+     * The default associated mesh associated
+     * with this content type.
+     */
+    private final GUID badgeMeshGUID;
     
-    private ContentsType(int value, int mesh) { 
+    private ContentsType(int value, GUID mesh) { 
         this.value = value; 
         this.badgeMeshGUID = mesh;
     }
-    
+
+    public Integer getValue() { return this.value; }
     public ResourceReference getBadgeMesh() {
         return new ResourceReference(this.badgeMeshGUID, ResourceType.MESH);
     }
     
-    public static ContentsType getValue(int value) {
+    public static ContentsType fromValue(int value) {
         for (ContentsType type : ContentsType.values()) {
             if (type.value == value) 
                 return type;
         }
-        return ContentsType.THEME;
-    }  
+        return ContentsType.GROUP;
+    }
 }

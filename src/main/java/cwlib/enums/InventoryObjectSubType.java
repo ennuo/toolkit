@@ -30,7 +30,7 @@ public final class InventoryObjectSubType {
     public static String getTypeString(EnumSet<InventoryObjectType> type, int subType) {
         if (type.isEmpty()) return "NONE";
         if (type.contains(InventoryObjectType.PLAYER_COLOUR))
-           return String.format("PLAYER_COLOUR_%2d", subType);
+            return String.format("PLAYER_COLOUR_%2d", subType);
         if (type.contains(InventoryObjectType.COSTUME) || type.contains(InventoryObjectType.USER_COSTUME)) {
             if ((subType & FULL_COSTUME) != 0) return "OUTFIT";
             if ((subType & SPECIAL_COSTUME) != 0) return "SPECIAL";
