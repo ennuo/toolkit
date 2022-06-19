@@ -1,33 +1,41 @@
 package cwlib.io;
 
 import cwlib.io.serializer.Serializer;
-import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+/**
+ * Interface that specifies that an object
+ * can be serialized as a pure data binary
+ * structure.
+ */
 public interface Serializable {
+    /**
+     * (De)serializes a structure that implements Serializable.
+     * @param <T> Type of structure to (de)serialize
+     * @param serializer Serializer instance
+     * @param structure Instance of structure to (de)serialize
+     * @param clazz Class of type of structure to (de)serialize
+     * @return Instance of structure that was (de)serialized
+     */
     public static <T extends Serializable> T serialize(Serializer serializer, T structure, Class<T> clazz) {
-        // NOTE(Aidan): Holy fuck that's a lot of exceptions, don't I always initialize the structure
-        // in the serialization functions anyway, do I really need this?
-        
         try {
             if (structure == null) structure = clazz.getDeclaredConstructor().newInstance();
             return structure.serialize(serializer, structure);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(Serializable.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (Exception ex) { ex.printStackTrace(); }
         return null;
     }
     
-    public abstract <T extends Serializable> T serialize(Serializer serializer, T structure);
+    /**
+     * (De)serializes a structure that implements Serializable.
+     * @param <T> Type of structure to (de)serialize
+     * @param serializer Serializer instance
+     * @param structure Instance of structure to (de)serialize
+     * @return Instance of structure that was (de)serialized.
+     */
+    <T extends Serializable> T serialize(Serializer serializer, T structure);
+
+    /**
+     * Calculates the size necessary to store this structure
+     * @return Size of this structure
+     */
+    int getAllocatedSize();
 }
