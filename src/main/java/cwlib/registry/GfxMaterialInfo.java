@@ -1,19 +1,19 @@
 package cwlib.registry;
 
-import cwlib.registry.MaterialRegistry;
 import cwlib.registry.MaterialRegistry.MaterialEntry;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RTexture;
+import cwlib.enums.BoxType;
 import cwlib.enums.MaterialFlags;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.SHA1;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
 import cwlib.types.mods.Mod;
 import cwlib.util.Images;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class GfxMaterialInfo {
         public Vector2f scale;
         
         public BufferedImage getBufferedImage() {
-            byte[] data = Globals.extractFile(this.texture);
+            byte[] data = ResourceSystem.extractFile(this.texture);
             if (data == null) return null;
             RTexture texture = new RTexture(data);
             if (scale.x > 1 && scale.y > 1) {
@@ -41,7 +41,7 @@ public class GfxMaterialInfo {
         
         public byte[] getTexture() { return this.getTexture(null); }
         public byte[] getTexture(BufferedImage dirt) {
-            byte[] data = Globals.extractFile(this.texture);
+            byte[] data = ResourceSystem.extractFile(this.texture);
             if (data == null) return null;
             RTexture texture = new RTexture(data);
             if (!texture.parsed || texture.cached == null) return null;
@@ -63,31 +63,32 @@ public class GfxMaterialInfo {
         int outputBox = material.getOutputBox();
         for (int i = 0; i < material.boxes.length; ++i) {
             MaterialBox box = material.boxes[i];
-            if (box.type == MaterialBox.BoxType.TEXTURE_SAMPLE) {
+            int[] parameters = box.getParameters();
+            if (box.type == BoxType.TEXTURE_SAMPLE) {
                 GfxTextureInfo info = new GfxTextureInfo();
                 info.scale = new Vector2f(
-                        Float.intBitsToFloat((int) box.params[0]),
-                        Float.intBitsToFloat((int) box.params[1]) 
+                        Float.intBitsToFloat((int) parameters[0]),
+                        Float.intBitsToFloat((int) parameters[1]) 
                 );
                 info.offset = new Vector2f(
-                        Float.intBitsToFloat((int) box.params[2]),
-                        Float.intBitsToFloat((int) box.params[3]) 
+                        Float.intBitsToFloat((int) parameters[2]),
+                        Float.intBitsToFloat((int) parameters[3]) 
                 );
-                info.channel = (int) box.params[4];
-                info.texture = material.textures[(int) box.params[5]];
+                info.channel = (int) parameters[4];
+                info.texture = material.textures[(int) parameters[5]];
                 
                 
                 MaterialWire wire = material.findWireFrom(i);
                 while (wire.boxTo != outputBox)
                     wire = material.findWireFrom(wire.boxTo);
                 
-                FileEntry entry = Globals.findEntry(info.texture);
-                if (entry != null) info.path = entry.path;
+                FileEntry entry = ResourceSystem.findEntry(info.texture);
+                if (entry != null) info.path = entry.getPath();
                 switch (wire.portTo) {
                     case 0:
                         if ((this.flags & MaterialFlags.HAS_DIFFUSE) != 0) 
                             continue;
-                        if (entry != null && entry.path.toLowerCase().contains("_dirt")) {
+                        if (entry != null && entry.getPath().toLowerCase().contains("_dirt")) {
                             this.textures.put("DIRT", info);
                             continue;
                         }

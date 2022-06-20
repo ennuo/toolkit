@@ -4,49 +4,63 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class MaterialBox implements Serializable {
-    public final class BoxType {
-        public static final int OUTPUT = 0;
-        public static final int TEXTURE_SAMPLE = 1;
-        public static final int COLOR = 3;
-        public static final int MULTIPLY = 10;
-        public static final int SUBTRACT = 12;
-    }
-    
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
+
+    /**
+     * Number of parameters used before r0x2a4
+     */
+    public static final int LEGACY_PARAMETER_COUNT = 0x6;
+
+    public static final int PARAMETER_COUNT = 0x8;
+
     public int type;
-    public long[] params;
+    private int[] params = new int[PARAMETER_COUNT];
     public float x, y, w, h;
     public int subType;
-    
-    public MaterialParameterAnimation anim;
-    public MaterialParameterAnimation anim2;
-    
-    public MaterialBox serialize(Serializer serializer, Serializable structure) {
-        MaterialBox box = null;
-        if (structure != null) box = (MaterialBox) structure;
-        else box = new MaterialBox();
-        
+    public MaterialParameterAnimation anim = new MaterialParameterAnimation();
+    public MaterialParameterAnimation anim2 = new MaterialParameterAnimation();
+
+    @SuppressWarnings("unchecked")
+    @Override public MaterialBox serialize(Serializer serializer, Serializable structure) {
+        MaterialBox box = 
+            (structure == null) ? new MaterialBox() : (MaterialBox) structure;
+
         box.type = serializer.i32(box.type);
-        
-        if (serializer.revision.head < 0x2a4) {
-            if (!serializer.isWriting) box.params = new long[6];
-            for (int i = 0; i < 6; ++i)
-                box.params[i] = serializer.u32(box.params[i]);
-        } else box.params = serializer.u32a(box.params);
+
+        int head = serializer.getRevision().getVersion();
+
+        if (!serializer.isWriting()) box.params = new int[PARAMETER_COUNT];
+        if (head < 0x2a4) {
+            for (int i = 0; i < LEGACY_PARAMETER_COUNT; ++i)
+                box.params[i] = serializer.i32(box.params[i]);
+        } else {
+            serializer.i32(PARAMETER_COUNT);
+            for (int i = 0; i < PARAMETER_COUNT; ++i)
+                box.params[i] = serializer.i32(box.params[i]);
+        }
 
         box.x = serializer.f32(box.x);
         box.y = serializer.f32(box.y);
         box.w = serializer.f32(box.w);
         box.h = serializer.f32(box.h);
-        
-        if (serializer.revision.head > 0x2a3)
+
+        if (head > 0x2a3) 
             box.subType = serializer.i32(box.subType);
         
-        if (serializer.revision.head > 0x2a1)
+        if (head > 0x2a1)
             box.anim = serializer.struct(box.anim, MaterialParameterAnimation.class);
-        
-        if (serializer.revision.head > 0x2a3)
+        if (head > 0x2a3)
             box.anim2 = serializer.struct(box.anim2, MaterialParameterAnimation.class);
         
         return box;
     }
+
+    @Override public int getAllocatedSize() { 
+        int size = MaterialBox.BASE_ALLOCATION_SIZE;
+        size += this.anim.getAllocatedSize();
+        size += this.anim2.getAllocatedSize();
+        return size;
+    }
+
+    public int[] getParameters() { return this.params; }
 }

@@ -1,5 +1,6 @@
 package cwlib.resources;
 
+import cwlib.enums.BoxType;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
@@ -213,4 +214,32 @@ public class RGfxMaterial implements Serializable, Compressable {
             sourceOffsets = 0x3;
         return sourceOffsets;
     }
+
+    /**
+     * Finds the output wire of a specified box
+     * @param box Index of box
+     * @return Output wire if it exists
+     */
+    public MaterialWire findWireFrom(int box) {
+        for (MaterialWire wire : this.wires)
+            if (wire.boxFrom == box)
+                return wire;
+        return null;
+    }
+
+    /**
+     * Gets the index of the shader output box
+     * @return Index of output box
+     */
+    public int getOutputBox() {
+        for (int i = 0; i < this.boxes.length; ++i) {
+            MaterialBox box = this.boxes[i];
+            if (box.type == BoxType.OUTPUT)
+                return i;
+        }
+        return -1;
+    }
+
+    public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes[wire.boxFrom]; }
+    public MaterialBox getBoxTo(MaterialWire wire) { return this.boxes[wire.boxTo]; }
 }
