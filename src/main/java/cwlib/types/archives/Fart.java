@@ -190,4 +190,12 @@ public abstract class Fart {
         if (!this.file.exists()) return true;
         return this.file.lastModified() != this.lastModified;
     }
+
+    /**
+     * Checks if the archive contains data to save.
+     * @return Whether or not the archive should save.
+     */
+    public boolean shouldSave() {
+        return this.queue.size() != 0;
+    }
 }
