@@ -9,28 +9,20 @@ public class TranslationPatch implements ModPatch {
     public int ID;
     public String value;
 
-    @Override
-    public PatchType type() {
-        return PatchType.LAMS;
-    }
+    @Override public PatchType type() { return PatchType.LAMS; }
+    @Override public void apply() { throw new UnsupportedOperationException("Not supported yet."); }
 
-    @Override
-    public void apply() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void serialize(MemoryOutputStream output) {
-        output.str8(this.key);
+    @Override public void serialize(MemoryOutputStream output) {
+        output.str(this.key);
         output.i32(this.ID);
-        output.str16(this.value);
+        output.wstr(this.value);
     }
     
     public static ModPatch deserialize(MemoryInputStream data) {
         TranslationPatch patch = new TranslationPatch();
-        patch.key = data.str8();
+        patch.key = data.str();
         patch.ID = data.i32();
-        patch.value = data.str16();
+        patch.value = data.wstr();
         System.out.println(String.format("Found Translation Patch with key = %s, ID = %d, value = %s", patch.key, patch.ID, patch.value));
         return patch;
     }
