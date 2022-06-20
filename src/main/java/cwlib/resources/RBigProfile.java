@@ -1,107 +1,169 @@
 package cwlib.resources;
 
-import cwlib.types.Resource;
-import cwlib.enums.ResourceType;
-import cwlib.structs.profile.InventoryItem;
-import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
-import cwlib.structs.slot.Slot;
-import cwlib.structs.slot.SlotID;
-import cwlib.io.Serializable;
-import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
-import cwlib.structs.profile.Challenge;
-import cwlib.structs.profile.DataLabel;
-import cwlib.structs.profile.StringLookupTable;
-import cwlib.structs.profile.Treasure;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-public class RBigProfile implements Serializable {
-    public ArrayList<InventoryItem> inventory;
-    public SHA1[] vitaCrossDependencyHashes;
-    public StringLookupTable stringTable;
-    public boolean fromProductionBuild;
-    public HashMap<SlotID, Slot> myMoonSlots;
+import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
+import cwlib.io.Compressable;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
+import cwlib.structs.profile.Challenge;
+import cwlib.structs.profile.DataLabel;
+import cwlib.structs.profile.InventoryItem;
+import cwlib.structs.profile.StringLookupTable;
+import cwlib.structs.profile.Treasure;
+import cwlib.structs.slot.Slot;
+import cwlib.structs.slot.SlotID;
+import cwlib.types.data.ResourceReference;
+import cwlib.types.data.Revision;
+import cwlib.types.data.SHA1;
+
+/**
+ * A resource used to contain all user generated content,
+ * including your saved objects, costumes, etc, as well
+ * as saved levels (slots).
+ */
+public class RBigProfile implements Compressable, Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x20;
+
+    /**
+     * List of items this user has.
+     */
+    public ArrayList<InventoryItem> inventory = new ArrayList<>();
     
-    public DataLabel[] creatorDataLabels;
-    
-    public Challenge[] nearMyChallengeDataLog;
-    public Challenge[] nearMyChallengeDataOpen;
-    public Treasure[] nearMyTreasureLog;
-    
-    public SlotID[] downloadedSlots;
+    public ArrayList<SHA1> vitaCrossDependencyHashes = new ArrayList<>();
+
+    public ArrayList<DataLabel> creatorDataLabels = new ArrayList<>();
+
+    /**
+     * Stores categories and locations referenced by items.
+     */
+    public StringLookupTable stringTable = new StringLookupTable();
+
+    /**
+     * Whether or not this profile was from a production build.
+     */
+    public boolean fromProductionBuild = true;
+
+    /**
+     * Slots created by the user on their moon.
+     */
+    public HashMap<SlotID, Slot> myMoonSlots = new HashMap<>();
+
+    /* Near nonsense, don't even remember what it was used for. */
+    public ArrayList<Challenge> nearMyChallengeDataLog = new ArrayList<>();
+    public ArrayList<Challenge> nearMyChallengeDataOpen = new ArrayList<>();
+    public ArrayList<Treasure> nearMyTreasureLog = new ArrayList<>();
+
+    /**
+     * List of slots that a user has downloaded in LittleBigPlanet Vita.
+     */
+    public ArrayList<SlotID> downloadedSlots = new ArrayList<>();
+
+    /**
+     * Locally stored planet decorations in LittleBigPlanet Vita.
+     */
     public ResourceReference planetDecorations;
 
-    public Serializable serialize(Serializer serializer, Serializable structure) {
+    @SuppressWarnings("unchecked")
+    @Override public RBigProfile serialize(Serializer serializer, Serializable structure) {
         RBigProfile profile = (structure == null) ? new RBigProfile() : (RBigProfile) structure;
-        
+
         profile.inventory = serializer.arraylist(profile.inventory, InventoryItem.class);
-        
-        // Maybe I should see if I can abuse reflection or something
-        // to handle arrays, or I can just write all the ones I need already.
-        if (serializer.revision.head > 0x3ea) {
-            if (serializer.isWriting) {
-                if (this.vitaCrossDependencyHashes != null) {
-                    serializer.output.i32(this.vitaCrossDependencyHashes.length);
-                    for (SHA1 hash : this.vitaCrossDependencyHashes)
-                        serializer.output.sha1(hash);
+
+        Revision revision = serializer.getRevision();
+        int head = revision.getVersion();
+
+        if (head > 0x3ea) {
+            if (serializer.isWriting()) {
+                if (profile.vitaCrossDependencyHashes != null) {
+                    MemoryOutputStream stream = serializer.getOutput();
+                    stream.i32(profile.vitaCrossDependencyHashes.size());
+                    for (SHA1 hash : profile.vitaCrossDependencyHashes)
+                        stream.sha1(hash);
                 } else serializer.i32(0);
             } else {
-                int size = serializer.input.i32();
-                this.vitaCrossDependencyHashes = new SHA1[size];
+                MemoryInputStream stream =  serializer.getInput();
+                int size = stream.i32();
+                profile.vitaCrossDependencyHashes = new ArrayList<SHA1>(size);
                 for (int i = 0; i < size; ++i)
-                    this.vitaCrossDependencyHashes[i] = serializer.input.sha1();
+                    profile.vitaCrossDependencyHashes.add(stream.sha1());
             }
         }
-        
-        if (serializer.revision.head >= 0x3ef)
-            profile.creatorDataLabels = serializer.array(profile.creatorDataLabels, DataLabel.class);
-        
+
+        if (head >= 0x3ef)
+            profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
+
         profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
-        if (serializer.revision.head > 0x3b5)
+
+        if (head > 0x3b5)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
         
-        if (serializer.isWriting) {
+        if (serializer.isWriting()) {
             Set<SlotID> keys = profile.myMoonSlots.keySet();
-            serializer.output.i32(keys.size());
+            serializer.getOutput().i32(keys.size());
             for (SlotID key : keys) {
                 serializer.struct(key, SlotID.class);
                 serializer.struct(profile.myMoonSlots.get(key), Slot.class);
             }
         } else {
-            int count = serializer.input.i32();
+            int count = serializer.getInput().i32();
             profile.myMoonSlots = new HashMap<SlotID, Slot>(count);
             for (int i = 0; i < count; ++i)
                 profile.myMoonSlots.put(
                         serializer.struct(null, SlotID.class), 
                         serializer.struct(null, Slot.class));
         }
-        
-        if (serializer.revision.isAfterVitaRevision(0x2d))
-            profile.creatorDataLabels = serializer.array(profile.creatorDataLabels, DataLabel.class);
-        
-        if (serializer.revision.isAfterVitaRevision(0x56)) {
-            profile.nearMyChallengeDataLog = serializer.array(profile.nearMyChallengeDataLog, Challenge.class);
-            profile.nearMyChallengeDataOpen = serializer.array(profile.nearMyChallengeDataOpen, Challenge.class);
-        }
-        
-        if (serializer.revision.isAfterVitaRevision(0x58))
-            profile.nearMyTreasureLog = serializer.array(profile.nearMyTreasureLog, Treasure.class);
 
-        if (serializer.revision.isAfterVitaRevision(0x59))
-            profile.downloadedSlots = serializer.array(profile.downloadedSlots, SlotID.class);
-        
-        if (serializer.revision.isAfterVitaRevision(0x7a))
+        if (revision.isAfterVitaRevision(0x2d))
+            profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
+
+        if (revision.isAfterVitaRevision(0x56)) {
+            profile.nearMyChallengeDataLog = 
+                serializer.arraylist(profile.nearMyChallengeDataLog, Challenge.class);
+
+            profile.nearMyChallengeDataOpen = 
+                serializer.arraylist(profile.nearMyChallengeDataOpen, Challenge.class);
+        }
+
+        if (revision.isAfterVitaRevision(0x58))
+            profile.nearMyTreasureLog = serializer.arraylist(profile.nearMyTreasureLog, Treasure.class);
+
+        if (revision.isAfterVitaRevision(0x59))
+            profile.downloadedSlots = serializer.arraylist(profile.downloadedSlots, SlotID.class);
+
+        if (revision.isAfterVitaRevision(0x7a))
             profile.planetDecorations = serializer.resource(profile.planetDecorations, ResourceType.LEVEL, true);
         
         return profile;
     }
-    
-    public byte[] build(Revision revision, byte compressionFlags) {
-        Serializer serializer = new Serializer(1000 * 1024, revision, compressionFlags);
+
+    @Override public int getAllocatedSize() { 
+        int size = BASE_ALLOCATION_SIZE;
+        size += this.stringTable.getAllocatedSize();
+        if (this.inventory != null)
+            for (int i = 0; i < this.inventory.size(); ++i)
+                size += this.inventory.get(i).getAllocatedSize();
+        for (Slot slot : this.myMoonSlots.values())
+            size += (slot.getAllocatedSize() + SlotID.BASE_ALLOCATION_SIZE);
+        return size;
+    }
+
+    @Override public SerializationData build(Revision revision, byte compressionFlags) {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
         serializer.struct(this, RBigProfile.class);
-        return Resource.compressToResource(serializer.output, ResourceType.BIG_PROFILE);
+        return new SerializationData(
+            serializer.getBuffer(), 
+            revision, 
+            compressionFlags, 
+            ResourceType.BIG_PROFILE,
+            SerializationType.BINARY, 
+            serializer.getDependencies()
+        );
     }
 }
