@@ -1,7 +1,7 @@
 package toolkit.utilities.services;
 
 import cwlib.structs.slot.Slot;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import toolkit.windows.Toolkit;
 
 import javax.swing.JTree;

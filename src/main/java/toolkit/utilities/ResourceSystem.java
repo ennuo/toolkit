@@ -1,5 +1,6 @@
 package toolkit.utilities;
 
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceReference;
 import cwlib.resources.RTranslationTable;
 import cwlib.types.data.SHA1;
@@ -7,9 +8,8 @@ import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.BigSave;
-import cwlib.types.FileArchive;
-import cwlib.types.FileDB;
-import cwlib.types.FileEntry;
+import cwlib.types.archives.Fart;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import toolkit.windows.Toolkit;
 
@@ -20,29 +20,25 @@ import java.util.ArrayList;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
-public class Globals {
-    public enum WorkspaceType {
-        NONE,
-        MAP,
-        PROFILE,
-        MOD,
-        SAVE,
-        
-    }
-    
+/**
+ * Global utilities for working with
+ * loaded databases.
+ */
+public class ResourceSystem {
     public static File workingDirectory;
     
     static {
         try {
-            Globals.workingDirectory = Files.createTempDirectory("twd").toFile();
-            Globals.workingDirectory.deleteOnExit();
+            ResourceSystem.workingDirectory = Files.createTempDirectory("twd").toFile();
+            ResourceSystem.workingDirectory.deleteOnExit();
         } catch (IOException ex) { System.out.println("An error occurred creating temp directory."); }
     }
 
     public static ArrayList<FileData> databases;
-    public static ArrayList<FileArchive> archives;
+    public static ArrayList<Fart> archives;
+
+
     public static RTranslationTable LAMS;
-    private static RTranslationTable KEYS;
 
     public static ArrayList<FileNode> entries;
     public static FileNode lastSelected;
@@ -50,13 +46,13 @@ public class Globals {
     public static WorkspaceType currentWorkspace = WorkspaceType.NONE;
     
     public static void reset() {
-        Globals.currentWorkspace = WorkspaceType.NONE;
-        Globals.entries = new ArrayList<FileNode>();
-        Globals.lastSelected = null;
-        Globals.LAMS = null;
-        Globals.KEYS = null;
-        Globals.archives = new ArrayList<FileArchive>();
-        Globals.databases = new ArrayList<FileData>();
+        ResourceSystem.currentWorkspace = WorkspaceType.NONE;
+        ResourceSystem.entries = new ArrayList<FileNode>();
+        ResourceSystem.lastSelected = null;
+        ResourceSystem.LAMS = null;
+        ResourceSystem.KEYS = null;
+        ResourceSystem.archives = new ArrayList<Fart>();
+        ResourceSystem.databases = new ArrayList<FileData>();
     }
 
     public static boolean canExtract() {
@@ -74,18 +70,18 @@ public class Globals {
     }
 
     public static FileEntry findEntry(long GUID) {
-        if (Globals.databases.size() == 0) return null;
+        if (ResourceSystem.databases.size() == 0) return null;
         FileData db = Toolkit.instance.getCurrentDB();
-        if (Globals.currentWorkspace == WorkspaceType.MAP) {
+        if (ResourceSystem.currentWorkspace == WorkspaceType.MAP) {
             FileEntry entry = ((FileDB) db).find(GUID);
             if (entry != null)
                 return entry;
-        } else if (Globals.currentWorkspace == WorkspaceType.MOD) {
+        } else if (ResourceSystem.currentWorkspace == WorkspaceType.MOD) {
             FileEntry entry = ((Mod) db).find(GUID);
             if (entry != null)
                 return entry;
         }
-        for (FileData data: Globals.databases) {
+        for (FileData data: ResourceSystem.databases) {
             if (data.type.equals("FileDB")) {
                 FileEntry entry = ((FileDB) data).find(GUID);
                 if (entry != null)
@@ -96,14 +92,14 @@ public class Globals {
     }
 
     public static FileEntry findEntry(SHA1 hash) {
-        if (Globals.databases.size() == 0) return null;
+        if (ResourceSystem.databases.size() == 0) return null;
         FileData db = Toolkit.instance.getCurrentDB();
 
         FileEntry e = db.find(hash);
         if (e != null)
             return e;
 
-        for (FileData data: Globals.databases) {
+        for (FileData data: ResourceSystem.databases) {
             if (data.type.equals("FileDB")) {
                 FileEntry entry = ((FileDB) data).find(hash);
                 if (entry != null)
@@ -113,30 +109,31 @@ public class Globals {
         return null;
     }
 
-    public static byte[] extractFile(ResourceReference ptr) {
-        if (ptr == null) return null;
-        if (ptr.hash != null) return extractFile(ptr.hash);
-        else if (ptr.GUID != -1) return extractFile(ptr.GUID);
+    public static byte[] extractFile(ResourceReference ref) {
+        if (ref == null) return null;
+        if (ref.isHash()) return ResourceSystem.extractFile(ref.getSHA1());
+        else if (ref.isGUID()) return ResourceSystem.extractFile(ref.getGUID());
         return null;
     }
 
-    public static byte[] extractFile(long GUID) {
+    public static byte[] extractFile(long guid) { return ResourceSystem.extractFile(new GUID(guid)); }
+    public static byte[] extractFile(GUID guid) {
         FileData db = Toolkit.instance.getCurrentDB();
 
 
         if (currentWorkspace == WorkspaceType.MAP) {
-            FileEntry entry = ((FileDB) db).find(GUID);
+            FileEntry entry = ((FileDB) db).find(guid);
             if (entry != null)
                 return extractFile(entry.hash);
         } else if (currentWorkspace == WorkspaceType.MOD) {
-            FileEntry entry = ((Mod) db).find(GUID);
+            FileEntry entry = ((Mod) db).find(guid);
             if (entry != null)
                 return entry.data;
         }
 
-        for (FileData data: Globals.databases) {
+        for (FileData data: ResourceSystem.databases) {
             if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(GUID);
+                FileEntry entry = ((FileDB) data).find(guid);
                 if (entry != null) {
                     byte[] buffer = extractFile(entry.hash);
                     if (buffer != null) return buffer;
@@ -145,7 +142,7 @@ public class Globals {
             }
         }
 
-        System.out.println("Could not extract g" + GUID);
+        System.out.println("Could not extract g" + guid);
 
         return null;
     }
@@ -159,8 +156,8 @@ public class Globals {
             byte[] data = ((Mod) db).extract(hash);
             if (data != null) return data;
         }
-        for (FileArchive archive: Globals.archives) {
-            byte[] data = archive.extract(hash);
+        for (Fart fart: ResourceSystem.archives) {
+            byte[] data = fart.extract(hash);
             if (data != null) return data;
         }
         
@@ -170,15 +167,15 @@ public class Globals {
     }
 
     public static void replaceEntry(FileEntry entry, byte[] data) {
-        if (Globals.currentWorkspace != WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace != WorkspaceType.PROFILE) {
             entry.resetResources();
-            if (Globals.currentWorkspace != WorkspaceType.MOD) {
-                if (!Globals.addFile(data))
+            if (ResourceSystem.currentWorkspace != WorkspaceType.MOD) {
+                if (!ResourceSystem.addFile(data))
                     return; 
             }
         }
 
-        Toolkit.instance.getCurrentDB().edit(entry, data);
+        entry.setDetails(data);
         Toolkit.instance.updateWorkspace();
 
         JTree tree = Toolkit.instance.getCurrentTree();
@@ -189,22 +186,22 @@ public class Globals {
     }
 
     public static boolean addFile(byte[] data) {
-        if (Globals.currentWorkspace == WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace == WorkspaceType.PROFILE) {
             ((BigSave) Toolkit.instance.getCurrentDB()).add(data);
             Toolkit.instance.updateWorkspace();
             return true;
         }
 
-        FileArchive[] archives = Toolkit.instance.getSelectedArchives();
+        Fart[] archives = Toolkit.instance.getSelectedArchives();
         if (archives == null) return false;
 
-        Globals.addFile(data, archives);
+        ResourceSystem.addFile(data, archives);
         return true;
     }
 
-    public static void addFile(byte[] data, FileArchive[] archives) {
-        for (FileArchive archive: archives)
-            archive.add(data);
+    public static void addFile(byte[] data, Fart[] farts) {
+        for (Fart fart: farts)
+            fart.add(data);
         Toolkit.instance.updateWorkspace();
         System.out.println("Added file to queue, make sure to save your workspace!");
     }

@@ -3,7 +3,7 @@ package toolkit.utilities.services;
 import cwlib.resources.RPacks;
 import cwlib.types.Resource;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import javax.swing.JTree;
 
 public class PackService implements ResourceService  {

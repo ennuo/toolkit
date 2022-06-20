@@ -1,7 +1,7 @@
 package toolkit.utilities;
 
 import toolkit.configurations.Config;
-import toolkit.configurations.Flags;
+import toolkit.configurations.ApplicationFlags;
 import toolkit.windows.Toolkit;
 
 public class EasterEgg {
@@ -46,14 +46,13 @@ public class EasterEgg {
             toolkit.debugMenu.setVisible(true);
         }
 
-        if (username.equals("madbrine")) { //metraberryy, feel free to remove this if you want
+        if (username.equals("madbrine")) {
             toolkit.setTitle("farctool3");
             toolkit.debugMenu.setVisible(true);
         }
 
         if (toolkit.debugMenu.isVisible()) {
             toolkit.setTitle(toolkit.getTitle() + " | Debug");
-            Flags.ENABLE_NEW_SAVEDATA = true;
         }
     }
 }

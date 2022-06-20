@@ -3,7 +3,7 @@ package toolkit.functions;
 import cwlib.types.swing.FileData;
 import cwlib.types.FileArchive;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import static toolkit.windows.Toolkit.trees;
@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 public class FileCallbacks {
     public static void save() {                                         
         FileData db = Toolkit.instance.getCurrentDB();
-        if (db == null && Globals.archives.size() == 0) return;
+        if (db == null && ResourceSystem.archives.size() == 0) return;
         System.out.println("Saving workspace...");
         if (db != null) {
             if (db.shouldSave) {
@@ -23,7 +23,7 @@ public class FileCallbacks {
             } else System.out.println(db.type + " has no pending changes, skipping save.");
         }
 
-        for (FileArchive archive: Globals.archives) {
+        for (FileArchive archive: ResourceSystem.archives) {
             if (archive.shouldSave) {
                 System.out.println("Saving FileArchive at " + archive.file.getAbsolutePath());
                 archive.save();
@@ -35,9 +35,9 @@ public class FileCallbacks {
     
     public static void saveAs() {                                       
         String ext = "", type = "";
-        if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
             type = "Big Profile";
-        } else if (Globals.currentWorkspace == Globals.WorkspaceType.MOD) {
+        } else if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.MOD) {
             ext = "mod";
             type = "Mod";
         } else {
@@ -61,7 +61,7 @@ public class FileCallbacks {
             if (result == JOptionPane.YES_OPTION) data.save(data.path);
         }
 
-        Globals.databases.remove(index);
+        ResourceSystem.databases.remove(index);
         trees.remove(index);
         Toolkit.instance.fileDataTabs.removeTabAt(index);
     }  

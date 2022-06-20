@@ -16,10 +16,10 @@ import cwlib.structs.slot.SlotID;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.BigSave;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
 import cwlib.util.Strings;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.awt.event.ItemEvent;
@@ -195,17 +195,17 @@ public class SlotManager extends javax.swing.JFrame {
             if (this.type == EditorType.PACK) {
                 RPacks pack = new RPacks();
                 pack.packs = this.packs.stream().toArray(Pack[]::new);
-                Globals.replaceEntry(this.entry, pack.build(this.entry.revision, this.entry.compressionFlags));
+                ResourceSystem.replaceEntry(this.entry, pack.build(this.entry.revision, this.entry.compressionFlags));
             } else if (this.type == EditorType.ADVENTURE) {
                 HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
                 for (Slot slot : this.slots)
                    slotMap.put(slot.id, slot);
                 adventure.adventureSlots = slotMap;
-                Globals.replaceEntry(this.entry, adventure.build(this.entry.revision, this.entry.compressionFlags));
+                ResourceSystem.replaceEntry(this.entry, adventure.build(this.entry.revision, this.entry.compressionFlags));
             } else if (this.type == EditorType.SLOT_LIST) {
                 RSlotList list = new RSlotList();
                 list.slots = this.slots.stream().toArray(Slot[]::new);
-                Globals.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
+                ResourceSystem.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
             }
             this.entry.resetResources();
         }
@@ -564,9 +564,9 @@ public class SlotManager extends javax.swing.JFrame {
             this.titleTextEntry.setText(tag);
             this.descriptionTextEntry.setText("A valid translation table needs to be loaded for the title and description to appear. Alternatively, remove the translation key, and set your own title/description.");
 
-            if (Globals.LAMS != null) {
-                this.titleTextEntry.setText(Globals.LAMS.translate(tag + "_NAME"));
-                this.descriptionTextEntry.setText(Globals.LAMS.translate(tag + "_DESC"));   
+            if (ResourceSystem.LAMS != null) {
+                this.titleTextEntry.setText(ResourceSystem.LAMS.translate(tag + "_NAME"));
+                this.descriptionTextEntry.setText(ResourceSystem.LAMS.translate(tag + "_DESC"));   
             }
         }
     }

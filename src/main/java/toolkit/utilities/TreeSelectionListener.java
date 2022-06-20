@@ -6,7 +6,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import toolkit.utilities.services.*;
 import toolkit.windows.Toolkit;
 
@@ -57,12 +57,12 @@ public class TreeSelectionListener {
         }
 
         toolkit.resourceService.submit(() -> {
-            if (!Globals.canExtract()) return;
+            if (!ResourceSystem.canExtract()) return;
 
-            byte[] extractedData = Globals.extractFile(entry.hash);
+            byte[] extractedData = ResourceSystem.extractFile(entry.hash);
             if (extractedData == null && 
                     toolkit.getCurrentDB().USRDIR != null && 
-                    Globals.currentWorkspace == Globals.WorkspaceType.MAP) {
+                    ResourceSystem.currentWorkspace == Globals.ResourceSystem.MAP) {
                     System.out.println("Attempting to extract from disk...");
                     extractedData = FileIO.read(toolkit.getCurrentDB().USRDIR + entry.path.replace("/", "\\"));
             }
@@ -99,7 +99,7 @@ public class TreeSelectionListener {
                 entry.dependencyModel = model;
             }
 
-            if (Globals.lastSelected == node && entry.dependencyModel != null && tree == currentTree)
+            if (ResourceSystem.lastSelected == node && entry.dependencyModel != null && tree == currentTree)
                 toolkit.dependencyTree.setModel(entry.dependencyModel);
             
             toolkit.setEditorPanel(node);

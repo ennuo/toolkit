@@ -10,12 +10,12 @@ import cwlib.resources.RTranslationTable;
 import cwlib.io.exports.MeshIO;
 import cwlib.resources.RPlan;
 import cwlib.resources.RStaticMesh;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
@@ -27,24 +27,24 @@ import javax.swing.JOptionPane;
 public class ExportCallbacks {
     public static void exportOBJ(int channel) {
         File file = FileChooser.openFile(
-            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + ".obj",
+            ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 4) + ".obj",
             "obj",
             true
         );
 
         if (file != null)
-            MeshIO.OBJ.export(file.getAbsolutePath(), Globals.lastSelected.entry.getResource("mesh"), channel);
+            MeshIO.OBJ.export(file.getAbsolutePath(), ResourceSystem.lastSelected.entry.getResource("mesh"), channel);
     }
     
     public static void exportGLB() {
         File file = FileChooser.openFile(
-            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + ".glb",
+            ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 4) + ".glb",
             "glb",
             true
         );
        
-        RStaticMesh staticMesh = Globals.lastSelected.entry.getResource("staticMesh");
-        RMesh mesh = Globals.lastSelected.entry.getResource("mesh");
+        RStaticMesh staticMesh = ResourceSystem.lastSelected.entry.getResource("staticMesh");
+        RMesh mesh = ResourceSystem.lastSelected.entry.getResource("mesh");
         
         if (file != null) {
             if (staticMesh != null) 
@@ -59,7 +59,7 @@ public class ExportCallbacks {
     
     public static void exportAnimation() {
         File file = FileChooser.openFile(
-            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".glb",
+            ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 5) + ".glb",
             "glb",
             true
         );
@@ -78,11 +78,11 @@ public class ExportCallbacks {
         
         RMesh mesh = null;
         if (integer != 0) {
-            FileEntry entry = Globals.findEntry(integer);
+            FileEntry entry = ResourceSystem.findEntry(integer);
             if (entry == null) 
                 System.err.println("Couldn't find model! Exporting without model!");
             else {
-                byte[] data = Globals.extractFile(integer);
+                byte[] data = ResourceSystem.extractFile(integer);
                 if (data == null) System.err.println("Couldn't find data for model in any archives.");
                 else
                     mesh = new RMesh(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
@@ -90,20 +90,20 @@ public class ExportCallbacks {
             
         }
         
-        RAnimation animation = Globals.lastSelected.entry.getResource("animation");
+        RAnimation animation = ResourceSystem.lastSelected.entry.getResource("animation");
         MeshIO.GLB.FromAnimation(animation, mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {
         File file = FileChooser.openFile(
-            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + "." + extension,
+            ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 4) + "." + extension,
             extension,
             true
         );
 
         if (file == null) return;
 
-        RTexture texture = Globals.lastSelected.entry.getResource("texture");
+        RTexture texture = ResourceSystem.lastSelected.entry.getResource("texture");
         if (texture == null || !texture.parsed) return;
 
         try {
@@ -118,24 +118,24 @@ public class ExportCallbacks {
 
     public static void exportDDS() {
         File file = FileChooser.openFile(
-            Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 4) + "dds",
+            ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 4) + "dds",
             "DDS",
             true
         );
 
         if (file == null) return;
 
-        RTexture texture = Globals.lastSelected.entry.getResource("texture");
+        RTexture texture = ResourceSystem.lastSelected.entry.getResource("texture");
         if (texture == null || !texture.parsed) return;
 
         FileIO.write(texture.data, file.getAbsolutePath());
     }
 
     public static void exportTranslations() {
-        RTranslationTable table = new RTranslationTable(new MemoryInputStream(Globals.lastSelected.entry.data));
+        RTranslationTable table = new RTranslationTable(new MemoryInputStream(ResourceSystem.lastSelected.entry.data));
         byte[] data = table.export();
         File file = FileChooser.openFile(
-        Globals.lastSelected.header.substring(0, Globals.lastSelected.header.length() - 5) + ".txt",
+        ResourceSystem.lastSelected.header.substring(0, ResourceSystem.lastSelected.header.length() - 5) + ".txt",
             "txt",
             true
         );
@@ -144,9 +144,9 @@ public class ExportCallbacks {
     }
 
     public static void exportMod(boolean hashinate) {
-        FileEntry entry = Globals.lastSelected.entry;
-        String name = Paths.get(Globals.lastSelected.entry.path).getFileName().toString();
-        RPlan item = Globals.lastSelected.entry.getResource("item");
+        FileEntry entry = ResourceSystem.lastSelected.entry;
+        String name = Paths.get(ResourceSystem.lastSelected.entry.path).getFileName().toString();
+        RPlan item = ResourceSystem.lastSelected.entry.getResource("item");
         if (item != null)
             name = name.substring(0, name.length() - 5);
         else name = name.substring(0, name.length() - 4);
@@ -154,7 +154,7 @@ public class ExportCallbacks {
         File file = FileChooser.openFile(name + ".mod", "mod", true);
         if (file == null) return;
 
-        Resource resource = new Resource(Globals.extractFile(entry.hash));
+        Resource resource = new Resource(ResourceSystem.extractFile(entry.hash));
         Mod mod = new Mod();
         if (hashinate)
             Bytes.hashinate(mod, resource, entry);

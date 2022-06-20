@@ -8,10 +8,9 @@ import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.BigSave;
-import cwlib.types.FileArchive;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
@@ -38,8 +37,8 @@ public class ArchiveCallbacks {
                 System.err.println(ex.getMessage());
                 return;
             }
-            Globals.archives.add(archive);
-        } else Globals.archives.get(index).process();
+            ResourceSystem.archives.add(archive);
+        } else ResourceSystem.archives.get(index).process();
         Toolkit.instance.updateWorkspace();
     }
     
@@ -93,13 +92,13 @@ public class ArchiveCallbacks {
     }
     
     public static void addFile() {                                        
-        if (Globals.archives.size() == 0 && Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) return;
+        if (ResourceSystem.archives.size() == 0 && ResourceSystem.currentWorkspace != Globals.ResourceSystem.PROFILE) return;
 
         File[] files = FileChooser.openFiles(null);
         if (files == null) return;
         
         FileArchive[] archives = null;
-        if (Globals.currentWorkspace != Globals.WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace != Globals.ResourceSystem.PROFILE) {
             archives = Toolkit.instance.getSelectedArchives();
             if (archives == null) return;
         }
@@ -108,14 +107,14 @@ public class ArchiveCallbacks {
             byte[] data = FileIO.read(file.getAbsolutePath());
             if (data == null) return;
 
-            if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE)
+            if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE)
                 ((BigSave) Toolkit.instance.getCurrentDB()).add(data);
-            else Globals.addFile(data, archives);
+            else ResourceSystem.addFile(data, archives);
         }
 
         Toolkit.instance.updateWorkspace();
 
-        if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
             JTree tree = Toolkit.instance.getCurrentTree();
             TreePath selectionPath = tree.getSelectionPath();
             ((FileModel) tree.getModel()).reload();
@@ -126,7 +125,7 @@ public class ArchiveCallbacks {
     }
     
     public static void addFolder() {                                        
-        if (Globals.archives.size() == 0) return;
+        if (ResourceSystem.archives.size() == 0) return;
 
         String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
@@ -144,7 +143,7 @@ public class ArchiveCallbacks {
                if (file.isFile()) {
                 byte[] data = FileIO.read(file.getAbsolutePath());
                 if (data != null)
-                    Globals.addFile(data, archives);
+                    ResourceSystem.addFile(data, archives);
                } 
            });
                    
@@ -152,7 +151,7 @@ public class ArchiveCallbacks {
 
         Toolkit.instance.updateWorkspace();
 
-        if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
+        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
             JTree tree = Toolkit.instance.getCurrentTree();
             TreePath selectionPath = tree.getSelectionPath();
             ((FileModel) tree.getModel()).reload();
@@ -163,22 +162,22 @@ public class ArchiveCallbacks {
     }   
 
     public static void extract(boolean decompress) {
-        if (Globals.entries.size() == 0) {
+        if (ResourceSystem.entries.size() == 0) {
             System.out.println("You need to select files to extract.");
             return;
         }
-        if (Globals.entries.size() != 1) {
+        if (ResourceSystem.entries.size() != 1) {
             int success = 0;
             int total = 0;
             String path = FileChooser.openDirectory();
             if (path == null) return;
-            for (int i = 0; i < Globals.entries.size(); ++i) {
-                FileNode node = Globals.entries.get(i);
+            for (int i = 0; i < ResourceSystem.entries.size(); ++i) {
+                FileNode node = ResourceSystem.entries.get(i);
                 if (node.entry != null) {
                     total++;
                     byte[] data;
                     if (node.entry.data == null)
-                        data = Globals.extractFile(node.entry.hash);
+                        data = ResourceSystem.extractFile(node.entry.hash);
                     else
                         data = node.entry.data;
                     if (data != null) {
@@ -194,11 +193,11 @@ public class ArchiveCallbacks {
             }
             System.out.println("Finished extracting " + success + "/" + total + " entries.");
         } else {
-            FileNode node = Globals.entries.get(0);
+            FileNode node = ResourceSystem.entries.get(0);
             if (node.entry != null) {
                 byte[] data = node.entry.data;
                 if (data == null)
-                    data = Globals.extractFile(node.entry.hash);
+                    data = ResourceSystem.extractFile(node.entry.hash);
                 if (data != null) {
                     data = (decompress) ? new Resource(data).handle.data : data;
                     File file = FileChooser.openFile(node.header, null, true);

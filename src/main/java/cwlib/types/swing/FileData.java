@@ -3,12 +3,11 @@ package cwlib.types.swing;
 import cwlib.enums.DatabaseType;
 import cwlib.util.Nodes;
 import cwlib.types.data.GUID;
-import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
 
 import java.io.File;
 
-public abstract class FileData<Key> {
+public abstract class FileData {
     /**
      * Path of database on disk.
      */
@@ -83,8 +82,12 @@ public abstract class FileData<Key> {
         return success;
     }
     
-    public FileEntry get(Key key) {
-        throw new UnsupportedOperationException(String.format("Unable to search for key on database of type %s", this.type));
+    public FileEntry get(GUID guid) {
+        throw new UnsupportedOperationException(String.format("Unable to search for GUID on database of type %s", this.type));
+    }
+
+    public FileEntry get(long guid) {
+        return this.get(new GUID(guid));
     }
     
     public FileEntry get(String path) {

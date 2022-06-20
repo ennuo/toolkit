@@ -2,7 +2,7 @@ package toolkit.functions;
 
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.FileIO;
@@ -13,7 +13,7 @@ import cwlib.enums.ResourceType;
 import cwlib.types.data.SHA1;
 import cwlib.types.FileArchive;
 import cwlib.types.FileDB;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -236,7 +236,7 @@ public class ScanCallback {
                         farc.add(buffer);
 
                         SHA1 sha1 = SHA1.fromBuffer(buffer);
-                        FileEntry entry = Globals.findEntry(sha1);
+                        FileEntry entry = ResourceSystem.findEntry(sha1);
                         if (entry != null) {
                             System.out.println("Found Resource : " + entry.path + " (0x" + Bytes.toHex(begin) + ")");
                             out.add(entry);

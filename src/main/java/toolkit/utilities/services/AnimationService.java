@@ -2,7 +2,7 @@ package toolkit.utilities.services;
 
 import cwlib.resources.RAnimation;
 import cwlib.types.Resource;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import javax.swing.JTree;
 
 public class AnimationService implements ResourceService  {

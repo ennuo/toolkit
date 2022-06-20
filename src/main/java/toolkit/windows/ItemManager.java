@@ -24,11 +24,11 @@ import cwlib.structs.inventory.PhotoUser;
 import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.BigSave;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
 import cwlib.util.Bytes;
 import cwlib.util.Strings;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -54,8 +54,8 @@ public class ItemManager extends javax.swing.JFrame {
         }
         
         @Override public String toString() {
-            if (this.details.titleKey != 0 && Globals.LAMS != null) {
-                String translated = Globals.LAMS.translate(this.details.titleKey);
+            if (this.details.titleKey != 0 && ResourceSystem.LAMS != null) {
+                String translated = ResourceSystem.LAMS.translate(this.details.titleKey);
                 if (translated != null) return translated;
             }
             
@@ -146,7 +146,7 @@ public class ItemManager extends javax.swing.JFrame {
             int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 plan.details = newDetails;
-                Globals.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
+                ResourceSystem.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
                 this.entry.resetResources(false);
             }
         }
@@ -165,7 +165,7 @@ public class ItemManager extends javax.swing.JFrame {
        
             
         Arrays.asList(1046484, 412572, 1113767, 1022588, 1022587).stream().forEach(GUID -> {
-            byte[] data = Globals.extractFile(GUID);
+            byte[] data = ResourceSystem.extractFile(GUID);
             RPlan plan = new Serializer(new Resource(data).handle).struct(null, RPlan.class);
             this.revision = new Resource(data).revision;
             this.items.add(plan.details);
@@ -413,9 +413,9 @@ public class ItemManager extends javax.swing.JFrame {
             this.titleTextEntry.setText(DEFAULT_TITLE);
             this.descriptionTextEntry.setText("A valid translation table needs to be loaded for the title and description to appear. Alternatively, remove the translation keys, and set your own title/description.");
 
-            if (Globals.LAMS != null) {
-                this.titleTextEntry.setText(Globals.LAMS.translate(details.titleKey));
-                this.descriptionTextEntry.setText(Globals.LAMS.translate(details.descriptionKey));   
+            if (ResourceSystem.LAMS != null) {
+                this.titleTextEntry.setText(ResourceSystem.LAMS.translate(details.titleKey));
+                this.descriptionTextEntry.setText(ResourceSystem.LAMS.translate(details.descriptionKey));   
             }
         }
     }
@@ -567,7 +567,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.resetIcon();
         if (details.icon != null) {
             this.iconTextEntry.setText(details.icon.toString());
-            byte[] data = Globals.extractFile(details.icon);
+            byte[] data = ResourceSystem.extractFile(details.icon);
             if (data != null) {
                 RTexture texture = new RTexture(data);
                 if (texture != null) {
@@ -629,7 +629,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.highlightSoundSpinner.setValue(details.highlightSound);
         this.dateAddedSpinner.setValue(new Date(details.dateAdded * 1000));
         
-        byte[] color = Bytes.toBytes(details.colour);
+        byte[] color = Bytes.toBytesBE(details.colour);
         this.colorAlphaSpinner.setValue(color[0] & 0xFF);
         this.colorRedSpinner.setValue(color[1] & 0xFF);
         this.colorGreenSpinner.setValue(color[2] & 0xFF);

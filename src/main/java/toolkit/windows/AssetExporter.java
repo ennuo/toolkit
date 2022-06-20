@@ -8,11 +8,11 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
 import cwlib.types.mods.Mod;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
@@ -84,7 +84,7 @@ public class AssetExporter extends JDialog {
         
         public Asset(ResourceReference descriptor) {
             this.descriptor = descriptor;
-            this.entry = Globals.findEntry(descriptor);
+            this.entry = ResourceSystem.findEntry(descriptor);
         }
         
         @Override public String toString() {
@@ -136,7 +136,7 @@ public class AssetExporter extends JDialog {
         this.assetList.setModel(this.assetModel);
         
         
-        byte[] rootData = Globals.extractFile(entry.hash);
+        byte[] rootData = ResourceSystem.extractFile(entry.hash);
         if (rootData == null) {
             this.dispose();
             this.root = null;
@@ -276,7 +276,7 @@ public class AssetExporter extends JDialog {
         // saves some time.
         ResourceType type = ResourceType.fromMagic(data.str(3));
         if (type == ResourceType.INVALID) return;
-        SerializationType method = SerializationType.getValue(data.str(1));
+        SerializationType method = SerializationType.fromValue(data.str(1));
         if (method != SerializationType.BINARY && method != SerializationType.ENCRYPTED_BINARY)
             return;
         int revision = data.i32();
@@ -297,7 +297,7 @@ public class AssetExporter extends JDialog {
             if (asset != null) {
                 if (descriptors.contains(asset)) continue;
                 descriptors.add(asset);
-                asset.data = Globals.extractFile(asset.descriptor);
+                asset.data = ResourceSystem.extractFile(asset.descriptor);
                 if (asset.data != null)
                     this.getDescriptors(asset.data, descriptors);
             }

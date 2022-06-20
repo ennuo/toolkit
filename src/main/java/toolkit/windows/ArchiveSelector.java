@@ -1,14 +1,14 @@
 package toolkit.windows;
 
-import cwlib.types.FileArchive;
-import toolkit.utilities.Globals;
+import cwlib.types.archives.Fart;
+import toolkit.utilities.ResourceSystem;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 
 public class ArchiveSelector extends javax.swing.JDialog {
-    private DefaultListModel model = new DefaultListModel();
-    private FileArchive[] selectedArchives;
+    private DefaultListModel<String> model = new DefaultListModel<>();
+    private Fart[] selectedArchives;
     
     public ArchiveSelector(Toolkit toolkit, boolean modal) {
         super(toolkit, modal);
@@ -18,16 +18,15 @@ public class ArchiveSelector extends javax.swing.JDialog {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
         
-        for (FileArchive archive : Globals.archives)
-            this.model.addElement(archive.file.getAbsolutePath());
+        for (Fart archive : ResourceSystem.archives)
+            this.model.addElement(archive.getFile().getAbsolutePath());
         
         this.cancelButton.addActionListener(e -> this.dispose());
         this.archiveList.setSelectedIndex(0);
         
         this.setVisible(true);
     }
-
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -90,13 +89,13 @@ public class ArchiveSelector extends javax.swing.JDialog {
     private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
         int[] selected = this.archiveList.getSelectedIndices();
         if (selected.length == 0) return;
-        this.selectedArchives = new FileArchive[selected.length];
+        this.selectedArchives = new Fart[selected.length];
         for (int i = 0; i < selected.length; ++i)
-            this.selectedArchives[i] = Globals.archives.get(selected[i]);
+            this.selectedArchives[i] = ResourceSystem.archives.get(selected[i]);
         this.dispose();
     }//GEN-LAST:event_selectButtonActionPerformed
 
-    public FileArchive[] getSelected() { return this.selectedArchives; }
+    public Fart[] getSelected() { return this.selectedArchives; }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane archiveContainer;
     private javax.swing.JLabel archiveLabel;

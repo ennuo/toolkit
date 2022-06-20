@@ -2,7 +2,7 @@ package toolkit.utilities.services;
 
 import cwlib.resources.RGfxMaterial;
 import cwlib.types.Resource;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import javax.swing.JTree;
 
 public class GfxMaterialService implements ResourceService  {

@@ -4,7 +4,7 @@ import cwlib.types.Resource;
 import cwlib.resources.RSlotList;
 import cwlib.structs.slot.Slot;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import java.util.ArrayList;
 import javax.swing.JTree;
 

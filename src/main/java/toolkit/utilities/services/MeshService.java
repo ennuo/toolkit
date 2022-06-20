@@ -2,7 +2,7 @@ package toolkit.utilities.services;
 
 import cwlib.resources.RMesh;
 import cwlib.types.Resource;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import java.nio.file.Paths;
 import javax.swing.JTree;
 

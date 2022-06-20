@@ -1,11 +1,11 @@
 package toolkit.windows;
 
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.ResourceReference;
 import cwlib.util.Strings;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.nio.file.Paths;
@@ -24,7 +24,7 @@ public class Dependinator extends javax.swing.JFrame {
     private ArrayList<ResourceReference> modifications;
     private ArrayList<ResourceReference> removed = new ArrayList<>();
     
-    private DefaultListModel model = new DefaultListModel();
+    private DefaultListModel<String> model = new DefaultListModel<>();
     
     public Dependinator(Toolkit toolkit, FileEntry entry) {
         this.initComponents();
@@ -37,7 +37,7 @@ public class Dependinator extends javax.swing.JFrame {
         
         // Get the resource data
         byte[] data = entry.data;
-        if (data == null) data = Globals.extractFile(entry.hash);
+        if (data == null) data = ResourceSystem.extractFile(entry.hash);
         if (data == null) {
             this.dispose();
             return;
@@ -52,12 +52,12 @@ public class Dependinator extends javax.swing.JFrame {
         for (int i = 0; i < this.dependencies.size(); ++i) {
             ResourceReference descriptor = this.dependencies.get(i);
             this.modifications.add(descriptor);
-            FileEntry dependency = Globals.findEntry(descriptor);
-            if (dependency == null || dependency.path == null) {
-                model.addElement(descriptor.toString() + " (" + descriptor.type.name() + ")");
+            FileEntry dependency = ResourceSystem.findEntry(descriptor);
+            if (dependency == null || dependency.getPath() == null) {
+                model.addElement(descriptor.toString() + " (" + descriptor.getType().name() + ")");
                 continue;
             }
-            model.addElement(Paths.get(dependency.path).getFileName().toString());
+            model.addElement(Paths.get(dependency.getPath()).getFileName().toString());
         }
         
         this.descriptorList.addListSelectionListener(e -> {
@@ -85,7 +85,7 @@ public class Dependinator extends javax.swing.JFrame {
         });
         
         this.descriptorList.setSelectedIndex(0);
-       
+
         this.setVisible(true);
     }
     
@@ -100,15 +100,15 @@ public class Dependinator extends javax.swing.JFrame {
         }
 
         ResourceReference newDescriptor = new ResourceReference(
-                this.dependencies.get(this.descriptorList.getSelectedIndex()).type,
-                text
+                text,
+                this.dependencies.get(this.descriptorList.getSelectedIndex()).getType()
         );
 
         // If the resource type is music settings or fsb (filename), it can only take in GUIDs
-        if ((newDescriptor.type.equals(ResourceType.MUSIC_SETTINGS) 
-            || newDescriptor.type.equals(ResourceType.FILENAME)
-            || newDescriptor.type.equals(ResourceType.FILE_OF_BYTES) 
-            || newDescriptor.type.equals(ResourceType.SAMPLE)) && !isGUID) {
+        if ((newDescriptor.getType().equals(ResourceType.MUSIC_SETTINGS) 
+            || newDescriptor.getType().equals(ResourceType.FILENAME)
+            || newDescriptor.getType().equals(ResourceType.FILE_OF_BYTES) 
+            || newDescriptor.getType().equals(ResourceType.SAMPLE)) && !isGUID) {
             this.updateDescriptorButton.setEnabled(false);
             return;
         }
@@ -195,8 +195,8 @@ public class Dependinator extends javax.swing.JFrame {
     private void updateDescriptorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDescriptorButtonActionPerformed
         int index = this.descriptorList.getSelectedIndex();
         ResourceReference newDescriptor = new ResourceReference(
-                this.dependencies.get(index).type,
-                this.currentDescriptorText.getText()
+                this.currentDescriptorText.getText(),
+                this.dependencies.get(index).getType()
         );
         
         if (newDescriptor.equals(this.dependencies.get(index))) return;
@@ -208,10 +208,10 @@ public class Dependinator extends javax.swing.JFrame {
         
         System.out.println("Set " + this.dependencies.get(index) + " -> " + newDescriptor);
         
-        FileEntry entry = Globals.findEntry(newDescriptor);
-        if (entry == null || entry.path == null)
-            model.setElementAt(newDescriptor.toString() + " (" + newDescriptor.type.name() + ")", index);
-        else model.setElementAt(Paths.get(entry.path).getFileName().toString(), index);
+        FileEntry entry = ResourceSystem.findEntry(newDescriptor);
+        if (entry == null || entry.getPath() == null)
+            model.setElementAt(newDescriptor.toString() + " (" + newDescriptor.getType().name() + ")", index);
+        else model.setElementAt(Paths.get(entry.getPath()).getFileName().toString(), index);
         
         this.updateDescriptorButton.setEnabled(false);
         this.saveChangesButton.setEnabled(true);
@@ -231,7 +231,7 @@ public class Dependinator extends javax.swing.JFrame {
             this.resource.replaceDependency(oldDescriptor, newDescriptor);
         }
         
-        Globals.replaceEntry(entry, resource.compressToResource());
+        ResourceSystem.replaceEntry(entry, resource.compressToResource());
         this.dispose();
     }//GEN-LAST:event_saveChangesButtonActionPerformed
 

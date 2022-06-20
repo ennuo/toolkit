@@ -3,13 +3,12 @@ package toolkit.windows;
 import cwlib.types.Resource;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.Magic;
-import cwlib.util.Bytes;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceReference;
 
 import java.io.File;
@@ -20,7 +19,7 @@ import javax.swing.JFrame;
 
 public class Compressinator extends javax.swing.JFrame {
     ArrayList<ResourceReference> dependencies = new ArrayList<ResourceReference>();
-    DefaultListModel model = new DefaultListModel();
+    DefaultListModel<String> model = new DefaultListModel<>();
     FileChooser fileChooser;
     byte[] fileData;
     
@@ -351,7 +350,7 @@ public class Compressinator extends javax.swing.JFrame {
             ResourceReference descriptor = this.dependencies.get(index);
             String value = (String) this.model.get(index);
 
-            System.out.println(String.format("Removing dependency of type %s with value %s", descriptor.type, value));
+            System.out.println(String.format("Removing dependency of type %s with value %s", descriptor.getType(), value));
 
             this.dependencies.remove(index);
             this.model.remove(index);
@@ -360,8 +359,10 @@ public class Compressinator extends javax.swing.JFrame {
 
     private void addEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEntryActionPerformed
         String value = this.descriptorValue.getText();
-        ResourceReference descriptor = new ResourceReference();
-        if (this.guidButton.isSelected()) {
+        ResourceType type = (ResourceType) this.descriptorResourceType.getSelectedItem();
+
+        ResourceReference descriptor = null;
+        if (this.guidButton.isSelected() && Strings.isGUID(value)) {
             long GUID = Strings.getLong(value);
             
             if (this.doesGUIDAlreadyExist(GUID)) {
@@ -369,15 +370,13 @@ public class Compressinator extends javax.swing.JFrame {
                 return;
             }
 
-            descriptor.type = (ResourceType) this.descriptorResourceType.getSelectedItem();
-            descriptor.GUID = GUID;
+            descriptor = new ResourceReference(GUID, type);
+        } else if (Strings.isSHA1(value))
+            descriptor = new ResourceReference(value, type);
+        else return;
 
-            this.model.add(this.model.size(), descriptor.toString());
-        } else {
-            descriptor.hash = new SHA1(value);
-            this.model.add(this.model.size(), descriptor.toString());
-        }
-        System.out.println(String.format("Adding dependency of type %s with value %s", descriptor.type, this.model.get(this.dependencies.size())));
+        this.model.add(this.model.size(), descriptor.toString());
+        System.out.println(String.format("Adding dependency of type %s with value %s", descriptor.getType(), this.model.get(this.dependencies.size())));
         this.dependencies.add(this.dependencies.size(), descriptor);
     }//GEN-LAST:event_addEntryActionPerformed
 
@@ -385,7 +384,7 @@ public class Compressinator extends javax.swing.JFrame {
         int headRevision = (int) Strings.getLong(this.revision.getText());
         int branchID = (int) Strings.getLong(this.branchID.getText());
         int branchRevision = (int) Strings.getLong(this.branchRevision.getText());
-        String header = ((Magic) this.resourceCombo.getSelectedItem()).value;
+        String header = ((Magic) this.resourceCombo.getSelectedItem()).getValue();
         
         byte compressionFlags = 0x0;
         if (this.useCompressedIntegers.isSelected()) 
@@ -409,7 +408,7 @@ public class Compressinator extends javax.swing.JFrame {
     }//GEN-LAST:event_compressActionPerformed
 
     private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
-        File file = this.fileChooser.openFile("Uncompressed Data", null,  false);
+        File file = FileChooser.openFile("Uncompressed Data", null,  false);
         if (file != null) {
             this.fileData = FileIO.read(file.getAbsolutePath());
             if (this.fileData != null)
@@ -417,9 +416,10 @@ public class Compressinator extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openFileActionPerformed
 
-    private boolean doesGUIDAlreadyExist(long GUID) {
+    private boolean doesGUIDAlreadyExist(long value) {
+        GUID guid = new GUID(value);
         for (ResourceReference descriptor : this.dependencies)
-            if (descriptor.GUID == GUID) return true;
+            if (guid.equals(descriptor.getGUID())) return true;
         return false;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

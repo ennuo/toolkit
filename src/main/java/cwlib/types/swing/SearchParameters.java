@@ -1,23 +1,38 @@
 package cwlib.types.swing;
 
+import cwlib.enums.ResourceType;
 import cwlib.types.data.ResourceReference;
-import cwlib.types.data.ResourceReference;
-import cwlib.types.data.SHA1;
 import cwlib.util.Strings;
 
+/**
+ * Toolkit search filtering settings
+ */
 public class SearchParameters {
-   public String path;
-   public ResourceReference pointer;
-   
-   public SearchParameters(String query) {
+    /**
+     * Path to search for
+     */
+    private final String path;
+
+    /**
+     * Parsed resource reference from search query
+     */
+    private final ResourceReference resource;
+
+    /**
+     * Constructs search parameters from a query
+     * @param query Search query
+     */
+    public SearchParameters(String query) {
         this.path = query.toLowerCase().replaceAll("\\s", "");
         if (query.startsWith("res:")) {
-            this.pointer = new ResourceReference();
-            String res = this.path.substring(4);
-            if (res.startsWith("g"))
-                pointer.GUID = Strings.getLong(res);
-            else if (res.startsWith("h") && res.length() == 41)
-                pointer.hash = new SHA1(res.substring(1));
-        }
-   }  
+            query = query.substring(4);
+            if (Strings.isGUID(query) || Strings.isSHA1(query))
+                this.resource = new ResourceReference(query, ResourceType.INVALID);
+            else
+                this.resource = null;
+        } else this.resource = null;
+    }
+
+    public String getPath() { return this.path; }
+    public ResourceReference getResource() { return this.resource; }
 }

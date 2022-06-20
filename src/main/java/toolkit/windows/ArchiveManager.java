@@ -1,9 +1,10 @@
 package toolkit.windows;
 
 import cwlib.ex.SerializationException;
-import cwlib.types.FileArchive;
+import cwlib.types.archives.Fart;
+import cwlib.types.archives.FileArchive;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 
 import java.io.File;
 import javax.swing.DefaultListModel;
@@ -12,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class ArchiveManager extends javax.swing.JDialog {
-    private final DefaultListModel archiveModel = new DefaultListModel();
+    private final DefaultListModel<String> archiveModel = new DefaultListModel<>();
     
     public ArchiveManager(JFrame parent) {
         super(parent, "Archive Manager", true);
@@ -20,12 +21,12 @@ public class ArchiveManager extends javax.swing.JDialog {
         this.setResizable(false);
         this.initComponents();
         
-        for (FileArchive archive : Globals.archives)
-            archiveModel.addElement(archive.file.getAbsolutePath());
+        for (Fart archive : ResourceSystem.archives)
+            archiveModel.addElement(archive.getFile().getAbsolutePath());
         this.archivesList.setModel(this.archiveModel);
         
         this.saveChangesButton.setEnabled(false);
-        if (Globals.archives.size() == 0)
+        if (ResourceSystem.archives.size() == 0)
             this.removeButton.setEnabled(false);
         
         this.addButton.addActionListener(e -> {
@@ -37,14 +38,14 @@ public class ArchiveManager extends javax.swing.JDialog {
                 return;
             }
             
-            FileArchive archive = null;
+            Fart archive = null;
             try { archive = new FileArchive(file); }
             catch (SerializationException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
-            Globals.archives.add(archive);
+            ResourceSystem.archives.add(archive);
             this.archiveModel.addElement(file.getAbsolutePath());
             
             this.removeButton.setEnabled(true);
@@ -56,9 +57,9 @@ public class ArchiveManager extends javax.swing.JDialog {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
             
-            FileArchive archive = Globals.archives.get(index);
+            Fart archive = ResourceSystem.archives.get(index);
             
-            if (archive.shouldSave) {
+            if (archive.shouldSave()) {
                 int result = JOptionPane.showConfirmDialog(null, "Do you want to save changes before closing this archive?", "Pending changes", JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) 
                     archive.save();
@@ -71,7 +72,7 @@ public class ArchiveManager extends javax.swing.JDialog {
                     this.archivesList.setSelectedIndex(index - 1);   
             }
             
-            Globals.archives.remove(index);
+            ResourceSystem.archives.remove(index);
             this.archiveModel.removeElementAt(index);
             
             if (this.archiveModel.size() == 0)
@@ -84,9 +85,9 @@ public class ArchiveManager extends javax.swing.JDialog {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
             
-            FileArchive archive = Globals.archives.get(index);
+            Fart archive = ResourceSystem.archives.get(index);
             
-            if (archive.shouldSave)
+            if (archive.shouldSave())
                 archive.save();
             
             this.saveChangesButton.setEnabled(false);
@@ -95,8 +96,8 @@ public class ArchiveManager extends javax.swing.JDialog {
         this.archivesList.addListSelectionListener(e -> {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
-            FileArchive archive = Globals.archives.get(index);
-            this.saveChangesButton.setEnabled(archive.shouldSave);
+            Fart archive = ResourceSystem.archives.get(index);
+            this.saveChangesButton.setEnabled(archive.shouldSave());
         });
         
         this.closeButton.addActionListener(e -> this.dispose());

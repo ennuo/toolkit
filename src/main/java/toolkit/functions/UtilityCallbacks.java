@@ -2,7 +2,7 @@ package toolkit.functions;
 
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 import toolkit.windows.editors.ModEditor;
 import cwlib.util.FileIO;
@@ -15,7 +15,7 @@ import cwlib.types.swing.FileNode;
 import cwlib.types.BigSave;
 import cwlib.types.FileArchive;
 import cwlib.types.FileDB;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 
 import java.io.File;
@@ -64,7 +64,7 @@ public class UtilityCallbacks {
         if (base == null) return;
         FileArchive archive;
         int index = toolkit.isArchiveLoaded(base);
-        if (index != -1) archive = Globals.archives.get(index);
+        if (index != -1) archive = ResourceSystem.archives.get(index);
         else archive = new FileArchive(base);
 
         if (archive == null) {
@@ -159,11 +159,11 @@ public class UtilityCallbacks {
             Mod mod = ModCallbacks.loadMod(file);
             if (mod != null) {
 
-                if (Globals.currentWorkspace == Globals.WorkspaceType.PROFILE) {
+                if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
                     BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
                     for (FileEntry entry: mod.entries)
                         profile.add(entry.data, true);
-                } else if (Globals.currentWorkspace == Globals.WorkspaceType.MAP) {
+                } else if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.MAP) {
                     if (mod.entries.size() == 0) return;
                     FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
                     FileArchive[] archives = Toolkit.instance.getSelectedArchives();
@@ -171,7 +171,7 @@ public class UtilityCallbacks {
                     for (FileEntry entry: mod.entries) {
                         if (db.add(entry))
                             db.addNode(entry);
-                        Globals.addFile(entry.data, archives);
+                        ResourceSystem.addFile(entry.data, archives);
                     }
                 }
 

@@ -40,8 +40,7 @@ public class ModEditor extends javax.swing.JDialog {
             modIcon.setIcon(mod.icon);
         else modIcon.setText("Mod has no icon.");
     }
-
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -174,7 +173,7 @@ public class ModEditor extends javax.swing.JDialog {
         mod.config.title = title.getText();
         mod.config.author = creator.getText();
         mod.config.description = description.getText();
-        mod.shouldSave = true;
+        mod.setHasChanges();
         System.out.println("Updated mod metadata!");
         dispose();
     }//GEN-LAST:event_saveActionPerformed

@@ -4,9 +4,9 @@ import cwlib.resources.RPlan;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import javax.swing.JTree;
@@ -28,7 +28,7 @@ public class PlanService implements ResourceService  {
             }
         }
         
-        if (Globals.lastSelected.entry != entry || plan == null || Toolkit.instance.getCurrentTree() != tree) return;
+        if (ResourceSystem.lastSelected.entry != entry || plan == null || Toolkit.instance.getCurrentTree() != tree) return;
         
         if (plan.details != null)
             Toolkit.instance.populateMetadata(plan);

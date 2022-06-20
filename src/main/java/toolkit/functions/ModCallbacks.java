@@ -4,7 +4,7 @@ import cwlib.util.Bytes;
 import toolkit.windows.Toolkit;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.FileIO;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.legacy.LegacyMod;
 import cwlib.types.mods.Mod;
 
@@ -23,7 +23,7 @@ public class ModCallbacks {
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             byte[] magic = new byte[4];
             raf.read(magic);
-            header = Bytes.toInteger(magic);
+            header = Bytes.toIntegerBE(magic);
         } catch (IOException e) { 
             System.err.println("An error occured accessing the file."); 
         }

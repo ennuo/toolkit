@@ -3,18 +3,18 @@ package toolkit.functions;
 import cwlib.util.FileIO;
 import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 import cwlib.types.Resource;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class ReplacementCallbacks {
     public static void replaceImage() {
-        FileEntry entry = Globals.lastSelected.entry;
+        FileEntry entry = ResourceSystem.lastSelected.entry;
         File file = FileChooser.openFile("image.png", "png,jpeg,jpg,dds", false);
         if (file == null) return;
 
@@ -30,7 +30,7 @@ public class ReplacementCallbacks {
         
         byte[] newImage = Images.toTEX(image);
         if (newImage != null) {
-            Globals.replaceEntry(entry, newImage);
+            ResourceSystem.replaceEntry(entry, newImage);
             return;
         }
 
@@ -38,13 +38,13 @@ public class ReplacementCallbacks {
     }
 
     public static void replaceDecompressed() {
-        File file = FileChooser.openFile(Globals.lastSelected.header, null, false);
+        File file = FileChooser.openFile(ResourceSystem.lastSelected.header, null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data != null) {
-            byte[] original = Globals.lastSelected.entry.data;
-            if (original == null) Globals.extractFile(Globals.lastSelected.entry.GUID);
-            if (original == null) original = Globals.extractFile(Globals.lastSelected.entry.hash);
+            byte[] original = ResourceSystem.lastSelected.entry.data;
+            if (original == null) ResourceSystem.extractFile(ResourceSystem.lastSelected.entry.GUID);
+            if (original == null) original = ResourceSystem.extractFile(ResourceSystem.lastSelected.entry.hash);
             if (original == null) {
                 System.out.println("Couldn't find entry, can't replace.");
                 return;
@@ -56,16 +56,16 @@ public class ReplacementCallbacks {
                 System.err.println("Error occurred when compressing data.");
                 return;
             }
-            Globals.replaceEntry(Globals.lastSelected.entry, out);
+            ResourceSystem.replaceEntry(ResourceSystem.lastSelected.entry, out);
             System.out.println("Data compressed and added!");
         }
     }
 
     public static void replaceCompressed() {
-        File file = FileChooser.openFile(Globals.lastSelected.header, null, false);
+        File file = FileChooser.openFile(ResourceSystem.lastSelected.header, null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data != null) Globals.replaceEntry(Globals.lastSelected.entry, data);
+        if (data != null) ResourceSystem.replaceEntry(ResourceSystem.lastSelected.entry, data);
     }
 
 }

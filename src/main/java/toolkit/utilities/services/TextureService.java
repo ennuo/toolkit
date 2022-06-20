@@ -1,7 +1,7 @@
 package toolkit.utilities.services;
 
 import cwlib.resources.RTexture;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import toolkit.windows.Toolkit;
 
 import javax.swing.ImageIcon;

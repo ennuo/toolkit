@@ -3,11 +3,11 @@ package toolkit.functions;
 import cwlib.types.Resource;
 import cwlib.util.FileIO;
 import cwlib.types.FileDB;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceReference;
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 public class DebugCallbacks {
     public static void CollectDependencies(String extension) {
-        if (Globals.currentWorkspace != Globals.WorkspaceType.MAP) {
+        if (ResourceSystem.currentWorkspace != Globals.ResourceSystem.MAP) {
             System.err.println("Collections can only be used on RFileDB.");
             return;
         }
@@ -25,7 +25,7 @@ public class DebugCallbacks {
         StringBuilder builder = new StringBuilder(database.entries.size() * 1024);
         for (FileEntry entry : database.entries) {
             if (entry.path.toLowerCase().endsWith(extension)) {
-                byte[] data = Globals.extractFile(entry.hash);
+                byte[] data = ResourceSystem.extractFile(entry.hash);
                 if (data == null) continue;
                 try {
                     Resource resource = new Resource(data);
@@ -37,7 +37,7 @@ public class DebugCallbacks {
                         String name = String.format(" - (Unresolved Resource) [%s]", type);
                         if (descriptor.GUID != -1) {
                             name = String.format(" - (Unresolved Path) (g%d) [%s]\n", descriptor.GUID, type);
-                            FileEntry resolved = Globals.findEntry(descriptor.GUID);
+                            FileEntry resolved = ResourceSystem.findEntry(descriptor.GUID);
                             if (resolved != null)
                                 name = String.format(" - %s (g%d) [%s]\n", resolved.path, descriptor.GUID, type);
                         } else if (descriptor.hash != null)

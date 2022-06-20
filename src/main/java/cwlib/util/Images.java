@@ -25,11 +25,11 @@ import org.imgscalr.Scalr;
 public class Images {
     public static byte[] toGTF(BufferedImage image) {
         MemoryInputStream data = new MemoryInputStream(toDDS(image));
-        if (data.data == null) return null;
+        if (data.getBuffer() == null) return null;
 
         data.seek(0x80);
 
-        byte[] DDS = data.bytes(data.length - 0x80);
+        byte[] DDS = data.bytes(data.getLength() - 0x80);
 
         if (DDS == null)
             return null;
@@ -55,7 +55,7 @@ public class Images {
 
         output.bytes(DDS);
 
-        return output.buffer;
+        return output.getBuffer();
     }
     
     private static int toNearest(int x) {
@@ -100,12 +100,12 @@ public class Images {
             width = toNearest(width - 1);
             height = toNearest(height - 1);
             image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
-            DDS = Bytes.Combine(DDS, Squish.compressImage(getRGBA(image), width, height, null, type));
+            DDS = Bytes.combine(DDS, Squish.compressImage(getRGBA(image), width, height, null, type));
             mipCount += 1;
             if (width == 1|| height == 1) break;
         }
         
-        return Bytes.Combine(RTexture.getDDSHeader(format, originalWidth, originalHeight, mipCount), DDS);
+        return Bytes.combine(RTexture.getDDSHeader(format, originalWidth, originalHeight, mipCount), DDS);
     }
 
     public static byte[] toTEX(BufferedImage image) {
@@ -127,7 +127,7 @@ public class Images {
         output.str("TEX ");
         output.bytes(DDS);
 
-        return output.buffer;
+        return output.getBuffer();
     }
 
     public static BufferedImage fromDDS(byte[] DDS) {
