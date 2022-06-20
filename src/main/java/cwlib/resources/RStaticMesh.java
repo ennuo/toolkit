@@ -41,7 +41,7 @@ public class RStaticMesh {
         for (int i = 0; i < vertexCount; ++i) {
             this.vertices[i] = vertexStream.v3();
             
-            this.normals[i] = Bytes.decodeI32(vertexStream.u32());
+            this.normals[i] = Bytes.unpackNormal32(vertexStream.u32());
             
             this.uv0[i] = new Vector2f(vertexStream.f16(), vertexStream.f16());
             

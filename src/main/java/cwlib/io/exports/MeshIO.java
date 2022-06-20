@@ -23,20 +23,21 @@ import de.javagl.jgltf.impl.v2.Skin;
 import de.javagl.jgltf.impl.v2.TextureInfo;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import cwlib.util.Bytes;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
+import cwlib.resources.RAnimation;
 import cwlib.resources.RGfxMaterial;
+import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
-import cwlib.enums.ResourceType;
 import cwlib.structs.animation.AnimationBone;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Morph;
 import cwlib.structs.staticmesh.StaticPrimitive;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -59,8 +60,8 @@ import org.joml.Vector4f;
 
 public class MeshIO {
     public static class OBJ {
-        public static void export(String path, cwlib.resources.RMesh mesh) { export(path, mesh, 0); }
-        public static void export(String path, cwlib.resources.RMesh mesh, int channel) {
+        public static void export(String path, RMesh mesh) { export(path, mesh, 0); }
+        public static void export(String path, RMesh mesh, int channel) {
             StringBuilder builder = new StringBuilder((mesh.numVerts * 82) + (mesh.numVerts * 42) + (mesh.numIndices * 40));
             for (Vector3f vertex : mesh.getVertices())
                 builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
@@ -91,7 +92,7 @@ public class MeshIO {
         HashMap<String, Integer> textures = new HashMap<String, Integer>();
         int accessorCount = 0;
         
-        public static GLB FromAnimation(cwlib.resources.RAnimation animation, cwlib.resources.RMesh mesh) {
+        public static GLB FromAnimation(RAnimation animation, RMesh mesh) {
             GLB glb;
             
             if (mesh == null) {
@@ -132,7 +133,7 @@ public class MeshIO {
             } else {
                 glb = GLB.FromMesh(mesh);
                 byte[] dataBuffer = glb.getBufferFromAnimation(animation);
-                glb.buffer = Bytes.Combine(glb.buffer, dataBuffer);
+                glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
                 glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
                 for (AnimationBone bone : animation.bones) {
                     System.out.println(bone.animHash);
@@ -291,11 +292,11 @@ public class MeshIO {
                 
                 String materialName = "DIFFUSE";
                 if (primitive.gmat != null) {
-                    FileEntry entry = Globals.findEntry(primitive.gmat);
+                    FileEntry entry = ResourceSystem.findEntry(primitive.gmat);
                     if (entry != null) {
-                        materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
+                        materialName = Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "");
                         try {
-                            byte[] data = Globals.extractFile(entry.hash);
+                            byte[] data = ResourceSystem.extractFile(entry.getSHA1());
                             if (data != null) 
                                 glPrimitive.setMaterial(glb.createMaterial(materialName, new RGfxMaterial(new Resource(data))));   
                             else glPrimitive.setMaterial(glb.createMaterial(materialName));
@@ -331,7 +332,7 @@ public class MeshIO {
             return glb;
         }
        
-        public static GLB FromMesh(cwlib.resources.RMesh mesh) {
+        public static GLB FromMesh(RMesh mesh) {
             GLB glb = new GLB();
             
             
@@ -439,11 +440,11 @@ public class MeshIO {
 
                     String materialName = "DIFFUSE";
                     if (primitive.material != null) {
-                        FileEntry entry = Globals.findEntry(primitive.material);
+                        FileEntry entry = ResourceSystem.findEntry(primitive.material);
                         if (entry != null) {
-                            materialName = Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "");
+                            materialName = Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "");
                             try {
-                                byte[] data = Globals.extractFile(entry.hash);
+                                byte[] data = ResourceSystem.extractFile(entry.getSHA1());
                                 if (data != null) 
                                     glPrimitive.setMaterial(glb.createMaterial(materialName, new RGfxMaterial(new Resource(data))));   
                                 else glPrimitive.setMaterial(glb.createMaterial(materialName));
@@ -505,7 +506,7 @@ public class MeshIO {
             image.setBufferView(createBufferView("TEXTURE_" + name, 0, buffer.length));
             image.setMimeType("image/png");
             image.setName(name);
-            this.buffer = Bytes.Combine(this.buffer, buffer);
+            this.buffer = Bytes.combine(this.buffer, buffer);
             this.gltf.getBuffers().get(0).setByteLength(this.buffer.length);
             de.javagl.jgltf.impl.v2.Texture texture = new de.javagl.jgltf.impl.v2.Texture();
             this.gltf.addImages(image);
@@ -517,7 +518,7 @@ public class MeshIO {
             return index;
         }
         
-        private void createSkeleton(cwlib.resources.RMesh mesh) {
+        private void createSkeleton(RMesh mesh) {
             if (mesh.bones.length == 0) return;
             for (Bone bone : mesh.bones) {
                 if (bone.parent == -1 || mesh.bones[bone.parent] == bone)
@@ -533,7 +534,7 @@ public class MeshIO {
             return output;
         }
         
-        private int createChildren(cwlib.resources.RMesh mesh, Bone bone) {
+        private int createChildren(RMesh mesh, Bone bone) {
             Matrix4f transform;
             if (bone.parent == -1 || mesh.bones[bone.parent] == bone)
                 transform = getMatrix(bone.skinPoseMatrix);
@@ -637,11 +638,11 @@ public class MeshIO {
                     float[] textureOffset = new float[] { Float.intBitsToFloat((int) box.params[2]), Float.intBitsToFloat((int) box.params[3]) };
                     int channel = (int) box.params[4];
                     int textureIndex = (int) box.params[5];
-                    FileEntry entry = Globals.findEntry(gmat.textures[textureIndex]);
+                    FileEntry entry = ResourceSystem.findEntry(gmat.textures[textureIndex]);
                     if (entry == null) continue;
                     byte[] texture = gmat.extractTexture(textureIndex);
                     if (texture == null) continue;
-                    int source = addTexture(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), texture);
+                    int source = addTexture(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), texture);
                     
                     ByteArrayInputStream png = new ByteArrayInputStream(texture);
                     BufferedImage image = null;
@@ -665,7 +666,7 @@ public class MeshIO {
                     textureInfo.setIndex(source);
                     switch (wire.portTo) {
                         case 0:                     
-                            if (entry.path.contains("dirt")) {
+                            if (entry.getPath().contains("dirt")) {
                                 MaterialOcclusionTextureInfo occInfo = new MaterialOcclusionTextureInfo();
                                 occInfo.addExtensions("KHR_texture_transform", transforms);
                                 occInfo.setIndex(source);
@@ -674,7 +675,7 @@ public class MeshIO {
                                 continue;
                             }
                             if (foundDiffuse) continue;
-                            System.out.println(String.format("%s:%d", Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", ""), image.getTransparency()));
+                            System.out.println(String.format("%s:%d", Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), image.getTransparency()));
                             if (name.toLowerCase().contains("decal"))
                                 material.setAlphaMode("BLEND");
                             foundDiffuse = true;
@@ -702,7 +703,7 @@ public class MeshIO {
                                         Color c = new Color(image.getRGB(x, y), true);
                                         
                                         Color output = new Color(c.getAlpha(), c.getGreen(), 255, 255);
-                                       
+                                        
                                         image.setRGB(x, y, output.getRGB());
                                     }
                                 }
@@ -713,7 +714,7 @@ public class MeshIO {
                                     Logger.getLogger(RGfxMaterial.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 
-                                source = addTexture(Paths.get(entry.path).getFileName().toString().replaceFirst("[.][^.]+$", "") + "_converted", baos.toByteArray());
+                                source = addTexture(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "") + "_converted", baos.toByteArray());
                             }
                             
                             MaterialNormalTextureInfo normal = new MaterialNormalTextureInfo();
@@ -814,200 +815,205 @@ public class MeshIO {
             return -1;
         }
         
-        private byte[] getBufferFromAnimation(cwlib.resources.RAnimation animation) {
+        private byte[] getBufferFromAnimation(RAnimation animation) {
             float timestep = 1.0f / ((float) animation.FPS);
             
             MemoryOutputStream output = new MemoryOutputStream(animation.numFrames * animation.FPS * animation.boneCount + (animation.posBonesAnimatedCount + animation.rotBonesAnimatedCount + animation.scaledBonesAnimatedCount) * 0x50 + 0xFF0);
-            
+            output.setLittleEndian(true);
+
             float step = 0.0f;
             for (int i = 0; i < animation.numFrames - 1; ++i, step += timestep)
-                output.f32LE(step);
-            createBufferView("TIME", 0, output.offset);
+                output.f32(step);
+            createBufferView("TIME", 0, output.getOffset());
             for (int i = 0; i < animation.bones.length; ++i) {
                 AnimationBone bone = animation.bones[i];
                 
                 if (bone.positions[0] != null) {
-                    int posStart = output.offset;
+                    int posStart = output.getOffset();
                     for (Vector4f pos : bone.positions) {
-                        output.f32LE(pos.x);
-                        output.f32LE(pos.y);
-                        output.f32LE(pos.z);
+                        output.f32(pos.x);
+                        output.f32(pos.y);
+                        output.f32(pos.z);
                     }
-                    createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.offset - posStart);
+                    createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.getOffset() - posStart);
                 }
                 
                 if (bone.rotations[0] != null) {
-                    int rotStart = output.offset;
+                    int rotStart = output.getOffset();
                     for (Vector4f rot : bone.rotations) {
-                        output.f32LE(rot.x);
-                        output.f32LE(rot.y);
-                        output.f32LE(rot.z);
-                        output.f32LE(rot.w);
+                        output.f32(rot.x);
+                        output.f32(rot.y);
+                        output.f32(rot.z);
+                        output.f32(rot.w);
                     }
-                    createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.offset - rotStart);
+                    createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.getOffset() - rotStart);
                 }
                 
                 if (bone.scales[0] != null) {
-                    int scaleStart = output.offset;
+                    int scaleStart = output.getOffset();
                     for (Vector4f scale : bone.scales) {
-                        output.f32LE(scale.x);
-                        output.f32LE(scale.y);
-                        output.f32LE(scale.z);
+                        output.f32(scale.x);
+                        output.f32(scale.y);
+                        output.f32(scale.z);
                     }
-                    createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.offset - scaleStart);
+                    createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.getOffset() - scaleStart);
                 }
             }
             
             
             if (animation.morphsAnimatedCount != 0) {
-                int morphStart = output.offset;
+                int morphStart = output.getOffset();
                 for (int i = 0; i < animation.numFrames - 1; ++i) {
                     for (int j = 0; j < animation.morphCount; ++j)
-                        output.f32LE(animation.morphs[j].getValueAtFrame(i));
+                        output.f32(animation.morphs[j].getValueAtFrame(i));
                 }
-                createBufferView("MORPHS_ANIMATED",  morphStart, output.offset - morphStart);
+                createBufferView("MORPHS_ANIMATED",  morphStart, output.getOffset() - morphStart);
             }
             
             output.shrink();
-            return output.buffer;
+            return output.getBuffer();
             
         }
         
         private byte[] getBufferFromMesh(RStaticMesh mesh) {
             MemoryOutputStream output = new MemoryOutputStream(mesh.numVerts * 0x40 + ((mesh.numVerts - 1) * 0x8));
+            output.setLittleEndian(true);
+
             for (Vector3f vertex : mesh.vertices) {
-                output.f32LE(vertex.x);
-                output.f32LE(vertex.y);
-                output.f32LE(vertex.z);
+                output.f32(vertex.x);
+                output.f32(vertex.y);
+                output.f32(vertex.z);
             }
-            createBufferView("VERTICES", 0, output.offset);
-            int normalStart = output.offset;
+            createBufferView("VERTICES", 0, output.getOffset());
+            int normalStart = output.getOffset();
             for (Vector3f normal : mesh.normals) {
-                output.f32LE(normal.x);
-                output.f32LE(normal.y);
-                output.f32LE(normal.z);
+                output.f32(normal.x);
+                output.f32(normal.y);
+                output.f32(normal.z);
             }
-            createBufferView("NORMALS", normalStart, output.offset - normalStart);
-            int uvStart = output.offset;
+            createBufferView("NORMALS", normalStart, output.getOffset() - normalStart);
+            int uvStart = output.getOffset();
             for (Vector2f uv : mesh.uv0) {
-                output.f32LE(uv.x);
-                output.f32LE(uv.y);
+                output.f32(uv.x);
+                output.f32(uv.y);
             }
-            createBufferView("TEXCOORD_0", uvStart, output.offset - uvStart);
-            uvStart = output.offset;
+            createBufferView("TEXCOORD_0", uvStart, output.getOffset() - uvStart);
+            uvStart = output.getOffset();
             for (Vector2f uv : mesh.uv1) {
-                output.f32LE(uv.x);
-                output.f32LE(uv.y);
+                output.f32(uv.x);
+                output.f32(uv.y);
             }
-            createBufferView("TEXCOORD_1", uvStart, output.offset - uvStart);       
+            createBufferView("TEXCOORD_1", uvStart, output.getOffset() - uvStart);       
             for (int i = 0; i < mesh.info.primitives.length; ++i) {
                 StaticPrimitive primitive = mesh.info.primitives[i];
-                int primitiveStart = output.offset;
+                int primitiveStart = output.getOffset();
                 int[] triangles = 
-                        cwlib.resources.RMesh.getIndices(mesh.indices, primitive.indexStart, primitive.numIndices, primitive.type);
+                        RMesh.getIndices(mesh.indices, primitive.indexStart, primitive.numIndices, primitive.type);
                 primitive.numVerts = getMax(triangles) + 1;
                 for (int triangle : triangles)
-                    output.i16LE((short) triangle);
-                createBufferView("INDICES_" + String.valueOf(i), primitiveStart, output.offset - primitiveStart);
+                    output.u16((short) triangle);
+                createBufferView("INDICES_" + String.valueOf(i), primitiveStart, output.getOffset() - primitiveStart);
             }
             output.shrink();
-            return output.buffer;
+            return output.getBuffer();
         }
         
-        private byte[] getBufferFromMesh(cwlib.resources.RMesh mesh) {
+        private byte[] getBufferFromMesh(RMesh mesh) {
             MemoryOutputStream output = new MemoryOutputStream( (mesh.numVerts * 0x40) + ((mesh.numVerts - 1) * 8) + (mesh.attributeCount * mesh.numVerts * 8) + (mesh.morphCount * mesh.numVerts * 0x18) + (mesh.bones.length * 0x40));
+            output.setLittleEndian(true);
+
             for (Vector3f vertex : mesh.getVertices()) {
-                output.f32LE(vertex.x);
-                output.f32LE(vertex.y);
-                output.f32LE(vertex.z);
+                output.f32(vertex.x);
+                output.f32(vertex.y);
+                output.f32(vertex.z);
             }
-            createBufferView("VERTICES", 0, output.offset);
+            createBufferView("VERTICES", 0, output.getOffset());
             
             cwlib.structs.mesh.Primitive[][] subMeshes = mesh.getSubmeshes();
             for (int i = 0; i < subMeshes.length; ++i) {
                 for (int j = 0; j < subMeshes[i].length; ++j) {
-                    int triangleStart = output.offset;
+                    int triangleStart = output.getOffset();
                     cwlib.structs.mesh.Primitive primitive
                             = subMeshes[i][j];
                     int[] triangles = mesh.getIndices(primitive);
                     primitive.minVert = getMin(triangles);
                     primitive.maxVert = getMax(triangles);
                     for (int triangle : triangles)
-                        output.i16LE((short) (triangle - primitive.minVert));
-                    createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.offset - triangleStart);
+                        output.u16((short) (triangle - primitive.minVert));
+                    createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.getOffset() - triangleStart);
                 }
             }
             
-            int normalStart = output.offset;
+            int normalStart = output.getOffset();
             Vector3f[] normals = mesh.getNormals();
             for (Vector3f normal : normals) {
-                output.f32LE(normal.x);
-                output.f32LE(normal.y);
-                output.f32LE(normal.z);
+                output.f32(normal.x);
+                output.f32(normal.y);
+                output.f32(normal.z);
             }
-            createBufferView("NORMAL", normalStart, output.offset - normalStart);
+            createBufferView("NORMAL", normalStart, output.getOffset() - normalStart);
             for (int i = 0; i < mesh.attributeCount; ++i) {
-                int uvStart = output.offset;
+                int uvStart = output.getOffset();
                 for (Vector2f texCoord : mesh.getUVs(i)) {
-                    output.f32LE(texCoord.x);
-                    output.f32LE(texCoord.y);
+                    output.f32(texCoord.x);
+                    output.f32(texCoord.y);
                 }
-                createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.offset - uvStart);
+                createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.getOffset() - uvStart);
             }
             if (mesh.morphCount != 0) {
                 Morph[] morphs = mesh.getMorphs();
                 for (int i = 0; i < mesh.morphCount; ++i) {
-                    int morphStart = output.offset;
+                    int morphStart = output.getOffset();
                     Morph morph = morphs[i];
                     for (Vector3f vertex : morph.vertices) {
-                        output.f32LE(vertex.x);
-                        output.f32LE(vertex.y);
-                        output.f32LE(vertex.z);
+                        output.f32(vertex.x);
+                        output.f32(vertex.y);
+                        output.f32(vertex.z);
                     }
-                    createBufferView("MORPH_" + String.valueOf(i), morphStart, output.offset - morphStart);
+                    createBufferView("MORPH_" + String.valueOf(i), morphStart, output.getOffset() - morphStart);
                 }
                 
                 for (int i = 0; i < mesh.morphCount; ++i) {
-                    int morphStart = output.offset;
+                    int morphStart = output.getOffset();
                     Morph morph = morphs[i];
                     for (int j = 0; j < mesh.numVerts; ++j) {
                         Vector3f vertex = morph.normals[j];
-                        output.f32LE(vertex.x - normals[j].x);
-                        output.f32LE(vertex.y - normals[j].y);
-                        output.f32LE(vertex.z - normals[j].z);
+                        output.f32(vertex.x - normals[j].x);
+                        output.f32(vertex.y - normals[j].y);
+                        output.f32(vertex.z - normals[j].z);
                     }
                     
-                    createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.offset - morphStart);
+                    createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.getOffset() - morphStart);
                 }
             }
 
-            int matrixStart = output.offset;
+            int matrixStart = output.getOffset();
             for (int i = 0; i < mesh.bones.length; ++i)
                 for (int x = 0; x < 4; ++x)
                     for (int y = 0; y < 4; ++y)
-                        output.f32LE(mesh.bones[i].invSkinPoseMatrix.get(x, y));
-            createBufferView("MATRIX", matrixStart, output.offset - matrixStart);
+                        output.f32(mesh.bones[i].invSkinPoseMatrix.get(x, y));
+            createBufferView("MATRIX", matrixStart, output.getOffset() - matrixStart);
 
-            int jointStart = output.offset;
+            int jointStart = output.getOffset();
             for (byte[] joints : mesh.getJoints())
                 for (int i = 0; i < 4; ++i)
                     output.i8(joints[i]);
             
-            createBufferView("JOINTS", jointStart, output.offset - jointStart);
+            createBufferView("JOINTS", jointStart, output.getOffset() - jointStart);
 
-            int weightStart = output.offset;
+            int weightStart = output.getOffset();
             for (Vector4f weight : mesh.getWeights()) {
-                output.f32LE(weight.x);
-                output.f32LE(weight.y);
-                output.f32LE(weight.z);
-                output.f32LE(weight.w);
+                output.f32(weight.x);
+                output.f32(weight.y);
+                output.f32(weight.z);
+                output.f32(weight.w);
             }
             
-            createBufferView("WEIGHTS", weightStart, output.offset - weightStart);
-   
+            createBufferView("WEIGHTS", weightStart, output.getOffset() - weightStart);
+            
             output.shrink();
             
-            return output.buffer;
+            return output.getBuffer();
         }
         
         public static int getMin(int[] triangles) {

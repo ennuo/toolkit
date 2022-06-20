@@ -11,11 +11,10 @@ import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RPlan;
 import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.util.Bytes;
 import cwlib.util.Compressor;
-import cwlib.util.TEA;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,9 +57,11 @@ public class Resource {
         if (this.handle == null || this.handle.length < 0xb) return;
         this.type = ResourceType.fromMagic(this.handle.str(3));
         if (this.type == ResourceType.INVALID) { this.handle.seek(0); return; }
-        this.method = SerializationType.getValue(this.handle.str(1));
-        if (this.method == SerializationType.UNKNOWN) { this.handle.seek(0); return; }
+        this.method = SerializationType.fromValue(this.handle.str(1));
         switch (this.method) {
+            case UNKNOWN:
+                this.handle.seek(0);
+                return;
             case BINARY:
             case ENCRYPTED_BINARY:
                 this.revision = new Revision(this.handle.i32f());
@@ -118,13 +119,13 @@ public class Resource {
         if (this.method != SerializationType.BINARY) return 0;
         int missingDependencies = 0;
         for (ResourceReference dependency : this.dependencies) {
-            FileEntry entry = Globals.findEntry(dependency);
+            FileEntry entry = ResourceSystem.findEntry(dependency);
             if (entry == null) {
                 missingDependencies++;
                 continue;
             }
             if (recursive && this.type != ResourceType.SCRIPT) {
-                byte[] data = Globals.extractFile(dependency);
+                byte[] data = ResourceSystem.extractFile(dependency);
                 if (data != null) {
                     Resource resource = new Resource(data);
                     if (resource.method == SerializationType.BINARY) {
@@ -154,15 +155,15 @@ public class Resource {
                 oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
                 newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
             } else {
-                oldDescBuffer = Bytes.createResourceReference(oldDescriptor, this.revision, this.compressionFlags);
-                newDescBuffer = Bytes.createResourceReference(newDescriptor, this.revision, this.compressionFlags);
+                oldDescBuffer = Bytes.getResourceReference(oldDescriptor, this.revision, this.compressionFlags);
+                newDescBuffer = Bytes.getResourceReference(newDescriptor, this.revision, this.compressionFlags);
             }
 
 
             if (this.type == ResourceType.PLAN) {
                 RPlan plan = new RPlan(this);
                 MemoryInputStream thingData = new MemoryInputStream(plan.thingData, this.revision);
-                Bytes.ReplaceAll(thingData, oldDescBuffer, newDescBuffer);
+                Bytes.replace(thingData, oldDescBuffer, newDescBuffer);
                 plan.thingData = thingData.data;
 
                 if (isFSB && plan.details != null) {
@@ -172,7 +173,7 @@ public class Resource {
 
                 this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
             }
-            Bytes.ReplaceAll(this.handle, oldDescBuffer, newDescBuffer);
+            Bytes.replace(this.handle, oldDescBuffer, newDescBuffer);
         } else {
             if (this.meshInfo.fallmap.equals(oldDescriptor))
                 this.meshInfo.fallmap = newDescriptor;

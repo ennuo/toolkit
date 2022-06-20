@@ -1,5 +1,6 @@
 package cwlib.types.databases;
 
+import cwlib.enums.ResourceKeys;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 
@@ -23,6 +24,11 @@ public abstract class FileEntry {
      * SHA1 signature of data.
      */
     protected SHA1 sha1;
+
+    /**
+     * Map of resources assigned to this entry.
+     */
+    private Object[] resources = new Object[ResourceKeys.MAX_ENTRIES];
 
     /**
      * Creates a FileEntry using default parameters for FileDB.
@@ -82,6 +88,17 @@ public abstract class FileEntry {
             throw new NullPointerException("Entry cannot be null!");
         this.size = entry.getSize();
         this.sha1 = entry.getSHA1();
+    }
+
+    public void setResource(int key, Object resource) {
+        this.resources[key] = resource;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getResource(int key) {
+        Object value = this.resources[key];
+        if (value == null) return null;
+        return (T) value;
     }
 
     @Override public String toString() {

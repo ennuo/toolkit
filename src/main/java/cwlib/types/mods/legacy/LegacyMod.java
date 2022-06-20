@@ -10,7 +10,7 @@ import cwlib.types.data.SHA1;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;

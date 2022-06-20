@@ -18,7 +18,7 @@ import cwlib.types.swing.FileData;
  * paths and unique identifiers to resources stored in the
  * associated archives.
  */
-public class FileDB extends FileData<GUID> implements Iterable<FileDBRow> {
+public class FileDB extends FileData implements Iterable<FileDBRow> {
     /**
      * Default capacity for entry array when none is provided.
      */
@@ -148,7 +148,7 @@ public class FileDB extends FileData<GUID> implements Iterable<FileDBRow> {
      * @param guid GUID to find
      * @return FileDBRow with GUID
      */
-    public FileDBRow get(long guid) { return this.get(new GUID(guid)); }
+    @Override public FileDBRow get(long guid) { return this.get(new GUID(guid)); }
 
     /**
      * Gets a file name by path/name.
@@ -206,7 +206,7 @@ public class FileDB extends FileData<GUID> implements Iterable<FileDBRow> {
     public FileDBRow newFileDBRow(String path, GUID guid) {
         if (this.lookup.containsKey(guid))
             throw new IllegalArgumentException("GUID already exists in database!");
-        final FileDBRow entry = new FileDBRow(this, path, 0, 0, SHA1.empty(), guid);
+        final FileDBRow entry = new FileDBRow(this, path, 0, 0, new SHA1(), guid);
         this.entries.add(entry);
         this.lookup.put(guid, entry);
         return entry;
@@ -316,7 +316,7 @@ public class FileDB extends FileData<GUID> implements Iterable<FileDBRow> {
             stream.sha1(entry.getSHA1());
             stream.guid(entry.getGUID());
         }
-        return stream.buffer;
+        return stream.getBuffer();
     }
 
     /**

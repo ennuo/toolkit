@@ -293,7 +293,7 @@ public class RMesh implements Serializable {
         Vector3f[] normals = new Vector3f[count];
         for (int i = 0; i < count; ++i) {
             data.offset = (0x10 * start) + (0x10 * i) + 0x4;
-            normals[i] = Bytes.decodeI24(data.i24());
+            normals[i] = Bytes.unpackNormal24(data.i24());
         }
         return normals;
     }
@@ -366,7 +366,7 @@ public class RMesh implements Serializable {
             morph.normals = new Vector3f[this.numVerts];
             for (int j = 0; j < this.numVerts; ++j) {
                 morph.vertices[j] = data.v3();
-                morph.normals[j] = Bytes.decodeI32(data.u32f());
+                morph.normals[j] = Bytes.unpackNormal32(data.u32f());
             }
             morphs[i] = morph;
         }

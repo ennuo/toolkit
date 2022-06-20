@@ -4,7 +4,7 @@ import cwlib.resources.RLocalProfile;
 import cwlib.resources.RBigProfile;
 import cwlib.ex.SerializationException;
 import cwlib.util.Bytes;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.enums.InventoryObjectType;
 import cwlib.util.FileIO;
@@ -19,7 +19,7 @@ import cwlib.types.swing.FileNode;
 import cwlib.util.Nodes;
 import cwlib.types.FileArchive;
 import cwlib.types.FileArchive.ArchiveType;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -87,8 +87,8 @@ public class FileSave extends FileData {
                 String title = "Some kind of object";
                 if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
                     title = item.details.userCreatedDetails.title;
-                else if (item.details.titleKey != 0 && Globals.LAMS != null)
-                    title = Globals.LAMS.translate(item.details.titleKey);
+                else if (item.details.titleKey != 0 && ResourceSystem.LAMS != null)
+                    title = ResourceSystem.LAMS.translate(item.details.titleKey);
                 if (title.isEmpty()) title = "Some kind of object";
                 
                 
@@ -124,8 +124,8 @@ public class FileSave extends FileData {
                 String title = "Some kind of object";
                 if (item.details.userCreatedDetails != null && !item.details.userCreatedDetails.title.isEmpty())
                     title = item.details.userCreatedDetails.title;
-                else if (item.details.titleKey != 0 && Globals.LAMS != null)
-                    title = Globals.LAMS.translate(item.details.titleKey);
+                else if (item.details.titleKey != 0 && ResourceSystem.LAMS != null)
+                    title = ResourceSystem.LAMS.translate(item.details.titleKey);
                 if (title.isEmpty()) title = "Some kind of object";
                 
                 String type = InventoryObjectType.getPrimaryName(item.details.type);
@@ -148,7 +148,7 @@ public class FileSave extends FileData {
                         entry.GUID = item.plan.GUID;
                     else if (item.plan.hash != null)
                         entry.hash = item.plan.hash;
-                    byte[] data = Globals.extractFile(item.plan);
+                    byte[] data = ResourceSystem.extractFile(item.plan);
                     if (data != null) {
                         entry.hash = SHA1.fromBuffer(data);
                         entry.size = data.length;

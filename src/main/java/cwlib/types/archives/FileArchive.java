@@ -94,7 +94,7 @@ public class FileArchive extends Fart {
             archive.write(table);
 
             // Footer
-            archive.write(Bytes.toBytes(fat.length));
+            archive.write(Bytes.toBytesBE(fat.length));
             archive.write(new byte[] { 0x46, 0x41, 0x52, 0x43 }); // FARC
         } catch (IOException ex) { return false; }
 

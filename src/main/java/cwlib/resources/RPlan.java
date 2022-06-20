@@ -11,7 +11,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceReference;
 import cwlib.util.Bytes;
 import cwlib.util.Matcher;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 
 import java.util.HashSet;
 
@@ -67,13 +67,13 @@ public class RPlan implements Serializable {
                     }
                 }
 
-                if (Globals.LAMS != null && !serializer.isWriting) {
+                if (ResourceSystem.LAMS != null && !serializer.isWriting) {
                     if (plan.details.location != 0)
                         plan.details.translatedLocation 
-                                = Globals.LAMS.translate(plan.details.location);
+                                = ResourceSystem.LAMS.translate(plan.details.location);
                     if (plan.details.category != 0)
                         plan.details.translatedCategory = 
-                                Globals.LAMS.translate(plan.details.category);
+                                ResourceSystem.LAMS.translate(plan.details.category);
                 }
             }
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class RPlan implements Serializable {
                     if (type.equals(ResourceType.FILENAME))
                         pattern = Bytes.createGUID(descriptor.GUID, serializer.compressionFlags);
                     else
-                        pattern = Bytes.createResourceReference(descriptor, serializer.revision, serializer.compressionFlags);
+                        pattern = Bytes.getResourceReference(descriptor, serializer.revision, serializer.compressionFlags);
                     boolean isInThingData = Matcher.indexOf(plan.thingData, pattern) != -1;
                     if (!isInThingData)
                         plan.dependencyCache.remove(descriptor);
@@ -117,11 +117,11 @@ public class RPlan implements Serializable {
         
         MemoryInputStream thingData = new MemoryInputStream(this.thingData);
         
-        byte[] descriptorBuffer = Bytes.createResourceReference(descriptor, revision, compressionFlags);
+        byte[] descriptorBuffer = Bytes.getResourceReference(descriptor, revision, compressionFlags);
         byte[] guidBuffer = Bytes.getIntegerBuffer(GUID, compressionFlags);
         
-        Bytes.ReplaceAll(thingData, descriptorBuffer, new byte[] { 00 });
-        Bytes.ReplaceAll(thingData, guidBuffer, new byte[] { 00 });
+        Bytes.replace(thingData, descriptorBuffer, new byte[] { 00 });
+        Bytes.replace(thingData, guidBuffer, new byte[] { 00 });
         
         this.thingData = thingData.data;
     }

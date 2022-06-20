@@ -1,42 +1,86 @@
 package cwlib.structs.texture;
 
+import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.SerializationType;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 
-public class CellGcmTexture {
-    public int format;
-    public int mipmap;
-    public byte dimension;
-    public byte cubemap;
-    public int remap;
-    public short width, height, depth;
-    public byte location;
-    public int pitch, offset;
+/**
+ * Represents GTF texture information for PS3.
+ */
+public final class CellGcmTexture {
+    private final CellGcmEnumForGtf format;
+    private final byte mipmap;
+    private final byte dimension;
+    private final byte cubemap;
+    private final int remap;
+    private final short width, height, depth;
+    private final byte location;
+    private final byte flags;
+    private final int pitch, offset;
+    private final SerializationType method;
     
-    public CellGcmTexture(MemoryInputStream data, SerializationType method) {
+    /**
+     * Deserializes TextureInfo from stream.
+     * @param stream Stream to read texture info from
+     * @param method Texture type
+     */
+    public CellGcmTexture(MemoryInputStream stream, SerializationType method) {
+        this.method = method;
         
-        // NOTE(Aidan): I don't want to grab the full structure for this right now,
+        // I don't want to grab the full structure for this right now,
         // and it's not really necessary for anything either, so I guess I'll finish
         // it at some other point
-        
+
         if (method == SerializationType.GXT_EXTENDED)
-            data.offset += 0x14;
-        
-        this.getTextureInfo(data);
+            stream.seek(0x14);
+
+        this.format = CellGcmEnumForGtf.fromValue(stream.u8());
+        this.mipmap = stream.i8();
+        this.dimension = stream.i8();
+        // if dimension > 2, MARK TEXTURE AS VOL(UME)TEX
+        this.cubemap = stream.i8();
+        this.remap = stream.i32(true);
+        this.width = stream.i16();
+        this.height = stream.i16();
+        this.depth = stream.i16();
+        this.location = stream.i8();
+
+        // If (padding & 0x1) != 0, MARK TEXTURE AS BUMPTEX | NOSRGB_TEX
+        // if (padding & 0x2) != 0, MARK TEXTURE as 0x20000000
+        // if (padding & 0x4) != 0, MARK TEXTURE AS 0x40000000
+        this.flags = stream.i8(); // padding
+
+        this.pitch = stream.i32(true);
+        this.offset = stream.i32(true);
     }
-    
-    private void getTextureInfo(MemoryInputStream data) {
-        this.format = data.i8() & 0xFF;
-        this.mipmap = data.i8() & 0xFF;
-        this.dimension = data.i8();
-        this.cubemap = data.i8();
-        this.remap = data.i32f();
-        this.width = data.i16();
-        this.height = data.i16();
-        this.depth = data.i16();
-        this.location = data.i8();
-        data.i8(); // padding
-        this.pitch = data.i32f();
-        this.offset = data.i32f();
+
+    /**
+     * Writes this header to an output stream.
+     * @param stream Memory output stream
+     */
+    public void write(MemoryOutputStream stream) {
+        stream.u8(this.format.getValue());
+        stream.i8(this.mipmap);
+        stream.i8(this.dimension);
+        stream.i8(this.cubemap);
+        stream.i32(this.remap, true);
+        stream.i16(this.width);
+        stream.i16(this.height);
+        stream.i16(this.depth);
+        stream.i8(this.location);
+        stream.i8(this.flags);
+        stream.i32(this.pitch, true);
+        stream.i32(this.offset, true);
     }
+
+    public CellGcmEnumForGtf getFormat() { return this.format; }
+    public int getMipCount() { return this.mipmap & 0xFF; }
+    public int getWidth() { return this.width; }
+    public int getHeight() { return this.height; }
+    public int getDepth() { return this.depth; }
+    public SerializationType getMethod() { return this.method; }
+
+    public boolean isBumpTexture() { return (this.flags & 0x1) != 0; }
+    public boolean isVolumeTexture() { return (this.dimension > 2); }
 }

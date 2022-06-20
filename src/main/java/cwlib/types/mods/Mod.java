@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import cwlib.ex.SerializationException;
 import cwlib.util.Bytes;
 import cwlib.util.Images;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import cwlib.util.FileIO;
 import cwlib.types.data.SHA1;
 import cwlib.enums.DatabaseType;
@@ -18,7 +18,7 @@ import cwlib.types.swing.FileNode;
 import cwlib.types.FileArchive;
 import cwlib.types.FileArchive.ArchiveType;
 import cwlib.types.FileDB;
-import cwlib.types.FileEntry;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 
@@ -93,7 +93,7 @@ public class Mod extends FileData {
             Path archivePath = fileSystem.getPath("data.farc");
             this.archive = null;
             if (Files.exists(archivePath)) {
-                File tempArchive = new File(Globals.workingDirectory, this.config.ID + ".farc");
+                File tempArchive = new File(ResourceSystem.workingDirectory, this.config.ID + ".farc");
                 Files.copy(archivePath, tempArchive.toPath());
                 this.archive = new FileArchive(tempArchive);
                 if (archive.archiveType == ArchiveType.FARC)
@@ -243,7 +243,7 @@ public class Mod extends FileData {
         if (this.patches.size() != 0)
             patches = gson.toJson(this.patches.toArray(), ModInfo[].class).getBytes();
         
-        File workingZip = new File(Globals.workingDirectory, "working.mod");
+        File workingZip = new File(ResourceSystem.workingDirectory, "working.mod");
         
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");

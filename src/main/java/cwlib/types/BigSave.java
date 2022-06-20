@@ -4,8 +4,9 @@ import cwlib.resources.RAdventureCreateProfile;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.FileIO;
 import cwlib.util.Images;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.ResourceReference;
 import cwlib.resources.RTexture;
 import cwlib.structs.slot.Slot;
@@ -25,6 +26,7 @@ import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.types.databases.FileEntry;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.io.serializer.Serializer;
 import cwlib.resources.RBigProfile;
@@ -37,25 +39,7 @@ import java.util.Date;
 // I really want to burn this class.
 // It's so messy! Why is it reimplementing a FAR4/5!
 public class BigSave extends FileData {
-    public boolean isParsed = false;
-
-    /**
-     * File entry of the root resource.
-     */
-    public FileEntry rootProfileEntry;
-
-    /**
-     * Parsed RBigProfile if it's the root type.
-     */
-    public RBigProfile bigProfile;
-
     public ArrayList<FileEntry> entries;
-
-    /**
-     * Tracks the "root" resource of this archive,
-     * as well as its type.
-     */
-    private byte[] saveKey;
     
     /**
      * Used for determing which moon model positions to use
@@ -74,11 +58,11 @@ public class BigSave extends FileData {
     private boolean[] usedSlots = new boolean[82];
     
     /**
-     * Whether or not the archive is version 5,
-     * not actually fully supported as of right now.
+     * Parsed archive containing all file data,
+     * as well as save key reference data.
      */
-    private boolean isFAR5 = false;
-    
+    private SaveArchive archive;
+
     /**
      * Used for names of items added to profile.
      */
@@ -415,7 +399,7 @@ public class BigSave extends FileData {
                         break;
                     }
                 byte[] built = profile.build(resource.revision, resource.compressionFlags);
-                Globals.replaceEntry(parentAdventure, built);
+                ResourceSystem.replaceEntry(parentAdventure, built);
             }
         }
 
