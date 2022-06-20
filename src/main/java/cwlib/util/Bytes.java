@@ -1,208 +1,243 @@
 package cwlib.util;
 
-import cwlib.registry.MaterialRegistry;
 import cwlib.registry.MaterialRegistry.MaterialEntry;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RPlan;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceReference;
-import cwlib.types.FileEntry;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.registry.GfxMaterialInfo;
+import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
-import toolkit.utilities.Globals;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
+import toolkit.utilities.ResourceSystem;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 import org.joml.Vector3f;
 
-public class Bytes {
-    public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+public final class Bytes {
+    /**
+     * Hexadecimal characters used for hex/string conversion.
+     */
+    private static final char[] HEX_ARRAY = ("0123456789ABCDEF".toCharArray());
 
+    /**
+     * Converts a byte array into a hex string.
+     * Implementation sourced from <a href="https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java">here</a>.
+     * @param bytes Byte array to hexify
+     * @return Hex representation of byte array
+     */
     public static String toHex(byte[] bytes) {
-        char[] hex = new char[bytes.length * 2];
-        for (int i = 0; i < bytes.length; i++) {
+        if (bytes == null)
+            throw new NullPointerException("Can't convert null byte array to hexadecimal string!");
+        final char[] hex = new char[bytes.length * 2];
+        for (int i = 0; i < bytes.length; ++i) {
             int b = bytes[i] & 0xFF;
-            hex[i * 2] = HEX_ARRAY[b >>> 4];
-            hex[i * 2 + 1] = HEX_ARRAY[b & 0xF];
+            hex[i * 2] = Bytes.HEX_ARRAY[b >>> 4];
+            hex[(i * 2) + 1] = Bytes.HEX_ARRAY[b & 0xF];
         }
-        return new String(hex);
+        return String.valueOf(hex);
     }
 
+    /**
+     * Converts an integer into a hex string.
+     * @param value Integer to hexify
+     * @return Hex representation of integer
+     */
     public static String toHex(int value) {
-        return toHex(toBytes(value));
-    }
-
-    public static String toHex(long value) {
-        return toHex(toBytes(value));
-    }
-
-    public static short toShort(byte[] bytes) {
-        return (short)((bytes[0] & 0xFF) << 8 | (bytes[1] & 0xFF) << 0);
+        return Bytes.toHex(Bytes.toBytesBE(value));
     }
     
-    public static int toIntegerLE(byte[] bytes) {
-        return (bytes[3] & 0xFF) << 24 | (bytes[2] & 0xFF) << 16 | (bytes[1] & 0xFF) << 8 | (bytes[0] & 0xFF) << 0;
+    /**
+     * Converts a hex string into a byte array.
+     * @param v Hex string
+     * @return Byte array from hex string
+     */
+    public static byte[] fromHex(String v) {
+        int length = v.length();
+        final byte[] b = new byte[length / 2];
+        for (int i = 0; i < length; i += 2)
+            b[i / 2] = (byte) (
+                (Character.digit(v.charAt(i), 16) << 4) + Character.digit(v.charAt(i + 1), 16)
+            );
+        return b;
     }
 
-    public static int toInteger(byte[] bytes) {
-        return (bytes[0] & 0xFF) << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF) << 0;
+    /**
+     * Converts a big-order byte array to a short primitive.
+     * @param b 2-byte array containing big-order short
+     * @return the short from the byte array
+     */
+    public static short toShortBE(byte[] b) {
+        if (b == null)
+            throw new NullPointerException("Can't read data type from null byte array!");
+        return (short) ((b[0] & 0xFF) << 8 | (b[1] & 0xFF) << 0);
     }
 
-    public static int toInteger(String value) {
-        return toInteger(toBytes(Strings.leftPad(value, 8)));
-    }
-
-    public static final byte[] toBytesLE(int value) {
-        return new byte[] {
-            (byte)(value), (byte)(value >>> 8L), (byte)(value >> 16L), (byte)(value >> 24L)
-        };
+    /**
+     * Converts a little-order byte array to a short primitive.
+     * @param b 2-byte array containing litte-order short
+     * @return the short from the byte array
+     */
+    public static short toShortLE(byte[] b) {
+        if (b == null)
+            throw new NullPointerException("Can't read data type from null byte array!");
+        return (short) ((b[0] & 0xFF) << 0 | (b[1] & 0xFF) << 8);
     }
     
-    public static final byte[] toBytes(int value) {
+    /**
+     * Converts a big-order byte array to an integer primitive.
+     * @param b 4-byte array containing big-order integer
+     * @return the integer from the byte array
+     */
+    public static int toIntegerBE(byte[] b) {
+        if (b == null)
+            throw new NullPointerException("Can't read data type from null byte array!");
+        return (int) (
+            (b[0] & 0xFF) << 24 | 
+            (b[1] & 0xFF) << 16 | 
+            (b[2] & 0xFF) << 8 | 
+            (b[3] & 0xFF) << 0
+        );
+    }
+
+    /**
+     * Converts a little-order byte array to an integer primitive.
+     * @param b 4-byte array containing little-order integer
+     * @return the integer from the byte array
+     */
+    public static int toIntegerLE(byte[] b) {
+        if (b == null)
+            throw new NullPointerException("Can't read data type from null byte array!");
+        return (int) (
+            (b[0] & 0xFF) << 0 |
+            (b[1] & 0xFF) << 8 |
+            (b[2] & 0xFF) << 16 |
+            (b[3] & 0xFF) << 24
+        );
+    }
+    
+        /**
+     * Converts a short into a big-order byte array.
+     * @param v short primitive
+     * @return the big-order byte array containing the short
+     */
+    public static byte[] toBytesBE(short v) {
         return new byte[] {
-            (byte)(value >>> 24), (byte)(value >>> 16), (byte)(value >> 8), (byte) value
+            (byte) (v >>> 8),
+            (byte) (v & 0xFF)
         };
     }
 
-    public static final byte[] toBytes(long value) {
+    /**
+     * Converts a short into a little-order byte array.
+     * @param v short primitive
+     * @return the little-order byte array containing the short
+     */
+    public static byte[] toBytesLE(short v) {
         return new byte[] {
-            (byte)(int)(value >>> 24L), (byte)(int)(value >>> 16L), (byte)(int)(value >> 8L), (byte)(int) value
-        };
-    }
-    
-    public static final byte[] toBytesLE(long value) {
-        return new byte[] {
-            (byte)(int)(value), (byte)(int)(value >>> 8L), (byte)(int)(value >> 16L), (byte)(int)(value >> 24L)
-        };
-    }
-
-    public static final byte[] toBytes(short value) {
-        return new byte[] {
-            (byte)(value >>> 8), (byte) value
+            (byte) (v & 0xFF),
+            (byte) (v >>> 8)
         };
     }
 
-    public static byte[] toBytes(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2)
-            data[i / 2] =
-            (byte)((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
-        return data;
+    /**
+     * Converts a integer into a big-order byte array.
+     * @param v integer primitive
+     * @return the big-order byte array containing the integer
+     */
+    public static byte[] toBytesBE(int v) {
+        return new byte[] {
+            (byte) (v >>> 24), 
+            (byte) (v >>> 16), 
+            (byte) (v >>> 8), 
+            (byte) (v & 0xFF)
+        };
     }
-    
-    public static final void swap32(byte[] data, int offset) {
-        byte temp = data[offset];
-        data[offset] = data[offset + 3];
-        data[offset + 3] = temp;
-        temp = data[offset + 1];
-        data[offset + 1] = data[offset + 2];
-        data[offset + 2] = temp;
-    }
-    
-    public static byte[] createGUID(long GUID, byte compressionFlags) {
-        MemoryOutputStream output = new MemoryOutputStream(0x8);
-        output.compressionFlags = compressionFlags;
-        output.u32(GUID);
-        output.shrink();
-        return output.buffer;
+
+    /**
+     * Converts a integer into a little-order byte array.
+     * @param v integer primitive
+     * @return the little-order byte array containing the integer
+     */
+    public static byte[] toBytesLE(int v) {
+        return new byte[] {
+            (byte) (v & 0xFF),
+            (byte) (v >>> 8),
+            (byte) (v >>> 16),
+            (byte) (v >>> 24),
+        };
     }
     
     public static byte[] getIntegerBuffer(long value, byte compressionFlags) {
-        MemoryOutputStream output = new MemoryOutputStream(0x5);
-        output.compressionFlags = compressionFlags;
+        MemoryOutputStream output = new MemoryOutputStream(0x8, compressionFlags);
         output.u32(value);
         output.shrink();
-        return output.buffer;
+        return output.getBuffer();
     }
 
-    public static byte[] createResourceReference(ResourceReference res, Revision revision, byte compressionFlags) {
-        MemoryOutputStream output = new MemoryOutputStream(0x1C + 0x4, revision);
-        output.compressionFlags = compressionFlags;
-        output.resource(res, true);
-        output.shrink();
-        return output.buffer;
+    public static byte[] getResourceReference(ResourceReference res, Revision revision, byte compressionFlags) {
+        Serializer serializer = new Serializer(0x1c + 0x4, revision, compressionFlags);
+        serializer.resource(res, ResourceType.INVALID, true);
+        return serializer.getBuffer();
     }
-
-    public static byte[] reverseShort(byte[] bytes) {
-        byte[] buffer = new byte[2];
-        buffer[0] = bytes[1];
-        buffer[1] = bytes[0];
-        return buffer;
-    }
-
-    public static byte[] reverseInteger(byte[] bytes) {
-        byte[] buffer = new byte[4];
-        buffer[0] = bytes[3];
-        buffer[1] = bytes[2];
-        buffer[2] = bytes[1];
-        buffer[3] = bytes[0];
-        return buffer;
-    }
-
-    public static byte[] encode(long value) {
-        byte[] temp = new byte[5];
-        int size = 0;
-        while (value > 127L) {
-            temp[size] = (byte)(value & 0x7FL | 0x80L);
-            value >>= 7L;
-            size++;
+    
+    /**
+     * Converts an array of 32 bit big endian integers to a byte array.
+     * @param data Integer array
+     * @return Converted byte array
+     */
+    public static byte[] fromIntArrayBE(int[] data) {
+        if (data == null) 
+            throw new NullPointerException("Integer stream cannot be null!");
+        byte[] output = new byte[data.length * 4];
+        for (int i = 0; i < data.length; ++i) {
+            int v = data[i]; int dest = (i * 4);
+            output[dest] = (byte) (v >>> 24);
+            output[dest + 1] = (byte) (v >>> 16);
+            output[dest + 2] = (byte) (v >>> 8);
+            output[dest + 3] = (byte) (v & 0xFF);
         }
-        temp[size++] = (byte)(value & 0x7FL);
-        return Arrays.copyOfRange(temp, 0, size);
+        return output;
     }
 
-    public static int decode(byte[] bytes) {
-        int result = 0, shift = 0, i = 0;
-        while (true) {
-            int b = bytes[i];
-            result |= (b & 0x7F) << shift;
-            shift += 7;
-            if ((b & 0x80) == 0)
-                break;
-            i++;
+    /**
+     * Converts a big endian byte array to an array of 32 bit integers.
+     * @param data Byte array
+     * @return Converted integer array
+     */
+    public static int[] toIntArrayBE(byte[] data) {
+        if (data == null) 
+            throw new NullPointerException("Byte stream cannot be null!");
+        if (data.length % 4 != 0)
+            throw new IllegalArgumentException("Byte stream length must be divisible by 4!");
+        int[] output = new int[data.length / 4];
+        for (int i = 0; i < output.length; ++i) {
+            int src = (i * 4);
+            output[i] = (data[src] & 0xFF) << 24 | 
+                        (data[src + 1] & 0xFF) << 16 | 
+                        (data[src + 2] & 0xFF) << 8 | 
+                        (data[src + 3] & 0xFF) << 0;
         }
-        return result;
+        return output;
     }
 
-    public static SHA1 SHA1(byte[] bytes) {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, (String) null, ex);
-            return null;
-        }
-        return new SHA1(digest.digest(bytes));
-    }
-
-    public static byte[][] Split(byte[] data, int size) {
+    /**
+     * Splits a byte array into a series of chunks.
+     * Implementation sourced from <a href="https://stackoverflow.com/questions/3405195/divide-array-into-smaller-parts/26695737">here</a>.
+     * @param data Byte array to split
+     * @param size Size of each byte chunk
+     * @return Chunked byte arrays
+     */
+    public static byte[][] split(byte[] data, int size) {
         byte[][] out = new byte[(int) Math.ceil(data.length / (double) size)][size];
         int start = 0;
         for (int i = 0; i < out.length; ++i) {
@@ -213,79 +248,23 @@ public class Bytes {
         return out;
     }
 
-    public static byte[] Combine(byte[]...arrays) {
+    /**
+     * Combines a series of byte arrays into one.
+     * Implementation sourced from <a href="https://stackoverflow.com/questions/5513152/easy-way-to-concatenate-two-byte-arrays">here</a>.
+     * @param arrays Byte arrays to combine
+     * @return Combined byte arrays.
+     */
+    public static byte[] combine(byte[]... arrays) {
         int totalLength = 0;
         for (int i = 0; i < arrays.length; i++)
             totalLength += arrays[i].length;
         byte[] result = new byte[totalLength];
-
         int currentIndex = 0;
         for (int i = 0; i < arrays.length; i++) {
             System.arraycopy(arrays[i], 0, result, currentIndex, arrays[i].length);
             currentIndex += arrays[i].length;
         }
-
         return result;
-    }
-
-    public static SecretKeySpec GenerateKey(String key, byte[] IV) {
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(key.toCharArray(), IV, 65536, 256);
-            SecretKey temp = factory.generateSecret(spec);
-            return new SecretKeySpec(temp.getEncoded(), "AES");
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-
-    }
-
-    public static byte[] Decrypt(String key, byte[] data) {
-        try {
-            MemoryInputStream input = new MemoryInputStream(data);
-            byte[] IV = input.bytes(16);
-            IvParameterSpec IVSpec = new IvParameterSpec(IV);
-            byte[] buffer = input.bytes(input.length - 16);
-            SecretKeySpec spec = GenerateKey(key, IV);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, spec, IVSpec);
-            return cipher.doFinal(buffer);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    public static byte[] Encrypt(String key, byte[] data) {
-        try {
-            SecureRandom random = new SecureRandom();
-            byte[] IV = new byte[16];
-            random.nextBytes(IV);
-            SecretKeySpec spec = GenerateKey(key, IV);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-
-            cipher.init(Cipher.ENCRYPT_MODE, spec, new IvParameterSpec(IV));
-
-            byte[] buffer = cipher.doFinal(data);
-
-            MemoryOutputStream output = new MemoryOutputStream(buffer.length + 16);
-            output.bytes(IV);
-            output.bytes(buffer);
-            return output.buffer;
-
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(Bytes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-
-        return null;
     }
 
     public static int occurences(byte[] data, byte[] pattern) {
@@ -297,153 +276,42 @@ public class Bytes {
         return occurrences;
     }
 
-    public static void ReplaceAll(MemoryInputStream data, byte[] original, byte[] replacement) {
+    public static void replace(MemoryInputStream data, byte[] original, byte[] replacement) {
         if (Arrays.equals(original, replacement)) return;
 
         data.seek(0);
 
-        int offset = Matcher.indexOf(data.data, original);
+        int offset = Matcher.indexOf(data.getBuffer(), original);
         int found = 0;
         while (offset != -1) {
             found++;
 
             byte[] left = data.bytes(offset);
-            data.offset += original.length;
-            byte[] right = data.bytes(data.length - data.offset);
+            data.seek(original.length, SeekMode.Relative);
+            byte[] right = data.bytes(data.getLength() - data.getOffset());
 
-            data.setData(Bytes.Combine(
+            data.setData(Bytes.combine(
                 left,
                 replacement,
                 right
 
             ));
 
-            offset = Matcher.indexOf(data.data, original);
+            offset = Matcher.indexOf(data.getBuffer(), original);
         }
     }
 
-    /*
-    public static byte[] hashinateStreamingChunk(Mod mod, Resource resource, FileEntry entry) {
-        byte[] left = resource.bytes(0x36);
-        int planSize = resource.i32f();
-        Resource plan = new Resource(resource.bytes(planSize));
-        plan.revision = 0x270;
-        byte[] right = resource.bytes(resource.length - resource.offset);
-        plan.getDependencies(entry);
-        plan.isStreamingChunk = true;
-        if (plan.resources != null) {
-            for (int i = 0; i < plan.resources.length; ++i) {
-                ResourceDescriptor res = plan.resources[i];
-                plan.seek(0x12);
-                if (res == null) continue;
-                if (plan.dependencies[i] == null)
-                    continue;
-                if (res.type == ResourceType.SCRIPT) continue;
-                byte[] data;
-                if (res.hash != null && res.GUID == -1) data = Globals.extractFile(res.hash);
-                else data = Globals.extractFile(res.GUID);
-                if (data == null) continue;
-                Resource dependency = new Resource(data);
-                plan.replaceDependency(i, new ResourceDescriptor(hashinate(mod, dependency, plan.dependencies[i]), res.type));
-            }
-        }
+    /**
+     * Unpacks a 11/11/10 normal value.
+     * @param value Value to unpack
+     * @return Unpacked vector
+     */
+    public static Vector3f unpackNormal32(long value) {
+        // There's probably a much better way to handle 
+        // the fact that this is probably just signed data
+        // but this works, so maybe I'll come back to it 
+        // at some point, who knows.
 
-        byte[] result = Bytes.Combine(left, Bytes.toBytes(plan.data.length), plan.data, right);
-
-        byte[] tableOffset = Bytes.toBytes(result.length - 4);
-        for (int i = 0; i < 4; ++i)
-            result[0x8 + i] = tableOffset[i];
-
-        plan.seek(0x17);
-        tableOffset = Bytes.toBytes(0x1b + plan.i32f());
-        for (int i = 0; i < 4; ++i)
-            result[0x42 + i] = tableOffset[i];
-
-
-
-        byte[] SHA1 = Bytes.SHA1(result);
-        mod.add("streaming/" + Bytes.toHex(SHA1).toLowerCase(), result);
-        return SHA1;
-    }
-    */
-    
-    public static void recurse(Mod mod, Resource resource, FileEntry entry) {
-        for (int i = 0; i < resource.dependencies.size(); ++i) {
-            ResourceReference res = resource.dependencies.get(i);
-            if (res == null || res.type == ResourceType.SCRIPT) continue;
-            byte[] data = Globals.extractFile(res);
-            if (data == null) continue;
-            Resource dependency = new Resource(data);
-            if (dependency.method != SerializationType.BINARY)
-                mod.add(entry.path, data, entry.GUID);
-            else recurse(mod, new Resource(data), Globals.findEntry(res));
-        }
-        if (resource.method == SerializationType.BINARY)
-            mod.add(entry.path, resource.compressToResource(), entry.GUID);
-    }
-
-    public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry) {
-        return Bytes.hashinate(mod, resource, entry, null);
-    }
-    
-    public static SHA1 hashinate(Mod mod, Resource resource, FileEntry entry, HashMap<Integer, MaterialEntry> registry) {
-        if (resource.method == SerializationType.BINARY) {
-            if (registry == null || (registry != null && resource.type != ResourceType.GFX_MATERIAL)) {
-                for (int i = 0; i < resource.dependencies.size(); ++i) {
-                    ResourceReference res = resource.dependencies.get(i);
-                    FileEntry dependencyEntry = Globals.findEntry(res);
-                    if (res == null) continue;
-                    if (res.type == ResourceType.SCRIPT) continue;
-                    /*
-                    if (res.type == ResourceType.STREAMING_CHUNK) {
-                        if (res.GUID == -1) continue;
-                        String name = new File(dependencyEntry.path).getName();
-                        File file = FileChooser.openFile(name, ".farc", "Streaming Chunk", false);
-                        if (file == null) continue;
-                        byte[] data = FileIO.read(file.getAbsolutePath());
-                        BigProfile profile = new BigProfile(new Data(data), true);
-                        for (FileEntry e: profile.entries) {
-                            int index = -1;
-                            for (int j = 0; j < resource.dependencies.length; ++j) {
-                                if (Arrays.equals(resource.dependencies[j].hash, e.SHA1)) {
-                                    index = j;
-                                    break;
-                                }
-                            }
-                            if (index != -1)
-                                resource.replaceDependency(index, new ResourceDescriptor(hashinateStreamingChunk(mod, new Resource(e.data), e), ResourceType.STREAMING_CHUNK));
-                        }
-                        resource.replaceDependency(i, new ResourceDescriptor(null, ResourceType.STREAMING_CHUNK));
-                        continue;
-                    }
-                    */
-
-                    byte[] data = Globals.extractFile(res);
-                    if (data == null) continue;
-                    Resource dependency = new Resource(data);
-
-                    if (dependency.method == SerializationType.BINARY)
-                        resource.replaceDependency(res, new ResourceReference(hashinate(mod, dependency, dependencyEntry), res.type));
-                    else {
-                        mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
-                        resource.replaceDependency(res, new ResourceReference(SHA1.fromBuffer(data), res.type));
-                    }
-                }
-            }
-            if (resource.type == ResourceType.PLAN)
-                RPlan.removePlanDescriptors(resource, entry.GUID);
-            byte[] data = null;
-            if (resource.type == ResourceType.GFX_MATERIAL && registry != null) {
-                GfxMaterialInfo info = new GfxMaterialInfo(new RGfxMaterial(resource));
-                data = info.build(mod, registry);
-            } else data = resource.compressToResource();
-            mod.add(entry.path, data, entry.GUID);
-            return SHA1.fromBuffer(data);
-        }
-        return new SHA1();
-    }
-
-    public static Vector3f decodeI32(long value) {
         Vector3f output = new Vector3f(0, 0, 0);
         
         float x = (float) (value & 0x3ffl);
@@ -466,41 +334,38 @@ public class Bytes {
         
         return output;
     }
-    
-    public static Vector3f decodeI24(int value) {
-        Vector3f output = new Vector3f(0, 0, 0);
-        
-        float x = (float) (value & 0x7ff);
-        boolean x_sign = ((value >>> 11) & 1) > 0;
-        
-        float y = (float) ((value >>> 12) & 0x3ff);
-        boolean y_sign = ((value >>> 22) & 1) > 0;
-      
-        boolean z_sign = ((value >>> 23) & 1) > 0;
-        
-        if (x_sign) output.x = -((2047f - x) / 2047f);
-        else output.x = ((x / 2047f));
 
-        if (y_sign) output.y = -((1023f - y) / 1023f);
-        else output.y = (y / 1023f);
-       
-        output.z = (float) Math.sqrt(1 - ((Math.pow(output.x, 2)) + (Math.pow(output.y, 2))));
-        
-        if (z_sign)
-          output.z = -output.z;
-        
-        return output;
+    /**
+     * Unpacks a 12/11/1 normal value.
+     * @param normal Value to unpack
+     * @return Unpacked vector
+     */
+    public static Vector3f unpackNormal24(int normal) {
+        float x = (float) (normal & 0x7ff);
+        x = ((normal & 0x800) != 0) ? (-(0x800 - x) / 0x7ff) : (x / 0x7ff);
+
+        float y = (float) ((normal >> 12) & 0x3ff);
+        y = (((normal >> 12) & 0x400) != 0) ? (-(0x400 - y) / 0x3ff) : (y / 0x3ff);
+
+        float z = (float) (Math.pow(-1, (normal >> 23)) * 
+            (Math.sqrt((1 - (Math.pow(x, 2) + Math.pow(y, 2))))));
+
+        return new Vector3f(x, y, z);
     }
-    
-    public static byte[] computeSignature(byte[] data, byte[] key) {
-        SecretKey secretKey = new SecretKeySpec(key, "HmacSHA1");
-        try {
-            Mac mac = Mac.getInstance("HmacSHA1");
-            mac.init(secretKey);
-            return mac.doFinal(data);
-        } catch (NoSuchAlgorithmException | InvalidKeyException ex) {
-            System.err.println("An error occurred computing signature.");
-        }
-        return new byte[14];
+
+    /**
+     * Packs a 12/11/1 normal value.
+     * @param normal Vertex normal to pack
+     * @return Packed normal
+     */
+    public static int packNormal24(Vector3f normal) {
+        if (normal == null)
+            throw new NullPointerException("Can't pack null vertex normal!");
+
+        int x = Math.round(normal.x * 0x7ff) & 0xfff;
+        int y = Math.round(normal.y * 0x3ff) & 0x7ff;
+        int z = (normal.z < 0) ? 1 : 0;
+
+        return (x | (y << 12) | (z << 23));
     }
 }
