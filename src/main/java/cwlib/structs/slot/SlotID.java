@@ -1,55 +1,61 @@
 package cwlib.structs.slot;
 
 import cwlib.enums.SlotType;
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
+/**
+ * This structure represents a reference to a slot.
+ */
 public class SlotID implements Serializable {
-    public static int MAX_SIZE = 0x10;
-    
-    public SlotType type = SlotType.DEVELOPER;
-    public long ID = 0;
-    
-    public SlotID() {}
-    
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
+
+    public SlotType slotType = SlotType.DEVELOPER;
+    public long slotNumber;
+
+    /**
+     * Constructs an empty Slot ID.
+     */
+    public SlotID(){};
+
+    /**
+     * Constructs a slot reference from a type and ID.
+     * @param type Type of slot
+     * @param ID ID of slot
+     */
     public SlotID(SlotType type, long ID) {
-        this.type = type;
-        this.ID = ID;
+        if (type == null)
+            throw new NullPointerException("SlotType cannot be null!");
+        this.slotType = type;
+        this.slotNumber = ID;
     }
-    
-    public SlotID(MemoryInputStream data) {
-        this.type = SlotType.getValue(data.i32());
-        this.ID = data.u32();
-    }
-    
-    public SlotID serialize(Serializer serializer, Serializable structure) {
+
+    @SuppressWarnings("unchecked")
+    @Override public SlotID serialize(Serializer serializer, Serializable structure) {
         SlotID slot = (structure == null) ? new SlotID() : (SlotID) structure;
         
-        slot.type = SlotType.getValue(serializer.i32(slot.type.value));
-        slot.ID = serializer.u32(slot.ID);
+        slot.slotType = serializer.enum32(slot.slotType);
+        slot.slotNumber = serializer.u32(slot.slotNumber);
         
         return slot;
     }
-    
-    public void serialize(MemoryOutputStream output) {
-        output.i32(type.value);
-        output.u32(ID);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
+
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
+
+    @Override public boolean equals(Object o) {
         if (o == this) return true;
         if (!(o instanceof SlotID)) return false;
         SlotID d = (SlotID)o;
-        return (type.equals(d.type) && ID == d.ID);
+        return (slotType.equals(d.slotType) && slotNumber == d.slotNumber);
     }
-    
-    @Override
-    public int hashCode() {
-        int result = (int) (this.ID ^ (this.ID >>> 32));
-        result = 31 * result + (this.type != null ? this.type.hashCode() : 0);
+
+    @Override public int hashCode() {
+        int result = (int) (this.slotNumber ^ (this.slotNumber >>> 32));
+        result = 31 * result + (this.slotType != null ? this.slotType.hashCode() : 0);
         return result;
+    }
+
+    @Override public String toString() {
+        return String.format("SlotID{%s, %d}", this.slotType, this.slotNumber);
     }
 }

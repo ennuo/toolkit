@@ -1,28 +1,56 @@
 package cwlib.resources;
 
-import cwlib.types.Resource;
-import cwlib.enums.ResourceType;
-import cwlib.structs.slot.Pack;
-import cwlib.types.data.Revision;
-import cwlib.io.Serializable;
-import cwlib.io.serializer.Serializer;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-public class RPacks implements Serializable {
-    public Pack[] packs;
+import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
+import cwlib.io.Compressable;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
+import cwlib.types.data.Revision;
+import cwlib.structs.slot.Pack;
+
+/**
+ * A resource that's used for DLC slots, it contains
+ * costume packs, level kits, etc, these packs are unlocked
+ * by the RDLC resource.
+ */
+public class RPacks implements Compressable, Serializable, Iterable<Pack> {
+    public static final int BASE_ALLOCATION_SIZE = 0x4;
+
+    private ArrayList<Pack> packs = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     @Override public RPacks serialize(Serializer serializer, Serializable structure) {
-        RPacks pack = (structure == null) ? new RPacks() : (RPacks) structure;
+        RPacks packs = (structure == null) ? new RPacks() : (RPacks) structure;
 
-        pack.packs = serializer.array(pack.packs, Pack.class);
+        packs.packs = serializer.arraylist(packs.packs, Pack.class);
 
-        return pack;
+        return packs;
     }
-    
-    public byte[] build(Revision revision, byte compressionFlags) {
-        int dataSize = 0x1000 * this.packs.length;
-        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
-        this.serialize(serializer, this);
-        return Resource.compressToResource(serializer.output, ResourceType.PACKS);      
-    }    
+
+    @Override public int getAllocatedSize() { 
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.packs != null)
+            for (Pack pack : this.packs)
+                size += pack.getAllocatedSize();
+        return size;
+    }
+
+    @Override public SerializationData build(Revision revision, byte compressionFlags) {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+        serializer.struct(this, RPacks.class);
+        return new SerializationData(
+            serializer.getBuffer(), 
+            revision, 
+            compressionFlags,
+            ResourceType.PACKS,
+            SerializationType.BINARY, 
+            serializer.getDependencies()
+        );
+    }
+
+    @Override public Iterator<Pack> iterator() { return this.packs.iterator(); }
 }
