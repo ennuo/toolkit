@@ -41,7 +41,7 @@ public class SaveArchive extends Fart {
      * Signature used to verify a profile backup
      * hasn't been tampered with.
      */
-    private SHA1 hashinate = SHA1.empty();
+    private SHA1 hashinate = new SHA1();
 
     /**
      * The revision of this archive.

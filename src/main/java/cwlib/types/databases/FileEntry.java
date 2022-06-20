@@ -65,7 +65,7 @@ public abstract class FileEntry {
      */
     public void setDetails(byte[] buffer) {
         if (buffer == null) {
-            this.sha1 = SHA1.empty();
+            this.sha1 = new SHA1();
             this.size = 0;
             return;
         }
