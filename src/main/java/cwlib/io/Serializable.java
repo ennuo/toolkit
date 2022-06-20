@@ -38,4 +38,14 @@ public interface Serializable {
      * @return Size of this structure
      */
     int getAllocatedSize();
+
+    /**
+     * Calculates the size necessary to store this structure,
+     * includes referenced structures.
+     * @param serializer Current instance of serializer
+     * @return Size of this structure
+     */
+    default int getAllocatedSize(Serializer serializer) {
+        return this.getAllocatedSize();
+    }
 }
