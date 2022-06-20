@@ -1,6 +1,7 @@
 package cwlib.enums;
 
 public enum DatabaseType {
+    NONE(false),
     FILE_DATABASE(true),
     BIGFART(false),
     SAVE(false),
