@@ -1,6 +1,7 @@
 package cwlib.types;
 
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.util.Bytes;
 import java.util.ArrayList;
 import java.util.Random;
@@ -49,48 +50,48 @@ public class ParamSFO {
         );
     }
     
-    
     public byte[] build() {
-        MemoryOutputStream output = new MemoryOutputStream(0x1000);
-        output.i32(0x00505346); // magic
-        output.i32(0x01010000); // version
+        MemoryOutputStream stream = new MemoryOutputStream(0x1000);
+        stream.i32(0x00505346); // magic
+        stream.i32(0x01010000); // version
+        stream.setLittleEndian(true);
         int keysOffset = 0x14 + this.entries.size() * 0x10;
-        output.u32LE(keysOffset);
+        stream.u32(keysOffset);
         int valuesOffset = keysOffset + this.entries
                 .stream()
                 .mapToInt(element -> element.key.length())
                 .reduce(0, (total, element) -> total + element + 1);
         if (valuesOffset % 4 != 0)
             valuesOffset += (4 - (valuesOffset % 4));
-        output.u32LE(valuesOffset);
-        output.u32LE(this.entries.size());
+        stream.u32(valuesOffset);
+        stream.u32(this.entries.size());
         
         int lastKeyOffset = keysOffset, lastValueOffset = valuesOffset;
         for (int i = 0; i < this.entries.size(); ++i) {
             SfoEntry entry = this.entries.get(i);
             
-            output.offset = 0x14 + i * 0x10;
-            output.i16LE((short) (lastKeyOffset - keysOffset));
-            output.i16LE(entry.format);
-            output.u32LE(entry.length);
-            output.u32LE(entry.maxLength);
-            output.u32LE(lastValueOffset - valuesOffset);
+            stream.seek(0x14 + i * 0x10, SeekMode.Begin);
+            stream.i16((short) (lastKeyOffset - keysOffset));
+            stream.i16(entry.format);
+            stream.u32(entry.length);
+            stream.u32(entry.maxLength);
+            stream.u32(lastValueOffset - valuesOffset);
             
-            output.offset = lastKeyOffset;
-            output.str(entry.key + '\0');
-            lastKeyOffset = output.offset;
+            stream.seek(lastKeyOffset, SeekMode.Begin);
+            stream.str(entry.key + '\0', entry.key.length() + 1);
+            lastKeyOffset = stream.getOffset();
             
-            output.offset = lastValueOffset;
-            if (entry.value == null) output.bytes(new byte[entry.maxLength]);
+            stream.seek(lastValueOffset, SeekMode.Begin);
+            if (entry.value == null) stream.bytes(new byte[entry.maxLength]);
             else {
-                output.bytes(entry.value);
+                stream.bytes(entry.value);
                 if (entry.value.length < entry.maxLength)
-                    output.bytes(new byte[entry.maxLength - entry.value.length]);
+                    stream.bytes(new byte[entry.maxLength - entry.value.length]);
             }
-            lastValueOffset = output.offset;
+            lastValueOffset = stream.getOffset();
         }
         
-        output.shrink();
-        return output.buffer;
+        stream.shrink();
+        return stream.getBuffer();
     }
 }
