@@ -1,6 +1,7 @@
 package cwlib.structs.things;
 
 import cwlib.structs.things.parts.PYellowHead;
+import cwlib.types.data.Revision;
 import cwlib.structs.things.parts.PEmitter;
 import cwlib.structs.things.parts.PSpriteLight;
 import cwlib.structs.things.parts.PEffector;
@@ -32,10 +33,13 @@ import cwlib.structs.things.parts.PAnimation;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PCheckpoint;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.enums.PartHistory;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class Thing implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0xC0;
+    
     public PBody body;
     public PJoint joint;
     public PWorld world;
@@ -102,11 +106,14 @@ public class Thing implements Serializable {
     
     public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
+
+        Revision revision = serializer.getRevision();
+        int head = revision.getVersion();
         
-        if (serializer.revision.head > 0x2a0 || serializer.revision.isAfterLeerdammerRevision(5))
+        if (head > 0x2a0 || revision.isAfterLeerdamerRevision(5))
             serializer.i8((byte) 0xAA); // test_serialize_marker
         
-        if (serializer.revision.head < 0x27f) {
+        if (head < 0x27f) {
             thing.parent = serializer.reference(thing.parent, Thing.class);
             thing.UID = serializer.i32(thing.UID);
         } else {
@@ -115,31 +122,31 @@ public class Thing implements Serializable {
         }
         
         thing.groupHead = serializer.reference(thing.groupHead, Thing.class);
-        if (serializer.revision.head > 0x1c6)
+        if (head > 0x1c6)
             serializer.reference(null, Thing.class); // oldEmitter
         
-        if (serializer.revision.head > 0x213) {
+        if (head > 0x213) {
             thing.createdBy = serializer.i16(thing.createdBy);
             thing.changedBy = serializer.i16(thing.changedBy);
         }
         
-        if (serializer.revision.head > 0x21a)
+        if (head > 0x21a)
             thing.stamping = serializer.bool(thing.stamping);
         
-        if (serializer.revision.head > 0x253)
+        if (head > 0x253)
             thing.planGUID = serializer.u32(thing.planGUID);
         
-        if (serializer.revision.head > 0x2f1)
+        if (head > 0x2f1)
             thing.hidden = serializer.bool(thing.hidden);
         
-        if (serializer.revision.head > 0x340)
+        if (head > 0x340)
             thing.flags = serializer.i8(thing.flags);
         
-        long flags = Thing.getCompressedPartsFlags(thing, serializer.revision.head);
-        int parts = Thing.getCompressedPartsRevision(serializer.revision.head);
-        parts = (int) serializer.i64d((long) parts);
+        long flags = Thing.getCompressedPartsFlags(thing, head);
+        int parts = Thing.getCompressedPartsRevision(head);
+        parts = (int) serializer.i32d(parts);
         
-        if (serializer.revision.head > 0x297 || serializer.revision.isAfterLeerdammerRevision(2))
+        if (head > 0x297 || revision.isAfterLeerdamerRevision(2))
             flags = serializer.i64(flags);
         
         if (((flags & (1 << 0)) != 0) && parts >= PartHistory.BODY)
