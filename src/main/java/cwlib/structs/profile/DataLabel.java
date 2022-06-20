@@ -4,19 +4,25 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class DataLabel implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x8;
+
     public int labelIndex;
     public String name;
-    
-    public DataLabel serialize(Serializer serializer, Serializable structure) {
-        DataLabel label = 
-                (structure == null) ? new DataLabel() : (DataLabel) structure;
-        
+
+    @SuppressWarnings("unchecked")
+    @Override public DataLabel serialize(Serializer serializer, Serializable structure) {
+        DataLabel label = (structure == null) ? new DataLabel() : (DataLabel) structure;
+
         label.labelIndex = serializer.i32(label.labelIndex);
-        label.name = serializer.str16(label.name);
-        
+        label.name = serializer.wstr(label.name);
+
         return label;
     }
-    
-    
-    
+
+    @Override public int getAllocatedSize() {
+        int size = DataLabel.BASE_ALLOCATION_SIZE;
+        if (this.name != null)
+            size += (this.name.length() * 2);
+        return size;
+    }
 }

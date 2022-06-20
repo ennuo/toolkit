@@ -4,7 +4,9 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import java.nio.charset.StandardCharsets;
 
-public class NetworkOnlineID implements Serializable {  
+public class NetworkOnlineID implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x20;
+
     private byte[] data = new byte[16]; 
     private byte term = '\0';
     private byte[] dummy = new byte[3];
@@ -14,15 +16,14 @@ public class NetworkOnlineID implements Serializable {
         if (psid == null) return;
         if (psid.length() > 16)
             throw new IllegalArgumentException("PSID can only be between 0 and 16 characters!");
-        
         System.arraycopy(psid.getBytes(StandardCharsets.US_ASCII), 0, this.data, 0, psid.length());
     }
 
     @SuppressWarnings("unchecked")
     @Override public NetworkOnlineID serialize(Serializer serializer, Serializable structure) {
         NetworkOnlineID id = (structure == null) ? new NetworkOnlineID() : (NetworkOnlineID) structure;
-       
-        boolean lengthPrefixed = serializer.revision.head < 0x234;
+        
+        boolean lengthPrefixed = serializer.getRevision().getVersion() < 0x234;
         
         if (lengthPrefixed) serializer.i32(16);
         id.data = serializer.bytes(id.data, 16);
@@ -34,6 +35,8 @@ public class NetworkOnlineID implements Serializable {
         
         return id;
     }
+
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
     
     public void setData(String data) {
         if (data == null)

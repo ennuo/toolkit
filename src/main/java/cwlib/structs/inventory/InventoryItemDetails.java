@@ -4,7 +4,7 @@ import cwlib.resources.RTranslationTable;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.types.data.ResourceReference;
-import toolkit.utilities.Globals;
+import toolkit.utilities.ResourceSystem;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SlotType;
 import cwlib.enums.ToolType;
@@ -72,22 +72,22 @@ public class InventoryItemDetails implements Serializable {
         InventoryItemDetails details = 
                 (structure == null) ? new InventoryItemDetails() : (InventoryItemDetails) structure;
         
-        int head = serializer.revision.head;
+        int head = serializer.getRevision().getVersion();
         
-        if (serializer.isWriting && details.highlightSound != 0)
-            serializer.dependencies.add(new ResourceReference(details.highlightSound, ResourceType.FILENAME));
+        if (serializer.isWriting() && details.highlightSound != 0)
+            serializer.addDependency(new ResourceReference(details.highlightSound, ResourceType.FILENAME));
         
-        if (serializer.revision.head > 0x37c) {
+        if (serializer.getRevision().getVersion() > 0x37c) {
             details.dateAdded = serializer.i64d(details.dateAdded);
             details.levelUnlockSlotID = serializer.struct(details.levelUnlockSlotID, SlotID.class);
             details.highlightSound = serializer.u32(details.highlightSound);
             details.colour = serializer.i32(details.colour);
             
             
-            if (serializer.isWriting)
-                serializer.output.i32(InventoryObjectType.getFlags(details.type));
+            if (serializer.isWriting())
+                serializer.getOutput().i32(InventoryObjectType.getFlags(details.type));
             else
-                details.type = InventoryObjectType.fromFlags(serializer.input.i32(), serializer.revision);
+                details.type = InventoryObjectType.fromFlags(serializer.getInput().i32(), serializer.getRevision());
             
             details.subType = serializer.i32(details.subType);
             
@@ -109,10 +109,10 @@ public class InventoryItemDetails implements Serializable {
             details.toolType = ToolType.getValue(serializer.i8(details.toolType.value));
             details.flags = serializer.i8(details.flags);
             
-            if (serializer.revision.isAfterVitaRevision(0x7c))
+            if (serializer.getRevision().isAfterVitaRevision(0x7c))
                 details.makeSizeProportional = serializer.bool(details.makeSizeProportional);
             
-            if (!serializer.isWriting)
+            if (!serializer.isWriting())
                 details.updateTranslations();
             
             return details;
@@ -120,18 +120,18 @@ public class InventoryItemDetails implements Serializable {
         
         if (head < 0x233) {
             if (head < 0x174) {
-                serializer.str16(null); // nameTranslationTag
-                serializer.str16(null); // descTranslationTag
+                serializer.wstr(null); // nameTranslationTag
+                serializer.wstr(null); // descTranslationTag
             } else {
-                details.translationTag = serializer.str8(details.translationTag);
+                details.translationTag = serializer.str(details.translationTag);
             }
 
-            details.locationIndex = (short) serializer.i32f(details.locationIndex);
-            details.categoryIndex = (short) serializer.i32f(details.categoryIndex);
+            details.locationIndex = (short) serializer.i32(details.locationIndex, true);
+            details.categoryIndex = (short) serializer.i32(details.categoryIndex, true);
             if (head > 0x194)
-                details.primaryIndex = (short) serializer.i32f(details.primaryIndex);
+                details.primaryIndex = (short) serializer.i32(details.primaryIndex, true);
             
-            serializer.i32f(0); // Pad
+            serializer.i32(0, true); // Pad
             
             if (serializer.isWriting)
                 serializer.output.i32f(InventoryObjectType.getFlags(details.type));
@@ -150,10 +150,10 @@ public class InventoryItemDetails implements Serializable {
             if (head > 0x14e)
                 details.highlightSound = serializer.u32f(details.highlightSound);
             else
-                serializer.str8(null); // Path to highlight sound?
+                serializer.str(null); // Path to highlight sound?
 
             if (head > 0x156)
-                details.colour = serializer.i32f(details.colour);
+                details.colour = serializer.i32(details.colour, true);
 
             if (head > 0x161) {
                 details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
@@ -163,9 +163,9 @@ public class InventoryItemDetails implements Serializable {
                 details.photoData = serializer.reference(details.photoData, InventoryItemPhotoData.class);
 
             if (head > 0x176) {
-                details.levelUnlockSlotID.type =
-                    SlotType.getValue(
-                        serializer.i32f(details.levelUnlockSlotID.type.value)
+                details.levelUnlockSlotID.sl =
+                    SlotType.fromValue(
+                        serializer.i32(details.levelUnlockSlotID.getSlotType().value)
                     );
 
                 details.levelUnlockSlotID.ID = 
@@ -210,7 +210,7 @@ public class InventoryItemDetails implements Serializable {
         // so for some structures like SlotID, we need to force it manually.
 
         details.levelUnlockSlotID.type =
-            SlotType.getValue(
+            SlotType.fromValue(
                 serializer.i32f(details.levelUnlockSlotID.type.value)
             );
 
@@ -248,15 +248,15 @@ public class InventoryItemDetails implements Serializable {
         if (head > 0x334) 
             details.flags = serializer.i8(details.flags);
 
-        if (serializer.revision.isAfterLeerdammerRevision(7) || head > 0x2ba) {
+        if (serializer.getRevision().isAfterLeerdamerRevision(7) || head > 0x2ba) {
             details.titleKey = serializer.u32(details.titleKey);
             details.descriptionKey = serializer.u32(details.descriptionKey);
         } else 
-            details.translationTag = serializer.str8(details.translationTag);
+            details.translationTag = serializer.str(details.translationTag);
 
         details.userCreatedDetails = serializer.struct(details.userCreatedDetails, UserCreatedDetails.class);
         if (details.userCreatedDetails != null && 
-                details.userCreatedDetails.title.isEmpty() && 
+                details.userCreatedDetails.name.isEmpty() && 
                 details.userCreatedDetails.description.isEmpty())
             details.userCreatedDetails = null;
         
@@ -266,7 +266,7 @@ public class InventoryItemDetails implements Serializable {
         details.photoData = serializer.reference(details.photoData, InventoryItemPhotoData.class);
         details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
         
-        if (!serializer.isWriting)
+        if (!serializer.isWriting())
             details.updateTranslations();
         
         return details;
@@ -287,11 +287,11 @@ public class InventoryItemDetails implements Serializable {
                     RTranslationTable.makeLamsKeyID(this.translationTag + "_DESC");
         }
         
-        if (Globals.LAMS != null) {
+        if (ResourceSystem.LAMS != null) {
             if (this.titleKey != 0)
-                this.translatedTitle = Globals.LAMS.translate(this.titleKey);
+                this.translatedTitle = ResourceSystem.LAMS.translate(this.titleKey);
             if (this.descriptionKey != 0)
-                this.translatedDescription = Globals.LAMS.translate(this.descriptionKey);
+                this.translatedDescription = ResourceSystem.LAMS.translate(this.descriptionKey);
         }
     }
 }

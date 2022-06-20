@@ -4,7 +4,9 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class NetworkPlayerID implements Serializable {
-    public NetworkOnlineID handle = new NetworkOnlineID();
+    public static final int BASE_ALLOCATION_SIZE = NetworkOnlineID.BASE_ALLOCATION_SIZE + 0x10;
+
+    private NetworkOnlineID handle = new NetworkOnlineID();
     private byte[] opt = new byte[8];
     private byte[] reserved = new byte[8];
     
@@ -19,7 +21,7 @@ public class NetworkPlayerID implements Serializable {
 
         id.handle = serializer.struct(id.handle, NetworkOnlineID.class);
 
-        boolean lengthPrefixed = serializer.revision.head < 0x234;
+        boolean lengthPrefixed = serializer.getRevision().getVersion() < 0x234;
 
         if (lengthPrefixed) serializer.i32(8);
         id.opt = serializer.bytes(id.opt, 8);
@@ -29,6 +31,9 @@ public class NetworkPlayerID implements Serializable {
 
         return id;
     }
+
+    
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
     
     @Override public NetworkPlayerID clone() {
         NetworkPlayerID id = new NetworkPlayerID();

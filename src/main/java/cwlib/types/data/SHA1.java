@@ -1,6 +1,7 @@
 package cwlib.types.data;
 
 import cwlib.util.Bytes;
+import cwlib.util.Crypto;
 
 /**
  * Encapsulates a fixed size byte array to 
@@ -28,7 +29,7 @@ public final class SHA1 {
         if (hash.length() != 40) 
             throw new IllegalArgumentException("SHA1 hash string must be 40 characters in length!");
         this.hashString = hash.toLowerCase();
-        this.hashBytes = Bytes.toBytes(hash);
+        this.hashBytes = Bytes.fromHex(hash);
     }
     
     /**
@@ -52,15 +53,7 @@ public final class SHA1 {
     public static SHA1 fromBuffer(byte[] buffer) {
         if (buffer == null)
             throw new NullPointerException("Data buffer provided to SHA1 hasher cannot be null!");
-        return Bytes.SHA1(buffer);
-    }
-
-    /**
-     * Creates an empty SHA1.
-     * @return Empty SHA1 instance
-     */
-    public static SHA1 empty() {
-        return new SHA1("0000000000000000000000000000000000000000");
+        return Crypto.SHA1(buffer);
     }
     
     public byte[] getHash() { return this.hashBytes; }

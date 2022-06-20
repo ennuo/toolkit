@@ -2,34 +2,50 @@ package cwlib.structs.inventory;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 
+/**
+ * Represents all the users who have had
+ * some form of contribution to this resource.
+ */
 public class CreationHistory implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x4;
+
     public String[] creators;
-    
-    public CreationHistory serialize(Serializer serializer, Serializable structure) {
-        CreationHistory history = 
-                (structure == null) ? new CreationHistory() : (CreationHistory) structure;
-        
-        boolean isFixed = serializer.revision.head > 0x37c;
-        if (serializer.isWriting) {
+
+    @SuppressWarnings("unchecked")
+    @Override public CreationHistory serialize(Serializer serializer, Serializable structure) {
+        CreationHistory history = (structure == null) ? new CreationHistory() : (CreationHistory) structure;
+
+        boolean isFixed = serializer.getRevision().getVersion() > 0x37c;
+        if (serializer.isWriting()) {
+            MemoryOutputStream stream = serializer.getOutput();
             if (history.creators != null) {
-                serializer.output.i32(history.creators.length);
+                stream.i32(history.creators.length);
                 for (String editor : history.creators) {
-                    if (isFixed) serializer.output.str(editor, 0x14);
-                    else serializer.output.str16(editor);
+                    if (isFixed) stream.str(editor, 0x14);
+                    else stream.wstr(editor);
                 }
-            } else serializer.output.i32(0);
+            }
+            else stream.i32(0);
             return history;
-        }
-        
-        history.creators = new String[serializer.input.i32()];
+        } 
+
+        MemoryInputStream stream = serializer.getInput();
+        history.creators = new String[stream.i32()];
         for (int i = 0; i < history.creators.length; ++i) {
-            if (isFixed) history.creators[i] = serializer.input.str(0x14);
-            else history.creators[i] = serializer.input.str16();
+            if (isFixed) history.creators[i] = stream.str(0x14);
+            else history.creators[i] = stream.wstr();
         }
-        
         return history;
     }
-    
-    
+
+    @Override public int getAllocatedSize() { 
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.creators != null)
+            for (String editor : this.creators)
+                size += ((editor.length() * 2) + 4);
+        return size;
+    }
 }

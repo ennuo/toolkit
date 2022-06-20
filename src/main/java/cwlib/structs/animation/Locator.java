@@ -11,7 +11,7 @@ public class Locator {
     
     public Locator(MemoryInputStream data) {
         position = data.v3();
-        name = data.str8();
+        name = data.str();
         looping = data.i8();
         type = data.i8();
     }
@@ -26,7 +26,7 @@ public class Locator {
     
     public void serialize(MemoryOutputStream output) {
         output.v3(position);
-        output.str8(name);
+        output.str(name);
         output.i8(looping);
         output.i8(type);
     }

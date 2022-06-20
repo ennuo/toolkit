@@ -4,30 +4,33 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class UserCreatedDetails implements Serializable {
-    public static int MAX_SIZE = 0x400;
-    
-    public String title;
+    public static final int BASE_ALLOCATION_SIZE = 0x8;
+
+    public String name;
     public String description;
-    
-    public UserCreatedDetails() {};
-    public UserCreatedDetails(String title, String description) {
-        this.title = title;
+
+    public UserCreatedDetails(){};
+    public UserCreatedDetails(String name, String description) {
+        this.name = name;
         this.description = description;
     }
 
-    public UserCreatedDetails serialize(Serializer serializer, Serializable structure) {
-        UserCreatedDetails details = 
-                (structure == null) ? new UserCreatedDetails() : (UserCreatedDetails) structure;
-        details.title = serializer.str16(details.title);
-        details.description = serializer.str16(details.description);
+    @SuppressWarnings("unchecked")
+    @Override public UserCreatedDetails serialize(Serializer serializer, Serializable structure) {
+        UserCreatedDetails details = (structure == null) ? new UserCreatedDetails() : (UserCreatedDetails) structure;
+
+        details.name = serializer.wstr(details.name);
+        details.description = serializer.wstr(details.description);
+
         return details;
     }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof UserCreatedDetails)) return false;
-        UserCreatedDetails d = (UserCreatedDetails)o;
-        return (d.title.equals(title) && d.description.equals(description));
+
+    @Override public int getAllocatedSize() {
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.name != null)
+            size += (this.name.length() * 2);
+        if (this.description != null)
+            size += (this.description.length() * 2);
+        return size;
     }
 }
