@@ -13,7 +13,7 @@ import cwlib.types.Resource;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.Revision;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -70,7 +70,7 @@ public class RMesh implements Serializable {
     public Matrix4f[] clusterImplicitEllipsoids;
     public ImplicitEllipsoid[] insideImplicitEllipsoids;
     public ImplicitPlane[] implicitPlanes;
-    public ResourceReference softPhysSettings;
+    public ResourceDescriptor softPhysSettings;
     public int minSpringVert, maxSpringVert;
     public int minUnalignedSpringVert;
     public short[] springyTriIndices;

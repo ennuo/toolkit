@@ -3,7 +3,7 @@ package cwlib.util;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.Resource;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import toolkit.utilities.ResourceSystem;
@@ -14,7 +14,7 @@ import toolkit.utilities.ResourceSystem;
 public class Resources {
     public static void recurse(Mod mod, Resource resource, FileEntry entry) {
         for (int i = 0; i < resource.dependencies.size(); ++i) {
-            ResourceReference res = resource.dependencies.get(i);
+            ResourceDescriptor res = resource.dependencies.get(i);
             if (res == null || res.type == ResourceType.SCRIPT) continue;
             byte[] data = ResourceSystem.extractFile(res);
             if (data == null) continue;
@@ -35,7 +35,7 @@ public class Resources {
         if (resource.method == SerializationType.BINARY) {
             if (registry == null || (registry != null && resource.type != ResourceType.GFX_MATERIAL)) {
                 for (int i = 0; i < resource.dependencies.size(); ++i) {
-                    ResourceReference res = resource.dependencies.get(i);
+                    ResourceDescriptor res = resource.dependencies.get(i);
                     FileEntry dependencyEntry = ResourceSystem.findEntry(res);
                     if (res == null) continue;
                     if (res.type == ResourceType.SCRIPT) continue;
@@ -44,10 +44,10 @@ public class Resources {
                     Resource dependency = new Resource(data);
 
                     if (dependency.method == SerializationType.BINARY)
-                        resource.replaceDependency(res, new ResourceReference(hashinate(mod, dependency, dependencyEntry), res.type));
+                        resource.replaceDependency(res, new ResourceDescriptor(hashinate(mod, dependency, dependencyEntry), res.type));
                     else {
                         mod.add(dependencyEntry.path, data, dependencyEntry.GUID);
-                        resource.replaceDependency(res, new ResourceReference(SHA1.fromBuffer(data), res.type));
+                        resource.replaceDependency(res, new ResourceDescriptor(SHA1.fromBuffer(data), res.type));
                     }
                 }
             }

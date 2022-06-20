@@ -1,6 +1,6 @@
 package cwlib.presets;
 
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.Crater;
 import cwlib.enums.SlotType;
 import cwlib.structs.slot.Slot;
@@ -8,7 +8,7 @@ import cwlib.structs.slot.SlotID;
 
 public class SlotPresets {
     
-    public static Slot Crater(ResourceReference level, int ID) {
+    public static Slot Crater(ResourceDescriptor level, int ID) {
         Slot slot = new Slot();
 
         SlotID slotID = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, ID);

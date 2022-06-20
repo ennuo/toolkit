@@ -7,7 +7,7 @@ import cwlib.util.Images;
 import toolkit.utilities.ResourceSystem;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.archives.SaveArchive;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.resources.RTexture;
 import cwlib.structs.slot.Slot;
 import cwlib.enums.Crater;
@@ -204,7 +204,7 @@ public class BigSave extends FileData {
         if (extension.equals("bin") || extension.equals("adc")) return null;
         if (extension.equals("plan")) {
             // Don't add items if they're in our inventory
-            ResourceReference plan = new ResourceReference(entry.hash, ResourceType.PLAN);
+            ResourceDescriptor plan = new ResourceDescriptor(entry.hash, ResourceType.PLAN);
             for (InventoryItem item : this.bigProfile.inventory)
                 if (plan.equals(item.plan))
                     return null;
@@ -251,7 +251,7 @@ public class BigSave extends FileData {
         new Serializer(output).struct(this.bigProfile, RBigProfile.class);
         output.shrink();
 
-        ResourceReference[] dependencies = new ResourceReference[output.dependencies.size()];
+        ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
         dependencies = output.dependencies.toArray(dependencies);
 
         this.rootProfileEntry.data = Resource.compressToResource(output, ResourceType.BIG_PROFILE);
@@ -335,7 +335,7 @@ public class BigSave extends FileData {
                     metadata = new InventoryItemDetails();
                     System.out.println("Metadata is null, using default values...");
                 }
-                this.addItem(new ResourceReference(hash, ResourceType.PLAN), metadata);
+                this.addItem(new ResourceDescriptor(hash, ResourceType.PLAN), metadata);
             }
             return;
         }
@@ -357,7 +357,7 @@ public class BigSave extends FileData {
 
                 slot.location = crater.value;
 
-                slot.root = new ResourceReference(hash, ResourceType.LEVEL);
+                slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
 
                 this.addSlotNode(slot);
             }
@@ -390,12 +390,12 @@ public class BigSave extends FileData {
         if (parentAdventure != null) {
             byte[] adventureData = parentAdventure.data;
             if (data != null) {
-                ResourceReference old = new ResourceReference(entry.hash, ResourceType.LEVEL);
+                ResourceDescriptor old = new ResourceDescriptor(entry.hash, ResourceType.LEVEL);
                 Resource resource = new Resource(adventureData);
                 RAdventureCreateProfile profile = new RAdventureCreateProfile(resource);
                 for (Slot adventureSlot : profile.adventureSlots.values())
                     if (adventureSlot.root != null && adventureSlot.root.equals(old)) {
-                        adventureSlot.root = new ResourceReference(hash, ResourceType.LEVEL);
+                        adventureSlot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
                         break;
                     }
                 byte[] built = profile.build(resource.revision, resource.compressionFlags);
@@ -404,7 +404,7 @@ public class BigSave extends FileData {
         }
 
         if (item != null) {
-            ResourceReference newRes = new ResourceReference(hash, ResourceType.PLAN);
+            ResourceDescriptor newRes = new ResourceDescriptor(hash, ResourceType.PLAN);
             item.plan = newRes;
             
             try {
@@ -421,9 +421,9 @@ public class BigSave extends FileData {
 
         if (slot != null) {
             if (slot.id.type.equals(SlotType.ADVENTURE_PLANET_LOCAL))
-                slot.adventure = new ResourceReference(hash, ResourceType.ADVENTURE_CREATE_PROFILE);
+                slot.adventure = new ResourceDescriptor(hash, ResourceType.ADVENTURE_CREATE_PROFILE);
             else
-                slot.root = new ResourceReference(hash, ResourceType.LEVEL);
+                slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
         }
 
         entry.hash = hash;
@@ -440,7 +440,7 @@ public class BigSave extends FileData {
         this.shouldSave = true;
     }
 
-    public void addItem(ResourceReference resource, InventoryItemDetails metadata) {
+    public void addItem(ResourceDescriptor resource, InventoryItemDetails metadata) {
         InventoryItem item = new InventoryItem();
         
         item.plan = resource;

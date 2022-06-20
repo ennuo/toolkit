@@ -7,7 +7,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.joint.FCurve;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -25,10 +25,10 @@ public class RJoint implements Compressable, Serializable {
     public FCurve angleFunc = new FCurve();
     public boolean normalizedForces = true, dontRotateA, dontRotateB;
     public float breakResistance;
-    public ResourceReference gfxMaterial;
+    public ResourceDescriptor gfxMaterial;
     public float gfxWidth = 20.0f;
     public String eventNameAngle, eventNameLength;
-    public ResourceReference mesh;
+    public ResourceDescriptor mesh;
 
     @SuppressWarnings("unchecked")
     @Override public RJoint serialize(Serializer serializer, Serializable structure) {

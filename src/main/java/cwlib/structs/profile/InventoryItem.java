@@ -7,7 +7,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 /**
  * Represents an instance of an item in your inventory.
@@ -19,7 +19,7 @@ public class InventoryItem implements Serializable {
     /**
      * The reference to the actual plan data used by this item.
      */
-    public ResourceReference plan;
+    public ResourceDescriptor plan;
 
     /**
      * Cache for inventory details of this item.
@@ -55,7 +55,7 @@ public class InventoryItem implements Serializable {
     @SuppressWarnings("unchecked")
     @Override public InventoryItem serialize(Serializer serializer, Serializable structure) {
         InventoryItem item = (structure == null) ? new InventoryItem() : (InventoryItem) structure;
-        
+
         item.plan = serializer.resource(item.plan, ResourceType.PLAN, true);
 
         if (serializer.getRevision().isAfterLBP3Revision(0x105))

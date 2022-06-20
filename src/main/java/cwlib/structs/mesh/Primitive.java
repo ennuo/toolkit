@@ -1,6 +1,6 @@
 package cwlib.structs.mesh;
 
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -8,8 +8,8 @@ import cwlib.io.serializer.Serializer;
 public class Primitive implements Serializable {
     public static int MAX_SIZE = 0x4B;
     
-    public ResourceReference material;
-    public ResourceReference textureAlternatives;
+    public ResourceDescriptor material;
+    public ResourceDescriptor textureAlternatives;
     public int minVert;
     public int maxVert;
     public int firstIndex;

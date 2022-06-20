@@ -3,14 +3,14 @@ package cwlib.structs.inventory;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class InventoryItemPhotoData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
-    public ResourceReference icon, sticker;
+    public ResourceDescriptor icon, sticker;
     private PhotoMetadata photoMetadata = new PhotoMetadata();
-    public ResourceReference painting;
+    public ResourceDescriptor painting;
 
     @SuppressWarnings("unchecked")
     @Override public InventoryItemPhotoData serialize(Serializer serializer, Serializable structure) {

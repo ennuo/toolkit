@@ -3,12 +3,12 @@ package cwlib.structs.profile;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class CollectableData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
-    public ResourceReference plan;
+    public ResourceDescriptor plan;
     public int source;
 
     @SuppressWarnings("unchecked")

@@ -8,7 +8,7 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
 import cwlib.util.Matcher;
 import toolkit.utilities.ResourceSystem;
@@ -25,7 +25,7 @@ public class RPlan implements Serializable {
      * Cache of dependencies in thing data, so we don't have
      * to parse it.
      */
-    private HashSet<ResourceReference> dependencyCache;
+    private HashSet<ResourceDescriptor> dependencyCache;
     
     public RPlan(){}
     public RPlan(Resource resource) {
@@ -85,7 +85,7 @@ public class RPlan implements Serializable {
             // Remove dependencies of inventory item details,
             // since dependency cache should only be dependencies
             // in the thing data.
-            for (ResourceReference descriptor : serializer.dependencies) {
+            for (ResourceDescriptor descriptor : serializer.dependencies) {
                 ResourceType type = descriptor.type;
                 // These are the only types that appear in inventory item details.
                 if (type.equals(ResourceType.TEXTURE) || type.equals(ResourceType.FILENAME) || type.equals(ResourceType.PAINTING)) {
@@ -113,7 +113,7 @@ public class RPlan implements Serializable {
     }
     
     public void removePlanDescriptors(long GUID, Revision revision, byte compressionFlags) {
-        ResourceReference descriptor = new ResourceReference(GUID, ResourceType.PLAN);
+        ResourceDescriptor descriptor = new ResourceDescriptor(GUID, ResourceType.PLAN);
         
         MemoryInputStream thingData = new MemoryInputStream(this.thingData);
         
@@ -132,7 +132,7 @@ public class RPlan implements Serializable {
         this.serialize(serializer, this);
         
         // Re-add dependencies from thing data.
-        for (ResourceReference descriptor : this.dependencyCache) {
+        for (ResourceDescriptor descriptor : this.dependencyCache) {
             serializer.dependencies.add(descriptor);
             serializer.output.dependencies.add(descriptor);
         }

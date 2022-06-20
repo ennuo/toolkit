@@ -5,12 +5,12 @@ import cwlib.types.data.NetworkPlayerID;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PGroup implements Serializable {
     public boolean copyright;
     public NetworkPlayerID creator;
-    public ResourceReference planDescriptor;
+    public ResourceDescriptor planDescriptor;
     public boolean editable;
     public Thing emitter;
     public int lifetime, aliveFrames;

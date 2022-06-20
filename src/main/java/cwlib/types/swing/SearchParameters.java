@@ -1,7 +1,7 @@
 package cwlib.types.swing;
 
 import cwlib.enums.ResourceType;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Strings;
 
 /**
@@ -16,7 +16,7 @@ public class SearchParameters {
     /**
      * Parsed resource reference from search query
      */
-    private final ResourceReference resource;
+    private final ResourceDescriptor resource;
 
     /**
      * Constructs search parameters from a query
@@ -27,12 +27,12 @@ public class SearchParameters {
         if (query.startsWith("res:")) {
             query = query.substring(4);
             if (Strings.isGUID(query) || Strings.isSHA1(query))
-                this.resource = new ResourceReference(query, ResourceType.INVALID);
+                this.resource = new ResourceDescriptor(query, ResourceType.INVALID);
             else
                 this.resource = null;
         } else this.resource = null;
     }
 
     public String getPath() { return this.path; }
-    public ResourceReference getResource() { return this.resource; }
+    public ResourceDescriptor getResource() { return this.resource; }
 }

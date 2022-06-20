@@ -9,7 +9,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.bevel.BevelVertex;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -20,7 +20,7 @@ public class RBevel implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0xD0;
     public static final int MAX_MATERIALS = 4;
 
-    private ResourceReference[] materials = new ResourceReference[MAX_MATERIALS];
+    private ResourceDescriptor[] materials = new ResourceDescriptor[MAX_MATERIALS];
     private float[] UVScales = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
     public float autoSmoothCutoffAngle = 120.0f;
     public ArrayList<BevelVertex> vertices = new ArrayList<>();
@@ -30,7 +30,7 @@ public class RBevel implements Serializable, Compressable {
     public float subDivRadius = 0.3f;
     public float fixedBevelSize = 10.0f;
     public boolean spongy;
-    public ResourceReference softPhysicsSettings;
+    public ResourceDescriptor softPhysicsSettings;
     public float textureRepeats = 1.0f;
 
     @SuppressWarnings("unchecked")
@@ -39,7 +39,7 @@ public class RBevel implements Serializable, Compressable {
 
         serializer.i32(MAX_MATERIALS); // This should always be 4.
         if (bevel.materials == null)
-            bevel.materials = new ResourceReference[MAX_MATERIALS];
+            bevel.materials = new ResourceDescriptor[MAX_MATERIALS];
         for (int i = 0; i < MAX_MATERIALS; ++i)
             bevel.materials[i] = serializer.resource(bevel.materials[i], ResourceType.GFX_MATERIAL);
 
@@ -92,7 +92,7 @@ public class RBevel implements Serializable, Compressable {
      * @param index Slot index
      * @return Material in slot
      */
-    public ResourceReference getMaterial(int index) {
+    public ResourceDescriptor getMaterial(int index) {
         return this.materials[index];
     }
 
@@ -101,7 +101,7 @@ public class RBevel implements Serializable, Compressable {
      * @param material Material resource descriptor to insert
      * @param index Slot index
      */
-    public void setMaterial(ResourceReference material, int index) {
+    public void setMaterial(ResourceDescriptor material, int index) {
         this.materials[index] = material;
     }
 

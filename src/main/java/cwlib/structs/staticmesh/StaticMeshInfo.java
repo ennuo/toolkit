@@ -4,7 +4,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import java.util.ArrayList;
 import org.joml.Vector3f;
 
@@ -28,7 +28,7 @@ public class StaticMeshInfo implements Serializable {
         
     }
     
-    public ResourceReference lightmap, risemap, fallmap;
+    public ResourceDescriptor lightmap, risemap, fallmap;
     public int primitiveCount, unknownStructCount, indexBufferSize, vertexStreamSize;
     
     public StaticPrimitive[] primitives;

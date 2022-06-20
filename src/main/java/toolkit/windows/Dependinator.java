@@ -3,7 +3,7 @@ package toolkit.windows;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Strings;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -20,9 +20,9 @@ public class Dependinator extends javax.swing.JFrame {
     private Resource resource;
     private FileEntry entry;
     
-    private ArrayList<ResourceReference> dependencies;
-    private ArrayList<ResourceReference> modifications;
-    private ArrayList<ResourceReference> removed = new ArrayList<>();
+    private ArrayList<ResourceDescriptor> dependencies;
+    private ArrayList<ResourceDescriptor> modifications;
+    private ArrayList<ResourceDescriptor> removed = new ArrayList<>();
     
     private DefaultListModel<String> model = new DefaultListModel<>();
     
@@ -50,7 +50,7 @@ public class Dependinator extends javax.swing.JFrame {
         this.dependencies = new ArrayList<>(resource.dependencies);
         
         for (int i = 0; i < this.dependencies.size(); ++i) {
-            ResourceReference descriptor = this.dependencies.get(i);
+            ResourceDescriptor descriptor = this.dependencies.get(i);
             this.modifications.add(descriptor);
             FileEntry dependency = ResourceSystem.findEntry(descriptor);
             if (dependency == null || dependency.getPath() == null) {
@@ -61,7 +61,7 @@ public class Dependinator extends javax.swing.JFrame {
         }
         
         this.descriptorList.addListSelectionListener(e -> {
-            ResourceReference descriptor;
+            ResourceDescriptor descriptor;
             int index = this.descriptorList.getSelectedIndex();
             if (index == -1) {
                 this.currentDescriptorText.setText("All dependencies were removed.");
@@ -99,7 +99,7 @@ public class Dependinator extends javax.swing.JFrame {
             return;
         }
 
-        ResourceReference newDescriptor = new ResourceReference(
+        ResourceDescriptor newDescriptor = new ResourceDescriptor(
                 text,
                 this.dependencies.get(this.descriptorList.getSelectedIndex()).getType()
         );
@@ -194,7 +194,7 @@ public class Dependinator extends javax.swing.JFrame {
 
     private void updateDescriptorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDescriptorButtonActionPerformed
         int index = this.descriptorList.getSelectedIndex();
-        ResourceReference newDescriptor = new ResourceReference(
+        ResourceDescriptor newDescriptor = new ResourceDescriptor(
                 this.currentDescriptorText.getText(),
                 this.dependencies.get(index).getType()
         );
@@ -218,14 +218,14 @@ public class Dependinator extends javax.swing.JFrame {
     }//GEN-LAST:event_updateDescriptorButtonActionPerformed
 
     private void saveChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChangesButtonActionPerformed
-        for (ResourceReference descriptor : this.removed) {
+        for (ResourceDescriptor descriptor : this.removed) {
             System.out.println("Removing dependency -> " + descriptor);
             this.resource.replaceDependency(descriptor, null);   
         }
         
         for (int i = 0; i < this.modifications.size(); ++i) {
-            ResourceReference oldDescriptor = this.dependencies.get(i);
-            ResourceReference newDescriptor = this.modifications.get(i);
+            ResourceDescriptor oldDescriptor = this.dependencies.get(i);
+            ResourceDescriptor newDescriptor = this.modifications.get(i);
             if (newDescriptor.equals(oldDescriptor)) continue;
             System.out.println(newDescriptor + " : " + oldDescriptor);
             this.resource.replaceDependency(oldDescriptor, newDescriptor);

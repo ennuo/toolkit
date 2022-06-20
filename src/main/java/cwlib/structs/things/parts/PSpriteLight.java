@@ -4,7 +4,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import org.joml.Vector4f;
 
 public class PSpriteLight implements Serializable {
@@ -13,7 +13,7 @@ public class PSpriteLight implements Serializable {
     public float glowRadius = 20.0f;
     public float farDist = 2.3f;
     public float sourceSize = 0.28f;
-    ResourceReference falloffTexture;
+    ResourceDescriptor falloffTexture;
     public Thing lookAt;
     public boolean spotlight;
     public boolean enableFogShadows = true;

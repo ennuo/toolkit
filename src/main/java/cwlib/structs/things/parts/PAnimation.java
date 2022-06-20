@@ -3,10 +3,10 @@ package cwlib.structs.things.parts;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PAnimation implements Serializable {
-    public ResourceReference animation;
+    public ResourceDescriptor animation;
     public float velocity, position;
     
     public PAnimation serialize(Serializer serializer, Serializable structure) {

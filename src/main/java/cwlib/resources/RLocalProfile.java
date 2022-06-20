@@ -23,7 +23,7 @@ import cwlib.types.archives.Fart;
 import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.OpenPSID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileDB;
@@ -83,7 +83,7 @@ public class RLocalProfile implements Compressable, Serializable {
     public int demoProgressionStatus;
     public int lbp2GameProgressionFlags;
     public InventoryItem[] pendingInventoryItems;
-    public ResourceReference podLevel;
+    public ResourceDescriptor podLevel;
 
     public NetworkPlayerID playerId;
     public NetworkPlayerID ownerPlayerId;
@@ -91,7 +91,7 @@ public class RLocalProfile implements Compressable, Serializable {
     public int ownerUserId;
     public SHA1 eulaAgreed;
     public NetworkPlayerID acceptingPlayer;
-    public ResourceReference syncedProfile;
+    public ResourceDescriptor syncedProfile;
 
     public NetworkPlayerID[] voipMutedPlayers;
     public boolean voipChatPaused;
@@ -103,8 +103,8 @@ public class RLocalProfile implements Compressable, Serializable {
 
     public InventoryCollection[] inventoryCollections;
 
-    public ResourceReference avatarIcon;
-    public ResourceReference saveIcon;
+    public ResourceDescriptor avatarIcon;
+    public ResourceDescriptor saveIcon;
 
     public int lbp1CreateModeVOProgress;
     public float gamma;
@@ -600,7 +600,7 @@ public class RLocalProfile implements Compressable, Serializable {
      * @param table Translation table for resolving categories/locations
      * @return Added inventory item
      */
-    public InventoryItem addItem(RPlan plan, ResourceReference descriptor, RTranslationTable table) {
+    public InventoryItem addItem(RPlan plan, ResourceDescriptor descriptor, RTranslationTable table) {
         InventoryItem existing = this.getItem(descriptor);
         if (existing != null) return existing;
 
@@ -612,7 +612,7 @@ public class RLocalProfile implements Compressable, Serializable {
         details.dateAdded = (new Date().getTime() / 1000);
         
         if (details.icon == null)
-            details.icon = new ResourceReference(2551, ResourceType.TEXTURE);
+            details.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
 
         if (table != null) {
             String category = "";
@@ -649,7 +649,7 @@ public class RLocalProfile implements Compressable, Serializable {
         return UID;
     }
 
-    public boolean hasItem(ResourceReference descriptor) {
+    public boolean hasItem(ResourceDescriptor descriptor) {
         if (descriptor == null) return false;
         if (descriptor.isGUID()) return this.hasItem(descriptor.getGUID());
         else if (descriptor.isHash()) return this.hasItem(descriptor.getSHA1());
@@ -658,7 +658,7 @@ public class RLocalProfile implements Compressable, Serializable {
 
     public boolean hasItem(SHA1 hash) {
         for (InventoryItem item : this.inventory) {
-            ResourceReference plan = item.plan;
+            ResourceDescriptor plan = item.plan;
             if (plan == null) continue;
             if (plan.isHash() && plan.getSHA1().equals(hash))
                 return true;
@@ -668,7 +668,7 @@ public class RLocalProfile implements Compressable, Serializable {
 
     public boolean hasItem(GUID guid) {
         for (InventoryItem item : this.inventory) {
-            ResourceReference plan = item.plan;
+            ResourceDescriptor plan = item.plan;
             if (plan == null) continue;
             if (plan.isGUID() && plan.getGUID().equals(guid))
                 return true;
@@ -676,7 +676,7 @@ public class RLocalProfile implements Compressable, Serializable {
         return false;
     }
 
-    public InventoryItem getItem(ResourceReference descriptor) {
+    public InventoryItem getItem(ResourceDescriptor descriptor) {
         if (descriptor == null) return null;
         for (InventoryItem item : this.inventory)
             if (descriptor.equals(item.plan))

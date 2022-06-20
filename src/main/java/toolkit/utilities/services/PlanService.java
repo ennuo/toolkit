@@ -5,7 +5,7 @@ import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
@@ -35,7 +35,7 @@ public class PlanService implements ResourceService  {
         else {
             System.out.println("Attempting to guess icon of RPlan, this may not be accurate.");
             try {
-                for (ResourceReference dependency : entry.dependencies) {
+                for (ResourceDescriptor dependency : entry.dependencies) {
                     if (dependency.type == ResourceType.TEXTURE)
                         Toolkit.instance.loadImage(dependency, plan);
                 }

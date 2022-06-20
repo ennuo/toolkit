@@ -19,7 +19,7 @@ import cwlib.structs.profile.StringLookupTable;
 import cwlib.structs.profile.Treasure;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 
@@ -68,7 +68,7 @@ public class RBigProfile implements Compressable, Serializable {
     /**
      * Locally stored planet decorations in LittleBigPlanet Vita.
      */
-    public ResourceReference planetDecorations;
+    public ResourceDescriptor planetDecorations;
 
     @SuppressWarnings("unchecked")
     @Override public RBigProfile serialize(Serializer serializer, Serializable structure) {

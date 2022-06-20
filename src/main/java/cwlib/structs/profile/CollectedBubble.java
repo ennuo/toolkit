@@ -3,14 +3,14 @@ package cwlib.structs.profile;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class CollectedBubble implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x50;
 
-    public ResourceReference level;
+    public ResourceDescriptor level;
     public int thingUID;
-    public ResourceReference plan;
+    public ResourceDescriptor plan;
 
     @SuppressWarnings("unchecked")
     @Override public CollectedBubble serialize(Serializer serializer, Serializable structure) {

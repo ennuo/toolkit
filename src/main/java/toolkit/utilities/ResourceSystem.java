@@ -1,7 +1,7 @@
 package toolkit.utilities;
 
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.resources.RTranslationTable;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
@@ -63,7 +63,7 @@ public class ResourceSystem {
         return false;
     }
 
-    public static FileEntry findEntry(ResourceReference res) {
+    public static FileEntry findEntry(ResourceDescriptor res) {
         if (res.GUID != -1) return findEntry(res.GUID);
         else if (res.hash != null) return findEntry(res.hash);
         return null;
@@ -109,7 +109,7 @@ public class ResourceSystem {
         return null;
     }
 
-    public static byte[] extractFile(ResourceReference ref) {
+    public static byte[] extractFile(ResourceDescriptor ref) {
         if (ref == null) return null;
         if (ref.isHash()) return ResourceSystem.extractFile(ref.getSHA1());
         else if (ref.isGUID()) return ResourceSystem.extractFile(ref.getGUID());

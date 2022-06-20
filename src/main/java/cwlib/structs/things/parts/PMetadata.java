@@ -5,7 +5,7 @@ import cwlib.enums.ResourceType;
 import cwlib.structs.inventory.PhotoMetadata;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PMetadata implements Serializable {
     public String nameTranslationTag, descTranslationTag;
@@ -19,7 +19,7 @@ public class PMetadata implements Serializable {
     public int type, subType;
     public long creationDate;
     
-    public ResourceReference icon;
+    public ResourceDescriptor icon;
     public PhotoMetadata photoMetadata;
     
     public boolean referencable;

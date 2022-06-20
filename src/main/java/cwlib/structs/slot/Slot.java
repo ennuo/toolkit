@@ -5,7 +5,7 @@ import cwlib.structs.slot.Label;
 import cwlib.util.Images;
 import toolkit.utilities.ResourceSystem;
 import cwlib.types.Resource;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.resources.RTexture;
@@ -29,9 +29,9 @@ public class Slot implements Serializable {
         (SlotID.BASE_ALLOCATION_SIZE * 3) + (0x20 * 2) + NetworkOnlineID.BASE_ALLOCATION_SIZE + 0x30;
     
     public SlotID id = new SlotID();
-    public ResourceReference root;
-    public ResourceReference adventure;
-    public ResourceReference icon;
+    public ResourceDescriptor root;
+    public ResourceDescriptor adventure;
+    public ResourceDescriptor icon;
     public Vector4f location = new Vector4f().zero();
     public NetworkOnlineID authorID;
     public String authorName;
@@ -48,7 +48,7 @@ public class Slot implements Serializable {
 
     /* LBP2 fields */
 
-    public ResourceReference planetDecorations;
+    public ResourceDescriptor planetDecorations;
     public Label[] labels;
     public Collectabubble[] collectabubblesRequired;
     public Collectabubble[] collectabubblesContained;
@@ -82,7 +82,7 @@ public class Slot implements Serializable {
     public int sizeOfSubLevels;
 
     public SlotID[] subLevels;
-    public ResourceReference slotList;
+    public ResourceDescriptor slotList;
     public short revision;
 
     // Server specific data

@@ -19,7 +19,7 @@ import cwlib.io.ValueEnum;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.util.Bytes;
@@ -39,7 +39,7 @@ public class Serializer {
 
     private HashMap<Integer, Object> referenceIDs = new HashMap<>();
     private HashMap<Object, Integer> referenceObjects = new HashMap<>();
-    private HashSet<ResourceReference> dependencies = new HashSet<>();
+    private HashSet<ResourceDescriptor> dependencies = new HashSet<>();
 
     private int nextReference = 1;
 
@@ -524,7 +524,7 @@ public class Serializer {
      * @param type Type of resource
      * @return Resource (de)serialized
      */
-    public final ResourceReference resource(ResourceReference value, ResourceType type) {
+    public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
         return this.resource(value, type, false);
     }
 
@@ -535,7 +535,7 @@ public class Serializer {
      * @param isDescriptor Whether or not to skip resource flags
      * @return Resource (de)serialized
      */
-    public final ResourceReference resource(ResourceReference value, ResourceType type, boolean isDescriptor) {
+    public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor) {
         byte NONE = 0, HASH = 1, GUID = 2;
         if (this.revision.getVersion() <= 0x18b) {
             HASH = 2;
@@ -546,11 +546,11 @@ public class Serializer {
             if (this.revision.getVersion() > 0x22e && !isDescriptor)
                 this.input.i32(); // Flags, we don't need them.
             byte guidHashFlag = this.input.i8();
-            ResourceReference descriptor = null;
+            ResourceDescriptor descriptor = null;
             if (guidHashFlag == GUID)
-                descriptor = new ResourceReference(this.input.guid(), type);
+                descriptor = new ResourceDescriptor(this.input.guid(), type);
             else if (guidHashFlag == HASH)
-                descriptor = new ResourceReference(this.input.sha1(), type);
+                descriptor = new ResourceDescriptor(this.input.sha1(), type);
             else if (guidHashFlag == NONE) return null;
             else throw new SerializationException("Invalid GUID/Hash serialization flag!");
             this.dependencies.add(descriptor);
@@ -904,7 +904,7 @@ public class Serializer {
      * used for RPlan's because we can't serialize thing data yet.
      * @param dependency Dependency to add
      */
-    public final void addDependency(ResourceReference dependency) {
+    public final void addDependency(ResourceDescriptor dependency) {
         this.dependencies.add(dependency);
     }
 
@@ -918,9 +918,9 @@ public class Serializer {
     public final boolean isWriting() { return this.isWriting; }
     public final Revision getRevision() { return this.revision; }
     public final byte getCompressionFlags() { return this.compressionFlags; }
-    public final ResourceReference[] getDependencies() {
-        ResourceReference[] descriptors = 
-            new ResourceReference[this.dependencies.size()];
+    public final ResourceDescriptor[] getDependencies() {
+        ResourceDescriptor[] descriptors = 
+            new ResourceDescriptor[this.dependencies.size()];
         descriptors = this.dependencies.toArray(descriptors);
         return descriptors;
     }

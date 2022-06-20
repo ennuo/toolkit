@@ -25,7 +25,7 @@ import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.BigSave;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
 import cwlib.util.Strings;
 import toolkit.utilities.ResourceSystem;
@@ -721,10 +721,10 @@ public class ItemManager extends javax.swing.JFrame {
         this.originalDetailsHash = this.getNewDetails().generateHashCode(this.revision);
     }
     
-    private ResourceReference getDescriptor(JTextField field, ResourceType type) {
+    private ResourceDescriptor getDescriptor(JTextField field, ResourceType type) {
         String resource = field.getText();
         if (Strings.isGUID(resource) || Strings.isSHA1(resource))
-            return new ResourceReference(type, resource);
+            return new ResourceDescriptor(type, resource);
         return null;
     }
     

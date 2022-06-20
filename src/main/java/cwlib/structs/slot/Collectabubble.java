@@ -1,14 +1,14 @@
 package cwlib.structs.slot;
 
 import cwlib.enums.ResourceType;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class Collectabubble implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
     
-    public ResourceReference plan;
+    public ResourceDescriptor plan;
     public int count;
 
     @SuppressWarnings("unchecked")

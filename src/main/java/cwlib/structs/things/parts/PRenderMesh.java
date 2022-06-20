@@ -6,13 +6,13 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Colors;
 
 public class PRenderMesh implements Serializable {
-    public ResourceReference mesh;
+    public ResourceDescriptor mesh;
     public Thing[] boneThings;
-    public ResourceReference anim;
+    public ResourceDescriptor anim;
     public float animPos, animSpeed = 1.0f;
     public boolean animLoop = true;
     public float loopStart, loopEnd = 1.0f;

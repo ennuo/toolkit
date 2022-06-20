@@ -3,10 +3,10 @@ package cwlib.structs.things.parts;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PRef implements Serializable {
-    ResourceReference plan;
+    ResourceDescriptor plan;
     int oldLifetime;
     int oldAliveFrames;
     boolean childrenSelectable;

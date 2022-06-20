@@ -9,7 +9,7 @@ import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.mods.Mod;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
@@ -52,7 +52,7 @@ public class AssetExporter extends JDialog {
         /**
          * Original descriptor of this asset.
          */
-        private final ResourceReference descriptor;
+        private final ResourceDescriptor descriptor;
         
         /**
          * Associated file entry of this asset.
@@ -82,7 +82,7 @@ public class AssetExporter extends JDialog {
          */
         private boolean recursed = false;
         
-        public Asset(ResourceReference descriptor) {
+        public Asset(ResourceDescriptor descriptor) {
             this.descriptor = descriptor;
             this.entry = ResourceSystem.findEntry(descriptor);
         }
@@ -154,9 +154,9 @@ public class AssetExporter extends JDialog {
         this.getDescriptors(rootData, descriptors);
         
         if (entry.GUID != -1)
-            this.root = new Asset(new ResourceReference(entry.GUID , resource.type));
+            this.root = new Asset(new ResourceDescriptor(entry.GUID , resource.type));
         else
-            this.root = new Asset(new ResourceReference(entry.hash , resource.type));
+            this.root = new Asset(new ResourceDescriptor(entry.hash , resource.type));
         this.root.data = rootData;
         
         boolean containsGmat = false;    
@@ -227,24 +227,24 @@ public class AssetExporter extends JDialog {
         this.dispose();
     }
     
-    private Asset getAsset(ArrayList<Asset> assets, ResourceReference descriptor) {
+    private Asset getAsset(ArrayList<Asset> assets, ResourceDescriptor descriptor) {
         for (Asset asset : assets)
             if (asset.descriptor.equals(descriptor))
                 return asset;
         return null;
     }
     
-    private ResourceReference recurse(Asset asset, ArrayList<Asset> assets, HashMap<Integer, MaterialEntry> remap) {
+    private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets, HashMap<Integer, MaterialEntry> remap) {
         if (asset.data == null) return asset.descriptor;
         Resource resource = new Resource(asset.data);
         if (resource.method != SerializationType.BINARY || asset.recursed) {
             if (asset.hashinate)
-                return new ResourceReference(SHA1.fromBuffer(asset.data), asset.descriptor.type);
-            return new ResourceReference(asset.entry.GUID, asset.descriptor.type);
+                return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.type);
+            return new ResourceDescriptor(asset.entry.GUID, asset.descriptor.type);
         }
         if (remap == null || (remap != null && resource.type != ResourceType.GFX_MATERIAL)) {
             for (int i = 0; i < resource.dependencies.size(); ++i) {
-                ResourceReference dependencyDescriptor = resource.dependencies.get(i);
+                ResourceDescriptor dependencyDescriptor = resource.dependencies.get(i);
                 if (dependencyDescriptor.type == ResourceType.SCRIPT) continue;
                 Asset dependencyAsset = this.getAsset(assets, dependencyDescriptor);
                 if (dependencyAsset == null)
@@ -265,8 +265,8 @@ public class AssetExporter extends JDialog {
         asset.data = data;
         asset.recursed = true;
         if (asset.hashinate)
-            return new ResourceReference(SHA1.fromBuffer(asset.data), asset.descriptor.type);
-        return new ResourceReference(asset.entry.GUID, asset.descriptor.type);
+            return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.type);
+        return new ResourceDescriptor(asset.entry.GUID, asset.descriptor.type);
     }
     
     private void getDescriptors(byte[] resource, HashSet<Asset> descriptors) {
@@ -288,10 +288,10 @@ public class AssetExporter extends JDialog {
             Asset asset = null;
             switch (data.i8()) {
                 case 1: 
-                    asset = new Asset(new ResourceReference(data.sha1(), ResourceType.fromType(data.i32())));
+                    asset = new Asset(new ResourceDescriptor(data.sha1(), ResourceType.fromType(data.i32())));
                     break;
                 case 2:
-                    asset = new Asset(new ResourceReference(data.u32(), ResourceType.fromType(data.i32())));
+                    asset = new Asset(new ResourceDescriptor(data.u32(), ResourceType.fromType(data.i32())));
                     break;
             }
             if (asset != null) {

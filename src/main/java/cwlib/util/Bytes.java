@@ -5,7 +5,7 @@ import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RPlan;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.io.serializer.Serializer;
@@ -184,7 +184,7 @@ public final class Bytes {
         return output.getBuffer();
     }
 
-    public static byte[] getResourceReference(ResourceReference res, Revision revision, byte compressionFlags) {
+    public static byte[] getResourceReference(ResourceDescriptor res, Revision revision, byte compressionFlags) {
         Serializer serializer = new Serializer(0x1c + 0x4, revision, compressionFlags);
         serializer.resource(res, ResourceType.INVALID, true);
         return serializer.getBuffer();

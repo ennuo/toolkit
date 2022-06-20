@@ -3,14 +3,14 @@ package cwlib.structs.profile;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PaintProperties implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x40;
 
     private int triggerOverride, stickerSaveSize;
     private boolean angleOverride, uiHidden;
-    private ResourceReference lastAutoSave;
+    private ResourceDescriptor lastAutoSave;
     private boolean useDefaultBackground;
 
     @SuppressWarnings("unchecked")

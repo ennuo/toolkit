@@ -2,7 +2,7 @@ package cwlib.types;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.Revision;
 import cwlib.structs.texture.CellGcmTexture;
@@ -29,7 +29,7 @@ public class Resource {
     private boolean isCompressed = true;
     public byte compressionFlags = 0;
     public MemoryInputStream handle = null;
-    public ArrayList<ResourceReference> dependencies = new ArrayList<>();
+    public ArrayList<ResourceDescriptor> dependencies = new ArrayList<>();
     
     public Resource(){}
     
@@ -118,7 +118,7 @@ public class Resource {
     public int registerDependencies(boolean recursive) {
         if (this.method != SerializationType.BINARY) return 0;
         int missingDependencies = 0;
-        for (ResourceReference dependency : this.dependencies) {
+        for (ResourceDescriptor dependency : this.dependencies) {
             FileEntry entry = ResourceSystem.findEntry(dependency);
             if (entry == null) {
                 missingDependencies++;
@@ -139,7 +139,7 @@ public class Resource {
         return missingDependencies;
     }
     
-    public void replaceDependency(ResourceReference oldDescriptor, ResourceReference newDescriptor) {
+    public void replaceDependency(ResourceDescriptor oldDescriptor, ResourceDescriptor newDescriptor) {
         if (oldDescriptor.equals(newDescriptor)) return;
         int index = this.dependencies.indexOf(oldDescriptor);
         if (index == -1) return;
@@ -200,7 +200,7 @@ public class Resource {
         int size = this.handle.i32f();
         this.dependencies = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            ResourceReference descriptor = new ResourceReference();
+            ResourceDescriptor descriptor = new ResourceDescriptor();
             switch (this.handle.i8()) {
                 case 1:
                     descriptor.hash = this.handle.sha1();
@@ -218,7 +218,7 @@ public class Resource {
         return dependencyTableOffset;
     }
     
-    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ArrayList<ResourceReference> dependencies) {
+    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ArrayList<ResourceDescriptor> dependencies) {
         Resource resource = new Resource();
         resource.handle = new MemoryInputStream(data, revision);
         resource.compressionFlags = compressionFlags;
@@ -295,7 +295,7 @@ public class Resource {
             output.offset = dependencyTableOffset;
             
             output.i32f(this.dependencies.size());
-            for (ResourceReference dependency : this.dependencies) {
+            for (ResourceDescriptor dependency : this.dependencies) {
                 if (dependency.GUID != -1) {
                     output.i8((byte) 2);
                     output.u32f(dependency.GUID);

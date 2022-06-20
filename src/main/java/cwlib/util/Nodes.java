@@ -2,7 +2,7 @@ package cwlib.util;
 
 import cwlib.types.swing.FileNode;
 import cwlib.types.swing.SearchParameters;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 
@@ -43,7 +43,7 @@ public class Nodes {
                 FileNode node = (FileNode) e.nextElement();
                 boolean isVisible = false;
                 if (node.entry != null) {
-                    ResourceReference resource = params.getResource();
+                    ResourceDescriptor resource = params.getResource();
                     if (resource != null) {
                         if (resource.isHash())
                             isVisible = node.entry.getSHA1().equals(resource.getSHA1());

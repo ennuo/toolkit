@@ -17,7 +17,7 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.BigSave;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Strings;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -387,7 +387,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.planetDecorations = new ResourceReference(ResourceType.LEVEL, descriptor);
+                this.selectedSlot.planetDecorations = new ResourceDescriptor(ResourceType.LEVEL, descriptor);
         });
         this.backgroundGUIDTextEntry.addChangeListener(e -> this.selectedSlot.backgroundGUID = (long) this.backgroundGUIDTextEntry.getValue());
         
@@ -429,7 +429,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(text) || Strings.isSHA1(text)) {
-                ResourceReference descriptor = new ResourceReference(ResourceType.TEXTURE, text);
+                ResourceDescriptor descriptor = new ResourceDescriptor(ResourceType.TEXTURE, text);
                 if (descriptor.equals(this.selectedSlot.icon)) return;
                 this.selectedSlot.icon = descriptor;
                 this.updateIcon(true);
@@ -453,7 +453,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.root = new ResourceReference(ResourceType.LEVEL, descriptor);
+                this.selectedSlot.root = new ResourceDescriptor(ResourceType.LEVEL, descriptor);
         });
         
         this.adventureTextEntry.addActionListener(e -> {
@@ -463,7 +463,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.adventure = new ResourceReference(ResourceType.ADVENTURE_CREATE_PROFILE, descriptor);
+                this.selectedSlot.adventure = new ResourceDescriptor(ResourceType.ADVENTURE_CREATE_PROFILE, descriptor);
         });
         
         this.slotTypeCombo.addItemListener(e -> {
@@ -525,7 +525,7 @@ public class SlotManager extends javax.swing.JFrame {
             
             // Use the default badge mesh for specified type.
             
-            ResourceReference badgeMesh = type.getBadgeMesh();
+            ResourceDescriptor badgeMesh = type.getBadgeMesh();
             this.selectedItem.mesh = badgeMesh;
             this.badgeMeshTextEntry.setText(badgeMesh.toString());
         });
@@ -537,7 +537,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedItem.mesh = new ResourceReference(ResourceType.MESH, descriptor);
+                this.selectedItem.mesh = new ResourceDescriptor(ResourceType.MESH, descriptor);
         });
         
         this.contentIDTextEntry.addActionListener(e -> this.selectedItem.contentID = this.contentIDTextEntry.getText());

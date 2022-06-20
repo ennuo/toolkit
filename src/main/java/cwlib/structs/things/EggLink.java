@@ -3,10 +3,10 @@ package cwlib.structs.things;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class EggLink implements Serializable {
-    public ResourceReference plan;
+    public ResourceDescriptor plan;
     public boolean shareable = true;
     
     public EggLink serialize(Serializer serializer, Serializable structure) {

@@ -14,7 +14,7 @@ import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -53,7 +53,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     public transient int[] blobOffsets; 
     public transient byte[] code;
 
-    public ResourceReference[] textures = new ResourceReference[MAX_TEXTURES];
+    public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
 
     public byte[] wrapS = { 1, 1, 1, 1, 1, 1, 1, 1 };
     public byte[] wrapT = { 1, 1, 1, 1, 1, 1, 1, 1 };
@@ -125,7 +125,7 @@ public class RGfxMaterial implements Serializable, Compressable {
             for (int i = 0; i < sourceOffsets; ++i)
                 gmat.blobOffsets[i] = stream.i32();
             gmat.code = stream.bytearray();
-            gmat.textures = new ResourceReference[MAX_TEXTURES];
+            gmat.textures = new ResourceDescriptor[MAX_TEXTURES];
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 gmat.textures[i] = serializer.resource(null, ResourceType.TEXTURE);
         }

@@ -2,7 +2,7 @@ package cwlib.enums;
 
 import cwlib.io.ValueEnum;
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 /**
  * Represents a type of DLC content slot.
@@ -28,8 +28,8 @@ public enum ContentsType implements ValueEnum<Integer> {
     }
 
     public Integer getValue() { return this.value; }
-    public ResourceReference getBadgeMesh() {
-        return new ResourceReference(this.badgeMeshGUID, ResourceType.MESH);
+    public ResourceDescriptor getBadgeMesh() {
+        return new ResourceDescriptor(this.badgeMeshGUID, ResourceType.MESH);
     }
     
     public static ContentsType fromValue(int value) {

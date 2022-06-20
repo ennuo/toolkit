@@ -6,7 +6,7 @@ import cwlib.enums.ContentsType;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 /**
  * Represents additional content that can be
@@ -23,7 +23,7 @@ public class Pack implements Serializable {
     /**
      * The badge mesh used with this pack.
      */
-    public ResourceReference mesh = ContentsType.LEVEL.getBadgeMesh();
+    public ResourceDescriptor mesh = ContentsType.LEVEL.getBadgeMesh();
 
     /**
      * The underlying slot for this pack, contains the information about the DLC,

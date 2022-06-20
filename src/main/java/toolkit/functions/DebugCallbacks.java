@@ -4,7 +4,7 @@ import cwlib.types.Resource;
 import cwlib.util.FileIO;
 import cwlib.types.FileDB;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
@@ -32,7 +32,7 @@ public class DebugCallbacks {
                     if (resource.dependencies == null || (resource.dependencies != null && resource.dependencies.size() == 0)) 
                         continue;
                     builder.append(String.format("%s (g%d)\n", entry.path, entry.GUID));
-                    for (ResourceReference descriptor : resource.dependencies) {
+                    for (ResourceDescriptor descriptor : resource.dependencies) {
                         String type = descriptor.type.name();
                         String name = String.format(" - (Unresolved Resource) [%s]", type);
                         if (descriptor.GUID != -1) {

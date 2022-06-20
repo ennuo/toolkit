@@ -6,13 +6,13 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 
 public class PhotoMetadata implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x50;
 
-    public ResourceReference photo;
+    public ResourceDescriptor photo;
     public SlotID level = new SlotID();
     public String levelName;
     public SHA1 levelHash = new SHA1();

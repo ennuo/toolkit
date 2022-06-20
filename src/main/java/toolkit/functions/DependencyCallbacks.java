@@ -1,7 +1,7 @@
 package toolkit.functions;
 
 import cwlib.types.Resource;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import toolkit.utilities.ResourceSystem;
 import cwlib.types.databases.FileEntry;
 
@@ -28,8 +28,8 @@ public class DependencyCallbacks {
 
         Resource resource = new Resource(data);
         
-        ArrayList<ResourceReference> dependencies = new ArrayList<>(resource.dependencies.size());
-        for (ResourceReference descriptor : dependencies)
+        ArrayList<ResourceDescriptor> dependencies = new ArrayList<>(resource.dependencies.size());
+        for (ResourceDescriptor descriptor : dependencies)
             if (ResourceSystem.findEntry(descriptor) != null)
                 dependencies.add(descriptor);
         resource.dependencies = dependencies;

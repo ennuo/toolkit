@@ -38,7 +38,7 @@ import javax.swing.*;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 import cwlib.types.*;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.Images;
@@ -2101,7 +2101,7 @@ public class Toolkit extends javax.swing.JFrame {
         Slot slot = new Slot();
         slot.title = name;
         slot.id = new SlotID(SlotType.FAKE, 0);
-        slot.icon = new ResourceReference(10682, ResourceType.TEXTURE);
+        slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
         
         // NOTE(Aidan): Cheap trick, but it's what I'm doing for now.
         Resource resource = null;
@@ -2121,25 +2121,25 @@ public class Toolkit extends javax.swing.JFrame {
         if (entry.path.endsWith(".bin"))
             switch (mode) {
                 case Hash:
-                    slot.root = new ResourceReference(hash, ResourceType.LEVEL);
+                    slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
                     break;
                 case GUID:
-                    slot.root = new ResourceReference(entry.GUID, ResourceType.LEVEL);
+                    slot.root = new ResourceDescriptor(entry.GUID, ResourceType.LEVEL);
                     break;
             }
         else if (entry.path.endsWith(".plan")) {
             Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
             switch (mode) {
                 case Hash:
-                    level.replaceDependency(level.dependencies.get(0xB), new ResourceReference(hash, ResourceType.PLAN));
+                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
                     break;
                 case GUID:
-                    level.replaceDependency(level.dependencies.get(0xB), new ResourceReference(entry.GUID, ResourceType.PLAN));
+                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(entry.GUID, ResourceType.PLAN));
                     break;
             }
             byte[] levelData = level.compressToResource();
             archive.add(levelData);
-            slot.root = new ResourceReference(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
+            slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
         }
         
         Serializer serializer = new Serializer(1024, fartRevision, (byte) 0x7);
@@ -2427,7 +2427,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
     }
 
-    public void loadImage(ResourceReference resource, RPlan item) {
+    public void loadImage(ResourceDescriptor resource, RPlan item) {
         if (resource == null) return;
         iconField.setText(resource.toString());
         FileEntry entry = ResourceSystem.findEntry(resource);

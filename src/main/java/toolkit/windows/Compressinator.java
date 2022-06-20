@@ -9,7 +9,7 @@ import toolkit.utilities.FileChooser;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.Revision;
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 public class Compressinator extends javax.swing.JFrame {
-    ArrayList<ResourceReference> dependencies = new ArrayList<ResourceReference>();
+    ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
     DefaultListModel<String> model = new DefaultListModel<>();
     FileChooser fileChooser;
     byte[] fileData;
@@ -347,7 +347,7 @@ public class Compressinator extends javax.swing.JFrame {
     private void removeEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeEntryActionPerformed
         int index = this.dependencyList.getSelectedIndex();
         if (index != -1) {
-            ResourceReference descriptor = this.dependencies.get(index);
+            ResourceDescriptor descriptor = this.dependencies.get(index);
             String value = (String) this.model.get(index);
 
             System.out.println(String.format("Removing dependency of type %s with value %s", descriptor.getType(), value));
@@ -361,7 +361,7 @@ public class Compressinator extends javax.swing.JFrame {
         String value = this.descriptorValue.getText();
         ResourceType type = (ResourceType) this.descriptorResourceType.getSelectedItem();
 
-        ResourceReference descriptor = null;
+        ResourceDescriptor descriptor = null;
         if (this.guidButton.isSelected() && Strings.isGUID(value)) {
             long GUID = Strings.getLong(value);
             
@@ -370,9 +370,9 @@ public class Compressinator extends javax.swing.JFrame {
                 return;
             }
 
-            descriptor = new ResourceReference(GUID, type);
+            descriptor = new ResourceDescriptor(GUID, type);
         } else if (Strings.isSHA1(value))
-            descriptor = new ResourceReference(value, type);
+            descriptor = new ResourceDescriptor(value, type);
         else return;
 
         this.model.add(this.model.size(), descriptor.toString());
@@ -418,7 +418,7 @@ public class Compressinator extends javax.swing.JFrame {
 
     private boolean doesGUIDAlreadyExist(long value) {
         GUID guid = new GUID(value);
-        for (ResourceReference descriptor : this.dependencies)
+        for (ResourceDescriptor descriptor : this.dependencies)
             if (guid.equals(descriptor.getGUID())) return true;
         return false;
     }

@@ -10,7 +10,7 @@ import cwlib.types.data.SHA1;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.mods.Mod;
 import cwlib.util.Images;
 import toolkit.utilities.ResourceSystem;
@@ -22,7 +22,7 @@ import org.joml.Vector2f;
 public class GfxMaterialInfo {
     public class GfxTextureInfo {
         public String path;
-        public ResourceReference texture;
+        public ResourceDescriptor texture;
         public int channel;
         public Vector2f offset;
         public Vector2f scale;
@@ -154,7 +154,7 @@ public class GfxMaterialInfo {
                     path += "_dirt";
             }
             mod.add(path, diffuseData);
-            diffuse.texture = new ResourceReference(sha1, ResourceType.TEXTURE);
+            diffuse.texture = new ResourceDescriptor(sha1, ResourceType.TEXTURE);
         }
         if (this.textures.containsKey("SPECULAR")) {
             GfxTextureInfo info = this.textures.get("SPECULAR");
@@ -164,7 +164,7 @@ public class GfxMaterialInfo {
             if (path == null) path = "textures/" + sha1.toString() + ".tex";
             else path += "_scale_" + info.scale.x + "_" + info.scale.y;
             mod.add(path, data);
-            info.texture = new ResourceReference(sha1, ResourceType.TEXTURE);
+            info.texture = new ResourceDescriptor(sha1, ResourceType.TEXTURE);
         }
         if (this.textures.containsKey("BUMP")) {
             GfxTextureInfo info = this.textures.get("BUMP");
@@ -174,7 +174,7 @@ public class GfxMaterialInfo {
             if (path == null) path = "textures/" + sha1.toString() + ".tex";
             else path += "_scale_" + info.scale.x + "_" + info.scale.y;
             mod.add(path, data);
-            info.texture = new ResourceReference(sha1, ResourceType.TEXTURE);
+            info.texture = new ResourceDescriptor(sha1, ResourceType.TEXTURE);
         }
         return MaterialRegistry.convert(this, registry);
     }

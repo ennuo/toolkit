@@ -3,12 +3,12 @@ package cwlib.structs.things.parts;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import org.joml.Vector4f;
 
 public class PGeneratedMesh implements Serializable {
-    public ResourceReference gfxMaterial;
-    public ResourceReference bevel;
+    public ResourceDescriptor gfxMaterial;
+    public ResourceDescriptor bevel;
     public Vector4f uvOffset = new Vector4f(0, 0, 0, 0);
     public long planGUID;
     public boolean visible;

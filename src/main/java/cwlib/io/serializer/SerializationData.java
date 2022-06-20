@@ -5,7 +5,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.structs.texture.CellGcmTexture;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -18,7 +18,7 @@ public final class SerializationData {
     private final byte compressionFlags;
     private final ResourceType type;
     private final SerializationType method;
-    private final ResourceReference[] dependencies;
+    private final ResourceDescriptor[] dependencies;
     private final CellGcmTexture textureInfo;
     private final StaticMeshInfo staticMeshInfo;
 
@@ -38,7 +38,7 @@ public final class SerializationData {
         byte compressionFlags,
         ResourceType type,
         SerializationType method, 
-        ResourceReference[] dependencies) {
+        ResourceDescriptor[] dependencies) {
         this.buffer = buffer;
         this.revision = revision;
         this.compressionFlags = compressionFlags;
@@ -110,7 +110,7 @@ public final class SerializationData {
     public byte getCompressionFlags() { return this.compressionFlags; }
     public ResourceType getType() { return this.type; }
     public SerializationType getMethod() { return this.method; }
-    public ResourceReference[] getDependencies() { return this.dependencies; }
+    public ResourceDescriptor[] getDependencies() { return this.dependencies; }
     public CellGcmTexture getTextureInfo() { return this.textureInfo; }
     public StaticMeshInfo getStaticMeshInfo() { return this.staticMeshInfo; }
 }

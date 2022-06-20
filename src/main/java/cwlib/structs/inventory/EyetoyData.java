@@ -5,15 +5,15 @@ import org.joml.Matrix4f;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class EyetoyData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100 + ColorCorrection.BASE_ALLOCATION_SIZE;
 
-    public ResourceReference frame, alphaMask;
+    public ResourceDescriptor frame, alphaMask;
     public Matrix4f colorCorrection = new Matrix4f().identity();
     public ColorCorrection colorCorrectionSrc = new ColorCorrection();
-    public ResourceReference outline;
+    public ResourceDescriptor outline;
 
     @SuppressWarnings("unchecked")
     @Override public EyetoyData serialize(Serializer serializer, Serializable structure) {

@@ -3,12 +3,12 @@ package cwlib.structs.staticmesh;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import org.joml.Vector4f;
 
 public class StaticPrimitive implements Serializable {
     public Vector4f obbMin, obbMax;
-    public ResourceReference gmat;
+    public ResourceDescriptor gmat;
     public int vertexStart, indexStart;
     public int numIndices;
     

@@ -3,10 +3,10 @@ package cwlib.structs.things.parts;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 
 public class PScript implements Serializable {
-    public ResourceReference script;
+    public ResourceDescriptor script;
     
     
     public PScript serialize(Serializer serializer, Serializable structure) {

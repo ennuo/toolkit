@@ -9,7 +9,7 @@ import cwlib.util.Strings;
  * the UGC/Profile caches and data archives,
  * or the FileDB.
  */
-public final class ResourceReference {
+public final class ResourceDescriptor {
     private final ResourceType type;
     private final GUID guid;
     private final SHA1 sha1;
@@ -20,7 +20,7 @@ public final class ResourceReference {
      * @param resource
      * @param type
      */
-    public ResourceReference(String resource, ResourceType type) {
+    public ResourceDescriptor(String resource, ResourceType type) {
         if (Strings.isGUID(resource)) {
             this.guid = new GUID(Strings.getLong(resource));
             this.sha1 = null;
@@ -39,7 +39,7 @@ public final class ResourceReference {
      * @param guid Unique identifer of resource
      * @param type Type of resource
      */
-    public ResourceReference(long guid, ResourceType type) {
+    public ResourceDescriptor(long guid, ResourceType type) {
         this.guid = new GUID(guid);
         this.type = type;
         this.sha1 = null;
@@ -51,7 +51,7 @@ public final class ResourceReference {
      * @param guid Unique identifer of resource
      * @param type Type of resource
      */
-    public ResourceReference(GUID guid, ResourceType type) {
+    public ResourceDescriptor(GUID guid, ResourceType type) {
         this.guid = guid;
         this.type = type;
         this.sha1 = null;
@@ -63,7 +63,7 @@ public final class ResourceReference {
      * @param sha1 SHA1 signature of resource
      * @param type Type of resource
      */
-    public ResourceReference(SHA1 sha1, ResourceType type) {
+    public ResourceDescriptor(SHA1 sha1, ResourceType type) {
         this.sha1 = sha1;
         this.type = type;
         this.guid = null;
@@ -93,8 +93,8 @@ public final class ResourceReference {
 
     @Override public boolean equals(Object other) {
         if (other == this) return true;
-        if (!(other instanceof ResourceReference)) return false;
-        ResourceReference reference = (ResourceReference) other;
+        if (!(other instanceof ResourceDescriptor)) return false;
+        ResourceDescriptor reference = (ResourceDescriptor) other;
         return reference.toString().equals(this.toString());
     }
 

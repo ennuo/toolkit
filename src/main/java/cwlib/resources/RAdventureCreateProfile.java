@@ -7,7 +7,7 @@ import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
 import cwlib.util.Matcher;
 
@@ -24,7 +24,7 @@ public class RAdventureCreateProfile implements Serializable {
     public HashMap<SlotID, Slot> adventureSlots;
 
     private byte[] unparsedData;
-    private HashSet<ResourceReference> dependencyCache;
+    private HashSet<ResourceDescriptor> dependencyCache;
     
     @SuppressWarnings("unchecked")
     @Override public RAdventureCreateProfile serialize(Serializer serializer, Serializable structure) {
@@ -58,7 +58,7 @@ public class RAdventureCreateProfile implements Serializable {
         
         if (!serializer.isWriting()) {
             // Remove slot dependencies from cache
-            for (ResourceReference descriptor : serializer.getDependencies()) {
+            for (ResourceDescriptor descriptor : serializer.getDependencies()) {
                 ResourceType type = descriptor.getType();
                 // These are the only types that appear in slotss.
                 if (type.equals(ResourceType.TEXTURE) || type.equals(ResourceType.LEVEL) || 
@@ -79,7 +79,7 @@ public class RAdventureCreateProfile implements Serializable {
         Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
         
         // Re-add dependencies from unparsed data.
-        for (ResourceReference descriptor : this.dependencyCache)
+        for (ResourceDescriptor descriptor : this.dependencyCache)
             serializer.addDependency(descriptor);
 
         this.serialize(serializer, this);

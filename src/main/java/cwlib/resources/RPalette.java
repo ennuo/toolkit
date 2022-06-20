@@ -9,7 +9,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryOutputStream;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -20,9 +20,9 @@ import cwlib.types.data.Revision;
 public class RPalette implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
-    public ArrayList<ResourceReference> planList = new ArrayList<>();
+    public ArrayList<ResourceDescriptor> planList = new ArrayList<>();
     public int location, description;
-    public ResourceReference[] convertedPlans;
+    public ResourceDescriptor[] convertedPlans;
     
     @SuppressWarnings("unchecked")
     @Override public RPalette serialize(Serializer serializer, Serializable structure) {
@@ -31,7 +31,7 @@ public class RPalette implements Serializable, Compressable {
         if (serializer.isWriting()) {
             MemoryOutputStream stream = serializer.getOutput();
             stream.i32(palette.planList.size());
-            for (ResourceReference descriptor : palette.planList)
+            for (ResourceDescriptor descriptor : palette.planList)
                 serializer.resource(descriptor, descriptor.getType());
         } else {
             int count = serializer.getInput().i32();
@@ -47,11 +47,11 @@ public class RPalette implements Serializable, Compressable {
             if (serializer.isWriting()) {
                 MemoryOutputStream stream = serializer.getOutput();
                 stream.i32(palette.convertedPlans.length);
-                for (ResourceReference descriptor : palette.convertedPlans)
+                for (ResourceDescriptor descriptor : palette.convertedPlans)
                     serializer.resource(descriptor, descriptor.getType());
             } else {
                 int count = serializer.getInput().i32();
-                palette.convertedPlans = new ResourceReference[count];
+                palette.convertedPlans = new ResourceDescriptor[count];
                 for (int i = 0; i < count; ++i)
                     palette.convertedPlans[i] = serializer.resource(null, ResourceType.PLAN);
             }

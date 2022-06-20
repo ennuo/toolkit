@@ -3,7 +3,7 @@ package cwlib.structs.inventory;
 import cwlib.resources.RTranslationTable;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
-import cwlib.types.data.ResourceReference;
+import cwlib.types.data.ResourceDescriptor;
 import toolkit.utilities.ResourceSystem;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SlotType;
@@ -38,7 +38,7 @@ public class InventoryItemDetails implements Serializable {
     public UserCreatedDetails userCreatedDetails;
     
     public CreationHistory creationHistory;
-    public ResourceReference icon;
+    public ResourceDescriptor icon;
     
     public InventoryItemPhotoData photoData;
     public EyetoyData eyetoyData;
@@ -75,7 +75,7 @@ public class InventoryItemDetails implements Serializable {
         int head = serializer.getRevision().getVersion();
         
         if (serializer.isWriting() && details.highlightSound != 0)
-            serializer.addDependency(new ResourceReference(details.highlightSound, ResourceType.FILENAME));
+            serializer.addDependency(new ResourceDescriptor(details.highlightSound, ResourceType.FILENAME));
         
         if (serializer.getRevision().getVersion() > 0x37c) {
             details.dateAdded = serializer.i64d(details.dateAdded);
