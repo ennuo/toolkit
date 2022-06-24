@@ -45,12 +45,12 @@ public abstract class FileData {
     /**
      * Tree model for database.
      */
-    private final FileModel model;
+    protected FileModel model;
     
     /**
      * Root node in file model.
      */
-    private final FileNode root;
+    protected FileNode root;
 
     protected boolean hasChanges = false;
     

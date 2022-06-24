@@ -142,7 +142,7 @@ public class ResourceSystem {
         return ResourceSystem.add(data, ResourceSystem.selectedDatabase); 
     }
     public static boolean add(byte[] data, FileData database) {
-        if (database.getType().containsData()) {
+        if (database.getType().containsData() && !database.getType().hasGUIDs()) {
             database.add(data);
             return true;
         }
