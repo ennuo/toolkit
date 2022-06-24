@@ -1,5 +1,7 @@
 package cwlib.structs.profile;
 
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
@@ -36,20 +38,22 @@ public class PlayedLevelData implements Serializable {
         PlayedLevelData data = (structure == null) ? new PlayedLevelData() : (PlayedLevelData) structure;
 
         Revision revision = serializer.getRevision();
-        int head = revision.getVersion();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
+
 
         data.slotID = serializer.struct(data.slotID, SlotID.class);
-        if (head > 0x1fd)
+        if (version > 0x1fd)
             data.lastPlayedTimestamp = serializer.i64(data.lastPlayedTimestamp);
-        if (head > 0x200)
+        if (version > 0x200)
             data.localHighScore = serializer.intarray(data.localHighScore);
 
-        if (head > 0x268 && head < 0x399) {
+        if (version > 0x268 && version < 0x399) {
             serializer.bool(false); // Discovered
             serializer.bool(false); // Unlocked
         }
 
-        if (head < 0x269) {
+        if (version < 0x269) {
             data.playCount = (short) serializer.i32(data.playCount);
             data.completionCount = (short) serializer.i32(data.completionCount);
             data.acedCount = (short) serializer.i32(data.acedCount);
@@ -59,39 +63,39 @@ public class PlayedLevelData implements Serializable {
             data.acedCount = serializer.i16(data.acedCount);
         }
 
-        if (head > 0x1c1)
+        if (version > 0x1c1)
             data.collectables = serializer.array(data.collectables, CollectableData.class);
 
-        if (head > 0x1e3 && !revision.isAfterLBP3Revision(0x105))
+        if (version > 0x1e3 && subVersion < 0x106)
             data.videos = serializer.intarray(data.videos);
 
-        if (head > 0x363) {
+        if (version > 0x363) {
             data.linkedLevels = serializer.array(data.linkedLevels, SlotID.class);
             data.subLevels = serializer.array(data.subLevels, SlotID.class);
         }
 
-        if (head > 0x265)
+        if (version > 0x265)
             data.levelHash = serializer.sha1(data.levelHash);
 
-        if (head > 0x265 && head < 0x399)
+        if (version > 0x265 && version < 0x399)
             serializer.bool(false); // levelHasDLC
 
-        if (head > 0x398)
+        if (version > 0x398)
             data.flags = serializer.i16(data.flags);
 
-        if (revision.isAfterVitaRevision(0x5b)) {
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_DEFERRED_PLAYS)) {
             data.deferredPlayCount = serializer.i16(data.deferredPlayCount);
             data.deferredPlayCountUploaded = serializer.i16(data.deferredPlayCountUploaded);
-            if (revision.isAfterVitaRevision(0x60))
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_UPLOADED_HIGH_SCORE))
                 data.uploadedLocalHighScore = serializer.intarray(data.uploadedLocalHighScore);
-            if (revision.isAfterVitaRevision(0x71)) {
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_TROPHIES)) {
                 data.goldTrophyCount = serializer.i16(data.goldTrophyCount);
                 data.silverTrophyCount = serializer.i16(data.silverTrophyCount);
                 data.bronzeTrophyCount = serializer.i16(data.bronzeTrophyCount);
             }
         }
 
-        if (revision.isAfterLBP3Revision(0x1ac)) {
+        if (subVersion >= 0x1ad) {
             data.bestTime = serializer.i32(data.bestTime);
             data.multiplayerCompletionCount = serializer.i16(data.multiplayerCompletionCount);
         }

@@ -196,6 +196,7 @@ public class Revisions {
     public static final int D1_VERTEX_COLORS = 0x28; // Added vertexColors to RMesh
     public static final int D1_WATER_BRIGHTNESS = 0x2d; // Adds waterBrightness to PWorld
     public static final int D1_DATALABELS = 0x2e; // Creator data labels added to RBigProfile
+    public static final int D1_PROTECTED_LABELS = 0x31; // added protectedIds to PlayerDataLabels
     public static final int D1_LABEL_ANALOGUE_ARRAY = 0x33; // Make analogue value from DataLabelValue an array, rather than a singular type
     public static final int D1_LABEL_TERNARY = 0x3c; // Ternary value added to DataLabelValue
     public static final int D1_SLOT_REWARDS = 0x3d; // Added rewards and acingEnabled fields to slot
@@ -206,11 +207,15 @@ public class Revisions {
     public static final int D1_NEAR_TREASURES = 0x59; // Near treasure log added to RBigProfile
     public static final int D1_DOWNLOADED_SLOTS = 0x5a; // Downloaded slots added to RBigProfile
     public static final int D1_CHALLENGE_LEVEL_TYPE = 0x5b; // levelType added to Challenge
+    public static final int D1_DEFERRED_PLAYS = 0x5c; // Added deferredPlayCount(Uploaded) to PlayedLevelData
     public static final int D1_SLOT_DOWNLOAD_DATA = 0x5d; // sizeOfResources, sizeOfSubLevels, subLevels, and slotList added to slot for download metadata
     public static final int D1_COLLECTABUBBLES = 0x5e; // containsCollectabubbles added to slot
+    public static final int D1_LEVEL_TIMES_MAP = 0x60; // added levelTimesMap to PlayerMetrics
+    public static final int D1_UPLOADED_HIGH_SCORE = 0x61; // added uploadedLocalHighScore to PlayedLevelData
     public static final int D1_MOE_PIN_PROGRESS = 0x64; // added moreOfEverythingPinProgress to PinsAwarded
     public static final int D1_CHALLENGE_SCORE = 0x68; // myScore and networkOnlineID added to Challenge
     public static final int D1_TOUCH_CREATE = 0x69; // createRearTouchPan, createRearTouchPinchZoom, createRearTapZoom aded to RLocalProfile
+    public static final int D1_TROPHIES = 0x72; // added gold/silver/bronze trophy counts to PlayedLevelDATA
     public static final int D1_CREATE_WARNING = 0x74; // Added createFrameRateWarningMessages to RLocalProfile
     public static final int D1_CREATE_BETA = 0x75; // Added online beta timestamps to RLocalProfile
     public static final int D1_PLANET_DECORATIONS = 0x7b; // Planet decorations added to RBigProfile
@@ -246,7 +251,7 @@ public class Revisions {
     public static final int WORLD_BACKDROP_TOGGLE = 0x182; // added backdropEnabled and currBackdropEnabled to PWorld
     public static final int SLOT_TRAILER_PATH = 0x192; // added localPath for trailer to slot
     public static final int SLOT_TRAILER_THUMBNAIL = 0x206; // added thumbPath to slot
-    public static final int SIMON_SAYS_PIN = 0x208; // added simonSaysProgress to PinsAwarded
+    public static final int SIMON_SAYS_PIN = 0x209; // added simonSaysProgress to PinsAwarded
     public static final int SPRINGINATOR = 0x20c; // Added springinator fields
     public static final int SLOT_ENFORCE_MINMAX = 0x215; // add enforceMinMaxPlayers to slot
 

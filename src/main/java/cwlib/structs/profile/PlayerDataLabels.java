@@ -1,5 +1,7 @@
 package cwlib.structs.profile;
 
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.NetworkOnlineID;
@@ -19,7 +21,7 @@ public class PlayerDataLabels implements Serializable {
         int head = revision.getVersion();
 
         labels.values = serializer.array(labels.values, DataLabelValue.class);
-        if (revision.isAfterVitaRevision(0x30) || head > 0x3ee)
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_PROTECTED_LABELS) || head >= Revisions.DATALABELS)
             labels.protectedIds = serializer.array(labels.protectedIds, NetworkOnlineID.class);
 
         return labels;

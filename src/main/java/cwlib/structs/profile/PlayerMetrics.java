@@ -3,6 +3,8 @@ package cwlib.structs.profile;
 import java.util.HashMap;
 import java.util.Set;
 
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -42,7 +44,7 @@ public class PlayerMetrics implements Serializable {
         if (head > 0x183)
             metrics.multiplayerGamesCount = serializer.i32(metrics.multiplayerGamesCount);
 
-        if (revision.isAfterVitaRevision(0x5f)) {
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_LEVEL_TIMES_MAP)) {
             if (serializer.isWriting()) {
                 MemoryOutputStream stream = serializer.getOutput();
                 Set<Integer> keys = metrics.levelTimesMap.keySet();
@@ -80,7 +82,7 @@ public class PlayerMetrics implements Serializable {
         if (head > 0x1c9)
             metrics.gamesWithRandomPlayersCount = serializer.i32(metrics.gamesWithRandomPlayersCount);
         
-        if (((head > 0x1de || revision.isLeerdammer()) && head < 0x2cb) && !revision.isAfterLeerdammerRevision(0x10))
+        if (((head > 0x1de || revision.isLeerdammer()) && head < 0x2cb) && revision.before(Branch.LEERDAMMER, Revisions.LD_REMOVED_ENEMY_STAT))
             serializer.i32(0); // enemiesKilled
 
         if (head > 0x1de)
