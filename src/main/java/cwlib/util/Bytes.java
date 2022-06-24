@@ -1,26 +1,13 @@
 package cwlib.util;
 
-import cwlib.registry.MaterialRegistry.MaterialEntry;
-import cwlib.resources.RGfxMaterial;
-import cwlib.resources.RPlan;
 import cwlib.io.streams.MemoryOutputStream;
-import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.ResourceType;
-import cwlib.enums.SerializationType;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryInputStream.SeekMode;
-import cwlib.registry.GfxMaterialInfo;
-import cwlib.types.databases.FileEntry;
-import cwlib.types.mods.Mod;
-
-import toolkit.utilities.ResourceSystem;
 
 import java.util.Arrays;
-import java.util.HashMap;
+
 import org.joml.Vector3f;
 
 public final class Bytes {
@@ -267,38 +254,50 @@ public final class Bytes {
         return result;
     }
 
-    public static int occurences(byte[] data, byte[] pattern) {
-        int offset = 0, occurrences = 0;
-        while (offset != -1) {
-            offset = Matcher.indexOf(data, pattern, offset);
-            if (offset != -1) occurrences++;
+    /**
+     * Replaces all instances of pattern inside bytearray with another.
+     * Does in-place modification if the lengths are the same, otherwise
+     * a new array is created.
+     * @param source Buffer to replace patterns in
+     * @param original Original pattern to replace
+     * @param replacement Data to replace original pattern with
+     * @return Bytearray with replaced patterns
+     */
+    public static byte[] replace(byte[] source, byte[] original, byte[] replacement) {
+        if (Arrays.equals(original, replacement)) return source;
+
+        int[] offsets = Matcher.indicesOf(source, original);
+
+        // If the original/replacement buffer are the same length,
+        // we can save time and memory by just copying into
+        // those regions.
+        if (original.length == replacement.length) {
+            for (int offset : offsets)
+                System.arraycopy(replacement, 0, source, offset, replacement.length);
+            return source;
         }
-        return occurrences;
-    }
 
-    public static void replace(MemoryInputStream data, byte[] original, byte[] replacement) {
-        if (Arrays.equals(original, replacement)) return;
+        int diff = replacement.length - original.length;
+        byte[] buffer = new byte[source.length - (original.length * offsets.length) + (replacement.length * offsets.length)];
 
-        data.seek(0);
+        int sourceOffset = 0;
+        int destOffset = 0;
+        for (int i = 0; i < offsets.length; ++i) {
+            int offset = offsets[i];
+            int dest = offset + (diff * i);
 
-        int offset = Matcher.indexOf(data.getBuffer(), original);
-        int found = 0;
-        while (offset != -1) {
-            found++;
+            System.arraycopy(source, sourceOffset, buffer, sourceOffset + (diff * i), offset - sourceOffset);
+            System.arraycopy(replacement, 0, buffer, dest, replacement.length);
 
-            byte[] left = data.bytes(offset);
-            data.seek(original.length, SeekMode.Relative);
-            byte[] right = data.bytes(data.getLength() - data.getOffset());
-
-            data.setData(Bytes.combine(
-                left,
-                replacement,
-                right
-
-            ));
-
-            offset = Matcher.indexOf(data.getBuffer(), original);
+            sourceOffset = offset + original.length;
+            destOffset = dest + replacement.length;
         }
+
+        int remaining = source.length - sourceOffset;
+        if (remaining != 0)
+            System.arraycopy(source, sourceOffset, buffer, destOffset, remaining);
+
+        return buffer;
     }
 
     /**

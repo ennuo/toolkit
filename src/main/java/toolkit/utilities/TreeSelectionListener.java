@@ -1,10 +1,7 @@
 package toolkit.utilities;
 
-import cwlib.util.FileIO;
-import cwlib.types.Resource;
-import cwlib.enums.ResourceType;
-import cwlib.enums.SerializationType;
-import cwlib.types.swing.FileModel;
+import cwlib.util.Bytes;
+import cwlib.types.data.ResourceInfo;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
 import toolkit.utilities.services.*;
@@ -15,19 +12,7 @@ import javax.swing.JTree;
 
 public class TreeSelectionListener {
     public static HashMap<Integer, ResourceService> services = new HashMap<>();
-    static {
-        TreeSelectionListener.addService(new LevelService());
-        TreeSelectionListener.addService(new TextureService());
-        TreeSelectionListener.addService(new PackService());
-        TreeSelectionListener.addService(new SlotService());
-        TreeSelectionListener.addService(new MeshService());
-        TreeSelectionListener.addService(new AnimationService());
-        TreeSelectionListener.addService(new GfxMaterialService());
-        TreeSelectionListener.addService(new PlanService());
-        TreeSelectionListener.addService(new StaticMeshService());
-        TreeSelectionListener.addService(new AdventureService());
-    }
-    
+    static { TreeSelectionListener.addService(new TextureService()); }
     public static void addService(ResourceService service) {
         for (int header : service.getSupportedHeaders())
             services.put(header, service);
@@ -36,7 +21,7 @@ public class TreeSelectionListener {
     public static void listener(JTree tree) {
         Toolkit toolkit = Toolkit.instance;
         toolkit.setImage(null);
-        JTree currentTree = toolkit.getCurrentTree();
+        JTree currentTree = ResourceSystem.getSelectedDatabase().getTree();
         
         if (tree == currentTree) {
             toolkit.entryModifiers.setEnabledAt(1, false);
@@ -48,7 +33,7 @@ public class TreeSelectionListener {
             return;
 
         FileNode node = toolkit.getLastSelected(tree);
-        FileEntry entry = node.entry;
+        FileEntry entry = node.getEntry();
 
         toolkit.setEditorPanel(node);
         if (entry == null) {
@@ -56,56 +41,42 @@ public class TreeSelectionListener {
             return;
         }
 
-        toolkit.resourceService.submit(() -> {
+        ResourceSystem.getResourceService().submit(() -> {
             if (!ResourceSystem.canExtract()) return;
 
-            byte[] extractedData = ResourceSystem.extractFile(entry.hash);
-            if (extractedData == null && 
-                    toolkit.getCurrentDB().USRDIR != null && 
-                    ResourceSystem.currentWorkspace == Globals.ResourceSystem.MAP) {
-                    System.out.println("Attempting to extract from disk...");
-                    extractedData = FileIO.read(toolkit.getCurrentDB().USRDIR + entry.path.replace("/", "\\"));
-            }
-            
-            entry.data = extractedData;
-            toolkit.updateWorkspace();
-            toolkit.setHexEditor(extractedData);
-            
-            if (extractedData == null || extractedData.length < 4) return;
-            
-            int magic = (extractedData[0] & 0xFF) << 24 | 
-                        (extractedData[1] & 0xFF) << 16 | 
-                        (extractedData[2] & 0xFF) << 8 | 
-                        (extractedData[3] & 0xFF) << 0;
-            
-            Resource resource = new Resource(extractedData);
-            if (resource.method == SerializationType.BINARY)
-                entry.canReplaceDecompressed = true;
-            entry.revision = resource.revision;
-            entry.compressionFlags = resource.compressionFlags;
-            entry.dependencies = resource.dependencies;
-            
-            if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
-                FileModel model = new FileModel(new FileNode("x", null, entry));
-                boolean recursive = !(resource.type == ResourceType.PACKS || 
-                                    resource.type == ResourceType.SLOT_LIST || 
-                                    resource.type == ResourceType.LEVEL || 
-                                    resource.type == ResourceType.ADVENTURE_CREATE_PROFILE || 
-                                    resource.type == ResourceType.PALETTE);
-                
-                entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
-                
-                toolkit.generateDependencyTree(entry, model);
-                entry.dependencyModel = model;
-            }
+            byte[] data = ResourceSystem.extract(entry);
 
-            if (ResourceSystem.lastSelected == node && entry.dependencyModel != null && tree == currentTree)
-                toolkit.dependencyTree.setModel(entry.dependencyModel);
+            toolkit.updateWorkspace();
+            toolkit.setHexEditor(data);
+            
+            if (data == null || data.length < 4) return;
+            
+            int magic = Bytes.toIntegerBE(data);
+
+            if (entry.getInfo() == null)
+                entry.setInfo(new ResourceInfo(data));
+            
+            // if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
+            //     FileModel model = new FileModel(new FileNode("x", null, entry));
+            //     boolean recursive = !(resource.type == ResourceType.PACKS || 
+            //                         resource.type == ResourceType.SLOT_LIST || 
+            //                         resource.type == ResourceType.LEVEL || 
+            //                         resource.type == ResourceType.ADVENTURE_CREATE_PROFILE || 
+            //                         resource.type == ResourceType.PALETTE);
+                
+            //     entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
+                
+            //     toolkit.generateDependencyTree(entry, model);
+            //     entry.dependencyModel = model;
+            // }
+
+            // if (ResourceSystem.lastSelected == node && entry.dependencyModel != null && tree == currentTree)
+            //     toolkit.dependencyTree.setModel(entry.dependencyModel);
             
             toolkit.setEditorPanel(node);
             
             if (services.containsKey(magic))
-                ((ResourceService)services.get(magic)).process(tree, entry, extractedData);
-       });
+                ((ResourceService)services.get(magic)).process(tree, entry, data);
+        });
     }
 }

@@ -2,31 +2,29 @@ package toolkit.utilities;
 
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.enums.DatabaseType;
 import cwlib.resources.RTranslationTable;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
-import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
-import cwlib.types.BigSave;
+import cwlib.util.FileIO;
 import cwlib.types.archives.Fart;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.mods.Mod;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Global utilities for working with
  * loaded databases.
  */
 public class ResourceSystem {
-    public static File workingDirectory;
-    
+    private static File workingDirectory;
     static {
         try {
             ResourceSystem.workingDirectory = Files.createTempDirectory("twd").toFile();
@@ -34,175 +32,204 @@ public class ResourceSystem {
         } catch (IOException ex) { System.out.println("An error occurred creating temp directory."); }
     }
 
-    public static ArrayList<FileData> databases;
-    public static ArrayList<Fart> archives;
+    private static final ExecutorService databaseService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService resourceService = Executors.newSingleThreadExecutor();
 
+    private static ArrayList<FileData> databases;
+    private static ArrayList<Fart> archives;
 
-    public static RTranslationTable LAMS;
+    private static RTranslationTable LAMS;
 
-    public static ArrayList<FileNode> entries;
-    public static FileNode lastSelected;
+    private static ArrayList<FileNode> selected;
+    private static FileNode lastSelected;
 
-    public static WorkspaceType currentWorkspace = WorkspaceType.NONE;
+    private static FileData selectedDatabase;
+    private static DatabaseType databaseType = DatabaseType.NONE;
     
     public static void reset() {
-        ResourceSystem.currentWorkspace = WorkspaceType.NONE;
-        ResourceSystem.entries = new ArrayList<FileNode>();
+        ResourceSystem.databaseType = DatabaseType.NONE;
+
+        ResourceSystem.selected.clear();
         ResourceSystem.lastSelected = null;
+
         ResourceSystem.LAMS = null;
-        ResourceSystem.KEYS = null;
-        ResourceSystem.archives = new ArrayList<Fart>();
-        ResourceSystem.databases = new ArrayList<FileData>();
+
+        ResourceSystem.getArchives().clear();
+        ResourceSystem.getDatabases().clear();
     }
 
     public static boolean canExtract() {
-        if (currentWorkspace == WorkspaceType.MAP)
-            return archives.size() > 0;
-        else if (currentWorkspace != WorkspaceType.MAP && currentWorkspace != WorkspaceType.NONE)
-            return true;
-        return false;
+        FileData database = ResourceSystem.selectedDatabase;
+        if (database == null) return false;
+        DatabaseType type = database.getType();
+        return type.containsData() || (type.hasGUIDs() && database.getBase() != null) || archives.size() > 0;
     }
 
-    public static FileEntry findEntry(ResourceDescriptor res) {
-        if (res.GUID != -1) return findEntry(res.GUID);
-        else if (res.hash != null) return findEntry(res.hash);
-        return null;
-    }
+    public static FileEntry get(long guid) { return ResourceSystem.get(new GUID(guid)); }
+    public static FileEntry get(GUID guid) {
+        if (ResourceSystem.getDatabases().size() == 0) return null;
 
-    public static FileEntry findEntry(long GUID) {
-        if (ResourceSystem.databases.size() == 0) return null;
-        FileData db = Toolkit.instance.getCurrentDB();
-        if (ResourceSystem.currentWorkspace == WorkspaceType.MAP) {
-            FileEntry entry = ((FileDB) db).find(GUID);
-            if (entry != null)
-                return entry;
-        } else if (ResourceSystem.currentWorkspace == WorkspaceType.MOD) {
-            FileEntry entry = ((Mod) db).find(GUID);
+        // Prefer current database
+        FileData current = ResourceSystem.selectedDatabase;
+        if (current.getType().hasGUIDs()) {
+            FileEntry entry = current.get(guid);
             if (entry != null)
                 return entry;
         }
-        for (FileData data: ResourceSystem.databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(GUID);
+
+        for (FileData database : ResourceSystem.getDatabases()) {
+            if (database == current) continue;
+            if (database.getType().hasGUIDs()) {
+                FileEntry entry = database.get(guid);
                 if (entry != null)
                     return entry;
             }
         }
+
         return null;
     }
 
-    public static FileEntry findEntry(SHA1 hash) {
-        if (ResourceSystem.databases.size() == 0) return null;
-        FileData db = Toolkit.instance.getCurrentDB();
-
-        FileEntry e = db.find(hash);
-        if (e != null)
-            return e;
-
-        for (FileData data: ResourceSystem.databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(hash);
-                if (entry != null)
-                    return entry;
-            }
-        }
+    public static byte[] extract(ResourceDescriptor descriptor) {
+        if (descriptor == null) return null;
+        if (descriptor.isHash()) 
+            return ResourceSystem.extract(descriptor.getSHA1());
+        else if (descriptor.isGUID()) 
+            return ResourceSystem.extract(descriptor.getGUID());
         return null;
     }
 
-    public static byte[] extractFile(ResourceDescriptor ref) {
-        if (ref == null) return null;
-        if (ref.isHash()) return ResourceSystem.extractFile(ref.getSHA1());
-        else if (ref.isGUID()) return ResourceSystem.extractFile(ref.getGUID());
-        return null;
+    public static byte[] extract(FileEntry entry) {
+        if (entry == null) return null;
+        byte[] data = ResourceSystem.extract(entry.getSHA1());
+        if (data != null) return data;
+        return ResourceSystem.extractFromDisk(entry);
     }
 
-    public static byte[] extractFile(long guid) { return ResourceSystem.extractFile(new GUID(guid)); }
-    public static byte[] extractFile(GUID guid) {
-        FileData db = Toolkit.instance.getCurrentDB();
-
-
-        if (currentWorkspace == WorkspaceType.MAP) {
-            FileEntry entry = ((FileDB) db).find(guid);
-            if (entry != null)
-                return extractFile(entry.hash);
-        } else if (currentWorkspace == WorkspaceType.MOD) {
-            FileEntry entry = ((Mod) db).find(guid);
-            if (entry != null)
-                return entry.data;
-        }
-
-        for (FileData data: ResourceSystem.databases) {
-            if (data.type.equals("FileDB")) {
-                FileEntry entry = ((FileDB) data).find(guid);
-                if (entry != null) {
-                    byte[] buffer = extractFile(entry.hash);
-                    if (buffer != null) return buffer;
-                }
-
+    public static byte[] extract(SHA1 hash) {
+        for (FileData database : ResourceSystem.getDatabases()) {
+            if (database.getType().containsData()) {
+                byte[] data = database.extract(hash);
+                if (data != null) return data;
             }
         }
 
-        System.out.println("Could not extract g" + guid);
-
-        return null;
-    }
-
-    public static byte[] extractFile(SHA1 hash) {
-        FileData db = Toolkit.instance.getCurrentDB();
-        if (currentWorkspace == WorkspaceType.PROFILE) {
-            byte[] data = ((BigSave) db).extract(hash);
-            if (data != null) return data;
-        } else if (currentWorkspace == WorkspaceType.MOD) {
-            byte[] data = ((Mod) db).extract(hash);
-            if (data != null) return data;
-        }
-        for (Fart fart: ResourceSystem.archives) {
+        for (Fart fart: ResourceSystem.getArchives()) {
             byte[] data = fart.extract(hash);
             if (data != null) return data;
         }
         
-        System.out.println("Could not extract h" + hash.toString());
-        
         return null;
     }
 
-    public static void replaceEntry(FileEntry entry, byte[] data) {
-        if (ResourceSystem.currentWorkspace != WorkspaceType.PROFILE) {
-            entry.resetResources();
-            if (ResourceSystem.currentWorkspace != WorkspaceType.MOD) {
-                if (!ResourceSystem.addFile(data))
-                    return; 
-            }
-        }
-
-        entry.setDetails(data);
-        Toolkit.instance.updateWorkspace();
-
-        JTree tree = Toolkit.instance.getCurrentTree();
-        TreePath selectionPath = tree.getSelectionPath();
-        ((FileModel) tree.getModel()).reload();
-        tree.setSelectionPath(selectionPath);
-        
+    public static byte[] extract(long guid) { return ResourceSystem.extract(new GUID(guid)); }
+    public static byte[] extract(GUID guid) {
+        return ResourceSystem.extract(ResourceSystem.get(guid));
     }
 
-    public static boolean addFile(byte[] data) {
-        if (ResourceSystem.currentWorkspace == WorkspaceType.PROFILE) {
-            ((BigSave) Toolkit.instance.getCurrentDB()).add(data);
-            Toolkit.instance.updateWorkspace();
+    private static byte[] extractFromDisk(FileEntry entry) {
+        if (entry == null) return null;
+        FileData source = entry.getSource();
+        File base = source.getBase();
+        if (entry.getSource() == source && base != null) {
+            File file = new File(base, entry.getPath());
+            if (!file.exists()) return null;
+            return FileIO.read(file.getAbsolutePath());
+        }
+        return null;
+    }
+
+    public static boolean add(byte[] data) { 
+        return ResourceSystem.add(data, ResourceSystem.selectedDatabase); 
+    }
+    public static boolean add(byte[] data, FileData database) {
+        if (database.getType().containsData()) {
+            database.add(data);
             return true;
         }
 
         Fart[] archives = Toolkit.instance.getSelectedArchives();
         if (archives == null) return false;
 
-        ResourceSystem.addFile(data, archives);
+        ResourceSystem.add(data, archives);
         return true;
     }
 
-    public static void addFile(byte[] data, Fart[] farts) {
-        for (Fart fart: farts)
-            fart.add(data);
+    public static void add(byte[] data, Fart[] archives) {
+        for (Fart archive: archives) archive.add(data);
         Toolkit.instance.updateWorkspace();
-        System.out.println("Added file to queue, make sure to save your workspace!");
     }
+
+    public static boolean replace(FileEntry entry, byte[] data) {
+        if (entry == null) return false;
+
+        entry.setDetails(data);
+        entry.setInfo(null);
+
+        return ResourceSystem.add(data, entry.getSource());
+    }
+
+    public static ArrayList<FileData> getDatabases() { return ResourceSystem.getDatabases(); }
+    public static ArrayList<Fart> getArchives() { return ResourceSystem.getArchives(); }
+    public static RTranslationTable getLAMS() { return ResourceSystem.LAMS; }
+
+    public static FileNode getSelected() { return ResourceSystem.lastSelected; }
+    public static FileNode[] getAllSelected() { return ResourceSystem.selected.toArray(FileNode[]::new); }
+
+    public static DatabaseType getDatabaseType() { return ResourceSystem.databaseType; }
+
+    public static int getLoadedDatabase(File file) {
+        if (file == null) return -1;
+        for (int i = 0; i < ResourceSystem.databases.size(); ++i) {
+            FileData database = ResourceSystem.databases.get(i);
+            if (database.getFile().equals(file))
+                return i;
+        }
+        return -1;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends FileData> T getSelectedDatabase() { 
+        return (T) ResourceSystem.selectedDatabase; 
+    }
+
+    public static FileData setSelectedDatabase(int index) {
+        if (index < 0 || index >= ResourceSystem.databases.size()) {
+            ResourceSystem.databaseType = DatabaseType.NONE;
+            ResourceSystem.selectedDatabase = null;
+            return null;
+        }
+        FileData database = ResourceSystem.databases.get(index);
+        ResourceSystem.selectedDatabase = database;
+        ResourceSystem.databaseType = database.getType();
+        return database;
+    }
+
+    public static File getWorkingDirectory() { return ResourceSystem.workingDirectory; }
+
+    public static ExecutorService getDatabaseService() { return ResourceSystem.databaseService; }
+    public static ExecutorService getResourceService() { return ResourceSystem.resourceService; }
+
+    // public int registerDependencies(Resource resource, boolean recursive) {
+    //     if (this.method != SerializationType.BINARY) return 0;
+    //     int missingDependencies = 0;
+    //     for (ResourceDescriptor dependency : this.dependencies) {
+    //         FileEntry entry = ResourceSystem.findEntry(dependency);
+    //         if (entry == null) {
+    //             missingDependencies++;
+    //             continue;
+    //         }
+    //         if (recursive && this.type != ResourceType.SCRIPT) {
+    //             byte[] data = ResourceSystem.extract(dependency);
+    //             if (data != null) {
+    //                 Resource resource = new Resource(data);
+    //                 if (resource.method == SerializationType.BINARY) {
+    //                     entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
+    //                     entry.canReplaceDecompressed = true;
+    //                     entry.dependencies = resource.dependencies;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return missingDependencies;
+    // }
 }

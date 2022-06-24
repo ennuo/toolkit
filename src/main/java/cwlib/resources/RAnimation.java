@@ -3,7 +3,7 @@ package cwlib.resources;
 import cwlib.util.Bytes;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.structs.animation.AnimatedMorph;
-import cwlib.structs.animation.AnimationBone;
+import cwlib.structs.animation.AnimBone;
 import cwlib.structs.animation.Locator;
 import java.util.ArrayList;
 import org.joml.Vector3f;
@@ -17,7 +17,7 @@ public class RAnimation {
     public Vector4f posOffset, posScale;
     public boolean fat;
     
-    public AnimationBone[] bones;
+    public AnimBone[] bones;
   
     public Locator[] locators;
     
@@ -49,7 +49,7 @@ public class RAnimation {
     }
     
     private void processLBP1(MemoryInputStream data) {
-        bones = AnimationBone.array(data);
+        bones = AnimBone.array(data);
         boneCount = bones.length;
         numFrames = data.i32();
         FPS = data.i32();
@@ -113,7 +113,7 @@ public class RAnimation {
             morph[i] = data.f32();
        
         
-        for (AnimationBone bone : bones) {
+        for (AnimBone bone : bones) {
             bone.rotations = new Vector4f[numFrames - 1];
             bone.positions = new Vector4f[numFrames - 1];
             bone.scales = new Vector4f[numFrames - 1];
@@ -180,9 +180,9 @@ public class RAnimation {
     private void processAnimationDataLBP3(byte[] buffer) {
         MemoryInputStream data = new MemoryInputStream(buffer, 0x3f9);
         
-        bones = new AnimationBone[boneCount];
+        bones = new AnimBone[boneCount];
         for (int i = 0; i < boneCount; ++i)
-            bones[i] = new AnimationBone(data);
+            bones[i] = new AnimBone(data);
         
         rotBonesAnimated = new short[rotBonesAnimatedCount];
         for (int i = 0; i < rotBonesAnimatedCount; ++i)
@@ -244,7 +244,7 @@ public class RAnimation {
         for (int i = 0; i < morph.length; ++i)
             morph[i] = data.f16();
             
-        for (AnimationBone bone : bones) {
+        for (AnimBone bone : bones) {
             bone.rotations = new Vector4f[numFrames - 1];
             bone.positions = new Vector4f[numFrames - 1];
             bone.scales = new Vector4f[numFrames - 1];

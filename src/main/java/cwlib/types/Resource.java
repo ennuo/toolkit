@@ -1,159 +1,379 @@
 package cwlib.types;
 
+import cwlib.enums.Branch;
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.SerializationType;
+import cwlib.ex.SerializationException;
 import cwlib.types.data.Revision;
 import cwlib.structs.texture.CellGcmTexture;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.resources.RPlan;
 import cwlib.structs.staticmesh.StaticMeshInfo;
+import cwlib.io.Compressable;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.databases.FileEntry;
 import cwlib.util.Bytes;
 import cwlib.util.Compressor;
-import toolkit.utilities.ResourceSystem;
+import cwlib.util.Crypto;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
 
 public class Resource {
-    public ResourceType type = ResourceType.INVALID;
-    public SerializationType method = SerializationType.UNKNOWN;
-    public CellGcmTexture textureInfo;
-    public StaticMeshInfo meshInfo;
-    public Revision revision;
+    /**
+     * Type of resource.
+     */
+    private ResourceType type = ResourceType.INVALID;
+
+    /**
+     * Method of serialization, binary, text, or texture resources.
+     */
+    private SerializationType method = SerializationType.UNKNOWN;
+
+    /**
+     * Texture metadata for texture resources.
+     */
+    private CellGcmTexture textureInfo;
+
+    /**
+     * Static mesh metadata
+     */
+    private StaticMeshInfo meshInfo;
+
+    /**
+     * Revision of the resource.
+     */
+    private Revision revision;
+
+    /**
+     * Whether or not the resource is compressed
+     */
     private boolean isCompressed = true;
-    public byte compressionFlags = 0;
-    public MemoryInputStream handle = null;
-    public ArrayList<ResourceDescriptor> dependencies = new ArrayList<>();
-    
-    public Resource(){}
-    
-    public Resource(MemoryOutputStream output) {
-        output.shrink();
-        this.revision = output.revision;
-        this.dependencies = new ArrayList<>(output.dependencies);
-        this.method = SerializationType.BINARY;
-        this.compressionFlags = output.compressionFlags;
-        this.handle = new MemoryInputStream(output.buffer, output.revision);
-        this.handle.compressionFlags = output.compressionFlags;
-    }
-    
-    public Resource(String path) {
-        this.handle = new MemoryInputStream(path);
-        this.process();
-    }
-    
-    public Resource(byte[] data) {
-        this.handle = new MemoryInputStream(data);
-        this.process();
-    }
-    
-    private void process() {
-        if (this.handle == null || this.handle.length < 0xb) return;
-        this.type = ResourceType.fromMagic(this.handle.str(3));
-        if (this.type == ResourceType.INVALID) { this.handle.seek(0); return; }
-        this.method = SerializationType.fromValue(this.handle.str(1));
+
+    /**
+     * Controls which data types get compressed during serialization.
+     */
+    private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+
+    /**
+     * Decompressed data from this resource.
+     */
+    private byte[] data = null;
+
+    /**
+     * Resources this resource depends on.
+     */
+    private HashSet<ResourceDescriptor> dependencies = new HashSet<>();
+
+    /**
+     * Constructs a new resource from path
+     * @param path Path to read resource from
+     */
+    public Resource(String path) { this.process(new MemoryInputStream(path)); }
+
+    /**
+     * Constructs a new resource from buffer
+     * @param data Data to read resource from
+     */
+    public Resource(byte[] data) { this.process(new MemoryInputStream(data)); }
+
+    /**
+     * Processes the resource stream.
+     * @param stream Memory input stream to read from
+     */
+    private void process(MemoryInputStream stream) {
+        if (stream == null || stream.getLength() < 0xb) return;
+        this.type = ResourceType.fromMagic(stream.str(3));
+        if (this.type == ResourceType.INVALID)
+            throw new SerializationException("Invalid Resource type!");
+        this.method = SerializationType.fromValue(stream.str(1));
         switch (this.method) {
-            case UNKNOWN:
-                this.handle.seek(0);
-                return;
             case BINARY:
             case ENCRYPTED_BINARY:
-                this.revision = new Revision(this.handle.i32f());
-                this.handle.revision = this.revision;
+                int head = stream.i32();
+                short branchID = 0, branchRevision = 0;
                 int dependencyTableOffset = -1;
-                if (this.revision.head >= 0x109) {
-                    dependencyTableOffset = this.getDependencies();
-                    if (this.revision.head >= 0x189) {
+                if (head >= 0x109) {
+                    dependencyTableOffset = this.processDependencies(stream);
+                    if (head >= 0x189) {
                         if (this.type != ResourceType.STATIC_MESH) {
-                            if (this.revision.head >= 0x271) { 
+                            if (head >= 0x271) { 
                                 // NOTE(Aidan): Were they actually added on 0x27a, but how can it be on 0x272 then?!
-                                this.revision.branchID = this.handle.i16();
-                                this.revision.branchRevision = this.handle.i16();
-                                this.handle.revision = revision;
+                                branchID = stream.i16();
+                                branchRevision = stream.i16();
                             }
-                            if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0)) {
-                                this.compressionFlags = this.handle.i8();
-                                this.handle.compressionFlags = this.compressionFlags;
-                            }
-                            this.isCompressed = this.handle.bool();
-                        } else 
-                            this.meshInfo = new Serializer(this.handle).struct(null, StaticMeshInfo.class);
+                            if (head >= 0x297 || (head == Branch.LEERDAMMER.getHead() && branchID == Branch.LEERDAMMER.getID()) && branchRevision > 5)
+                                this.compressionFlags = stream.i8();
+                            this.isCompressed = stream.bool();
+                        } else this.meshInfo = new Serializer(stream, new Revision(head)).struct(null, StaticMeshInfo.class);
                     }
                 }
-                
-                if (this.method == SerializationType.ENCRYPTED_BINARY) {
-                    int size = this.handle.i32f(), padding = 0;
+
+                if (this.method.equals(SerializationType.ENCRYPTED_BINARY)) {
+                    int size = stream.i32(), padding = 0;
                     if (size % 4 != 0)
                         padding = 4 - (size % 4);
-                    this.handle.setData(TEA.decrypt(this.handle.bytes(size + padding)));
-                    this.handle.offset += padding;
+                    stream = new MemoryInputStream(Crypto.XXTEA(stream.bytes(size + padding), true));
+                    stream.seek(padding);
                 }
-                
-                if (this.isCompressed)
-                    Compressor.decompressData(this.handle, dependencyTableOffset);
-                else if (dependencyTableOffset != -1)
-                    this.handle.setData(this.handle.bytes(dependencyTableOffset - this.handle.offset));
-                else this.handle.setData(this.handle.bytes(this.handle.length - this.handle.offset));
-                
+
+                this.revision = new Revision(head, branchID, branchRevision);
+
+                if (this.isCompressed) 
+                    this.data = Compressor.decompressData(stream, dependencyTableOffset);
+                else if (dependencyTableOffset != -1) 
+                    this.data = stream.bytes(dependencyTableOffset - stream.getOffset());
+                else 
+                    this.data = stream.bytes(stream.getLength() - stream.getOffset());
                 break;
             case TEXT:
-                this.handle.setData(this.handle.bytes(this.handle.length - 4));
-                break;
-            case TEXTURE:
-            case GXT_SIMPLE:
-            case GXT_EXTENDED:
+                this.data = stream.bytes(stream.getLength() - stream.getOffset());
+            case COMPRESSED_TEXTURE:
+            case GTF_SWIZZLED:
+            case GXT_SWIZZLED:
                 if (this.type != ResourceType.TEXTURE)
-                    this.textureInfo = new CellGcmTexture(this.handle, this.method);
-                Compressor.decompressData(this.handle, this.handle.length);
+                    this.textureInfo = new CellGcmTexture(stream, this.method);
+                this.data = Compressor.decompressData(stream, stream.getLength());
                 break;
+            case UNKNOWN:
+                throw new SerializationException("Invalid serialization method!");
         }
     }
-    
-    public int registerDependencies(boolean recursive) {
-        if (this.method != SerializationType.BINARY) return 0;
-        int missingDependencies = 0;
-        for (ResourceDescriptor dependency : this.dependencies) {
-            FileEntry entry = ResourceSystem.findEntry(dependency);
-            if (entry == null) {
-                missingDependencies++;
-                continue;
+
+    /**
+     * Constructs a new serializer from this resource's data.
+     * @return Data deserializer from current resource data
+     */
+    public Serializer getSerializer() {
+        return new Serializer(this.data, this.revision, this.compressionFlags);
+    }
+
+    /**
+     * Constructs a new memory input stream from this resource's data.
+     * @return Data stream from current resource data
+     */
+    public MemoryInputStream getStream() {
+        return new MemoryInputStream(this.data, this.compressionFlags);
+    }
+
+    /**
+     * Deserializes a resource from this instance.
+     * @param <T> Resource type that implements Serializable
+     * @param clazz Resource class reference that implements Serializable
+     * @return Deserialized resource
+     */
+    public <T extends Serializable> T loadResource(Class<T> clazz) {
+        Serializer serializer = this.getSerializer();
+        
+        // Hacky way of keeping dependency table even though
+        // we can't parse all thing data
+        if (clazz.equals(RPlan.class)) {
+            for (ResourceDescriptor descriptor : this.dependencies)
+                serializer.addDependency(descriptor);
+        }
+
+        return serializer.struct(null, clazz);
+    }
+
+    /**
+     * Reads the dependency table from current resource stream.
+     * @param stream Memory input stream to read from
+     * @return The offset of the dependency table
+     */
+    private int processDependencies(MemoryInputStream stream) {
+        int dependencyTableOffset = stream.i32();
+        int originalOffset = stream.getOffset();
+        stream.seek(dependencyTableOffset, SeekMode.Begin);
+        
+        int count = stream.i32();
+        this.dependencies = new HashSet<>(count);
+        for (int i = 0; i < count; ++i) {
+            ResourceDescriptor descriptor = null;
+            switch (stream.i8()) {
+                case 1:
+                    descriptor = new ResourceDescriptor(stream.sha1(), ResourceType.fromType(stream.i32()));
+                    break;
+                case 2:
+                    descriptor = new ResourceDescriptor(stream.guid(), ResourceType.fromType(stream.i32()));
+                    break;
             }
-            if (recursive && this.type != ResourceType.SCRIPT) {
-                byte[] data = ResourceSystem.extractFile(dependency);
-                if (data != null) {
-                    Resource resource = new Resource(data);
-                    if (resource.method == SerializationType.BINARY) {
-                        entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
-                        entry.canReplaceDecompressed = true;
-                        entry.dependencies = resource.dependencies;
-                    }
+            this.dependencies.add(descriptor);
+        }
+        
+        stream.seek(originalOffset, SeekMode.Begin);
+
+        return dependencyTableOffset;
+    }
+
+    /**
+     * Wraps a resource in a container, preferring compression if possible.
+     * @param resource Instance of compressible resource
+     * @param revision Revision of underlying resource stream.
+     * @param compressionFlags Compression flags used during resource serialization
+     * @param preferCompressed Whether or not this resource should be compressed, if possible
+     * @return Resource container
+     */
+    public static byte[] compress(Compressable resource, Revision revision, byte compressionFlags, boolean preferCompressed) {
+        return Resource.compress(resource.build(revision, compressionFlags), preferCompressed);
+    }
+
+    /**
+     * Wraps a resource in a container, preferring compression if possible.
+     * @param resource Instance of compressible resource
+     * @param revision Revision of underlying resource stream.
+     * @param compressionFlags Compression flags used during resource serialization
+     * @return Resource container
+     */
+    public static byte[] compress(Compressable resource, Revision revision, byte compressionFlags) {
+        return Resource.compress(resource.build(revision, compressionFlags), true);
+    }
+
+    /**
+     * Wraps a resource in a container, preferring compression if possible.
+     * @param data Serialization data to wrap
+     * @return Resource container
+     */
+    public static byte[] compress(SerializationData data) {
+        return Resource.compress(data, true);
+    }
+
+    public byte[] compress(byte[] data) {
+        return Resource.compress(
+            new SerializationData(
+                data,
+                this.revision,
+                this.compressionFlags,
+                this.type,
+                this.method,
+                this.getDependencies()
+            ),
+            true
+        );
+    }
+
+    /**
+     * Wraps a resource in a container, with optional compression.
+     * @param data Serialization data to wrap
+     * @param preferCompressed Whether or not this resource should be compressed, if possible
+     * @return Resource container
+     */
+    public static byte[] compress(SerializationData data, boolean preferCompressed) {
+        ResourceType type = data.getType();
+        StaticMeshInfo meshInfo = data.getStaticMeshInfo();
+        boolean isStaticMesh = type == ResourceType.STATIC_MESH;
+
+        byte[] buffer = data.getBuffer();
+        ResourceDescriptor[] dependencies = data.getDependencies();
+
+        int size = buffer.length + 0x50;
+        if (dependencies != null)
+            size += dependencies.length * 0x1c;
+        if (data.getTextureInfo() != null) size += 0x24;
+        else if (meshInfo != null) size += meshInfo.getAllocatedSize();
+
+        MemoryOutputStream stream = new MemoryOutputStream(size);
+
+        if (data.getMethod().equals(SerializationType.TEXT)) {
+            stream.str(type.getHeader() + data.getMethod().getValue() + '\n', 5);
+            stream.bytes(buffer);
+            stream.shrink();
+            return stream.getBuffer();
+        }
+
+        if (type.equals(ResourceType.TEXTURE) || type.equals(ResourceType.GTF_TEXTURE)) {
+            stream.str(type.getHeader() + data.getMethod().getValue(), 4);
+
+            if (!type.equals(ResourceType.TEXTURE))
+                data.getTextureInfo().write(stream);
+            stream.bytes(Compressor.getCompressedStream(data.getBuffer(), preferCompressed));
+
+            stream.shrink();
+            return stream.getBuffer();
+        }
+
+        stream.str(type.getHeader() + data.getMethod().getValue(), 4);
+
+        Revision revision = data.getRevision();
+        int head = revision.getHead();
+        boolean isCompressed = false;
+        stream.i32(head);
+        if (head >= 0x109 || isStaticMesh) {
+            stream.i32(0); // Dummy value for dependency table offset.
+            if (head >= 0x189 && !isStaticMesh) {
+                if (head >= 0x271) {
+                    stream.i16(revision.getBranchID());
+                    stream.i16(revision.getBranchRevision());
                 }
+
+                if (head >= 0x297 || (head == 0x272 && revision.getBranchID() == Branch.LEERDAMMER.getID()))
+                    stream.i8(data.getCompressionFlags());
+
+                if (preferCompressed)
+                    isCompressed = true;
+                stream.bool(isCompressed);
+            } else if (isStaticMesh)
+                new Serializer(stream, revision).struct(data.getStaticMeshInfo(), StaticMeshInfo.class);
+        }
+
+        if (isCompressed || preferCompressed || head < 0x189)
+            buffer = Compressor.getCompressedStream(buffer, isCompressed);
+        
+        // Tell the game there are no streams in the zlib data,
+        // technically we don't have to waste memory concatenating the streams,
+        // since these resources can't be encrypted anyway, but whatever 
+        else if (isStaticMesh && !preferCompressed)
+            buffer = Bytes.combine(new byte[] { 0x00, 0x00, 0x00, 0x00 }, buffer);
+        
+        if (data.getMethod().equals(SerializationType.ENCRYPTED_BINARY)) {
+            stream.i32(buffer.length);
+            buffer = Crypto.XXTEA(buffer, false);
+        }
+        stream.bytes(buffer);
+
+        if (head >= 0x109 || isStaticMesh) {
+            // Setting dependency table offset
+            int dependencyTableOffset = stream.getOffset();
+            stream.seek(8, SeekMode.Begin);
+            stream.i32(dependencyTableOffset);
+            stream.seek(dependencyTableOffset, SeekMode.Begin);
+
+            // Writing dependencies
+            stream.i32(dependencies.length);
+            for (ResourceDescriptor dependency : dependencies) {
+                if (dependency.isGUID()) {
+                    stream.u8(2);
+                    stream.guid(dependency.getGUID());
+                } else if (dependency.isHash()) {
+                    stream.u8(1);
+                    stream.sha1(dependency.getSHA1());
+                }
+                stream.i32(dependency.getType().getValue());
             }
         }
-        return missingDependencies;
+
+        stream.shrink();
+        return stream.getBuffer();
     }
     
     public void replaceDependency(ResourceDescriptor oldDescriptor, ResourceDescriptor newDescriptor) {
         if (oldDescriptor.equals(newDescriptor)) return;
-        int index = this.dependencies.indexOf(oldDescriptor);
-        if (index == -1) return;
+        if (!this.dependencies.contains(oldDescriptor)) return;
         
         if (this.type != ResourceType.STATIC_MESH) {
-            ResourceType type = oldDescriptor.type;
+            ResourceType type = oldDescriptor.getType();
             boolean isFSB = type.equals(ResourceType.FILENAME);
             byte[] oldDescBuffer, newDescBuffer;
 
             // Music dependencies are actually the GUID dependencies of a script,
             // so they don't have the same structure for referencing.
             if (type.equals(ResourceType.MUSIC_SETTINGS) || type.equals(ResourceType.FILE_OF_BYTES) || type.equals(ResourceType.SAMPLE) || isFSB) {
-                oldDescBuffer = Bytes.createGUID(oldDescriptor.GUID, this.compressionFlags);
-                newDescBuffer = Bytes.createGUID(newDescriptor.GUID, this.compressionFlags);
+                oldDescBuffer = Bytes.getIntegerBuffer(oldDescriptor.getGUID().getValue(), this.compressionFlags);
+                newDescBuffer = Bytes.getIntegerBuffer(newDescriptor.getGUID().getValue(), this.compressionFlags);
             } else {
                 oldDescBuffer = Bytes.getResourceReference(oldDescriptor, this.revision, this.compressionFlags);
                 newDescBuffer = Bytes.getResourceReference(newDescriptor, this.revision, this.compressionFlags);
@@ -161,19 +381,16 @@ public class Resource {
 
 
             if (this.type == ResourceType.PLAN) {
-                RPlan plan = new RPlan(this);
-                MemoryInputStream thingData = new MemoryInputStream(plan.thingData, this.revision);
-                Bytes.replace(thingData, oldDescBuffer, newDescBuffer);
-                plan.thingData = thingData.data;
-
-                if (isFSB && plan.details != null) {
-                    if (oldDescriptor.GUID == plan.details.highlightSound)
-                        plan.details.highlightSound = newDescriptor.GUID;
+                RPlan plan = this.loadResource(RPlan.class);
+                plan.thingData = Bytes.replace(plan.thingData, oldDescBuffer, newDescBuffer);
+                if (isFSB && plan.inventoryData != null) {
+                    if (oldDescriptor.getGUID().equals(plan.inventoryData.highlightSound))
+                        plan.inventoryData.highlightSound = newDescriptor.getGUID();
                 }
-
-                this.handle.setData(plan.build(this.revision, this.compressionFlags, false));
+                this.data = plan.build(this.revision, this.compressionFlags).getBuffer();
             }
-            Bytes.replace(this.handle, oldDescBuffer, newDescBuffer);
+
+            this.data = Bytes.replace(this.data, oldDescBuffer, newDescBuffer);
         } else {
             if (this.meshInfo.fallmap.equals(oldDescriptor))
                 this.meshInfo.fallmap = newDescriptor;
@@ -186,128 +403,16 @@ public class Resource {
                     primitive.gmat = newDescriptor;
         }
         
-        // Remove the dependency from the array if it's effectively null.
-        if (newDescriptor == null || newDescriptor.GUID == 0)
-            this.dependencies.remove(index);
-        else this.dependencies.set(index, newDescriptor);
+        this.dependencies.remove(oldDescriptor);
+        if (newDescriptor != null)
+            this.dependencies.add(newDescriptor);
     }
-    
-    private int getDependencies() {
-        int dependencyTableOffset = this.handle.i32f();
-        int originalOffset = this.handle.offset;
-        this.handle.offset = dependencyTableOffset;
-        
-        int size = this.handle.i32f();
-        this.dependencies = new ArrayList<>(size);
-        for (int i = 0; i < size; ++i) {
-            ResourceDescriptor descriptor = new ResourceDescriptor();
-            switch (this.handle.i8()) {
-                case 1:
-                    descriptor.hash = this.handle.sha1();
-                    break;
-                case 2:
-                    descriptor.GUID = this.handle.u32f();
-                    break;
-            }
-            descriptor.type = ResourceType.fromType(this.handle.i32f());
-            this.dependencies.add(descriptor);
-        }
-        
-        this.handle.offset = originalOffset;
-        
-        return dependencyTableOffset;
-    }
-    
-    public static byte[] compressToResource(byte[] data, Revision revision, byte compressionFlags, ResourceType type, ArrayList<ResourceDescriptor> dependencies) {
-        Resource resource = new Resource();
-        resource.handle = new MemoryInputStream(data, revision);
-        resource.compressionFlags = compressionFlags;
-        resource.revision = revision;
-        resource.type = type;
-        if (resource.type == ResourceType.LOCAL_PROFILE)
-            resource.method = SerializationType.ENCRYPTED_BINARY;
-        else resource.method = SerializationType.BINARY;
-        resource.dependencies = dependencies;
-        return resource.compressToResource();
-    }
-    
-    public static byte[] compressToResource(MemoryOutputStream data, StaticMeshInfo info) {
-        Resource resource = new Resource(data);
-        resource.meshInfo = info;
-        resource.type = ResourceType.STATIC_MESH;
-        return resource.compressToResource();
-    }
-    
-    public static byte[] compressToResource(MemoryOutputStream data, ResourceType type) {
-        Resource resource = new Resource(data);
-        resource.type = type;
-        if (type == ResourceType.LOCAL_PROFILE)
-            resource.method = SerializationType.ENCRYPTED_BINARY;
-        return resource.compressToResource();
-    }
-    
-    public byte[] compressToResource() {
-        MemoryOutputStream output = new MemoryOutputStream(this.dependencies.size() * 0x1c + this.handle.length + 0x50);
-        
-        if (this.method == SerializationType.TEXT) {
-            output.str(this.type.header + this.method.value + '\n');
-            output.bytes(this.handle.data);
-            output.shrink();
-            return output.buffer;
-        }
-        
-        output.str(this.type.header + this.method.value);
-        output.i32f(this.revision.head);
-        if (this.revision.head >= 0x109) {
-            output.i32f(0); // Dummy value for dependency table offset.
-            if (this.revision.head >= 0x189) {
-                if (this.type == ResourceType.STATIC_MESH)
-                    new Serializer(output).struct(this.meshInfo, StaticMeshInfo.class);
-                else {
-                    if (this.revision.head >= 0x271) {
-                        output.i16(this.revision.branchID);
-                        output.i16(this.revision.branchRevision);
-                    }
-                    if (this.revision.head >= 0x297 || (this.revision.head == 0x272 && this.revision.branchID != 0))
-                        output.i8(this.compressionFlags);
-                    output.bool(this.isCompressed);
-                }
-            }
-            
-            byte[] data = this.handle.data;
-            if (this.isCompressed) data = Compressor.getCompressedStream(this.handle.data);
-            if (this.method == SerializationType.ENCRYPTED_BINARY) {
-                int size = data.length;
-                if (size % 4 != 0) {
-                    int padding = 4 - (size % 4);
-                    byte[] paddedData = new byte[padding + size];
-                    System.arraycopy(data, 0, paddedData, padding, size);
-                    data = paddedData;
-                }
-                data = TEA.encrypt(data);
-                output.i32f(size);
-            }
-            output.bytes(data);
-            
-            int dependencyTableOffset = output.offset;
-            output.offset = 0x8;
-            output.i32f(dependencyTableOffset);
-            output.offset = dependencyTableOffset;
-            
-            output.i32f(this.dependencies.size());
-            for (ResourceDescriptor dependency : this.dependencies) {
-                if (dependency.GUID != -1) {
-                    output.i8((byte) 2);
-                    output.u32f(dependency.GUID);
-                } else if (dependency.hash != null) {
-                    output.i8((byte) 1);
-                    output.sha1(dependency.hash);
-                }
-                output.i32f(dependency.type.value);
-            }
-        }
-        
-        output.shrink();
-        return output.buffer;
-    }
+
+    public ResourceDescriptor[] getDependencies() { return this.dependencies.toArray(ResourceDescriptor[]::new); }
+    public byte getCompressionFlags() { return this.compressionFlags; }
+    public Revision getRevision() { return this.revision; }
+    public ResourceType getResourceType() { return this.type; }
+    public SerializationType getSerializationType() { return this.method; }
+    public CellGcmTexture getTextureInfo() { return this.textureInfo; }
+    public StaticMeshInfo getMeshInfo() { return this.meshInfo; }
 }

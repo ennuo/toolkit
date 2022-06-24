@@ -4,17 +4,21 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class MeshShapeInfo implements Serializable {
-    public static int MAX_SIZE = 0x8;
-    
-    public int numVerts;
-    public int isPointCloud;
+    public static final int BASE_ALLOCATION_SIZE = 0x8;
 
-    public MeshShapeInfo serialize(Serializer serializer, Serializable structure) {
-        MeshShapeInfo info = (structure == null) ? new MeshShapeInfo() : (MeshShapeInfo) structure;
-        
+    public int numVerts;
+    public boolean isPointCloud;
+
+    @SuppressWarnings("unchecked")
+    @Override public MeshShapeInfo serialize(Serializer serializer, Serializable structure) {
+        MeshShapeInfo info = 
+            (structure == null) ? new MeshShapeInfo() : (MeshShapeInfo) structure;
+
         info.numVerts = serializer.i32(info.numVerts);
-        info.isPointCloud = serializer.i32(info.isPointCloud);
-        
+        info.isPointCloud = serializer.intbool(info.isPointCloud);
+
         return info;
     }
+
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
 }

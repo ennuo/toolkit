@@ -116,7 +116,7 @@ public class Images {
             return null;
         }
 
-        DDS = Compressor.getCompressedStream(DDS);
+        DDS = Compressor.getCompressedStream(DDS, true);
 
         if (DDS == null) {
             System.err.println("Failed to compress DDS!");

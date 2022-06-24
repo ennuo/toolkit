@@ -18,7 +18,7 @@ public class ArchiveSelector extends javax.swing.JDialog {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
         
-        for (Fart archive : ResourceSystem.archives)
+        for (Fart archive : ResourceSystem.getArchives())
             this.model.addElement(archive.getFile().getAbsolutePath());
         
         this.cancelButton.addActionListener(e -> this.dispose());
@@ -91,7 +91,7 @@ public class ArchiveSelector extends javax.swing.JDialog {
         if (selected.length == 0) return;
         this.selectedArchives = new Fart[selected.length];
         for (int i = 0; i < selected.length; ++i)
-            this.selectedArchives[i] = ResourceSystem.archives.get(selected[i]);
+            this.selectedArchives[i] = ResourceSystem.getArchives().get(selected[i]);
         this.dispose();
     }//GEN-LAST:event_selectButtonActionPerformed
 

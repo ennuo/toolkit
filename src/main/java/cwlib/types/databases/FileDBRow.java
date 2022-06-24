@@ -8,11 +8,6 @@ public final class FileDBRow extends FileEntry {
      * Timestamp for when the resource was last modified.
      */
     private long date;
-    
-    /**
-     * Unique identifier for resource in a database.
-     */
-    private GUID guid;
 
     /**
      * Creates a FileDBRow using default parameters for FileDB.
@@ -33,12 +28,12 @@ public final class FileDBRow extends FileEntry {
         
         this.path = path;
         this.date = date;
-        this.guid = guid;
+        this.key = guid;
     }
 
     public FileDB getFileDB() { return (FileDB) this.source; }
     public long getDate() { return this.date; }
-    public GUID getGUID() { return this.guid; }
+    public GUID getGUID() { return (GUID) this.key; }
 
     public void setDate(long date) { this.date = date; }
 
@@ -48,12 +43,12 @@ public final class FileDBRow extends FileEntry {
      */
     public void setGUID(GUID newGUID) {
         if (newGUID == null || this.source == null) return;
-        if (newGUID.equals(this.guid)) return;
+        if (newGUID.equals(this.key)) return;
         FileDB database = this.getFileDB();
         if (database.get(newGUID) != null)
             throw new IllegalArgumentException("GUID already exists in database!");
-        database.onGUIDChange(this.guid, newGUID);
-        this.guid = newGUID;
+        database.onGUIDChange(this.getGUID(), newGUID);
+        this.key = newGUID;
     }
 
     /**
@@ -84,9 +79,9 @@ public final class FileDBRow extends FileEntry {
     /**
      * Removes this FileDBRow from attached database.
      */
-    public void remove() { this.getFileDB().remove(this.guid); }
+    public void remove() { this.getFileDB().remove(this.getGUID()); }
 
     @Override public String toString() {
-        return String.format("FileDBRow (%s, %s, %s)", this.path, this.sha1, this.guid);
+        return String.format("FileDBRow (%s, %s, %s)", this.path, this.sha1, this.key);
     }
 }

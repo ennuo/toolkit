@@ -58,7 +58,7 @@ public final class SerializationData {
         this.revision = null;
         this.compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         this.type = ResourceType.TEXTURE;
-        this.method = SerializationType.TEXTURE;
+        this.method = SerializationType.COMPRESSED_TEXTURE;
         this.dependencies = null;
         this.textureInfo = null;
         this.staticMeshInfo = null;

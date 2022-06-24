@@ -37,7 +37,7 @@ public class Dependinator extends javax.swing.JFrame {
         
         // Get the resource data
         byte[] data = entry.data;
-        if (data == null) data = ResourceSystem.extractFile(entry.hash);
+        if (data == null) data = ResourceSystem.extract(entry.hash);
         if (data == null) {
             this.dispose();
             return;

@@ -84,8 +84,6 @@ public class FileArchive extends Fart {
         }
 
         byte[] table = Fart.generateFAT(fat);
-
-        // Write data and new table to the archive.
         try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "rw")) {
             archive.seek(this.fatOffset);
 
@@ -96,7 +94,10 @@ public class FileArchive extends Fart {
             // Footer
             archive.write(Bytes.toBytesBE(fat.length));
             archive.write(new byte[] { 0x46, 0x41, 0x52, 0x43 }); // FARC
+
+            archive.setLength(archive.getFilePointer());
         } catch (IOException ex) { return false; }
+        
 
         // Update state of the archive in memory.
         this.entries = fat;

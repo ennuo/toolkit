@@ -33,7 +33,9 @@ import cwlib.structs.things.parts.PAnimation;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PCheckpoint;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.enums.Branch;
 import cwlib.enums.PartHistory;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -110,7 +112,7 @@ public class Thing implements Serializable {
         Revision revision = serializer.getRevision();
         int head = revision.getVersion();
         
-        if (head > 0x2a0 || revision.isAfterLeerdamerRevision(5))
+        if (head >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER))
             serializer.i8((byte) 0xAA); // test_serialize_marker
         
         if (head < 0x27f) {
@@ -146,7 +148,7 @@ public class Thing implements Serializable {
         int parts = Thing.getCompressedPartsRevision(head);
         parts = (int) serializer.i32d(parts);
         
-        if (head > 0x297 || revision.isAfterLeerdamerRevision(2))
+        if (head > 0x297 || revision.isAfterLeerdammerRevision(2))
             flags = serializer.i64(flags);
         
         if (((flags & (1 << 0)) != 0) && parts >= PartHistory.BODY)

@@ -1,5 +1,7 @@
 package cwlib.structs.profile;
 
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.NetworkOnlineID;
@@ -23,18 +25,23 @@ public class DataLabelValue implements Serializable {
         value.creatorID = serializer.struct(value.creatorID, NetworkOnlineID.class);
         value.labelIndex = serializer.i32(value.labelIndex);
 
-        if (revision.isAfterVitaRevision(0x2d) && !revision.isAfterVitaRevision(0x32)) {
-            if (serializer.isWriting()) {
+        if (revision.isVita()) {
+            
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_LABEL_ANALOGUE_ARRAY))
+                value.analogue = serializer.floatarray(value.analogue);
+            else if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS)) {
                 if (value.analogue != null && value.analogue.length != 0)
                     serializer.getOutput().f32(value.analogue[0]);
                 else
                     value.analogue = new float[] { serializer.getInput().f32() };
             }
-        } else if (revision.isAfterVitaRevision(0x32) || head > 0x3ee)
-            value.analogue = serializer.floatarray(value.analogue);
 
-        if (revision.isAfterVitaRevision(0x3b) || head > 0x3ee)
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_LABEL_TERNARY))
+                value.ternary = serializer.bytearray(value.ternary);
+        } else if (head >= Revisions.DATALABELS) {
+            value.analogue = serializer.floatarray(value.analogue);
             value.ternary = serializer.bytearray(value.ternary);
+        }
         
         return value;
     }

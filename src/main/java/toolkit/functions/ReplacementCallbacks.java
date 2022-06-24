@@ -4,9 +4,7 @@ import cwlib.util.FileIO;
 import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
-import toolkit.windows.Toolkit;
 import cwlib.types.Resource;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.databases.FileEntry;
 
 import java.awt.image.BufferedImage;
@@ -14,7 +12,7 @@ import java.io.File;
 
 public class ReplacementCallbacks {
     public static void replaceImage() {
-        FileEntry entry = ResourceSystem.lastSelected.entry;
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
         File file = FileChooser.openFile("image.png", "png,jpeg,jpg,dds", false);
         if (file == null) return;
 
@@ -30,7 +28,7 @@ public class ReplacementCallbacks {
         
         byte[] newImage = Images.toTEX(image);
         if (newImage != null) {
-            ResourceSystem.replaceEntry(entry, newImage);
+            ResourceSystem.replace(entry, newImage);
             return;
         }
 
@@ -38,34 +36,37 @@ public class ReplacementCallbacks {
     }
 
     public static void replaceDecompressed() {
-        File file = FileChooser.openFile(ResourceSystem.lastSelected.header, null, false);
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+
+        File file = FileChooser.openFile(ResourceSystem.getSelected().getName(), null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data != null) {
-            byte[] original = ResourceSystem.lastSelected.entry.data;
-            if (original == null) ResourceSystem.extractFile(ResourceSystem.lastSelected.entry.GUID);
-            if (original == null) original = ResourceSystem.extractFile(ResourceSystem.lastSelected.entry.hash);
-            if (original == null) {
-                System.out.println("Couldn't find entry, can't replace.");
-                return;
-            }
-            Resource resource = new Resource(original);
-            resource.handle.setData(data);
-            byte[] out = resource.compressToResource();
-            if (out == null) {
-                System.err.println("Error occurred when compressing data.");
-                return;
-            }
-            ResourceSystem.replaceEntry(ResourceSystem.lastSelected.entry, out);
-            System.out.println("Data compressed and added!");
+        if (data == null) {
+            System.err.println("Failed to read data!");
+            return;
         }
+
+        byte[] original = ResourceSystem.extract(entry);
+        if (original == null) {
+            System.out.println("Couldn't find entry, can't replace.");
+            return;
+        }
+
+        byte[] output = new Resource(original).compress(data);
+        if (output == null) {
+            System.err.println("Error occurred when compressing data.");
+            return;
+        }
+
+        ResourceSystem.replace(entry, output);
+        System.out.println("Data compressed and added!");
     }
 
     public static void replaceCompressed() {
-        File file = FileChooser.openFile(ResourceSystem.lastSelected.header, null, false);
+        File file = FileChooser.openFile(ResourceSystem.getSelected().getName(), null, false);
         if (file == null) return;
         byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data != null) ResourceSystem.replaceEntry(ResourceSystem.lastSelected.entry, data);
+        if (data != null) 
+            ResourceSystem.replace(ResourceSystem.getSelected().getEntry(), data);
     }
-
 }

@@ -6,11 +6,14 @@ import cwlib.util.FileIO;
 import cwlib.util.Images;
 import toolkit.utilities.ResourceSystem;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.types.archives.Fat;
 import cwlib.types.archives.SaveArchive;
+import cwlib.types.archives.SaveKey;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.resources.RTexture;
 import cwlib.structs.slot.Slot;
 import cwlib.enums.Crater;
+import cwlib.enums.DatabaseType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SlotType;
 import cwlib.structs.profile.InventoryItem;
@@ -21,6 +24,7 @@ import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.util.Nodes;
 import cwlib.resources.RPlan;
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
@@ -39,7 +43,7 @@ import java.util.Date;
 // I really want to burn this class.
 // It's so messy! Why is it reimplementing a FAR4/5!
 public class BigSave extends FileData {
-    public ArrayList<FileEntry> entries;
+    private ArrayList<FileEntry> entries;
     
     /**
      * Used for determing which moon model positions to use
@@ -48,20 +52,15 @@ public class BigSave extends FileData {
     public int revision = 1;
     
     /**
-     * Revision of the game this archive was built for.
-     */
-    public Revision gameRevision;
-
-    /**
-     * Which user created slots have been used so far
-     */
-    private boolean[] usedSlots = new boolean[82];
-    
-    /**
      * Parsed archive containing all file data,
      * as well as save key reference data.
      */
     private SaveArchive archive;
+
+    /**
+     * Big profile resource attached to this archive.
+     */
+    private RBigProfile profile;
 
     /**
      * Used for names of items added to profile.
@@ -69,109 +68,15 @@ public class BigSave extends FileData {
     private int lastOffset = 0;
 
     public BigSave(File file) {
-        this.path = file.getAbsolutePath();
-        this.name = file.getName();
-        type = "Big Profile";
-        byte[] data = FileIO.read(path);
-        if (data != null)
-            process(new MemoryInputStream(data), false);
-    }
-
-    public BigSave(File file, boolean isStreamingChunk) {
-        this.path = file.getAbsolutePath();
-        this.name = file.getName();
-        if (isStreamingChunk)
-            type = "Streaming Chunk";
-        else
-            type = "Big Profile";
-        byte[] data = FileIO.read(path);
-        if (data != null)
-            this.process(new MemoryInputStream(data), isStreamingChunk);
-    }
-
-    public BigSave(MemoryInputStream data) {
-        this.process(data, false);
-    }
-
-    public BigSave(MemoryInputStream data, boolean isStreamingChunk) {
-        this.process(data, isStreamingChunk);
-    }
-
-    private int getNextSlot() {
-        for (int i = 0; i < this.usedSlots.length; ++i) {
-            if (this.usedSlots[i])
-                continue;
-            return i;
-        }
-        return -1;
-    }
-
-    private Crater getCrater(int crater) {
-        this.usedSlots[crater] = true;
-        return Crater.valueOf("SLOT_" + crater + "_LBP" + revision);
-    }
-
-    private void process(MemoryInputStream data, boolean isStreamingChunk) {
-        data.seek(data.length - 4);
-
-        String magic = data.str(4);
-
-        this.isFAR5 = magic.equals("FAR5");
-
-        if (!magic.equals("FAR4") && !isFAR5)
-            return;
-
-        data.seek(data.length - 8);
-        int count = data.i32f();
-
-        if (isFAR5)
-            data.seek(data.length - (0x20 + (0x1C * count)));
-        else
-            data.seek(data.length - (0x1C + (0x1C * count)));
-
-        int tableOffset = data.offset;
-        if (!isStreamingChunk) {
-            this.model = new FileModel(new FileNode("BIGPROFILE", null, null));
-            this.root = (FileNode) model.getRoot();
-        }
+        super(file, DatabaseType.BIGFART);
+        this.archive = new SaveArchive(file);
+        SaveKey key = this.archive.getKey();
+        if (key.getRootType() != ResourceType.BIG_PROFILE)
+            throw new IllegalArgumentException("Save archive doesn't have an RBigProfile root resource!");
+        this.profile = this.archive.loadResource(key.getRootHash(), RBigProfile.class);
+        if (this.profile == null)
+            throw new IllegalArgumentException("Unable to locate RBigProfile root resource!");
         
-        this.entries = new ArrayList<FileEntry>(count - 1);
-        for (int i = 0; i < count; ++i) {
-            data.seek(tableOffset + (0x1C * i));
-            SHA1 hash = data.sha1();
-            int offset = data.i32f();
-            int size = data.i32f();
-            data.seek(offset);
-            byte[] dataBuffer = data.bytes(size);
-            int resMagic = (dataBuffer[0] & 0xFF) << 24 |
-                    (dataBuffer[1] & 0xFF) << 16 |
-                    (dataBuffer[2] & 0xFF) << 8 |
-                    (dataBuffer[3] & 0xFF) << 0;
-            FileEntry entry = new FileEntry(dataBuffer, hash);
-            entry.timestamp = 0;
-            entry.offset = offset;
-            this.lastOffset += size;
-            entry.size = size;
-            if (resMagic == 0x42505262) this.rootProfileEntry = entry;
-            else this.entries.add(entry);
-        }
-        
-        if (!isStreamingChunk) {
-            this.parseProfile();
-            
-            // Wait until we parse the profile to add the nodes
-            // so we can add plans that aren't in the inventory properly
-            if (!isStreamingChunk)
-                for (FileEntry entry : this.entries)
-                    this.addNode(entry);
-            
-            // Save key is aligned against a 4 byte boundary
-            if (data.offset % 4 != 0)
-                data.forward(4 - (data.offset % 4));
-            this.saveKey = data.bytes(tableOffset - data.offset);
-        }
-        
-        this.isParsed = true;
     }
 
     public FileNode addNode(FileEntry entry) {
@@ -234,63 +139,6 @@ public class BigSave extends FileData {
 
         return Nodes.addNode(root, entry);
 
-    }
-
-    private void serializeProfile() {
-        int itemCount = this.bigProfile.inventory.size();
-        int stringCount = this.bigProfile.stringTable.stringList.size();
-        int slotCount = this.bigProfile.myMoonSlots.size();
-
-        Resource originalBigProfile = new Resource(this.rootProfileEntry.data);
-
-        MemoryOutputStream output = new MemoryOutputStream(
-                (InventoryItemDetails.MAX_SIZE * itemCount) + (itemCount * 0x12) + (Slot.MAX_SIZE * slotCount + 1)
-                        + (stringCount * SortString.MAX_SIZE + (SortString.MAX_SIZE * itemCount)) + 0xFFFF,
-                originalBigProfile.revision);
-        
-        new Serializer(output).struct(this.bigProfile, RBigProfile.class);
-        output.shrink();
-
-        ResourceDescriptor[] dependencies = new ResourceDescriptor[output.dependencies.size()];
-        dependencies = output.dependencies.toArray(dependencies);
-
-        this.rootProfileEntry.data = Resource.compressToResource(output, ResourceType.BIG_PROFILE);
-        this.rootProfileEntry.size = this.rootProfileEntry.data.length;
-        this.rootProfileEntry.hash = SHA1.fromBuffer(this.rootProfileEntry.data);
-
-        this.setSaveKeyRootHash(this.rootProfileEntry.hash);
-    }
-
-    private void parseProfile() {
-        MemoryInputStream profile = new Resource(this.rootProfileEntry.data).handle;
-        this.rootProfileEntry.revision = profile.revision;
-        this.gameRevision = profile.revision;
-        
-        this.revision = (profile.revision.isAfterLBP3Revision(0x105)) ? 3 : 1;
-        
-        this.bigProfile = new Serializer(profile).struct(null, RBigProfile.class);
-        
-        for (InventoryItem item : this.bigProfile.inventory)
-            this.addItemNode(item);
-        ArrayList<Slot> slots =  new ArrayList<>(this.bigProfile.myMoonSlots.values());
-        for (Slot slot : slots)
-            this.addSlotNode(slot);
-        
-        // Update used slots map
-        this.checkForSlotChanges();
-
-        this.rootProfileEntry.setResource("slots", slots);
-        this.rootProfileEntry.setResource("items", this.bigProfile.inventory);
-    }
-
-    public void checkForSlotChanges() {
-        this.usedSlots = new boolean[82];
-        for (Slot slot : this.bigProfile.myMoonSlots.values()) {
-            if (slot.id.type == SlotType.USER_CREATED_STORED_LOCAL) {
-                if (!(slot.id.ID > 81) && !(slot.id.ID < 0))
-                    this.usedSlots[(int) slot.id.ID] = true;
-            }
-        }
     }
 
     public FileEntry find(SHA1 hash) {
@@ -366,16 +214,6 @@ public class BigSave extends FileData {
         }
 
         this.addNode(entry);
-    }
-    
-    public int getNextUID() {
-        int UID = 1;
-        for (InventoryItem item : this.bigProfile.inventory) {
-            int fixedUID = item.UID & ~0x80000000;
-            if (fixedUID > UID)
-                UID = fixedUID;
-        }
-        return (UID + 1) | 0x80000000;
     }
 
     public boolean edit(FileEntry entry, byte[] data) {
@@ -612,67 +450,11 @@ public class BigSave extends FileData {
         return null;
     }
 
-    public void setSaveKeyRootHash(SHA1 hash) {
-        int start = this.saveKey.length - 0x3C;
-        byte[] hashBuffer = hash.getHash();
-        for (int i = start; i < start + 0x14; ++i)
-            this.saveKey[i] = hashBuffer[i - start];
-    }
-
-    @Override public boolean save(String path) {
-        this.serializeProfile();
-
-        FileEntry[] entries = new FileEntry[this.entries.size() + 1];
-        for (int i = 0; i < this.entries.size(); ++i)
-            entries[i] = this.entries.get(i);
-        entries[entries.length - 1] = this.rootProfileEntry;
-        
-        Arrays.sort(entries, (e1, e2) -> e1.hash.toString().compareTo(e2.hash.toString()));
-        
-        int size = this.saveKey.length + 0x34 + this.rootProfileEntry.data.length + 0xFFFF;
-        for (FileEntry entry : entries)
-            size += (0x1C) + entry.size;
-
-        MemoryOutputStream output = new MemoryOutputStream(size);
-
-        for (FileEntry entry : entries)
-            output.bytes(entry.data);
-
-        if (output.offset % 4 != 0)
-            output.pad(4 - (output.offset % 4));
-        output.bytes(this.saveKey);
-
-        int offset = 0;
-        for (FileEntry entry : entries) {
-            output.sha1(entry.hash);
-            output.i32(offset);
-            output.i32(entry.size);
-            offset += entry.size;
-        }
-
-        // "Fragment" count, how many other
-        // parts of this archive were serialized,
-        // this isn't fully supported, so we're just writing 0.
-        if (this.isFAR5)
-            output.pad(0x4);
-        
-        // Hashinate, used as a signature for
-        // profile backups, not necessary here.
-        output.pad(0x14);
-
-        output.i32(entries.length);
-        if (this.isFAR5)
-            output.str("FAR5");
-        else
-            output.str("FAR4");
-
-        output.shrink();
-
-        FileIO.write(output.buffer, path);
-
-        if (path.equals(this.path))
-            this.shouldSave = false;
-        
+    @Override public boolean save(File file) {
+        this.archive.getKey().setRootHash(this.archive.add(Resource.compress(this.profile, this.archive.getGameRevision(), CompressionFlags.USE_NO_COMPRESSION)));
+        this.archive.save(file.getAbsolutePath());
+        if (file == this.getFile())
+            this.hasChanges = false;
         return true;
     }
 }

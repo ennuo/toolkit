@@ -21,12 +21,12 @@ public class ArchiveManager extends javax.swing.JDialog {
         this.setResizable(false);
         this.initComponents();
         
-        for (Fart archive : ResourceSystem.archives)
+        for (Fart archive : ResourceSystem.getArchives())
             archiveModel.addElement(archive.getFile().getAbsolutePath());
         this.archivesList.setModel(this.archiveModel);
         
         this.saveChangesButton.setEnabled(false);
-        if (ResourceSystem.archives.size() == 0)
+        if (ResourceSystem.getArchives().size() == 0)
             this.removeButton.setEnabled(false);
         
         this.addButton.addActionListener(e -> {
@@ -45,7 +45,7 @@ public class ArchiveManager extends javax.swing.JDialog {
                 return;
             }
             
-            ResourceSystem.archives.add(archive);
+            ResourceSystem.getArchives().add(archive);
             this.archiveModel.addElement(file.getAbsolutePath());
             
             this.removeButton.setEnabled(true);
@@ -57,7 +57,7 @@ public class ArchiveManager extends javax.swing.JDialog {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
             
-            Fart archive = ResourceSystem.archives.get(index);
+            Fart archive = ResourceSystem.getArchives().get(index);
             
             if (archive.shouldSave()) {
                 int result = JOptionPane.showConfirmDialog(null, "Do you want to save changes before closing this archive?", "Pending changes", JOptionPane.YES_NO_OPTION);
@@ -72,7 +72,7 @@ public class ArchiveManager extends javax.swing.JDialog {
                     this.archivesList.setSelectedIndex(index - 1);   
             }
             
-            ResourceSystem.archives.remove(index);
+            ResourceSystem.getArchives().remove(index);
             this.archiveModel.removeElementAt(index);
             
             if (this.archiveModel.size() == 0)
@@ -85,7 +85,7 @@ public class ArchiveManager extends javax.swing.JDialog {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
             
-            Fart archive = ResourceSystem.archives.get(index);
+            Fart archive = ResourceSystem.getArchives().get(index);
             
             if (archive.shouldSave())
                 archive.save();
@@ -96,7 +96,7 @@ public class ArchiveManager extends javax.swing.JDialog {
         this.archivesList.addListSelectionListener(e -> {
             int index = this.archivesList.getSelectedIndex();
             if (index == -1) return;
-            Fart archive = ResourceSystem.archives.get(index);
+            Fart archive = ResourceSystem.getArchives().get(index);
             this.saveChangesButton.setEnabled(archive.shouldSave());
         });
         

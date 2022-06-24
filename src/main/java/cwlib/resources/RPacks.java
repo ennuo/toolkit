@@ -1,6 +1,7 @@
 package cwlib.resources;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import cwlib.enums.ResourceType;
@@ -21,6 +22,12 @@ public class RPacks implements Compressable, Serializable, Iterable<Pack> {
     public static final int BASE_ALLOCATION_SIZE = 0x4;
 
     private ArrayList<Pack> packs = new ArrayList<>();
+
+    public RPacks() {}
+    public RPacks(ArrayList<Pack> packs) { this.packs = packs; }
+    public RPacks(Pack[] packs) {
+        this.packs = new ArrayList<Pack>(Arrays.asList(packs));
+    }
 
     @SuppressWarnings("unchecked")
     @Override public RPacks serialize(Serializer serializer, Serializable structure) {
@@ -53,4 +60,6 @@ public class RPacks implements Compressable, Serializable, Iterable<Pack> {
     }
 
     @Override public Iterator<Pack> iterator() { return this.packs.iterator(); }
+
+    public ArrayList<Pack> getPacks() { return this.packs; }
 }

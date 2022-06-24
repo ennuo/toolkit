@@ -1,144 +1,128 @@
 package cwlib.resources;
 
-import cwlib.types.Resource;
-import cwlib.enums.ResourceType;
-import cwlib.types.data.Revision;
-import cwlib.structs.inventory.InventoryItemDetails;
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
-import cwlib.io.Serializable;
-import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.Bytes;
-import cwlib.util.Matcher;
-import toolkit.utilities.ResourceSystem;
-
 import java.util.HashSet;
 
-public class RPlan implements Serializable {
-    public boolean isUsedForStreaming;
-    public int revision;
-    public byte[] thingData;
-    public InventoryItemDetails details = new InventoryItemDetails();
-    
+import cwlib.enums.Branch;
+import cwlib.enums.CompressionFlags;
+import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
+import cwlib.enums.SerializationType;
+import cwlib.io.Compressable;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
+import cwlib.structs.inventory.InventoryItemDetails;
+import cwlib.structs.things.Thing;
+import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
+
+/**
+ * Represents a "plan" to create an item,
+ * often used for inventory items.
+ */
+public class RPlan implements Compressable, Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
+
     /**
-     * Cache of dependencies in thing data, so we don't have
-     * to parse it.
+     * Cache of dependencies in thing data
      */
-    private HashSet<ResourceDescriptor> dependencyCache;
-    
-    public RPlan(){}
-    public RPlan(Resource resource) {
-        this.serialize(new Serializer(resource), this);
-    }
+    private HashSet<ResourceDescriptor> dependencyCache = new HashSet<>();
 
-    public RPlan serialize(Serializer serializer, Serializable structure) {
+    public boolean isUsedForStreaming = false;
+    public Revision revision = new Revision(Revision.LBP1_FINAL_REVISION, 0x4c44, 0x17);
+    public byte[] thingData;
+    public InventoryItemDetails inventoryData = new InventoryItemDetails();
+
+    /**
+     * Compression flags used during the loading of the thing data.
+     */
+    private byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+
+    @SuppressWarnings("unchecked")
+    @Override public RPlan serialize(Serializer serializer, Serializable structure) {
         RPlan plan = (structure == null) ? new RPlan() : (RPlan) structure;
+
+        Revision revision = serializer.getRevision();
+        int head = revision.getVersion();
         
-        // We only want to maintain thing data dependencies in this stream
-        if (!serializer.isWriting) {
-            this.dependencyCache = new HashSet<>(serializer.dependencies);
-            serializer.dependencies.clear();
+        // Keep track of dependencies in thing data
+        if (!serializer.isWriting()) {
+            for (ResourceDescriptor descriptor : serializer.getDependencies())
+                plan.dependencyCache.add(descriptor);
+            serializer.clearDependencies();
         }
-        
-        if (serializer.revision.isAfterLBP3Revision(0xcb))
+
+        /* We'll use this when we get the thing data. */
+        if (!serializer.isWriting()) {
+            plan.compressionFlags = serializer.getCompressionFlags();
+            plan.revision = revision;
+        }
+
+        if (revision.getSubVersion() >= Revisions.STREAMING_PLAN)
             plan.isUsedForStreaming = serializer.bool(plan.isUsedForStreaming);
-        plan.revision = serializer.i32(plan.revision);
-        plan.thingData = serializer.i8a(plan.thingData);
-        
-        // NOTE(Aidan): This serializer isn't fully finished because of how many revisions
-        // there are, so wrapping it in an try/catch block just in case.
-        
-        try {
-            if (serializer.revision.head >= 0x197 && !plan.isUsedForStreaming) {
-                plan.details = serializer.struct(plan.details, InventoryItemDetails.class);
 
-                if (serializer.revision.isAfterLeerdammerRevision(7) || serializer.revision.head > 0x2ba) {
-                    plan.details.location = serializer.u32(plan.details.location);
-                    plan.details.category = serializer.u32(plan.details.category);
-                } else {
-                    plan.details.locationTag = serializer.str8(plan.details.locationTag);
-                    plan.details.categoryTag = serializer.str8(plan.details.categoryTag);
-                    if (!serializer.isWriting) {
-                        plan.details.location 
-                                = RTranslationTable.makeLamsKeyID(plan.details.locationTag);
-                        plan.details.category 
-                                = RTranslationTable.makeLamsKeyID(plan.details.categoryTag);
-                    }
-                }
-
-                if (ResourceSystem.LAMS != null && !serializer.isWriting) {
-                    if (plan.details.location != 0)
-                        plan.details.translatedLocation 
-                                = ResourceSystem.LAMS.translate(plan.details.location);
-                    if (plan.details.category != 0)
-                        plan.details.translatedCategory = 
-                                ResourceSystem.LAMS.translate(plan.details.category);
-                }
-            }
-        } catch (Exception e) {
-            plan.details = null;
-            System.err.println("There was an error processing inventory details.");
-        }
+        /* Ignore the plan revision, use the resource revision. */
+        if (serializer.isWriting())
+            serializer.i32(serializer.getRevision().getHead());
+        else 
+            serializer.getInput().i32();
         
-        if (!serializer.isWriting) {
-            // Remove dependencies of inventory item details,
-            // since dependency cache should only be dependencies
-            // in the thing data.
-            for (ResourceDescriptor descriptor : serializer.dependencies) {
-                ResourceType type = descriptor.type;
-                // These are the only types that appear in inventory item details.
-                if (type.equals(ResourceType.TEXTURE) || type.equals(ResourceType.FILENAME) || type.equals(ResourceType.PAINTING)) {
-                    byte[] pattern = null;
-                    // This is GUID only
-                    if (type.equals(ResourceType.FILENAME))
-                        pattern = Bytes.createGUID(descriptor.GUID, serializer.compressionFlags);
-                    else
-                        pattern = Bytes.getResourceReference(descriptor, serializer.revision, serializer.compressionFlags);
-                    boolean isInThingData = Matcher.indexOf(plan.thingData, pattern) != -1;
-                    if (!isInThingData)
-                        plan.dependencyCache.remove(descriptor);
+        plan.thingData = serializer.bytearray(plan.thingData);
+        if (head >= Revisions.PLAN_DETAILS && !plan.isUsedForStreaming) {
+            plan.inventoryData = serializer.struct(plan.inventoryData, InventoryItemDetails.class);
+            if (revision.has(Branch.LEERDAMMER, Revisions.LAMS_KEYS) || head >= Revisions.LAMS_KEYS) {
+                plan.inventoryData.location = serializer.u32(plan.inventoryData.location);
+                plan.inventoryData.category = serializer.u32(plan.inventoryData.category);
+            } else {
+                plan.inventoryData.locationTag = serializer.str(plan.inventoryData.locationTag);
+                plan.inventoryData.categoryTag = serializer.str(plan.inventoryData.categoryTag);
+                if (!serializer.isWriting()) {
+                    plan.inventoryData.location = RTranslationTable.makeLamsKeyID(plan.inventoryData.locationTag);
+                    plan.inventoryData.category = RTranslationTable.makeLamsKeyID(plan.inventoryData.categoryTag);
                 }
             }
         }
-        
+
+        // Remove dependencies that'll be re-added after writing
+        if (!serializer.isWriting()) {
+            for (ResourceDescriptor descriptor : serializer.getDependencies())
+                plan.dependencyCache.remove(descriptor);
+            serializer.clearDependencies();
+        }
+
         return plan;
     }
-    
-    public static void removePlanDescriptors(Resource resource, long GUID) {
-        if (resource.type != ResourceType.PLAN) return;
-        RPlan plan = new RPlan(resource);
-        plan.removePlanDescriptors(GUID, resource.revision, resource.compressionFlags);
-        resource.handle.setData(plan.build(resource.revision, resource.compressionFlags, false));
+
+    @Override public int getAllocatedSize() { 
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.thingData != null)
+            size += this.thingData.length;
+        if (this.inventoryData != null)
+            size += this.inventoryData.getAllocatedSize();
+        return size;
     }
-    
-    public void removePlanDescriptors(long GUID, Revision revision, byte compressionFlags) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(GUID, ResourceType.PLAN);
-        
-        MemoryInputStream thingData = new MemoryInputStream(this.thingData);
-        
-        byte[] descriptorBuffer = Bytes.getResourceReference(descriptor, revision, compressionFlags);
-        byte[] guidBuffer = Bytes.getIntegerBuffer(GUID, compressionFlags);
-        
-        Bytes.replace(thingData, descriptorBuffer, new byte[] { 00 });
-        Bytes.replace(thingData, guidBuffer, new byte[] { 00 });
-        
-        this.thingData = thingData.data;
+
+    @Override public SerializationData build(Revision revision, byte compressionFlags) {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+        serializer.struct(this, RPlan.class);
+        for (ResourceDescriptor descriptor : this.dependencyCache)
+            serializer.addDependency(descriptor);
+        return new SerializationData(
+            serializer.getBuffer(), 
+            revision, 
+            compressionFlags,
+            ResourceType.PLAN,
+            SerializationType.BINARY, 
+            serializer.getDependencies()
+        );
     }
-    
-    public byte[] build(Revision revision, byte compressionFlags, boolean shouldCompress) {
-        int dataSize = InventoryItemDetails.MAX_SIZE + this.thingData.length + 0x8;
-        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
-        this.serialize(serializer, this);
-        
-        // Re-add dependencies from thing data.
-        for (ResourceDescriptor descriptor : this.dependencyCache) {
-            serializer.dependencies.add(descriptor);
-            serializer.output.dependencies.add(descriptor);
-        }
-        
-        if (shouldCompress)
-            return Resource.compressToResource(serializer.output, ResourceType.PLAN);
-        return serializer.getBuffer();
+
+    /**
+     * Parses the thing data buffer.
+     * @return Things
+     */
+    public Thing[] getThings() {
+        Serializer serializer = new Serializer(this.thingData, this.revision, this.compressionFlags);
+        return serializer.array(null, Thing.class, true);
     }
 }

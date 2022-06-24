@@ -34,8 +34,6 @@ public class PhotoMetadata implements Serializable {
         return metadata;
     }
 
-    public PhotoUser[] getUsers() { return this.users; }
-
     @Override public int getAllocatedSize() { 
         int size = BASE_ALLOCATION_SIZE;
         if (this.levelName != null)

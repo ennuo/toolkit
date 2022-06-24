@@ -1,17 +1,12 @@
 package cwlib.types.data;
 
+import cwlib.enums.Branch;
+
 /**
  * Utilities for comparing game revisions.
  */
 public final class Revision {
     public static final int LBP1_FINAL_REVISION = 0x272;
-    public static final int LBPV_REVISION = 0x3e2;
-
-    public static final int LEERDAMMER_BRANCH_ID = 0x4c44;
-    public static final int DOUBLE11_BRANCH_ID = 0x4431;
-
-    public static final int DOUBLE11_BRANCH_REVISION = 0x87;
-    public static final int LEERDAMMER_BRANCH_REVISION = 0x17;
 
     private final int head;
     private final short branchID;
@@ -50,74 +45,34 @@ public final class Revision {
         this.branchRevision = (short) branchRevision;
     }
 
-    /**
-     * Checks if the current revision is from LBP1.
-     * @return Whether or not game's revision is LBP1
-     */
     public boolean isLBP1() { return this.head <= Revision.LBP1_FINAL_REVISION; }
-
-    /**
-     * Checks if the current revision is from LBP1 with Branch ID of 0x4c44.
-     * @return Whether or not the game's revision is branched LBP1
-     */
-    public boolean isLeerdammer() { 
-        return this.branchID == Revision.LEERDAMMER_BRANCH_ID && this.isLBP1(); 
-    }
-
-    /**
-     * Checks if the current revision is from LBP2.
-     * @return Whether or not the game's revision is LBP2
-     */
     public boolean isLBP2() { 
         if (this.isLBP1() || this.isLBP3() || this.isVita()) return false;
         return true;
     }
-
-    /**
-     * Checks if the current revision is from LBP Vita.
-     * @return Whether or not the game's revision is LBP Vita.
-     */
-    public boolean isVita() { 
-        return this.branchID == Revision.DOUBLE11_BRANCH_ID && this.head == Revision.LBPV_REVISION; 
-    }
-
-    /**
-     * Checks if the current revision is from LBP3.
-     * @return Whether or not the game's revision is LBP3.
-     */
     public boolean isLBP3() { return this.head >> 0x10 != 0; }
-    
-    /**
-     * Checks if the revision is after current.
-     * @param revision Head revision to compare
-     * @return Whether or not specified revision is after current
-     */
-    public boolean isAfterLBP3Revision(int revision) {
-        if (!this.isLBP3()) return false;
-        if ((this.head >> 0x10) > revision) return true;
-        return false;
+
+    public boolean isLeerdammer() { return this.is(Branch.LEERDAMMER); }
+    public boolean isVita() { return this.is(Branch.DOUBLE11); }
+    public boolean isToolkit() { return this.is(Branch.MIZUKI); }
+
+    public boolean is(Branch branch) {
+        return this.branchID == branch.getID() && this.head == branch.getHead();
     }
-    
-    /**
-     * Checks if the vita revision is after current.
-     * @param revision Vita branch revision to compare
-     * @return Whether or not specified vita revision is after current
-     */
-    public boolean isAfterVitaRevision(int revision) {
-        if (!this.isVita()) return false;
-        if (this.branchRevision > revision) return true;
-        return false;
+
+    public boolean has(Branch branch, int revision) {
+        if (!this.is(branch)) return false;
+        return this.branchRevision >= revision;
     }
-    
-    /**
-     * Checks if the branch revision is after current.
-     * @param branchRevision Branch revision to compare
-     * @return Whether or not specified branch revision is after current
-     */
-    public boolean isAfterLeerdamerRevision(int branchRevision) {
-        if (!this.isLeerdammer()) return false;
-        if (this.branchRevision > branchRevision) return true;
-        return false;
+
+    public boolean after(Branch branch, int revision) {
+        if (!this.is(branch)) return false;
+        return this.branchRevision > revision;
+    }
+
+    public boolean before(Branch branch, int revision) {
+        if (!this.is(branch)) return false;
+        return this.branchRevision < revision;
     }
 
     /**

@@ -25,13 +25,14 @@ import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
 import toolkit.utilities.ResourceSystem;
 import cwlib.util.Bytes;
+import cwlib.enums.BoxType;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
 import cwlib.resources.RAnimation;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
-import cwlib.structs.animation.AnimationBone;
+import cwlib.structs.animation.AnimBone;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.structs.mesh.Bone;
@@ -62,14 +63,15 @@ public class MeshIO {
     public static class OBJ {
         public static void export(String path, RMesh mesh) { export(path, mesh, 0); }
         public static void export(String path, RMesh mesh, int channel) {
-            StringBuilder builder = new StringBuilder((mesh.numVerts * 82) + (mesh.numVerts * 42) + (mesh.numIndices * 40));
+            int numVerts = mesh.getNumVerts();
+            StringBuilder builder = new StringBuilder((numVerts * 82) + (numVerts * 42) + (mesh.getNumIndices() * 40));
             for (Vector3f vertex : mesh.getVertices())
                 builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
             for (Vector3f vertex : mesh.getNormals())
                 builder.append("vn " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
             for (Vector2f vertex : mesh.getUVs(channel))
                 builder.append("vt " + vertex.x + " " + (1.0f - vertex.y) + '\n');
-            int[] indices = mesh.getIndices();
+            int[] indices = mesh.getTriangles();
             // NOTE(Aidan): Wavefront OBJ has 1-based indices.
             for (int i = 0; i < indices.length; ++i)
                 indices[i] += 1;
@@ -113,7 +115,7 @@ public class MeshIO {
 
                 glb.gltf.addNodes(root);
 
-                for (AnimationBone bone : animation.bones) {
+                for (AnimBone bone : animation.bones) {
                     Node child = new Node();
                     child.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
                     child.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
@@ -135,7 +137,7 @@ public class MeshIO {
                 byte[] dataBuffer = glb.getBufferFromAnimation(animation);
                 glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
                 glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
-                for (AnimationBone bone : animation.bones) {
+                for (AnimBone bone : animation.bones) {
                     System.out.println(bone.animHash);
                     System.out.println(mesh.getBoneName(bone.animHash));
                     Node node = glb.getNode(mesh.getBoneName(bone.animHash));
@@ -347,11 +349,11 @@ public class MeshIO {
             cwlib.structs.mesh.Primitive[][] subMeshes = mesh.getSubmeshes();
             for (int m = 0; m < subMeshes.length; ++m) {
                 Mesh glMesh = new Mesh();
-                if (mesh.morphCount != 0) {
+                if (mesh.getMorphCount() != 0) {
                     HashMap<String, Object> extras = new HashMap<String, Object>();
-                    String[] morphs = new String[mesh.morphCount];
+                    String[] morphs = new String[mesh.getMorphCount()];
                     for (int i = 0; i < morphs.length; ++i)
-                        morphs[i] = mesh.morphNames[i];
+                        morphs[i] = mesh.getMorphNames()[i];
                     extras.put("targetNames", morphs);
                     glMesh.setExtras(extras);
                 }
@@ -364,8 +366,8 @@ public class MeshIO {
                                     "VERTICES", 
                                     5126, 
                                     "VEC3", 
-                                    primitive.minVert * 0xC, 
-                                    primitive.maxVert - primitive.minVert + 1)
+                                    primitive.getMinVert() * 0xC, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1)
                     );
 
                     glPrimitive.addAttributes("NORMAL", 
@@ -373,37 +375,37 @@ public class MeshIO {
                                     "NORMAL", 
                                     5126, 
                                     "VEC3", 
-                                    primitive.minVert * 0xC, 
-                                    primitive.maxVert - primitive.minVert + 1)
+                                    primitive.getMinVert() * 0xC, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1)
                     );
 
-                    for (int j = 0; j < mesh.attributeCount; ++j) {
+                    for (int j = 0; j < mesh.getAttributeCount(); ++j) {
                         glPrimitive.addAttributes("TEXCOORD_" + j, 
                                 glb.createAccessor(
                                         "TEXCOORD_" + j, 
                                         5126, 
                                         "VEC2", 
-                                        primitive.minVert * 0x8, 
-                                        primitive.maxVert - primitive.minVert + 1)
+                                        primitive.getMinVert() * 0x8, 
+                                        primitive.getMaxVert() - primitive.getMinVert() + 1)
                         );
                     }
 
-                    if (mesh.morphCount != 0) {
-                        for (int j = 0; j < mesh.morphCount; ++j) {
+                    if (mesh.getMorphCount() != 0) {
+                        for (int j = 0; j < mesh.getMorphCount(); ++j) {
                             HashMap<String, Integer> target = new HashMap<String, Integer>();
                             target.put("POSITION", glb.createAccessor(
                                     "MORPH_" + j,
                                     5126,
                                     "VEC3",
-                                    primitive.minVert * 0xC, 
-                                    primitive.maxVert - primitive.minVert + 1)
+                                    primitive.getMinVert() * 0xC, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1)
                             );
                             target.put("NORMAL", glb.createAccessor(
                                     "MORPH_NORMAL_" + j,
                                     5126,
                                     "VEC3",
-                                    primitive.minVert * 0xC, 
-                                    primitive.maxVert - primitive.minVert + 1)
+                                    primitive.getMinVert() * 0xC, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1)
                             );
                             glPrimitive.addTargets(target);
                         }
@@ -414,8 +416,8 @@ public class MeshIO {
                                     "JOINTS", 
                                     5121, 
                                     "VEC4", 
-                                    primitive.minVert * 0x4, 
-                                    primitive.maxVert - primitive.minVert + 1
+                                    primitive.getMinVert() * 0x4, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1
                             )
                     );
 
@@ -424,8 +426,8 @@ public class MeshIO {
                                     "WEIGHTS", 
                                     5126, 
                                     "VEC4", 
-                                    primitive.minVert * 0x10, 
-                                    primitive.maxVert - primitive.minVert + 1
+                                    primitive.getMinVert() * 0x10, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1
                             )
                     );
 
@@ -439,8 +441,8 @@ public class MeshIO {
                     );
 
                     String materialName = "DIFFUSE";
-                    if (primitive.material != null) {
-                        FileEntry entry = ResourceSystem.findEntry(primitive.material);
+                    if (primitive.getMaterial() != null) {
+                        FileEntry entry = ResourceSystem.findEntry(primitive.getMaterial());
                         if (entry != null) {
                             materialName = Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "");
                             try {
@@ -453,7 +455,7 @@ public class MeshIO {
                             }
                         }
                         else  {
-                            materialName = primitive.material.toString();
+                            materialName = primitive.getMaterial().toString();
                             glPrimitive.setMaterial(glb.createMaterial(materialName));
                         }
                     }
@@ -467,17 +469,17 @@ public class MeshIO {
             }
             
             Node root = new Node();
-            root.setName(mesh.name);
+            root.setName("mesh");
             
             glb.createSkeleton(mesh);
             Skin skin = new Skin();
-            for (Bone bone : mesh.bones) {
-                int index = glb.getNodeIndex(bone.name);
+            for (Bone bone : mesh.getBones()) {
+                int index = glb.getNodeIndex(bone.getName());
                 skin.addJoints(index);
-                if (bone.parent == -1 || mesh.bones[bone.parent] == bone)
+                if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
                     root.addChildren(index);
             }
-            skin.setInverseBindMatrices(glb.createAccessor("MATRIX", 5126, "MAT4", 0, mesh.bones.length));
+            skin.setInverseBindMatrices(glb.createAccessor("MATRIX", 5126, "MAT4", 0, mesh.getBones().length));
             glb.gltf.addSkins(skin);
             
             for (int i = 0; i < subMeshes.length; ++i) {
@@ -519,9 +521,9 @@ public class MeshIO {
         }
         
         private void createSkeleton(RMesh mesh) {
-            if (mesh.bones.length == 0) return;
-            for (Bone bone : mesh.bones) {
-                if (bone.parent == -1 || mesh.bones[bone.parent] == bone)
+            if (mesh.getBones().length == 0) return;
+            for (Bone bone : mesh.getBones()) {
+                if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
                     createChildren(mesh, bone);
             }
         }
@@ -536,17 +538,17 @@ public class MeshIO {
         
         private int createChildren(RMesh mesh, Bone bone) {
             Matrix4f transform;
-            if (bone.parent == -1 || mesh.bones[bone.parent] == bone)
+            if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
                 transform = getMatrix(bone.skinPoseMatrix);
             else {
-                transform = getMatrix(mesh.bones[bone.parent].skinPoseMatrix)
+                transform = getMatrix(mesh.getBones()[bone.parent].skinPoseMatrix)
                         .invert()
                         .mul(getMatrix(bone.skinPoseMatrix));
             }
             
-            int index = createNode(bone.name, transform);
+            int index = createNode(bone.getName(), transform);
             Node root = this.gltf.getNodes().get(index);
-            Bone[] children = mesh.getBoneChildren(bone);
+            Bone[] children = bone.getChildren(mesh.getBones());
             if (children.length == 0) return index;
             for (Bone child : children)
                 root.addChildren(createChildren(
@@ -633,11 +635,12 @@ public class MeshIO {
                 REFLECTION: 6
                 */
                 
-                if (box.type == MaterialBox.BoxType.TEXTURE_SAMPLE) {
-                    float[] textureScale = new float[] { Float.intBitsToFloat((int) box.params[0]), Float.intBitsToFloat((int) box.params[1]) };
-                    float[] textureOffset = new float[] { Float.intBitsToFloat((int) box.params[2]), Float.intBitsToFloat((int) box.params[3]) };
-                    int channel = (int) box.params[4];
-                    int textureIndex = (int) box.params[5];
+                if (box.type == BoxType.TEXTURE_SAMPLE) {
+                    int[] params = box.getParameters();
+                    float[] textureScale = new float[] { Float.intBitsToFloat((int) params[0]), Float.intBitsToFloat((int) params[1]) };
+                    float[] textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[3]) };
+                    int channel = (int) params[4];
+                    int textureIndex = (int) params[5];
                     FileEntry entry = ResourceSystem.findEntry(gmat.textures[textureIndex]);
                     if (entry == null) continue;
                     byte[] texture = gmat.extractTexture(textureIndex);
@@ -725,10 +728,11 @@ public class MeshIO {
                             continue;
 
                     }
-                } else if (box.type == MaterialBox.BoxType.COLOR) {
+                } else if (box.type == BoxType.COLOR) {
                     MaterialWire wire = gmat.findWireFrom(i);
                     if (wire.boxTo == outputBox) {
-                        float[] color = new float[] { Float.intBitsToFloat((int) box.params[0]) / 255f, Float.intBitsToFloat((int) box.params[1]) / 255f, Float.intBitsToFloat((int) box.params[2]) / 255f, Float.intBitsToFloat((int) box.params[3]) / 255f};
+                        int[] params = box.getParameters();
+                        float[] color = new float[] { Float.intBitsToFloat((int) params[0]) / 255f, Float.intBitsToFloat((int) params[1]) / 255f, Float.intBitsToFloat((int) params[2]) / 255f, Float.intBitsToFloat((int) params[3]) / 255f};
                         if (wire.portTo == 0) {
                             if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
                                 HashMap<String, Object> map = (HashMap<String, Object>) material.getExtensions().get("KHR_materials_pbrSpecularGlossiness");  
@@ -826,7 +830,7 @@ public class MeshIO {
                 output.f32(step);
             createBufferView("TIME", 0, output.getOffset());
             for (int i = 0; i < animation.bones.length; ++i) {
-                AnimationBone bone = animation.bones[i];
+                AnimBone bone = animation.bones[i];
                 
                 if (bone.positions[0] != null) {
                     int posStart = output.getOffset();
@@ -919,7 +923,7 @@ public class MeshIO {
         }
         
         private byte[] getBufferFromMesh(RMesh mesh) {
-            MemoryOutputStream output = new MemoryOutputStream( (mesh.numVerts * 0x40) + ((mesh.numVerts - 1) * 8) + (mesh.attributeCount * mesh.numVerts * 8) + (mesh.morphCount * mesh.numVerts * 0x18) + (mesh.bones.length * 0x40));
+            MemoryOutputStream output = new MemoryOutputStream( (mesh.numVerts * 0x40) + ((mesh.numVerts - 1) * 8) + (mesh.attributeCount * mesh.numVerts * 8) + (mesh.morphCount * mesh.numVerts * 0x18) + (mesh.getBones().length * 0x40));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices()) {
@@ -935,11 +939,11 @@ public class MeshIO {
                     int triangleStart = output.getOffset();
                     cwlib.structs.mesh.Primitive primitive
                             = subMeshes[i][j];
-                    int[] triangles = mesh.getIndices(primitive);
-                    primitive.minVert = getMin(triangles);
-                    primitive.maxVert = getMax(triangles);
+                    int[] triangles = mesh.getTriangles(primitive);
+                    //primitive.getMinVert() = getMin(triangles);
+                    //primitive.getMaxVert() = getMax(triangles);
                     for (int triangle : triangles)
-                        output.u16((short) (triangle - primitive.minVert));
+                        output.u16((short) (triangle - primitive.getMinVert()));
                     createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.getOffset() - triangleStart);
                 }
             }
@@ -952,7 +956,7 @@ public class MeshIO {
                 output.f32(normal.z);
             }
             createBufferView("NORMAL", normalStart, output.getOffset() - normalStart);
-            for (int i = 0; i < mesh.attributeCount; ++i) {
+            for (int i = 0; i < mesh.getAttributeCount(); ++i) {
                 int uvStart = output.getOffset();
                 for (Vector2f texCoord : mesh.getUVs(i)) {
                     output.f32(texCoord.x);
@@ -960,12 +964,12 @@ public class MeshIO {
                 }
                 createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.getOffset() - uvStart);
             }
-            if (mesh.morphCount != 0) {
+            if (mesh.getMorphCount() != 0) {
                 Morph[] morphs = mesh.getMorphs();
-                for (int i = 0; i < mesh.morphCount; ++i) {
+                for (int i = 0; i < mesh.getMorphCount(); ++i) {
                     int morphStart = output.getOffset();
                     Morph morph = morphs[i];
-                    for (Vector3f vertex : morph.vertices) {
+                    for (Vector3f vertex : morph.getOffsets()) {
                         output.f32(vertex.x);
                         output.f32(vertex.y);
                         output.f32(vertex.z);
@@ -973,11 +977,11 @@ public class MeshIO {
                     createBufferView("MORPH_" + String.valueOf(i), morphStart, output.getOffset() - morphStart);
                 }
                 
-                for (int i = 0; i < mesh.morphCount; ++i) {
+                for (int i = 0; i < mesh.getMorphCount(); ++i) {
                     int morphStart = output.getOffset();
                     Morph morph = morphs[i];
-                    for (int j = 0; j < mesh.numVerts; ++j) {
-                        Vector3f vertex = morph.normals[j];
+                    for (int j = 0; j < mesh.getNumVerts(); ++j) {
+                        Vector3f vertex = morph.getNormals()[j];
                         output.f32(vertex.x - normals[j].x);
                         output.f32(vertex.y - normals[j].y);
                         output.f32(vertex.z - normals[j].z);
@@ -988,10 +992,10 @@ public class MeshIO {
             }
 
             int matrixStart = output.getOffset();
-            for (int i = 0; i < mesh.bones.length; ++i)
+            for (int i = 0; i < mesh.getBones().length; ++i)
                 for (int x = 0; x < 4; ++x)
                     for (int y = 0; y < 4; ++y)
-                        output.f32(mesh.bones[i].invSkinPoseMatrix.get(x, y));
+                        output.f32(mesh.getBones()[i].invSkinPoseMatrix.get(x, y));
             createBufferView("MATRIX", matrixStart, output.getOffset() - matrixStart);
 
             int jointStart = output.getOffset();

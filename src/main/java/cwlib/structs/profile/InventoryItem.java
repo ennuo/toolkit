@@ -2,6 +2,7 @@ package cwlib.structs.profile;
 
 import cwlib.enums.InventoryItemFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -58,21 +59,21 @@ public class InventoryItem implements Serializable {
 
         item.plan = serializer.resource(item.plan, ResourceType.PLAN, true);
 
-        if (serializer.getRevision().isAfterLBP3Revision(0x105))
+        if (serializer.getRevision().getSubVersion() >= Revisions.ITEM_GUID)
             item.guid = serializer.guid(item.guid);
         
         item.details = serializer.struct(item.details, InventoryItemDetails.class);
 
-        int head = serializer.getRevision().getVersion();
+        int version = serializer.getRevision().getVersion();
 
-        if (head > 0x234) {
+        if (version >= Revisions.ITEM_FLAGS) {
             item.UID = serializer.i32(item.UID, true);
-            if (head < 0x36c) {
+            if (version < Revisions.REMOVE_OLD_LBP1_FIELDS) {
                 item.tutorialLevel = serializer.i32(item.tutorialLevel, true);
                 item.tutorialVideo = serializer.i32(item.tutorialVideo, true);
             }
             item.flags = serializer.i32(item.flags, true);
-            if (head > 0x349)
+            if (version >= Revisions.USER_CATEGORIES)
                 item.userCategoryIndex = serializer.i32(item.userCategoryIndex, true); 
         } else throw new SerializationException("InventoryItem's below r565 are not supported!");
 

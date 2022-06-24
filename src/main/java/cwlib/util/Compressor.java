@@ -94,10 +94,14 @@ public final class Compressor {
     /**
      * Compresses a buffer into multiple zlib streams of size 0x8000.
      * @param data Data to compress
+     * @param isCompressed Additional check for compression, used in low resource revisions
      * @return Compressed zlib streams
      */
-    public static byte[] getCompressedStream(byte[] data) {
+    public static byte[] getCompressedStream(byte[] data, boolean isCompressed) {
         if (data == null) return new byte[] {};
+        if (!isCompressed)
+            return Bytes.combine(new byte[] { 0x00, 0x00, 0x00, 0x00 }, data);
+        
         byte[][] chunks = Bytes.split(data, 0x8000);
 
         short[] compressedSize = new short[chunks.length];

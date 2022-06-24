@@ -10,28 +10,28 @@ public class FileNode extends DefaultMutableTreeNode {
     /**
      * Associated file entry
      */
-    public FileEntry entry;
+    private final FileEntry entry;
 
     /**
      * Path of node in tree.
      */
-    public String path;
+    private String path;
 
     /**
      * Name of node.
      */
-    public String header;
+    private String name;
 
     /**
      * Whether or not the node is currently visible in the tree.
      */
-    public boolean isVisible = true;
+    private boolean visible = true;
 
-    public FileNode(Object userObject, String path, FileEntry entry) {
-        super(userObject);
+    public FileNode(String name, String path, FileEntry entry) {
+        super(name);
         this.entry = entry;
         this.path = path;
-        this.header = (String) userObject;
+        this.name = name;
     }
 
     public FileNode getChildAt(int index, boolean isFiltered) {
@@ -44,7 +44,7 @@ public class FileNode extends DefaultMutableTreeNode {
         Enumeration<TreeNode> e = this.children.elements();
         while (e.hasMoreElements()) {
             FileNode node = (FileNode) e.nextElement();
-            if (node.isVisible) visibleIndex++;
+            if (node.visible) visibleIndex++;
             realIndex++;
             if (visibleIndex == index)
                 return (FileNode) this.children.elementAt(realIndex);
@@ -59,7 +59,7 @@ public class FileNode extends DefaultMutableTreeNode {
         Enumeration<TreeNode> e = this.children.elements();
         while (e.hasMoreElements()) {
             FileNode node = (FileNode) e.nextElement();
-            if (node.isVisible && (!noFolders || (noFolders && node.entry != null)))
+            if (node.visible && (!noFolders || (noFolders && node.entry != null)))
                 count++;
         }
         return count;
@@ -69,4 +69,11 @@ public class FileNode extends DefaultMutableTreeNode {
         if (this.parent != null) 
             this.removeFromParent();
     }
+
+    public FileEntry getEntry() { return this.entry; }
+    public String getFilePath() { return this.path; }
+    public String getName() { return this.name; }
+    public boolean isVisible() { return this.visible; }
+
+    public void setVisible(boolean visible) { this.visible = visible; }
 }

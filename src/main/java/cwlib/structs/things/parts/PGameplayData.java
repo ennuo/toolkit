@@ -1,23 +1,46 @@
 package cwlib.structs.things.parts;
 
 import cwlib.structs.things.EggLink;
+import cwlib.types.data.Revision;
 import cwlib.structs.slot.SlotID;
+import cwlib.enums.GameplayPartType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class PGameplayData implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x60;
+
+    public GameplayPartType gameplayType = GameplayPartType.UNDEFINED;
     public int fluffCost;
-    public SlotID keyLink;
     public EggLink eggLink;
-    
-    public PGameplayData serialize(Serializer serializer, Serializable structure) {
-        PGameplayData gameplayData = (structure == null) ? new PGameplayData() : (PGameplayData) structure;
+    public SlotID keyLink;
+    public int treasureType, treasureCount;
+
+    @SuppressWarnings("unchecked")
+    @Override public PGameplayData serialize(Serializer serializer, Serializable structure) {
+        PGameplayData data = (structure == null) ? new PGameplayData() : (PGameplayData) structure;
         
-        gameplayData.fluffCost = serializer.i32(gameplayData.fluffCost);
-        gameplayData.eggLink = serializer.reference(gameplayData.eggLink, EggLink.class);
-        gameplayData.keyLink = serializer.reference(gameplayData.keyLink, SlotID.class);
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
+
+        if (subVersion >= 0xef)
+            data.gameplayType = serializer.enum32(data.gameplayType);
         
-        return gameplayData;
+        data.fluffCost = serializer.i32d(data.fluffCost);
+        data.eggLink = serializer.reference(data.eggLink, EggLink.class);
+        data.keyLink = serializer.reference(data.keyLink, SlotID.class);
+
+        if (subVersion <= 0xed && version >= 0x2da)
+            data.gameplayType = serializer.enum32(data.gameplayType);
+
+        if (subVersion >= 0xf3) {
+            data.treasureType = serializer.i32(data.treasureType);
+            data.treasureCount = serializer.i32(data.treasureCount);
+        }
+
+        return data;
     }
-    
+
+    @Override public int getAllocatedSize() { return PGameplayData.BASE_ALLOCATION_SIZE; }
 }

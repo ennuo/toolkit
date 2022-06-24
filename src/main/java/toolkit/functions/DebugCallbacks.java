@@ -1,47 +1,44 @@
 package toolkit.functions;
 
+import cwlib.enums.DatabaseType;
 import cwlib.types.Resource;
 import cwlib.util.FileIO;
-import cwlib.types.FileDB;
+import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
-import toolkit.windows.Toolkit;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DebugCallbacks {
     public static void CollectDependencies(String extension) {
-        if (ResourceSystem.currentWorkspace != Globals.ResourceSystem.MAP) {
+        if (ResourceSystem.getDatabaseType() != DatabaseType.FILE_DATABASE) {
             System.err.println("Collections can only be used on RFileDB.");
             return;
         }
         
-        FileDB database = (FileDB) Toolkit.instance.getCurrentDB();
-        StringBuilder builder = new StringBuilder(database.entries.size() * 1024);
-        for (FileEntry entry : database.entries) {
-            if (entry.path.toLowerCase().endsWith(extension)) {
-                byte[] data = ResourceSystem.extractFile(entry.hash);
+        FileDB database = ResourceSystem.getSelectedDatabase();
+        StringBuilder builder = new StringBuilder(database.getEntryCount() * 1024);
+        for (FileEntry entry : database) {
+            if (entry.getPath().toLowerCase().endsWith(extension)) {
+                byte[] data = ResourceSystem.extract(entry);
                 if (data == null) continue;
                 try {
                     Resource resource = new Resource(data);
-                    if (resource.dependencies == null || (resource.dependencies != null && resource.dependencies.size() == 0)) 
-                        continue;
-                    builder.append(String.format("%s (g%d)\n", entry.path, entry.GUID));
-                    for (ResourceDescriptor descriptor : resource.dependencies) {
-                        String type = descriptor.type.name();
+                    ResourceDescriptor[] dependencies = resource.getDependencies();
+                    if (dependencies.length == 0)  continue;
+                    builder.append(String.format("%s (g%d)\n", entry.getPath(), entry.getKey()));
+                    for (ResourceDescriptor descriptor : resource.getDependencies()) {
+                        String type = descriptor.getType().name();
                         String name = String.format(" - (Unresolved Resource) [%s]", type);
-                        if (descriptor.GUID != -1) {
-                            name = String.format(" - (Unresolved Path) (g%d) [%s]\n", descriptor.GUID, type);
-                            FileEntry resolved = ResourceSystem.findEntry(descriptor.GUID);
+                        if (descriptor.isGUID()) {
+                            name = String.format(" - (Unresolved Path) (g%d) [%s]\n", descriptor.getGUID(), type);
+                            FileEntry resolved = ResourceSystem.get(descriptor.getGUID());
                             if (resolved != null)
-                                name = String.format(" - %s (g%d) [%s]\n", resolved.path, descriptor.GUID, type);
-                        } else if (descriptor.hash != null)
-                            name = String.format(" - %s [%s]", descriptor.hash.toString(), type);
+                                name = String.format(" - %s (g%d) [%s]\n", resolved.getPath(), descriptor.getGUID(), type);
+                        } else if (descriptor.isHash())
+                            name = String.format(" - %s [%s]", descriptor.getSHA1().toString(), type);
                         else continue;
                         builder.append(name);
                     }   

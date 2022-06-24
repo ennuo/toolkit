@@ -1,6 +1,7 @@
 package cwlib.structs.profile;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
@@ -22,7 +23,7 @@ public class PaintProperties implements Serializable {
         properties.angleOverride = serializer.bool(properties.angleOverride);
         properties.uiHidden = serializer.bool(properties.uiHidden);
         properties.lastAutoSave = serializer.resource(properties.lastAutoSave, ResourceType.PAINTING, true);
-        if (serializer.getRevision().getVersion() > 0x3df)
+        if (serializer.getRevision().getVersion() >= Revisions.PTG_USE_DEFAULT_BACKGROUND)
             properties.useDefaultBackground = serializer.bool(properties.useDefaultBackground);
         
         return properties;

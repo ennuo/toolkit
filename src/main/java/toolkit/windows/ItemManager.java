@@ -121,7 +121,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.items = new ArrayList<InventoryItemDetails>(this.inventory.size());
         for (InventoryItem item : this.inventory)
             this.items.add(item.details);
-        this.revision = new Resource(profile.rootProfileEntry.data).revision;
+        this.revision = new Resource(profile.rootProfileEntry.uncompressedData).revision;
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {
@@ -165,7 +165,7 @@ public class ItemManager extends javax.swing.JFrame {
        
             
         Arrays.asList(1046484, 412572, 1113767, 1022588, 1022587).stream().forEach(GUID -> {
-            byte[] data = ResourceSystem.extractFile(GUID);
+            byte[] data = ResourceSystem.extract(GUID);
             RPlan plan = new Serializer(new Resource(data).handle).struct(null, RPlan.class);
             this.revision = new Resource(data).revision;
             this.items.add(plan.details);
@@ -567,7 +567,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.resetIcon();
         if (details.icon != null) {
             this.iconTextEntry.setText(details.icon.toString());
-            byte[] data = ResourceSystem.extractFile(details.icon);
+            byte[] data = ResourceSystem.extract(details.icon);
             if (data != null) {
                 RTexture texture = new RTexture(data);
                 if (texture != null) {

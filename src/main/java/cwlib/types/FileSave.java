@@ -148,7 +148,7 @@ public class FileSave extends FileData {
                         entry.GUID = item.plan.GUID;
                     else if (item.plan.hash != null)
                         entry.hash = item.plan.hash;
-                    byte[] data = ResourceSystem.extractFile(item.plan);
+                    byte[] data = ResourceSystem.extract(item.plan);
                     if (data != null) {
                         entry.hash = SHA1.fromBuffer(data);
                         entry.size = data.length;

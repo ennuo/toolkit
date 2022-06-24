@@ -1,5 +1,6 @@
 package cwlib.structs.profile;
 
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -19,7 +20,7 @@ public class InventoryCollection implements Serializable {
         collection.inventoryPageInstances = serializer.array(collection.inventoryPageInstances, InventoryPage.class, true);
         collection.currentPageNumber = serializer.i32(collection.currentPageNumber);
 
-        if (serializer.getRevision().isAfterLBP3Revision(0x8))
+        if (serializer.getRevision().getSubVersion() >= Revisions.COLLECTION_POPPET_POWERUP)
             collection.poppetPowerupSelection = serializer.bool(collection.poppetPowerupSelection);
 
         return collection;

@@ -5,9 +5,9 @@ public enum SerializationType {
     BINARY("b"),
     TEXT("t"),
     ENCRYPTED_BINARY("e"),
-    TEXTURE(" "),
-    GXT_SIMPLE("s"),
-    GXT_EXTENDED("S");
+    COMPRESSED_TEXTURE(" "),
+    GTF_SWIZZLED("s"),
+    GXT_SWIZZLED("S");
     
     private final String value;
     

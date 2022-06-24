@@ -32,7 +32,7 @@ public final class CellGcmTexture {
         // and it's not really necessary for anything either, so I guess I'll finish
         // it at some other point
 
-        if (method == SerializationType.GXT_EXTENDED)
+        if (method == SerializationType.GXT_SWIZZLED)
             stream.seek(0x14);
 
         this.format = CellGcmEnumForGtf.fromValue(stream.u8());

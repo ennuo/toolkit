@@ -2,11 +2,12 @@ package toolkit.windows;
 
 import cwlib.types.Resource;
 import cwlib.enums.CompressionFlags;
-import cwlib.enums.Magic;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
+import cwlib.io.serializer.SerializationData;
 import cwlib.types.data.Revision;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -39,7 +40,7 @@ public class Compressinator extends javax.swing.JFrame {
         jFormattedTextField1 = new javax.swing.JFormattedTextField();
         headerPanel = new javax.swing.JPanel();
         headerCategoryLabel = new javax.swing.JLabel();
-        resourceCombo = new javax.swing.JComboBox(cwlib.enums.Magic.values());
+        resourceCombo = new javax.swing.JComboBox(cwlib.enums.ResourceType.values());
         magicLabel = new javax.swing.JLabel();
         revisionLabel = new javax.swing.JLabel();
         revision = new javax.swing.JTextField();
@@ -384,9 +385,9 @@ public class Compressinator extends javax.swing.JFrame {
         int headRevision = (int) Strings.getLong(this.revision.getText());
         int branchID = (int) Strings.getLong(this.branchID.getText());
         int branchRevision = (int) Strings.getLong(this.branchRevision.getText());
-        String header = ((Magic) this.resourceCombo.getSelectedItem()).getValue();
+        ResourceType type = ((ResourceType) this.resourceCombo.getSelectedItem());
         
-        byte compressionFlags = 0x0;
+        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         if (this.useCompressedIntegers.isSelected()) 
             compressionFlags |= CompressionFlags.USE_COMPRESSED_INTEGERS;
         if (this.useCompressMatrices.isSelected()) 
@@ -400,9 +401,16 @@ public class Compressinator extends javax.swing.JFrame {
         }
         
         Revision revision = new Revision(headRevision, branchID, branchRevision);
-        byte[] compressed = Resource.compressToResource(this.fileData, revision, compressionFlags, ResourceType.fromMagic(header), this.dependencies);
+        byte[] compressed = Resource.compress(new SerializationData(
+            this.fileData,
+            revision,
+            compressionFlags,
+            type,
+            SerializationType.BINARY,
+            this.dependencies.toArray(ResourceDescriptor[]::new)
+        ));
 
-        File output = FileChooser.openFile("output." + header, null, true);
+        File output = FileChooser.openFile("output" + type.getExtension(), null, true);
         if (output != null)
         FileIO.write(compressed, output.getAbsolutePath());
     }//GEN-LAST:event_compressActionPerformed

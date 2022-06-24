@@ -4,7 +4,10 @@ import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.util.FileIO;
 import cwlib.types.Resource;
+import cwlib.types.archives.Fart;
+import cwlib.types.archives.FileArchive;
 import cwlib.types.data.SHA1;
+import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.BigSave;
@@ -37,8 +40,8 @@ public class ArchiveCallbacks {
                 System.err.println(ex.getMessage());
                 return;
             }
-            ResourceSystem.archives.add(archive);
-        } else ResourceSystem.archives.get(index).process();
+            ResourceSystem.getArchives().add(archive);
+        } else ResourceSystem.getArchives().get(index).process();
         Toolkit.instance.updateWorkspace();
     }
     
@@ -91,14 +94,20 @@ public class ArchiveCallbacks {
         System.out.println(String.format("%d files failed integrity check and were removed.", count));
     }
     
-    public static void addFile() {                                        
-        if (ResourceSystem.archives.size() == 0 && ResourceSystem.currentWorkspace != Globals.ResourceSystem.PROFILE) return;
+    public static void addFile() {
+        if (!ResourceSystem.canExtract()) return;                           
 
         File[] files = FileChooser.openFiles(null);
         if (files == null) return;
+
+        FileData database = ResourceSystem.getSelectedDatabase();
         
-        FileArchive[] archives = null;
-        if (ResourceSystem.currentWorkspace != Globals.ResourceSystem.PROFILE) {
+        Fart[] archives = null;
+        if (database.getType().containsData()) {
+            
+        }
+
+        if (ResourceSystem.getDatabaseType() != Globals.ResourceSystem.PROFILE) {
             archives = Toolkit.instance.getSelectedArchives();
             if (archives == null) return;
         }
@@ -107,14 +116,14 @@ public class ArchiveCallbacks {
             byte[] data = FileIO.read(file.getAbsolutePath());
             if (data == null) return;
 
-            if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE)
+            if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE)
                 ((BigSave) Toolkit.instance.getCurrentDB()).add(data);
-            else ResourceSystem.addFile(data, archives);
+            else ResourceSystem.add(data, archives);
         }
 
         Toolkit.instance.updateWorkspace();
 
-        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
+        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
             JTree tree = Toolkit.instance.getCurrentTree();
             TreePath selectionPath = tree.getSelectionPath();
             ((FileModel) tree.getModel()).reload();
@@ -125,7 +134,7 @@ public class ArchiveCallbacks {
     }
     
     public static void addFolder() {                                        
-        if (ResourceSystem.archives.size() == 0) return;
+        if (ResourceSystem.getArchives().size() == 0) return;
 
         String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
@@ -143,7 +152,7 @@ public class ArchiveCallbacks {
                if (file.isFile()) {
                 byte[] data = FileIO.read(file.getAbsolutePath());
                 if (data != null)
-                    ResourceSystem.addFile(data, archives);
+                    ResourceSystem.add(data, archives);
                } 
            });
                    
@@ -151,7 +160,7 @@ public class ArchiveCallbacks {
 
         Toolkit.instance.updateWorkspace();
 
-        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
+        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
             JTree tree = Toolkit.instance.getCurrentTree();
             TreePath selectionPath = tree.getSelectionPath();
             ((FileModel) tree.getModel()).reload();
@@ -162,26 +171,26 @@ public class ArchiveCallbacks {
     }   
 
     public static void extract(boolean decompress) {
-        if (ResourceSystem.entries.size() == 0) {
+        if (ResourceSystem.selected.size() == 0) {
             System.out.println("You need to select files to extract.");
             return;
         }
-        if (ResourceSystem.entries.size() != 1) {
+        if (ResourceSystem.selected.size() != 1) {
             int success = 0;
             int total = 0;
             String path = FileChooser.openDirectory();
             if (path == null) return;
-            for (int i = 0; i < ResourceSystem.entries.size(); ++i) {
-                FileNode node = ResourceSystem.entries.get(i);
+            for (int i = 0; i < ResourceSystem.selected.size(); ++i) {
+                FileNode node = ResourceSystem.selected.get(i);
                 if (node.entry != null) {
                     total++;
                     byte[] data;
-                    if (node.entry.data == null)
-                        data = ResourceSystem.extractFile(node.entry.hash);
+                    if (node.entry.uncompressedData == null)
+                        data = ResourceSystem.extract(node.entry.hash);
                     else
-                        data = node.entry.data;
+                        data = node.entry.uncompressedData;
                     if (data != null) {
-                        data = (decompress) ? new Resource(data).handle.data : data;
+                        data = (decompress) ? new Resource(data).handle.uncompressedData : data;
                         String output = Paths.get(path, node.path, node.header).toString();
                         File file = new File(output);
                         if (file.getParentFile() != null)
@@ -193,13 +202,13 @@ public class ArchiveCallbacks {
             }
             System.out.println("Finished extracting " + success + "/" + total + " entries.");
         } else {
-            FileNode node = ResourceSystem.entries.get(0);
+            FileNode node = ResourceSystem.selected.get(0);
             if (node.entry != null) {
-                byte[] data = node.entry.data;
+                byte[] data = node.entry.uncompressedData;
                 if (data == null)
-                    data = ResourceSystem.extractFile(node.entry.hash);
+                    data = ResourceSystem.extract(node.entry.hash);
                 if (data != null) {
-                    data = (decompress) ? new Resource(data).handle.data : data;
+                    data = (decompress) ? new Resource(data).handle.uncompressedData : data;
                     File file = FileChooser.openFile(node.header, null, true);
                     if (file != null)
                         if (FileIO.write(data, file.getAbsolutePath()))

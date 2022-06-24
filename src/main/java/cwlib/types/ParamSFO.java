@@ -2,9 +2,7 @@ package cwlib.types;
 
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
-import cwlib.util.Bytes;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class ParamSFO {
     public static final short FORMAT_UTF8 = 0x0004;

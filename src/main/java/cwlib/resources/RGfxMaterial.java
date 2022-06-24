@@ -1,8 +1,10 @@
 package cwlib.resources;
 
 import cwlib.enums.BoxType;
+import cwlib.enums.Branch;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.enums.ShadowCastMode;
 import cwlib.io.Compressable;
@@ -80,12 +82,13 @@ public class RGfxMaterial implements Serializable, Compressable {
         RGfxMaterial gmat = (structure == null) ? new RGfxMaterial() : (RGfxMaterial) structure;
 
         Revision revision = serializer.getRevision();
-        int head = revision.getVersion();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
         gmat.flags = serializer.i32(gmat.flags);
         gmat.alphaTestLevel = serializer.f32(gmat.alphaTestLevel);
         gmat.alphaLayer = serializer.i8(gmat.alphaLayer);
-        if (head > 0x2f9)
+        if (version >= Revisions.GFXMATERIAL_ALPHA_MODE)
             gmat.alphaMode = serializer.i8(gmat.alphaMode);
         gmat.shadowCastMode = serializer.enum8(gmat.shadowCastMode);
         gmat.bumpLevel = serializer.f32(gmat.bumpLevel);
@@ -93,14 +96,14 @@ public class RGfxMaterial implements Serializable, Compressable {
         gmat.reflectionBlur = serializer.f32(gmat.reflectionBlur);
         gmat.refractiveIndex = serializer.f32(gmat.refractiveIndex);
 
-        if (revision.isAfterLBP3Revision(0x139)) {
+        if (subVersion >= Revisions.FRESNEL) {
             gmat.refractiveFresnelFalloffPower = serializer.f32(gmat.refractiveFresnelFalloffPower);
             gmat.refractiveFresnelMultiplier = serializer.f32(gmat.refractiveFresnelMultiplier);
             gmat.refractiveFresnelOffset = serializer.f32(gmat.refractiveFresnelOffset);
             gmat.refractiveFresnelShift = serializer.f32(gmat.refractiveFresnelShift);
-            if (revision.isAfterLBP3Revision(0x16a)) {
+            if (subVersion >= Revisions.FUZZ) {
                 gmat.fuzzLengthAndRefractiveFlag = serializer.i8(gmat.fuzzLengthAndRefractiveFlag);
-                if (revision.isAfterLBP3Revision(0x17b)) {
+                if (subVersion >= Revisions.FUZZ_LIGHTING) {
                     gmat.translucencyDensity = serializer.i8(gmat.translucencyDensity);
                     gmat.fuzzSwirlAngle = serializer.i8(gmat.fuzzSwirlAngle);
                     gmat.fuzzSwirlAmplitude = serializer.i8(gmat.fuzzSwirlAmplitude);
@@ -135,20 +138,20 @@ public class RGfxMaterial implements Serializable, Compressable {
         gmat.boxes = serializer.array(gmat.boxes, MaterialBox.class);
         gmat.wires = serializer.array(gmat.wires, MaterialWire.class);
 
-        if (head > 0x15a)
+        if (version >= Revisions.GFXMATERIAL_SOUND_ENUM)
             gmat.soundEnum = serializer.i32(gmat.soundEnum);
 
-        if (head > 0x2a1)
+        if (version >= Revisions.PARAMETER_ANIMATIONS)
             gmat.parameterAnimations = serializer.array(gmat.parameterAnimations, MaterialParameterAnimation.class);
 
-        if (revision.isAfterVitaRevision(0x18)) {
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_UV_OFFSCALE)) {
             for (int i = 0; i < UV_OFFSETS; ++i)
                 gmat.uvOffsets[i] = serializer.i16(gmat.uvOffsets[i]);
             for (int i = 0; i < UV_SCALES; ++i)
                 gmat.uvScales[i] = serializer.i16(gmat.uvScales[i]);
         }
         
-        if (revision.isAfterVitaRevision(0x3)) {
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_PERFDATA)) {
             gmat.cycleCount[0] = serializer.i8(gmat.cycleCount[0]);
             gmat.cycleCount[1] = serializer.i8(gmat.cycleCount[1]);
 
@@ -203,14 +206,13 @@ public class RGfxMaterial implements Serializable, Compressable {
         int sourceOffsets = 0xC;
         if ((this.flags & 0x10000) != 0)
             sourceOffsets = 0x18;
-        if (head < 0x3c1 || !revision.isVita() || !revision.isAfterVitaRevision(0xF))
+        if (head < 0x3c1 || !revision.isVita() || revision.before(Branch.DOUBLE11, Revisions.D1_SHADER))
             sourceOffsets = 0xA;
         if (head < 0x393)
             sourceOffsets = 0x8;
         if (head < 0x34f)
             sourceOffsets = 0x4;
-        if ((head < 0x2d0 && !revision.isLeerdammer()) ||
-                (revision.isLeerdammer() && !revision.isAfterLeerdamerRevision(0x12)))
+        if ((head < 0x2d0 && !revision.isLeerdammer()) || revision.before(Branch.LEERDAMMER, Revisions.LD_SHADER))
             sourceOffsets = 0x3;
         return sourceOffsets;
     }

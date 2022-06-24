@@ -1,18 +1,21 @@
 package cwlib.structs.staticmesh;
 
 import cwlib.enums.ResourceType;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
-import java.util.ArrayList;
 import org.joml.Vector3f;
 
 public class StaticMeshInfo implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
+
     public static class UnknownStruct implements Serializable {
+        public static final int BASE_ALLOCATION_SIZE = 0x20;
+
         public Vector3f v1, v2;
         public short s1, s2, s3, s4;
         
+        @SuppressWarnings("unchecked")
         @Override public UnknownStruct serialize(Serializer serializer, Serializable structure) {
             UnknownStruct struct = (structure == null) ? new UnknownStruct() : (UnknownStruct) structure;
             
@@ -25,7 +28,8 @@ public class StaticMeshInfo implements Serializable {
             
             return struct;
         }
-        
+
+        @Override public int getAllocatedSize() { return UnknownStruct.BASE_ALLOCATION_SIZE; }
     }
     
     public ResourceDescriptor lightmap, risemap, fallmap;
@@ -34,6 +38,7 @@ public class StaticMeshInfo implements Serializable {
     public StaticPrimitive[] primitives;
     public UnknownStruct[] unknown;
     
+    @SuppressWarnings("unchecked")
     @Override public StaticMeshInfo serialize(Serializer serializer, Serializable structure) {
         StaticMeshInfo info = (structure == null) ? new StaticMeshInfo() : (StaticMeshInfo) structure;
         
@@ -49,8 +54,17 @@ public class StaticMeshInfo implements Serializable {
         info.primitives = serializer.array(info.primitives, StaticPrimitive.class);
         info.unknown = serializer.array(info.unknown, UnknownStruct.class);
         
-        serializer.i32(0x48454c50);
+        serializer.i32(0x48454c50); // "HELP", no idea, used as a marker?
         
         return info;
+    }
+
+    @Override public int getAllocatedSize() {
+        int size = StaticMeshInfo.BASE_ALLOCATION_SIZE;
+        if (this.primitives != null)
+            size += (this.primitives.length * StaticPrimitive.BASE_ALLOCATION_SIZE);
+        if (this.unknown != null)
+            size += (this.unknown.length * UnknownStruct.BASE_ALLOCATION_SIZE);
+        return size;
     }
 }

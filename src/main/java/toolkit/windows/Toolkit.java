@@ -14,6 +14,7 @@ import cwlib.ex.SerializationException;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
 import cwlib.resources.RPlan;
+import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
@@ -62,11 +63,6 @@ import javax.swing.tree.TreePath;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
-    
-    public ExecutorService databaseService = Executors.newSingleThreadExecutor();
-    public ExecutorService resourceService = Executors.newSingleThreadExecutor();
-
-    public static ArrayList <JTree> trees;
 
     public boolean fileExists = false;
     public boolean useContext = false;
@@ -99,7 +95,6 @@ public class Toolkit extends javax.swing.JFrame {
         /* Reset the state in case of a reboot. */
         ResourceSystem.reset();
         Toolkit.instance = this;
-        Toolkit.trees = new ArrayList<JTree>();
         
         this.initComponents();
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
@@ -107,7 +102,7 @@ public class Toolkit extends javax.swing.JFrame {
         EasterEgg.initialize(this);
         if (ApplicationFlags.ENABLE_NEW_SAVEDATA)
             this.loadSavedata.setVisible(true);
-       
+        
         this.entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 String copied = "";
@@ -123,30 +118,23 @@ public class Toolkit extends javax.swing.JFrame {
         
         this.progressBar.setVisible(false);
         this.fileDataTabs.addChangeListener(l -> {
-            int index = this.fileDataTabs.getSelectedIndex();
-            
-            if (index == -1) {
+            FileData database = ResourceSystem.setSelectedDatabase(this.fileDataTabs.getSelectedIndex());
+            if (database == null) {
                 this.search.setEnabled(false);
                 this.search.setForeground(Color.GRAY);
                 this.search.setText("Search is currently disabled.");
                 
-                ResourceSystem.currentWorkspace = WorkspaceType.NONE;
                 this.updateWorkspace();
                 
                 return;
             }
             
             this.search.setEnabled(true);
-            FileData data = ResourceSystem.databases.get(this.fileDataTabs.getSelectedIndex());
-            this.search.setText(data.query);
+            this.search.setText(database.getLastSearch());
             
             if (this.search.getText().equals("Search...")) search.setForeground(Color.GRAY);
             else this.search.setForeground(Color.WHITE);
-            
-            if (data.type.equals("Big Profile")) ResourceSystem.currentWorkspace = WorkspaceType.PROFILE;
-            else if (data.type.equals("Mod")) ResourceSystem.currentWorkspace = WorkspaceType.MOD;
-            else if (data.type.equals("File Save")) ResourceSystem.currentWorkspace = WorkspaceType.SAVE;
-            else ResourceSystem.currentWorkspace = WorkspaceType.MAP;
+
             
             this.updateWorkspace();
         });
@@ -207,14 +195,14 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     private void checkForChanges() {
-        for (FileData data: ResourceSystem.databases) {
+        for (FileData data: ResourceSystem.getDatabases()) {
             if (data.shouldSave) {
                 int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) data.save(data.path);
             }
         }
 
-        for (FileArchive archive: ResourceSystem.archives) {
+        for (FileArchive archive: ResourceSystem.getArchives()) {
             if (archive.shouldSave) {
                 int result = JOptionPane.showConfirmDialog(null, String.format("Your FileArchive (%s) has pending changes, do you want to save?", archive.file.getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) archive.save();
@@ -222,20 +210,10 @@ public class Toolkit extends javax.swing.JFrame {
         }
     }
 
-    public FileData getCurrentDB() {
-        if (ResourceSystem.databases.size() == 0) return null;
-        return ResourceSystem.databases.get(fileDataTabs.getSelectedIndex());
-    }
-
-    public JTree getCurrentTree() {
-        if (trees.size() == 0) return null;
-        return trees.get(fileDataTabs.getSelectedIndex());
-    }
-
     public void updateWorkspace() {
         closeTab.setVisible(fileDataTabs.getTabCount() != 0);
         installProfileMod.setVisible(false);
-        int archiveCount = ResourceSystem.archives.size();
+        int archiveCount = ResourceSystem.getArchives().size();
         FileData db = getCurrentDB();
 
         if (db != null) {
@@ -250,10 +228,10 @@ public class Toolkit extends javax.swing.JFrame {
         } else editMenu.setVisible(false);
 
         fileExists = false;
-        if (ResourceSystem.lastSelected != null && ResourceSystem.lastSelected.entry != null) {
-            if (ResourceSystem.lastSelected.entry.data != null)
+        if (ResourceSystem.lastSelected != null && ResourceSystem.getSelected().getEntry() != null) {
+            if (ResourceSystem.getSelected().getEntry().data != null)
                 fileExists = true;
-        } else if (ResourceSystem.entries.size() > 1) fileExists = true;
+        } else if (ResourceSystem.selected.size() > 1) fileExists = true;
 
         if (archiveCount != 0 || db != null) {
             saveDivider.setVisible(true);
@@ -265,18 +243,18 @@ public class Toolkit extends javax.swing.JFrame {
 
         addFolder.setVisible(false);
         
-        if (ResourceSystem.currentWorkspace == WorkspaceType.NONE && ResourceSystem.archives.size() != 0) {
+        if (ResourceSystem.getDatabaseType() == DatabaseType.NONE && ResourceSystem.getArchives().size() != 0) {
             FARMenu.setVisible(true);
             addFolder.setVisible(true);
         }
-        else if (ResourceSystem.canExtract() && ResourceSystem.currentWorkspace != WorkspaceType.MOD) {
+        else if (ResourceSystem.canExtract() && ResourceSystem.getDatabaseType() != DatabaseType.MOD) {
             FARMenu.setVisible(true); 
-            if (ResourceSystem.currentWorkspace == WorkspaceType.MAP)
+            if (ResourceSystem.getDatabaseType() == DatabaseType.MAP)
                 addFolder.setVisible(true);
         }
         else FARMenu.setVisible(false);
 
-        if (ResourceSystem.currentWorkspace != WorkspaceType.NONE) {
+        if (ResourceSystem.getDatabaseType() != DatabaseType.NONE) {
             saveDivider.setVisible(true);
             saveAs.setVisible(true);
         } else {
@@ -293,7 +271,7 @@ public class Toolkit extends javax.swing.JFrame {
             saveDivider.setVisible(true);
             dumpHashes.setVisible(true);
             dumpRLST.setVisible(false);
-            if (ResourceSystem.currentWorkspace == WorkspaceType.MAP) {
+            if (ResourceSystem.getDatabaseType() == DatabaseType.MAP) {
                 if (archiveCount != 0)
                     installProfileMod.setVisible(true);
                 MAPMenu.setVisible(true);
@@ -303,12 +281,12 @@ public class Toolkit extends javax.swing.JFrame {
             }
         }
 
-        if (ResourceSystem.currentWorkspace == WorkspaceType.PROFILE) {
+        if (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) {
             ProfileMenu.setVisible(true);
             installProfileMod.setVisible(true);
         } else ProfileMenu.setVisible(false);
 
-        if (ResourceSystem.currentWorkspace == WorkspaceType.MOD) modMenu.setVisible(true);
+        if (ResourceSystem.getDatabaseType() == DatabaseType.MOD) modMenu.setVisible(true);
         else modMenu.setVisible(false);
 
     }
@@ -343,11 +321,11 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (!useContext && isDependencyTree) return;
 
-        if (!isDependencyTree && (ResourceSystem.currentWorkspace == WorkspaceType.PROFILE && useContext)) 
+        if (!isDependencyTree && (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE && useContext)) 
             deleteContext.setVisible(true);
 
-        if (!(ResourceSystem.currentWorkspace == WorkspaceType.PROFILE) && ResourceSystem.databases.size() != 0) {
-            if ((useContext && ResourceSystem.lastSelected.entry == null) && !isDependencyTree) {
+        if (!(ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) && ResourceSystem.getDatabases().size() != 0) {
+            if ((useContext && ResourceSystem.getSelected().getEntry() == null) && !isDependencyTree) {
                 newItemContext.setVisible(true);
                 newFolderContext.setVisible(true);
                 renameFolder.setVisible(true);
@@ -357,17 +335,17 @@ public class Toolkit extends javax.swing.JFrame {
                     zeroContext.setVisible(true);
                     deleteContext.setVisible(true);
                 }
-                if (ResourceSystem.lastSelected.entry != null) {
+                if (ResourceSystem.getSelected().getEntry() != null) {
                     duplicateContext.setVisible(true);
-                    if (ResourceSystem.currentWorkspace == WorkspaceType.MAP && !isDependencyTree)
+                    if (ResourceSystem.getDatabaseType() == DatabaseType.MAP && !isDependencyTree)
                         editMenuContext.setVisible(true);
                 }
             }
         }
 
-        if (ResourceSystem.canExtract() && ResourceSystem.lastSelected != null && ResourceSystem.lastSelected.entry != null) {
+        if (ResourceSystem.canExtract() && ResourceSystem.lastSelected != null && ResourceSystem.getSelected().getEntry() != null) {
             replaceContext.setVisible(true);
-            if (ResourceSystem.lastSelected.header.endsWith(".tex"))
+            if (ResourceSystem.getSelected().getName().endsWith(".tex"))
                 replaceImage.setVisible(true);
         }
 
@@ -375,15 +353,15 @@ public class Toolkit extends javax.swing.JFrame {
 
             extractContextMenu.setVisible(true);
 
-            if (ResourceSystem.lastSelected.entry != null) {
-                if ((ResourceSystem.currentWorkspace == WorkspaceType.PROFILE || ResourceSystem.databases.size() != 0) && ResourceSystem.lastSelected.entry.canReplaceDecompressed) {
+            if (ResourceSystem.getSelected().getEntry() != null) {
+                if ((ResourceSystem.getDatabaseType() == DatabaseType.PROFILE || ResourceSystem.getDatabases().size() != 0) && ResourceSystem.getSelected().getEntry().canReplaceDecompressed) {
                     replaceDecompressed.setVisible(true);
-                    if (ResourceSystem.lastSelected.entry.dependencies != null && ResourceSystem.lastSelected.entry.dependencies.size() != 0) {
+                    if (ResourceSystem.getSelected().getEntry().dependencies != null && ResourceSystem.getSelected().getEntry().dependencies.size() != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
-                        if (ResourceSystem.lastSelected.header.endsWith(".bin") || ResourceSystem.lastSelected.header.endsWith(".plan")) {
+                        if (ResourceSystem.getSelected().getName().endsWith(".bin") || ResourceSystem.getSelected().getName().endsWith(".plan")) {
                             exportBackupGroup.setVisible(true);
-                            if (ResourceSystem.lastSelected.entry.GUID != -1) {
+                            if (ResourceSystem.getSelected().getEntry().GUID != -1) {
                                 exportAsBackupGUID.setVisible(true);
                             }
                         }
@@ -392,16 +370,16 @@ public class Toolkit extends javax.swing.JFrame {
                     }
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".anim")) {
-                    if (ResourceSystem.lastSelected.entry.getResource("animation") != null) {
+                if (ResourceSystem.getSelected().getName().endsWith(".anim")) {
+                    if (ResourceSystem.getSelected().getEntry().getResource("animation") != null) {
                         exportGroup.setVisible(true);
                         exportAnimation.setVisible(true);
                     }
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".smh")) {
+                if (ResourceSystem.getSelected().getName().endsWith(".smh")) {
                     replaceDecompressed.setVisible(false);
-                    RStaticMesh mesh = ResourceSystem.lastSelected.entry.getResource("staticMesh");
+                    RStaticMesh mesh = ResourceSystem.getSelected().getEntry().getResource("staticMesh");
                     if (mesh != null) {
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
@@ -409,8 +387,8 @@ public class Toolkit extends javax.swing.JFrame {
                     }
                 }
 
-                if (ResourceSystem.lastSelected.header.endsWith(".mol")) {
-                    RMesh mesh = ResourceSystem.lastSelected.entry.getResource("mesh");
+                if (ResourceSystem.getSelected().getName().endsWith(".mol")) {
+                    RMesh mesh = ResourceSystem.getSelected().getEntry().getResource("mesh");
                     if (mesh != null) {
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
@@ -422,44 +400,44 @@ public class Toolkit extends javax.swing.JFrame {
                         exportOBJTEXCOORD2.setVisible((count > 2));
                     }
                 }
-                if (ResourceSystem.lastSelected.header.endsWith(".tex")) {
+                if (ResourceSystem.getSelected().getName().endsWith(".tex")) {
                     exportGroup.setVisible(true);
                     exportTextureGroupContext.setVisible(true);
                     if (!isDependencyTree)
                         replaceImage.setVisible(true);
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".slt") && !isDependencyTree) {
-                    RSlotList slots = ResourceSystem.lastSelected.entry.getResource("slots");
+                if (ResourceSystem.getSelected().getName().endsWith(".slt") && !isDependencyTree) {
+                    RSlotList slots = ResourceSystem.getSelected().getEntry().getResource("slots");
                     if (slots != null)
                         editSlotContext.setVisible(true);
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".adc") && !isDependencyTree) {
-                    RAdventureCreateProfile profile = ResourceSystem.lastSelected.entry.getResource("adventure");
+                if (ResourceSystem.getSelected().getName().endsWith(".adc") && !isDependencyTree) {
+                    RAdventureCreateProfile profile = ResourceSystem.getSelected().getEntry().getResource("adventure");
                     if (profile != null)
                         editSlotContext.setVisible(true);
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".plan") && !isDependencyTree) {
-                    RPlan plan = ResourceSystem.lastSelected.entry.getResource("item");
+                if (ResourceSystem.getSelected().getName().endsWith(".plan") && !isDependencyTree) {
+                    RPlan plan = ResourceSystem.getSelected().getEntry().getResource("item");
                     if (plan != null)
                         editItemContext.setVisible(true);
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".pck") && !isDependencyTree) {
-                    RPacks pack = ResourceSystem.lastSelected.entry.getResource("pack");
+                if (ResourceSystem.getSelected().getName().endsWith(".pck") && !isDependencyTree) {
+                    RPacks pack = ResourceSystem.getSelected().getEntry().getResource("pack");
                     if (pack != null)
                         editSlotContext.setVisible(true);
                 }
                 
-                if (ResourceSystem.lastSelected.header.endsWith(".bin") && ResourceSystem.currentWorkspace == WorkspaceType.PROFILE && !isDependencyTree) {
-                    Slot slot = ResourceSystem.lastSelected.entry.getResource("slot");
+                if (ResourceSystem.getSelected().getName().endsWith(".bin") && ResourceSystem.getDatabaseType() == DatabaseType.PROFILE && !isDependencyTree) {
+                    Slot slot = ResourceSystem.getSelected().getEntry().getResource("slot");
                     if (slot != null)
                        editSlotContext.setVisible(true); 
                 }
 
-                if (ResourceSystem.lastSelected.header.endsWith(".trans")) {
+                if (ResourceSystem.getSelected().getName().endsWith(".trans")) {
                     exportGroup.setVisible(true);
                     loadLAMSContext.setVisible(true);
                     exportLAMSContext.setVisible(true);
@@ -1654,15 +1632,8 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_loadDBActionPerformed
 
     public void addTab(FileData data) {
-        ResourceSystem.databases.add(data);
-
-        JTree tree = new JTree();
-
-        trees.add(tree);
-
-        tree.setRootVisible(false);
-        tree.setModel(data.model);
-        tree.getSelectionModel().setSelectionMode(4);
+        ResourceSystem.getDatabases().add(data);
+        JTree tree = data.getTree();
 
         tree.addTreeSelectionListener(e -> TreeSelectionListener.listener(tree));
         tree.addMouseListener(showContextMenu);
@@ -1670,7 +1641,7 @@ public class Toolkit extends javax.swing.JFrame {
         JScrollPane panel = new JScrollPane();
         panel.setViewportView(tree);
 
-        fileDataTabs.addTab(data.name, panel);
+        fileDataTabs.addTab(data.getName(), panel);
 
         search.setEditable(true);
         search.setFocusable(true);
@@ -1681,10 +1652,9 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public int isDatabaseLoaded(File file) {
-        String path = file.getAbsolutePath();
-        for (int i = 0; i < ResourceSystem.databases.size(); ++i) {
-            FileData data = ResourceSystem.databases.get(i);
-            if (data.path.equals(path))
+        for (int i = 0; i < ResourceSystem.getDatabases().size(); ++i) {
+            FileData data = ResourceSystem.getDatabases().get(i);
+            if (data.getFile().equals(file))
                 return i;
         }
         return -1;
@@ -1699,8 +1669,8 @@ public class Toolkit extends javax.swing.JFrame {
 
     public int isArchiveLoaded(File file) {
         String path = file.getAbsolutePath();
-        for (int i = 0; i < ResourceSystem.archives.size(); ++i) {
-            FileArchive archive = ResourceSystem.archives.get(i);
+        for (int i = 0; i < ResourceSystem.getArchives().size(); ++i) {
+            FileArchive archive = ResourceSystem.getArchives().get(i);
             if (archive.file.getAbsolutePath().equals(path))
                 return i;
         }
@@ -1747,7 +1717,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportOBJTEXCOORD0ActionPerformed
 
     private void loadLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLAMSContextActionPerformed
-        ResourceSystem.LAMS = new RTranslationTable(new MemoryInputStream(ResourceSystem.lastSelected.entry.data));
+        ResourceSystem.LAMS = new RTranslationTable(new MemoryInputStream(ResourceSystem.getSelected().getEntry().data));
         if (ResourceSystem.LAMS != null) StringMetadata.setEnabled(true);
     }//GEN-LAST:event_loadLAMSContextActionPerformed
 
@@ -1756,7 +1726,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryItemDetails metadata = ResourceSystem.lastSelected.entry.<RPlan>getResource("item").details;
+        InventoryItemDetails metadata = ResourceSystem.getSelected().getEntry().<RPlan>getResource("item").details;
         titleField.setText("" + metadata.titleKey);
         descriptionField.setText("" + metadata.descriptionKey);
         locationField.setText("" + metadata.location);
@@ -1764,7 +1734,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryItemDetails metadata = ResourceSystem.lastSelected.entry.<RPlan>getResource("item").details;
+        InventoryItemDetails metadata = ResourceSystem.getSelected().getEntry().<RPlan>getResource("item").details;
 
         titleField.setText("");
         categoryField.setText("");
@@ -1794,14 +1764,14 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_loadBigProfileActionPerformed
 
     public Fart[] getSelectedArchives() {
-        if (ResourceSystem.archives.size() == 0) return null;
-        if (ResourceSystem.archives.size() > 1) {
+        if (ResourceSystem.getArchives().size() == 0) return null;
+        if (ResourceSystem.getArchives().size() > 1) {
             Fart[] archives = new ArchiveSelector(this, true).getSelected();
             if (archives == null) System.out.println("User did not select any FileArchives, cancelling operation.");
             return archives;
         }
         return new Fart[] {
-            ResourceSystem.archives.get(0)
+            ResourceSystem.getArchives().get(0)
         };
     }
 
@@ -1822,26 +1792,26 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
-        boolean isAdventure = ResourceSystem.lastSelected.entry.getResource("adventure") != null;
+        boolean isAdventure = ResourceSystem.getSelected().getEntry().getResource("adventure") != null;
         if (isAdventure) {
-            new SlotManager(ResourceSystem.lastSelected.entry, ResourceSystem.lastSelected.entry.<RAdventureCreateProfile>getResource("adventure")).setVisible(true);
+            new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RAdventureCreateProfile>getResource("adventure")).setVisible(true);
             return;
         }
         
-        if (ResourceSystem.currentWorkspace == WorkspaceType.PROFILE) {
-            Slot slot = ResourceSystem.lastSelected.entry.getResource("slot");
+        if (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) {
+            Slot slot = ResourceSystem.getSelected().getEntry().getResource("slot");
             if (slot == null) return;
             new SlotManager((BigSave)this.getCurrentDB(), slot).setVisible(true);
             return;
         }
         
-        boolean isSlotsFile = ResourceSystem.lastSelected.entry.getResource("pack") == null;
+        boolean isSlotsFile = ResourceSystem.getSelected().getEntry().getResource("pack") == null;
         if (isSlotsFile) {
-            new SlotManager(ResourceSystem.lastSelected.entry, ResourceSystem.lastSelected.entry.<RSlotList>getResource("slots")).setVisible(true);
+            new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RSlotList>getResource("slots")).setVisible(true);
             return;
         }
         
-        new SlotManager(ResourceSystem.lastSelected.entry, ResourceSystem.lastSelected.entry.<RPacks>getResource("pack")).setVisible(true);
+        new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RPacks>getResource("pack")).setVisible(true);
     }//GEN-LAST:event_editSlotContextActionPerformed
 
     private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed
@@ -1960,7 +1930,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_replaceDecompressedActionPerformed
 
     private void replaceDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDependenciesActionPerformed
-        new Dependinator(this, ResourceSystem.lastSelected.entry);
+        new Dependinator(this, ResourceSystem.getSelected().getEntry());
     }//GEN-LAST:event_replaceDependenciesActionPerformed
 
     private void exportAsModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModActionPerformed
@@ -2086,8 +2056,8 @@ public class Toolkit extends javax.swing.JFrame {
     }
     
     private void exportAsBackupTpl(ExportMode mode) {
-        FileEntry entry = ResourceSystem.lastSelected.entry;
-        String name = Paths.get(ResourceSystem.lastSelected.entry.path).getFileName().toString();
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+        String name = Paths.get(ResourceSystem.getSelected().getEntry().path).getFileName().toString();
 
         String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
         if (titleID == null) return;
@@ -2107,10 +2077,10 @@ public class Toolkit extends javax.swing.JFrame {
         Resource resource = null;
         switch (mode) {
             case Hash:
-                resource = new Resource(ResourceSystem.extractFile(entry.hash));
+                resource = new Resource(ResourceSystem.extract(entry.hash));
                 break;
             case GUID:
-                resource = new Resource(ResourceSystem.extractFile(entry.GUID));
+                resource = new Resource(ResourceSystem.extract(entry.GUID));
                 break;
         }
         Mod mod = new Mod();
@@ -2224,7 +2194,7 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void renameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameFolderActionPerformed
         FileNode node = ResourceSystem.lastSelected;
-        FileNode[] selected = ResourceSystem.entries.toArray(new FileNode[ResourceSystem.entries.size()]);
+        FileNode[] selected = ResourceSystem.selected.toArray(new FileNode[ResourceSystem.selected.size()]);
         String parent = node.path + node.header;
         
         String newFolder = JOptionPane.showInputDialog(Toolkit.instance, "Folder", parent);
@@ -2310,7 +2280,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_manageArchivesActionPerformed
 
     private void editItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItemContextActionPerformed
-        FileEntry entry = ResourceSystem.lastSelected.entry;
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
         RPlan plan = entry.getResource("item");
         if (plan == null) return;
         ItemManager manager = new ItemManager(entry, plan);
@@ -2322,14 +2292,14 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAsBackupGUIDActionPerformed
 
     private void exportAsModCustomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModCustomActionPerformed
-        new AssetExporter(ResourceSystem.lastSelected.entry).setVisible(true);
+        new AssetExporter(ResourceSystem.getSelected().getEntry()).setVisible(true);
     }//GEN-LAST:event_exportAsModCustomActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
         if (entry.dependencies != null) {
             FileNode root = (FileNode) model.getRoot();
             for (int i = 0; i < entry.dependencies.size(); ++i) {
-                FileEntry dependencyEntry = ResourceSystem.findEntry(entry.dependencies.get(i));
+                FileEntry dependencyEntry = ResourceSystem.get(entry.dependencies.get(i));
                 if (dependencyEntry == null || dependencyEntry.path == null) continue;
                 Nodes.addNode(root, dependencyEntry);
                 if (dependencyEntry.dependencies != null && dependencyEntry != entry)
@@ -2339,7 +2309,7 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public FileNode getLastSelected(JTree tree) {
-        ResourceSystem.entries.clear();
+        ResourceSystem.selected.clear();
         TreePath[] treePaths = tree.getSelectionPaths();
         if (treePaths == null) {
             ResourceSystem.lastSelected = null;
@@ -2352,8 +2322,8 @@ public class Toolkit extends javax.swing.JFrame {
                 return null;
             };
             if (node.getChildCount() > 0)
-                Nodes.loadChildren(ResourceSystem.entries, node, true);
-            ResourceSystem.entries.add(node);
+                Nodes.loadChildren(ResourceSystem.selected, node, true);
+            ResourceSystem.selected.add(node);
         }
         FileNode selected = (FileNode) treePaths[treePaths.length - 1].getLastPathComponent();
         ResourceSystem.lastSelected = selected;
@@ -2369,7 +2339,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
             loadImage(metadata.icon, item);
 
-        if (ResourceSystem.lastSelected.entry.<RPlan>getResource("item") != item) return;
+        if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") != item) return;
 
         setPlanDescriptions(metadata);
 
@@ -2438,12 +2408,12 @@ public class Toolkit extends javax.swing.JFrame {
         if (entry != null && texture != null)
             setImage(texture.getImageIcon(320, 320));
         else {
-            byte[] data = ResourceSystem.extractFile(resource);
+            byte[] data = ResourceSystem.extract(resource);
             if (data == null) return;
             texture = new RTexture(data);
             if (entry != null) entry.setResource("texture", texture);
             if (texture.parsed == true)
-                if (ResourceSystem.lastSelected.entry.<RPlan>getResource("item") == item)
+                if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") == item)
                     setImage(texture.getImageIcon(320, 320));
         }
     }

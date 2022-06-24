@@ -80,7 +80,7 @@ public class PlayerMetrics implements Serializable {
         if (head > 0x1c9)
             metrics.gamesWithRandomPlayersCount = serializer.i32(metrics.gamesWithRandomPlayersCount);
         
-        if (((head > 0x1de || revision.isLeerdammer()) && head < 0x2cb) && !revision.isAfterLeerdamerRevision(0x10))
+        if (((head > 0x1de || revision.isLeerdammer()) && head < 0x2cb) && !revision.isAfterLeerdammerRevision(0x10))
             serializer.i32(0); // enemiesKilled
 
         if (head > 0x1de)

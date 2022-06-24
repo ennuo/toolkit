@@ -3,6 +3,9 @@ package cwlib.structs.things.parts;
 import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.ShadowCastMode;
+import cwlib.enums.ShadowType;
+import cwlib.enums.VisibilityFlags;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
@@ -17,9 +20,9 @@ public class PRenderMesh implements Serializable {
     public boolean animLoop = true;
     public float loopStart, loopEnd = 1.0f;
     public int editorColor = -1;
-    public boolean dontCastShadows;
+    public ShadowType castShadows = ShadowType.ALWAYS;
     public boolean RTTEnable;
-    public byte visibilityFlags = 0x3;
+    public byte visibilityFlags = VisibilityFlags.PLAY_MODE | VisibilityFlags.EDIT_MODE;
     public float poppetRenderScale = 1.0f;
     public float parentDistanceFront, parentDistanceSide;
     
@@ -49,18 +52,18 @@ public class PRenderMesh implements Serializable {
             }
         }
         
-        mesh.dontCastShadows = serializer.bool(mesh.dontCastShadows);
+        mesh.castShadows = serializer.enum8(mesh.castShadows);
         mesh.RTTEnable = serializer.bool(mesh.RTTEnable);
 
         if (version > 0x2e2)
             mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
         else {
             if (serializer.isWriting())
-                serializer.getOutput().bool((mesh.visibilityFlags & 1) != 0);
+                serializer.getOutput().bool((mesh.visibilityFlags & VisibilityFlags.PLAY_MODE) != 0);
             else {
-                mesh.visibilityFlags = 0x2;
+                mesh.visibilityFlags = VisibilityFlags.EDIT_MODE;
                 if (serializer.getInput().bool())
-                    mesh.visibilityFlags = 0x3;
+                    mesh.visibilityFlags |=  VisibilityFlags.PLAY_MODE;
             }
         }
         

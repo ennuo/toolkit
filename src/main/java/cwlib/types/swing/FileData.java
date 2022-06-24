@@ -1,59 +1,87 @@
 package cwlib.types.swing;
 
-import cwlib.enums.DatabaseType;
-import cwlib.util.Nodes;
-import cwlib.types.data.GUID;
-import cwlib.types.databases.FileEntry;
-
 import java.io.File;
+
+import javax.swing.JTree;
+import javax.swing.tree.TreeSelectionModel;
+
+import cwlib.enums.DatabaseType;
+import cwlib.types.data.GUID;
+import cwlib.types.data.SHA1;
+import cwlib.types.databases.FileEntry;
+import cwlib.util.Nodes;
 
 public abstract class FileData {
     /**
      * Path of database on disk.
      */
-    public final File file;
+    private final File file;
     
     /**
      * Name of file on disk.
      */
-    public final String name;
+    private final String name;
 
     /**
      * Cached search query
      */
-    public String query;
+    private String query;
 
     /**
-     * Path of USRDIR folder if database is in game directory.
+     * Path of USRDIR folder or the current folder if it doesn't exist.
      */
-    public String USRDIR;
+    private final File base;
 
     /**
      * Database type identifier.
      */
-    public DatabaseType type;
+    private final DatabaseType type;
+
+    /**
+     * Tree swing component for database
+     */
+    private final JTree tree;
 
     /**
      * Tree model for database.
      */
-    public final FileModel model;
+    private final FileModel model;
     
     /**
      * Root node in file model.
      */
-    public final FileNode root;
+    private final FileNode root;
 
     protected boolean hasChanges = false;
     
     protected FileData(File file, DatabaseType type) {
         this.type = type;
         this.file = file;
-        if (file == null)
+        if (file == null) {
             this.name = type.name();
-        else
-            this.name = file.getName();
-        this.model = new FileModel(new FileNode(type, null, null));
+            this.base = null;
+        }
+        else {
+            this.name = this.file.getName();
+
+            File base = this.file.getParentFile();
+            if (base != null) {
+                File parent = base.getParentFile();
+                if (parent != null && parent.getName().toUpperCase().equals("USRDIR"))
+                    base = parent;
+            }
+            this.base = base;
+        }
+        this.model = new FileModel(new FileNode(type.name(), null, null));
         this.root = (FileNode) this.model.getRoot();
+        
+        JTree tree = new JTree();
+
+        tree.setRootVisible(false);
+        tree.setModel(this.model);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+        this.tree = tree;
     }
     
     /**
@@ -93,7 +121,26 @@ public abstract class FileData {
     public FileEntry get(String path) {
         throw new UnsupportedOperationException(String.format("Unable to search for path on database of type %s", this.type));
     }
+
+    public byte[] extract(SHA1 sha1) {
+        throw new UnsupportedOperationException(String.format("Unable to extract data on database of type %s", this.type));
+    }
+
+    public void add(byte[] data) {
+        throw new UnsupportedOperationException(String.format("Unable to add data to database of type %s", this.type));
+    }
+
+    public File getFile() { return this.file; }
+    public String getName() { return this.name; }
+    public File getBase() { return this.base; }
+    public DatabaseType getType() { return this.type; }
+    public FileModel getModel() { return this.model; }
+    public FileNode getRoot() { return this.root; }
+    public JTree getTree() { return this.tree; }
     
     public boolean hasChanges() { return this.hasChanges; }
     public void setHasChanges() { this.hasChanges = true; }
+
+    public String getLastSearch() { return this.query; }
+    public void setLastSearch(String query) { this.query = query; }
 }

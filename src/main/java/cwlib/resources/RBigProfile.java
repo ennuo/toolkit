@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
+import cwlib.enums.SlotType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
@@ -96,12 +99,12 @@ public class RBigProfile implements Compressable, Serializable {
             }
         }
 
-        if (head >= 0x3ef)
+        if (head >= Revisions.DATALABELS)
             profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
 
         profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
 
-        if (head > 0x3b5)
+        if (head >= Revisions.PRODUCTION_BUILD)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
         
         if (serializer.isWriting()) {
@@ -120,10 +123,10 @@ public class RBigProfile implements Compressable, Serializable {
                         serializer.struct(null, Slot.class));
         }
 
-        if (revision.isAfterVitaRevision(0x2d))
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS))
             profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
 
-        if (revision.isAfterVitaRevision(0x56)) {
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_CHALLENGES)) {
             profile.nearMyChallengeDataLog = 
                 serializer.arraylist(profile.nearMyChallengeDataLog, Challenge.class);
 
@@ -131,16 +134,35 @@ public class RBigProfile implements Compressable, Serializable {
                 serializer.arraylist(profile.nearMyChallengeDataOpen, Challenge.class);
         }
 
-        if (revision.isAfterVitaRevision(0x58))
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_TREASURES))
             profile.nearMyTreasureLog = serializer.arraylist(profile.nearMyTreasureLog, Treasure.class);
 
-        if (revision.isAfterVitaRevision(0x59))
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_DOWNLOADED_SLOTS))
             profile.downloadedSlots = serializer.arraylist(profile.downloadedSlots, SlotID.class);
 
-        if (revision.isAfterVitaRevision(0x7a))
+        if (revision.has(Branch.DOUBLE11, Revisions.D1_PLANET_DECORATIONS))
             profile.planetDecorations = serializer.resource(profile.planetDecorations, ResourceType.LEVEL, true);
         
         return profile;
+    }
+
+    public SlotID getNextSlotID() {
+        SlotID next = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, 0x0);
+        while (true) {
+            if (!this.myMoonSlots.containsKey(next))
+                return next;
+            next.slotNumber++;
+        }
+    }
+
+    public int getNextUID() {
+        int UID = 1;
+        for (InventoryItem item : this.inventory) {
+            int fixedUID = item.UID & ~0x80000000;
+            if (fixedUID > UID)
+                UID = fixedUID;
+        }
+        return (UID + 1) | 0x80000000;
     }
 
     @Override public int getAllocatedSize() { 

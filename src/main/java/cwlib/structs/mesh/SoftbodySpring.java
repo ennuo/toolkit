@@ -4,16 +4,22 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class SoftbodySpring implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
+
     public short A, B;
     public float restLengthSq;
 
-    public SoftbodySpring serialize(Serializer serializer, Serializable structure) {
-        SoftbodySpring softbody = (structure == null) ? new SoftbodySpring() : (SoftbodySpring) structure;
-        
-        softbody.A = serializer.i16(softbody.A);
-        softbody.B = serializer.i16(softbody.B);
-        softbody.restLengthSq = serializer.f32(softbody.restLengthSq);
-        
-        return softbody;
+    @SuppressWarnings("unchecked")
+    @Override public SoftbodySpring serialize(Serializer serializer, Serializable structure) {
+        SoftbodySpring spring = 
+            (structure == null) ? new SoftbodySpring() : (SoftbodySpring) structure;
+
+        spring.A = serializer.i16(spring.A);
+        spring.B = serializer.i16(spring.B);
+        spring.restLengthSq = serializer.f32(spring.restLengthSq);
+
+        return spring;
     }
+
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
 }

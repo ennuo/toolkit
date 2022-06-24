@@ -1,7 +1,7 @@
 package toolkit.functions;
 
 import cwlib.types.swing.FileData;
-import cwlib.types.FileArchive;
+import cwlib.types.archives.Fart;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -14,18 +14,18 @@ import javax.swing.JOptionPane;
 public class FileCallbacks {
     public static void save() {                                         
         FileData db = Toolkit.instance.getCurrentDB();
-        if (db == null && ResourceSystem.archives.size() == 0) return;
+        if (db == null && ResourceSystem.getArchives().size() == 0) return;
         System.out.println("Saving workspace...");
         if (db != null) {
-            if (db.shouldSave) {
-                System.out.println("Saving " + db.type + " at " + db.path);
-                db.save(db.path);
-            } else System.out.println(db.type + " has no pending changes, skipping save.");
+            if (db.hasChanges()) {
+                System.out.println("Saving " + db.getType() + " at " + db.getFile());
+                db.save();
+            } else System.out.println(db.getType() + " has no pending changes, skipping save.");
         }
 
-        for (FileArchive archive: ResourceSystem.archives) {
-            if (archive.shouldSave) {
-                System.out.println("Saving FileArchive at " + archive.file.getAbsolutePath());
+        for (Fart archive: ResourceSystem.getArchives()) {
+            if (archive.shouldSave()) {
+                System.out.println("Saving FileArchive at " + archive.getFile().getAbsolutePath());
                 archive.save();
             } else System.out.println("FileArchive has no pending changes, skipping save.");
         }
@@ -34,34 +34,23 @@ public class FileCallbacks {
     }    
     
     public static void saveAs() {                                       
-        String ext = "", type = "";
-        if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
-            type = "Big Profile";
-        } else if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.MOD) {
-            ext = "mod";
-            type = "Mod";
-        } else {
-            ext = "map";
-            type = "FileDB";
-        }
-
         FileData db = Toolkit.instance.getCurrentDB();
 
-        File file = FileChooser.openFile(db.name, ext, true);
+        File file = FileChooser.openFile(db.getName(), db.getType().getExtension(), true);
         if (file == null) return;
-        db.save(file.getAbsolutePath());
+        db.save(file);
     }
     
     public static void closeTab() {                                         
         int index = Toolkit.instance.fileDataTabs.getSelectedIndex();
 
         FileData data = Toolkit.instance.getCurrentDB();
-        if (data.shouldSave) {
-            int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) data.save(data.path);
+        if (data.hasChanges()) {
+            int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.getType(), data.getFile().getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) data.save(data.getFile());
         }
 
-        ResourceSystem.databases.remove(index);
+        ResourceSystem.getDatabases().remove(index);
         trees.remove(index);
         Toolkit.instance.fileDataTabs.removeTabAt(index);
     }  

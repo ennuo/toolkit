@@ -1,7 +1,5 @@
 package toolkit.windows;
 
-import cwlib.registry.MaterialRegistry;
-import cwlib.registry.MaterialRegistry.MaterialEntry;
 import cwlib.resources.RPlan;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
@@ -9,6 +7,7 @@ import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.mods.Mod;
 import toolkit.utilities.FileChooser;
@@ -26,14 +25,11 @@ import javax.swing.JDialog;
 
 public class AssetExporter extends JDialog {
     private enum MaterialLibrary {
-        NONE(null),
-        LBP1(MaterialRegistry.LBP1),
-        LBP3(MaterialRegistry.LBP3PS3);
-        
-        private final HashMap<Integer, MaterialEntry> value;
-        private MaterialLibrary(HashMap<Integer, MaterialEntry> value) { this.value = value; }
+        NONE,
+        LBP1,
+        LBP3;
     }
-    
+
     public static enum PackageType {
         MOD("Mod"), 
         LEVEL_BACKUP("Level Backup");
@@ -84,17 +80,23 @@ public class AssetExporter extends JDialog {
         
         public Asset(ResourceDescriptor descriptor) {
             this.descriptor = descriptor;
-            this.entry = ResourceSystem.findEntry(descriptor);
+            GUID guid = descriptor.getGUID();
+            if (guid != null)
+                this.entry = ResourceSystem.get(guid);
         }
         
         @Override public String toString() {
             String prefix = "[GUID] ";
             if (this.hashinate) prefix = "[HASH] ";
             
-            if (this.entry != null && this.entry.path != null && !this.entry.path.isEmpty()) {
-                String[] files = this.entry.path.split("/");
-                return prefix + files[files.length - 1];
+            if (this.entry != null) {
+                String path = this.entry.getPath();
+                if (!path.isEmpty()) {
+                    String[] files = path.split("/");
+                    return prefix + files[files.length - 1];
+                }
             }
+
             return prefix + this.descriptor.toString();
         }
         
@@ -136,7 +138,7 @@ public class AssetExporter extends JDialog {
         this.assetList.setModel(this.assetModel);
         
         
-        byte[] rootData = ResourceSystem.extractFile(entry.hash);
+        byte[] rootData = ResourceSystem.extract(entry.getSHA1());
         if (rootData == null) {
             this.dispose();
             this.root = null;
@@ -144,7 +146,7 @@ public class AssetExporter extends JDialog {
         }
         
         Resource resource = new Resource(rootData);
-        if (resource.type == ResourceType.INVALID) {
+        if (resource.getResourceType() == ResourceType.INVALID) {
             this.dispose();
             this.root = null;
             return;
@@ -153,35 +155,35 @@ public class AssetExporter extends JDialog {
         HashSet<Asset> descriptors = new HashSet<>();
         this.getDescriptors(rootData, descriptors);
         
-        if (entry.GUID != -1)
-            this.root = new Asset(new ResourceDescriptor(entry.GUID , resource.type));
+        if (entry.getSource().getType().hasGUIDs())
+            this.root = new Asset(new ResourceDescriptor((GUID) entry.getKey() , resource.getResourceType()));
         else
-            this.root = new Asset(new ResourceDescriptor(entry.hash , resource.type));
+            this.root = new Asset(new ResourceDescriptor(entry.getSHA1() , resource.getResourceType()));
         this.root.data = rootData;
         
         boolean containsGmat = false;    
         for (Asset asset : descriptors) {
-            ResourceType type = asset.descriptor.type;
+            ResourceType type = asset.descriptor.getType();
             
             // These resources can only use GUIDs
             boolean isLocked = type.equals(ResourceType.MUSIC_SETTINGS) || 
-                               type.equals(ResourceType.FILE_OF_BYTES) || 
-                               type.equals(ResourceType.SAMPLE) || 
-                               type.equals(ResourceType.FILENAME) ||
-                               type.equals(ResourceType.SCRIPT); // These don't technically *have* to be GUID, but they're mostly useless otherwise.
+                                type.equals(ResourceType.FILE_OF_BYTES) || 
+                                type.equals(ResourceType.SAMPLE) || 
+                                type.equals(ResourceType.FILENAME) ||
+                                type.equals(ResourceType.SCRIPT); // These don't technically *have* to be GUID, but they're mostly useless otherwise.
             asset.locked = isLocked;
-            boolean shouldUseGUID = isLocked || defaults.contains(asset.descriptor.GUID);
+            boolean shouldUseGUID = isLocked || defaults.contains(asset.descriptor.getGUID());
             
             if (shouldUseGUID)
                 asset.hashinate = false;
             else {
                 asset.hashinate = true;
-                if (asset.entry == null || asset.entry.GUID == -1)
+                if (asset.entry == null || asset.entry.getKey() == null)
                     asset.locked = true;
             }
             
             if (asset.data == null) {
-                asset.hashinate = asset.descriptor.hash != null;
+                asset.hashinate = asset.descriptor.isHash();
                 asset.locked = true;
             }
             
@@ -206,7 +208,7 @@ public class AssetExporter extends JDialog {
         MaterialLibrary library = (MaterialLibrary) this.materialLibraryCombo.getSelectedItem();
         
         // Add remap support later
-        this.recurse(this.root, assets, null);
+        this.recurse(this.root, assets);
         
         Mod mod = new Mod();
         
@@ -251,7 +253,7 @@ public class AssetExporter extends JDialog {
                     System.out.println(asset.toString() + " : " + i);
                 else
                     System.out.println(asset.toString() + " : " + dependencyAsset.toString());
-                resource.replaceDependency(dependencyDescriptor, this.recurse(dependencyAsset, assets, remap));
+                resource.replaceDependency(dependencyDescriptor, this.getAllDependencies(dependencyAsset, assets, remap));
             }
         }
         if (resource.type == ResourceType.PLAN && asset.hashinate && asset.entry.GUID != -1)
@@ -297,7 +299,7 @@ public class AssetExporter extends JDialog {
             if (asset != null) {
                 if (descriptors.contains(asset)) continue;
                 descriptors.add(asset);
-                asset.data = ResourceSystem.extractFile(asset.descriptor);
+                asset.data = ResourceSystem.extract(asset.descriptor);
                 if (asset.data != null)
                     this.getDescriptors(asset.data, descriptors);
             }

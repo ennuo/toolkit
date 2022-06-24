@@ -48,14 +48,14 @@ public class UtilityCallbacks {
 
         Resource resource = new Resource(data);
 
-        if (resource.handle.data == null) {
+        if (resource.handle.uncompressedData == null) {
             System.err.println("Failed to decompress resource.");
             return;
         }
 
         File out = FileChooser.openFile(file.getName() + ".dec", null, true);
         if (out != null)
-            FileIO.write(resource.handle.data, out.getAbsolutePath());
+            FileIO.write(resource.handle.uncompressedData, out.getAbsolutePath());
     }
     
     public static void mergeFileArchives() {         
@@ -64,7 +64,7 @@ public class UtilityCallbacks {
         if (base == null) return;
         FileArchive archive;
         int index = toolkit.isArchiveLoaded(base);
-        if (index != -1) archive = ResourceSystem.archives.get(index);
+        if (index != -1) archive = ResourceSystem.getArchives().get(index);
         else archive = new FileArchive(base);
 
         if (archive == null) {
@@ -159,11 +159,11 @@ public class UtilityCallbacks {
             Mod mod = ModCallbacks.loadMod(file);
             if (mod != null) {
 
-                if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.PROFILE) {
+                if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
                     BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
                     for (FileEntry entry: mod.entries)
                         profile.add(entry.data, true);
-                } else if (ResourceSystem.currentWorkspace == Globals.ResourceSystem.MAP) {
+                } else if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MAP) {
                     if (mod.entries.size() == 0) return;
                     FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
                     FileArchive[] archives = Toolkit.instance.getSelectedArchives();
@@ -171,7 +171,7 @@ public class UtilityCallbacks {
                     for (FileEntry entry: mod.entries) {
                         if (db.add(entry))
                             db.addNode(entry);
-                        ResourceSystem.addFile(entry.data, archives);
+                        ResourceSystem.add(entry.data, archives);
                     }
                 }
 
@@ -188,25 +188,6 @@ public class UtilityCallbacks {
         m.reload((FileNode) m.getRoot());
 
         tree.setSelectionPaths(treePath);
-    }
-    
-    public static void encodeInteger() {                                              
-        String number = JOptionPane.showInputDialog(Toolkit.instance, "Integer", "");
-        if (number == null) return;
-
-        long integer;
-        if (number.toLowerCase().startsWith("0x"))
-            integer = Long.parseLong(number.substring(2), 16);
-        else if (number.startsWith("g"))
-            integer = Long.parseLong(number.substring(1));
-        else
-            integer = Long.parseLong(number);
-
-        MemoryOutputStream output = new MemoryOutputStream(12, 0xFFFFFFFF);
-        output.varint(integer);
-        output.shrink();
-
-        System.out.println("0x" + Bytes.toHex(integer) + " (" + integer + ")" + " -> " + "0x" + Bytes.toHex(output.buffer));
     }
     
     public static void scanFileArchive() {

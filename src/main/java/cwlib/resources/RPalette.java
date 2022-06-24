@@ -3,6 +3,7 @@ package cwlib.resources;
 import java.util.ArrayList;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
@@ -43,7 +44,7 @@ public class RPalette implements Serializable, Compressable {
         palette.location = serializer.i32(palette.location);
         palette.description = serializer.i32(palette.description);
 
-        if (serializer.getRevision().getVersion() > 0x322) {
+        if (serializer.getRevision().getVersion() >= Revisions.PALETTE_CONVERTED_PLANS) {
             if (serializer.isWriting()) {
                 MemoryOutputStream stream = serializer.getOutput();
                 stream.i32(palette.convertedPlans.length);

@@ -1,5 +1,7 @@
 package cwlib.util;
 
+import java.util.ArrayList;
+
 /**
  * Knuth-Morris-Pratt Algorithm for Pattern Matching
  * Sourced: http://stackoverflow.com/questions/1507780/searching-for-a-sequence-of-bytes-in-a-binary-file-with-java
@@ -36,6 +38,22 @@ public final class Matcher {
                 return i - pattern.length + 1;
         }
         return -1;
+    }
+
+    /**
+     * Finds tall occurences of a pattern in a byte array starting from the origin.
+     * @param data Data to search
+     * @param pattern Pattern to search for
+     * @return Indices in byte array where pattern occurs
+     */
+    public static int[] indicesOf(byte[] data, byte[] pattern) {
+        ArrayList<Integer> indices = new ArrayList<>();
+        int offset = Matcher.indexOf(data, pattern, 0);
+        while (offset != -1) {
+            indices.add(offset);
+            offset = Matcher.indexOf(data, pattern, offset + pattern.length);
+        }
+        return indices.stream().mapToInt(Integer::intValue).toArray();
     }
 
     /**

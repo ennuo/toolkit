@@ -1,7 +1,9 @@
 package cwlib.types.archives;
 
 import cwlib.enums.ArchiveType;
+import cwlib.types.Resource;
 import cwlib.types.data.SHA1;
+import cwlib.io.Serializable;
 import cwlib.io.streams.MemoryOutputStream;
 
 import java.io.File;
@@ -178,6 +180,20 @@ public abstract class Fart {
             stream.i32(entry.getSize());
         }
         return stream.getBuffer();
+    }
+
+    /**
+     * Deserializes a resource extracted from this archive.
+     * @param <T> Resource type that implements Serializable
+     * @param hash Hash of resource to extract
+     * @param clazz Resource class reference that implements Serializable
+     * @return Deserialized resource
+     */
+    public <T extends Serializable> T loadResource(SHA1 hash, Class<T> clazz) {
+        byte[] data = this.extract(hash);
+        if (data == null) return null;
+        Resource resource = new Resource(data);
+        return resource.loadResource(clazz);
     }
 
     /**

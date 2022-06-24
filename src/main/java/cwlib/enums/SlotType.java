@@ -23,10 +23,8 @@ public enum SlotType implements ValueEnum<Integer> {
     ADVENTURE_AREA_LEVEL(17);
 
     private final int value;
-    private SlotType(int value) {
-        this.value = value;
-    }
 
+    private SlotType(int value) { this.value = value; }
     public Integer getValue() { return this.value; }
 
     /**
@@ -36,9 +34,24 @@ public enum SlotType implements ValueEnum<Integer> {
      */
     public static SlotType fromValue(int value) {
         for (SlotType type : SlotType.values()) {
-            if (type.value == value) 
+            if (type.value == value)
                 return type;
         }
         return SlotType.DEVELOPER;
+    }
+
+    public boolean isGroup() {
+        return this.equals(SlotType.DEVELOPER_GROUP) ||
+                this.equals(SlotType.LOCAL_GROUP) ||
+                this.equals(SlotType.DLC_PACK) ||
+                this.equals(SlotType.DEVELOPER_ADVENTURE_AREA) ||
+                this.equals(SlotType.ADVENTURE_AREA_LEVEL);
+    }
+
+    public boolean isLink() {
+        return this.equals(SlotType.DEVELOPER) ||
+                this.equals(SlotType.DLC_LEVEL) ||
+                this.equals(SlotType.ADVENTURE_LEVEL_LOCAL) ||
+                this.equals(SlotType.DEVELOPER_ADVENTURE);
     }
 }

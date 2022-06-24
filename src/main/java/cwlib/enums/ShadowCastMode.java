@@ -13,7 +13,6 @@ public enum ShadowCastMode implements ValueEnum<Byte> {
     }
 
     public Byte getValue() { return this.value; }
-
     public static ShadowCastMode fromValue(byte value) {
         for (ShadowCastMode mode : ShadowCastMode.values()) {
             if (mode.value == value) 

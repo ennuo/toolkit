@@ -14,10 +14,13 @@ import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.Compressable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.BigSave;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.ResourceInfo;
 import cwlib.util.Strings;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -42,7 +45,7 @@ public class SlotManager extends javax.swing.JFrame {
     static {
         EMPTY_SLOT = new Slot();
         EMPTY_SLOT.id = new SlotID(SlotType.DEVELOPER, 0);
-        EMPTY_SLOT.title = "None";
+        EMPTY_SLOT.name = "None";
     }
     
     private enum EditorType {
@@ -132,7 +135,7 @@ public class SlotManager extends javax.swing.JFrame {
     
     public SlotManager(FileEntry entry, RSlotList slotList) {
         this.type = EditorType.SLOT_LIST;
-        this.slots = new ArrayList<>(Arrays.asList(slotList.slots));
+        this.slots = new ArrayList<>(slotList.getSlots());
         this.entry = entry;
         
         this.setup();
@@ -160,9 +163,9 @@ public class SlotManager extends javax.swing.JFrame {
     public SlotManager(FileEntry entry, RPacks pack) {
         this.type = EditorType.PACK;
         
-        this.slots = new ArrayList<>(pack.packs.length);
-        this.packs = new ArrayList<>(pack.packs.length);
-        for (Pack item : pack.packs) {
+        this.slots = new ArrayList<>(pack.getPacks().size());
+        this.packs = new ArrayList<>(pack.getPacks().size());
+        for (Pack item : pack) {
             this.packs.add(item);
             this.slots.add(item.slot);
         }
@@ -181,10 +184,10 @@ public class SlotManager extends javax.swing.JFrame {
         // We need to rebuild the HashMap since slots may have been added/removed
         HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
         for (Slot slot : this.slots)
-           slotMap.put(slot.id, slot);
+            slotMap.put(slot.id, slot);
         profile.bigProfile.myMoonSlots = slotMap;
         
-        profile.shouldSave = true;
+        profile.setHasChanges();
         Toolkit.instance.updateWorkspace();
         this.dispose();
     }
@@ -192,22 +195,17 @@ public class SlotManager extends javax.swing.JFrame {
     private void onClose() {
         int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
-            if (this.type == EditorType.PACK) {
-                RPacks pack = new RPacks();
-                pack.packs = this.packs.stream().toArray(Pack[]::new);
-                ResourceSystem.replaceEntry(this.entry, pack.build(this.entry.revision, this.entry.compressionFlags));
-            } else if (this.type == EditorType.ADVENTURE) {
+            ResourceInfo info = this.entry.getInfo();
+            Compressable compressable = null;
+            if (this.type == EditorType.PACK) compressable = new RPacks(this.packs);
+            else if (this.type == EditorType.ADVENTURE) {
                 HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
                 for (Slot slot : this.slots)
-                   slotMap.put(slot.id, slot);
+                    slotMap.put(slot.id, slot);
                 adventure.adventureSlots = slotMap;
-                ResourceSystem.replaceEntry(this.entry, adventure.build(this.entry.revision, this.entry.compressionFlags));
-            } else if (this.type == EditorType.SLOT_LIST) {
-                RSlotList list = new RSlotList();
-                list.slots = this.slots.stream().toArray(Slot[]::new);
-                ResourceSystem.replaceEntry(this.entry, list.build(this.entry.revision, this.entry.compressionFlags));
-            }
-            this.entry.resetResources();
+                compressable = adventure;
+            } else if (this.type == EditorType.SLOT_LIST) compressable = new RSlotList(this.slots);
+            ResourceSystem.replace(this.entry, Resource.compress(compressable, info.getRevision(), info.getCompressionFlags()));
         }
         this.dispose();
     }
@@ -217,7 +215,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
         
-        this.game = this.entry.revision.isAfterLBP3Revision(0x105) ? 3 : 1;
+        this.game = this.entry.getInfo().getRevision().isAfterLBP3Revision(0x105) ? 3 : 1;
         
         this.slotList.setModel(this.model);
         this.groupCombo.setModel(this.groups);
@@ -263,11 +261,11 @@ public class SlotManager extends javax.swing.JFrame {
             Slot slot = new Slot();
             
             if (this.type == EditorType.PACK) {
-                slot.id.type = SlotType.DLC_PACK;
+                slot.id.slotType = SlotType.DLC_PACK;
                 
                 Pack item = new Pack();
-                item.contentsType = ContentsType.PACK;
-                item.mesh = ContentsType.PACK.getBadgeMesh();
+                item.contentsType = ContentsType.PLANS;
+                item.mesh = ContentsType.PLANS.getBadgeMesh();
                 
                 item.slot = slot;
                 item.slot.root = null;
@@ -275,18 +273,18 @@ public class SlotManager extends javax.swing.JFrame {
                 this.packs.add(item);
             }
             else if (this.type == EditorType.SAVE)
-                slot.id.type = SlotType.USER_CREATED_STORED_LOCAL;
+                slot.id.slotType = SlotType.USER_CREATED_STORED_LOCAL;
             else if (this.type == EditorType.ADVENTURE)
-                slot.id.type = SlotType.ADVENTURE_AREA_LEVEL;
+                slot.id.slotType = SlotType.ADVENTURE_AREA_LEVEL;
             else
-                slot.id.type = SlotType.DEVELOPER;
+                slot.id.slotType = SlotType.DEVELOPER;
             
-            slot.id.ID = this.getNextAvailableSlot(slot.id.type);
+            slot.id.slotNumber = this.getNextAvailableSlot(slot.id.slotType);
             
             if (this.type == EditorType.SAVE)
-                slot.location = Crater.valueOf("SLOT_" + (slot.id.ID % 82) + "_LBP" + this.game).value;
+                slot.location = Crater.valueOf("SLOT_" + (slot.id.slotNumber % 82) + "_LBP" + this.game).getValue();
             else
-                slot.location = Crater.valueOf("SLOT_" + SlotManager.RNG.nextInt(82) + "_LBP" + this.game).value;
+                slot.location = Crater.valueOf("SLOT_" + SlotManager.RNG.nextInt(82) + "_LBP" + this.game).getValue();
 
             this.slots.add(slot);
             this.model.addElement(slot);
@@ -324,7 +322,7 @@ public class SlotManager extends javax.swing.JFrame {
     private long getNextAvailableSlot(SlotType type) {
         ArrayList<Long> IDs = new ArrayList<>(this.slots.size());
         for (Slot slot : this.slots)
-            IDs.add(slot.id.ID);
+            IDs.add(slot.id.slotNumber);
         long ID = 0;
         if (!type.equals(SlotType.USER_CREATED_STORED_LOCAL)) {
             IDs.sort((Long a, Long b) -> (int)(b - a));
@@ -354,7 +352,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.groups.removeAllElements();
         this.groups.addElement(new SlotEntry(EMPTY_SLOT));
         for (Slot slot : this.slots) {
-            SlotType type = slot.id.type;
+            SlotType type = slot.id.slotType;
             if (type.isGroup())
                 this.groups.addElement(new SlotEntry(slot));
         }
@@ -364,7 +362,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.links.removeAllElements();
         this.links.addElement(new SlotEntry(EMPTY_SLOT));
         for (Slot slot : this.slots) {
-            SlotType type = slot.id.type;
+            SlotType type = slot.id.slotType;
             if (type.isLink())
                 this.links.addElement(new SlotEntry(slot));
         }
@@ -387,19 +385,23 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.planetDecorations = new ResourceDescriptor(ResourceType.LEVEL, descriptor);
+                this.selectedSlot.planetDecorations = new ResourceDescriptor(descriptor, ResourceType.LEVEL);
         });
-        this.backgroundGUIDTextEntry.addChangeListener(e -> this.selectedSlot.backgroundGUID = (long) this.backgroundGUIDTextEntry.getValue());
+        this.backgroundGUIDTextEntry.addChangeListener(e -> {
+            long value = (long) this.backgroundGUIDTextEntry.getValue();
+            if (value == 0) this.selectedSlot.backgroundGUID = null;
+            else this.selectedSlot.backgroundGUID = new GUID(value);
+        });
         
         this.locationXSpinner.addChangeListener(e -> this.selectedSlot.location.x = (float) this.locationXSpinner.getValue());
         this.locationYSpinner.addChangeListener(e -> this.selectedSlot.location.y = (float) this.locationYSpinner.getValue());
         this.locationZSpinner.addChangeListener(e -> this.selectedSlot.location.z = (float) this.locationZSpinner.getValue());
         this.locationWSpinner.addChangeListener(e -> this.selectedSlot.location.w = (float) this.locationWSpinner.getValue());
         
-        this.lockedCheckbox.addChangeListener(e -> this.selectedSlot.isLocked = this.lockedCheckbox.isSelected());
+        this.lockedCheckbox.addChangeListener(e -> this.selectedSlot.initiallyLocked = this.lockedCheckbox.isSelected());
         this.subLevelCheckbox.addChangeListener(e -> this.selectedSlot.isSubLevel = this.subLevelCheckbox.isSelected());
         this.moveCheckbox.addChangeListener(e -> this.selectedSlot.moveRecommended = this.moveCheckbox.isSelected());
-        this.shareableCheckbox.addChangeListener(e -> this.selectedSlot.copyable = this.shareableCheckbox.isSelected());
+        this.shareableCheckbox.addChangeListener(e -> this.selectedSlot.shareable = this.shareableCheckbox.isSelected());
         this.gameKitCheckbox.addChangeListener(e -> this.selectedSlot.isGameKit = this.gameKitCheckbox.isSelected());
         this.visibleCheckbox.addChangeListener(e -> this.selectedSlot.showOnPlanet = this.visibleCheckbox.isSelected());
         this.crossControllerCheckbox.addChangeListener(e -> this.selectedSlot.crossCompatible = this.crossControllerCheckbox.isSelected());
@@ -407,7 +409,7 @@ public class SlotManager extends javax.swing.JFrame {
     
     private void setupDetailsListeners() {
         this.titleTextEntry.addActionListener(e -> {
-            this.selectedSlot.title = this.titleTextEntry.getText();
+            this.selectedSlot.name = this.titleTextEntry.getText();
             this.slotList.repaint();
         });
         
@@ -429,7 +431,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(text) || Strings.isSHA1(text)) {
-                ResourceDescriptor descriptor = new ResourceDescriptor(ResourceType.TEXTURE, text);
+                ResourceDescriptor descriptor = new ResourceDescriptor(text, ResourceType.TEXTURE);
                 if (descriptor.equals(this.selectedSlot.icon)) return;
                 this.selectedSlot.icon = descriptor;
                 this.updateIcon(true);
@@ -453,7 +455,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.root = new ResourceDescriptor(ResourceType.LEVEL, descriptor);
+                this.selectedSlot.root = new ResourceDescriptor(descriptor, ResourceType.LEVEL);
         });
         
         this.adventureTextEntry.addActionListener(e -> {
@@ -463,15 +465,15 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedSlot.adventure = new ResourceDescriptor(ResourceType.ADVENTURE_CREATE_PROFILE, descriptor);
+                this.selectedSlot.adventure = new ResourceDescriptor(descriptor, ResourceType.ADVENTURE_CREATE_PROFILE);
         });
         
         this.slotTypeCombo.addItemListener(e -> {
             if (e.getStateChange() != ItemEvent.SELECTED || !this.canUpdate) return;
             
-            SlotType oldType = this.selectedSlot.id.type;
-            this.selectedSlot.id.type = (SlotType) this.slotTypeCombo.getSelectedItem();
-            SlotType newType = this.selectedSlot.id.type;
+            SlotType oldType = this.selectedSlot.id.slotType;
+            this.selectedSlot.id.slotType = (SlotType) this.slotTypeCombo.getSelectedItem();
+            SlotType newType = this.selectedSlot.id.slotType;
             
             this.canUpdate = false;
             
@@ -481,7 +483,7 @@ public class SlotManager extends javax.swing.JFrame {
             if ((!oldType.isLink() && newType.isLink()) || (oldType.isLink() && !newType.isLink()))
                 this.setupLinks();
             
-            this.groupCombo.setSelectedItem(this.getGroup(this.selectedSlot.primaryLinkGroup));
+            this.groupCombo.setSelectedItem(this.getGroup(this.selectedSlot.group));
             this.linkCombo.setSelectedItem(this.getLink(this.selectedSlot.primaryLinkLevel));
             
             this.canUpdate = true;
@@ -489,14 +491,14 @@ public class SlotManager extends javax.swing.JFrame {
         });
         
         this.slotNumberSpinner.addChangeListener(e -> {
-            SlotID oldSlotID = new SlotID(this.selectedSlot.id.type, this.selectedSlot.id.ID);
-            this.selectedSlot.id.ID = (long) this.slotNumberSpinner.getValue();
+            SlotID oldSlotID = new SlotID(this.selectedSlot.id.slotType, this.selectedSlot.id.slotNumber);
+            this.selectedSlot.id.slotNumber = (long) this.slotNumberSpinner.getValue();
             SlotID newSlotID = this.selectedSlot.id;
             for (Slot slot : this.slots) {
-                if (slot.primaryLinkGroup.equals(oldSlotID))
-                    slot.primaryLinkGroup.ID = newSlotID.ID;
+                if (slot.group.equals(oldSlotID))
+                    slot.group.slotNumber = newSlotID.slotNumber;
                 else if (slot.primaryLinkLevel.equals(oldSlotID))
-                    slot.primaryLinkLevel.ID = newSlotID.ID;
+                    slot.primaryLinkLevel.slotNumber = newSlotID.slotNumber;
             }
         });
         
@@ -504,15 +506,15 @@ public class SlotManager extends javax.swing.JFrame {
         this.groupCombo.addItemListener(e -> {
             if (e.getStateChange() != ItemEvent.SELECTED || !this.canUpdate) return;
             SlotEntry entry = (SlotEntry) this.groupCombo.getSelectedItem();
-            this.selectedSlot.primaryLinkGroup.ID = entry.id.ID;
-            this.selectedSlot.primaryLinkGroup.type = entry.id.type;
+            this.selectedSlot.group.slotNumber = entry.id.slotNumber;
+            this.selectedSlot.group.slotType = entry.id.slotType;
         });
         
         this.linkCombo.addItemListener(e -> {
             if (e.getStateChange() != ItemEvent.SELECTED || !this.canUpdate) return;
             SlotEntry entry = (SlotEntry) this.linkCombo.getSelectedItem();
-            this.selectedSlot.primaryLinkLevel.ID = entry.id.ID;
-            this.selectedSlot.primaryLinkLevel.type = entry.id.type;
+            this.selectedSlot.primaryLinkLevel.slotNumber = entry.id.slotNumber;
+            this.selectedSlot.primaryLinkLevel.slotType = entry.id.slotType;
         });
     }
     
@@ -537,7 +539,7 @@ public class SlotManager extends javax.swing.JFrame {
                 return;
             }
             if (Strings.isGUID(descriptor) || Strings.isSHA1(descriptor))
-                this.selectedItem.mesh = new ResourceDescriptor(ResourceType.MESH, descriptor);
+                this.selectedItem.mesh = new ResourceDescriptor(descriptor, ResourceType.MESH);
         });
         
         this.contentIDTextEntry.addActionListener(e -> this.selectedItem.contentID = this.contentIDTextEntry.getText());
@@ -553,10 +555,10 @@ public class SlotManager extends javax.swing.JFrame {
         if (tag == null || tag.isEmpty()) {
             this.titleTextEntry.setEnabled(true);
             this.descriptionTextEntry.setEnabled(true);
-            if (selectedSlot.title == null || selectedSlot.title.isEmpty())
+            if (selectedSlot.name == null || selectedSlot.name.isEmpty())
                 this.titleTextEntry.setText("Unnamed Level");
             else 
-                this.titleTextEntry.setText(selectedSlot.title);
+                this.titleTextEntry.setText(selectedSlot.name);
             this.descriptionTextEntry.setText(selectedSlot.description);
         } else {
             this.titleTextEntry.setEnabled(false);
@@ -572,25 +574,27 @@ public class SlotManager extends javax.swing.JFrame {
     }
     
     private void updateIcon(boolean force) {
-        if (force || this.selectedSlot.renderedIcon == null) {
-            this.selectedSlot.renderedIcon = null;
-            this.selectedSlot.renderIcon(this.entry);
-        }
+        // if (force || this.selectedSlot.renderedIcon == null) {
+        //     this.selectedSlot.renderedIcon = null;
+        //     this.selectedSlot.renderIcon(this.entry);
+        // }
         
-        if (this.selectedSlot.renderedIcon == null) {
-            this.slotIcon.setIcon(null);
-            this.slotIcon.setText("No icon available.");
-            return;
-        }
-        this.slotIcon.setText("");
-        this.slotIcon.setIcon(this.selectedSlot.renderedIcon);
+        // if (this.selectedSlot.renderedIcon == null) {
+        //     this.slotIcon.setIcon(null);
+        //     this.slotIcon.setText("No icon available.");
+        //     return;
+        // }
+        // this.slotIcon.setText("");
+        // this.slotIcon.setIcon(this.selectedSlot.renderedIcon);
+
+        this.slotIcon.setIcon(null);
     }
     
     private void setSlotData() {
         this.canUpdate = false;
         Slot slot = this.selectedSlot;
         
-        this.titleTextEntry.setText(slot.title);
+        this.titleTextEntry.setText(slot.name);
         this.descriptionTextEntry.setText(slot.description);
 
         
@@ -612,10 +616,10 @@ public class SlotManager extends javax.swing.JFrame {
         if (slot.adventure != null) this.adventureTextEntry.setText(slot.adventure.toString());
         else this.adventureTextEntry.setText("");
 
-        this.slotTypeCombo.setSelectedItem(slot.id.type);
-        this.slotNumberSpinner.setValue(slot.id.ID);
+        this.slotTypeCombo.setSelectedItem(slot.id.slotType);
+        this.slotNumberSpinner.setValue(slot.id.slotNumber);
         
-        this.groupCombo.setSelectedItem(this.getGroup(slot.primaryLinkGroup));
+        this.groupCombo.setSelectedItem(this.getGroup(slot.group));
         this.linkCombo.setSelectedItem(this.getLink(slot.primaryLinkLevel));
 
         this.levelTypeCombo.setSelectedItem(slot.developerLevelType);
@@ -630,17 +634,18 @@ public class SlotManager extends javax.swing.JFrame {
         else
             this.planetDecorationTextEntry.setText("");
 
-        this.backgroundGUIDTextEntry.setValue(slot.backgroundGUID);
+        if (slot.backgroundGUID == null) this.backgroundGUIDTextEntry.setValue(0l);
+        else this.backgroundGUIDTextEntry.setValue(slot.backgroundGUID.getValue());
 
         this.locationXSpinner.setValue(slot.location.x);
         this.locationYSpinner.setValue(slot.location.y);
         this.locationZSpinner.setValue(slot.location.z);
         this.locationWSpinner.setValue(slot.location.w);
 
-        this.lockedCheckbox.setSelected(slot.isLocked);
+        this.lockedCheckbox.setSelected(slot.initiallyLocked);
         this.subLevelCheckbox.setSelected(slot.isSubLevel);
         this.moveCheckbox.setSelected(slot.moveRecommended);
-        this.shareableCheckbox.setSelected(slot.copyable);
+        this.shareableCheckbox.setSelected(slot.shareable);
         this.gameKitCheckbox.setSelected(slot.isGameKit);
         this.visibleCheckbox.setSelected(slot.showOnPlanet);
         this.crossControllerCheckbox.setSelected(slot.crossCompatible);

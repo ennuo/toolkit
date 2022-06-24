@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.resources.RPalette;
 import cwlib.enums.DatabaseType;
+import cwlib.enums.ResourceType;
 import cwlib.types.swing.FileData;
 
 /**
@@ -254,6 +257,40 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
             else
                 this.newFileDBRow(entry);
         }
+    }
+
+    /**
+     * Generates an RPlan resource list from this database
+     * @return New line separated resource list
+     */
+    public String toRLST() {
+        int pathSize = this.entries
+            .stream()
+            .mapToInt(element -> element.getPath().length() + 1)
+            .reduce(0, (total, element) -> total + element);
+
+        StringBuilder builder = new StringBuilder(pathSize);
+        for (FileDBRow entry : this.entries) {
+            String path = entry.getPath();
+            if (path.endsWith(".plan"))
+                builder.append(path + '\n');
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Generates an RPalette from this database
+     * @return RPalette instance
+     */
+    public RPalette toPalette() {
+        RPalette palette = new RPalette();
+        for (FileDBRow entry : this.entries) {
+            String path = entry.getPath();
+            if (path.endsWith(".plan"))
+                palette.planList.add(new ResourceDescriptor(entry.getGUID(), ResourceType.PLAN));
+        }
+        return palette;
     }
 
     /**

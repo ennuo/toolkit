@@ -10,6 +10,7 @@ import cwlib.enums.SlotType;
 import cwlib.enums.ToolType;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
 import cwlib.io.Serializable;
@@ -27,7 +28,7 @@ public class InventoryItemDetails implements Serializable {
     
     public long dateAdded = new Date().getTime() / 1000;
     public SlotID levelUnlockSlotID = new SlotID();
-    public long highlightSound;
+    public GUID highlightSound;
     public int colour;
     
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
@@ -74,7 +75,7 @@ public class InventoryItemDetails implements Serializable {
         
         int head = serializer.getRevision().getVersion();
         
-        if (serializer.isWriting() && details.highlightSound != 0)
+        if (serializer.isWriting() && details.highlightSound != null)
             serializer.addDependency(new ResourceDescriptor(details.highlightSound, ResourceType.FILENAME));
         
         if (serializer.getRevision().getVersion() > 0x37c) {
@@ -248,7 +249,7 @@ public class InventoryItemDetails implements Serializable {
         if (head > 0x334) 
             details.flags = serializer.i8(details.flags);
 
-        if (serializer.getRevision().isAfterLeerdamerRevision(7) || head > 0x2ba) {
+        if (serializer.getRevision().isAfterLeerdammerRevision(7) || head > 0x2ba) {
             details.titleKey = serializer.u32(details.titleKey);
             details.descriptionKey = serializer.u32(details.descriptionKey);
         } else 

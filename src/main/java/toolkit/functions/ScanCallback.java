@@ -103,14 +103,14 @@ public class ScanCallback {
                     continue;
                 }
 
-                String magic = data.str(3);
+                String magic = uncompressedData.str(3);
 
                 if (!HEADERS.contains(magic)) {
-                    data.seek(begin + 1);
+                    uncompressedData.seek(begin + 1);
                     continue;
                 }
 
-                String type = data.str(1);
+                String type = uncompressedData.str(1);
 
                 try {
                     byte[] buffer = null;
@@ -119,28 +119,28 @@ public class ScanCallback {
                         case "i":
                             {
                                 if (!magic.equals("BIK")) break;
-                                int size = Integer.reverseBytes(data.i32());
+                                int size = Integer.reverseBytes(uncompressedData.i32());
                                 data.offset -= 8;
-                                buffer = data.bytes(size + 8);
+                                buffer = uncompressedData.bytes(size + 8);
                             }
                         case "t":
                             {
                                 if (magic.equals("FSB") || magic.equals("TEX")) break;
                                 int end = 0;
                                 while ((data.offset + 4) <= data.length) {
-                                    String mag = data.str(3);
+                                    String mag = uncompressedData.str(3);
                                     if (HEADERS.contains(mag)) {
-                                        String t = data.str(1);
+                                        String t = uncompressedData.str(1);
                                         if (t.equals(" ") || t.equals("4") || t.equals("b") || t.equals("t") || t.equals("i")) {
                                             data.offset -= 4;
                                             end = data.offset;
-                                            data.seek(begin);
+                                            uncompressedData.seek(begin);
                                             break;
                                         }
                                     } else data.offset -= 2;
                                 }
 
-                                buffer = data.bytes(end - begin);
+                                buffer = uncompressedData.bytes(end - begin);
 
                                 final String converted = new String(buffer, StandardCharsets.UTF_8);
                                 final byte[] output = converted.getBytes(StandardCharsets.UTF_8);
@@ -155,73 +155,73 @@ public class ScanCallback {
                         case "4":
                             {
                                 if (!magic.equals("FSB")) break;
-                                int count = Integer.reverseBytes(data.i32());
-                                data.forward(0x4);
-                                int size = Integer.reverseBytes(data.i32());
-                                data.forward(0x20);
+                                int count = Integer.reverseBytes(uncompressedData.i32());
+                                uncompressedData.forward(0x4);
+                                int size = Integer.reverseBytes(uncompressedData.i32());
+                                uncompressedData.forward(0x20);
                                 for (int i = 0; i < count; ++i)
-                                    data.forward(Short.reverseBytes(data.i16()) - 2);
+                                    uncompressedData.forward(Short.reverseBytes(uncompressedData.i16()) - 2);
                                 if (data.data[data.offset] == 0) {
-                                    while (data.i8() == 0);
+                                    while (uncompressedData.i8() == 0);
                                     data.offset -= 1;
                                 }
-                                data.forward(size);
+                                uncompressedData.forward(size);
                                 size = data.offset - begin;
-                                data.seek(begin);
-                                buffer = data.bytes(size);
+                                uncompressedData.seek(begin);
+                                buffer = uncompressedData.bytes(size);
                                 break;
                             }
 
                         case "b":
                             {
                                 if (magic.equals("FSB") || magic.equals("TEX")) break;
-                                int revision = data.i32f();
+                                int revision = uncompressedData.i32f();
                                 if (revision > 0x021803F9 || revision < 0) {
-                                    data.seek(begin + 1);
+                                    uncompressedData.seek(begin + 1);
                                     continue;
                                 }
-                                int dependencyOffset = data.i32f();
-                                data.forward(dependencyOffset - 12);
-                                int count = data.i32f();
+                                int dependencyOffset = uncompressedData.i32f();
+                                uncompressedData.forward(dependencyOffset - 12);
+                                int count = uncompressedData.i32f();
                                 for (int j = 0; j < count; ++j) {
-                                    data.resource(ResourceType.FILE_OF_BYTES, true);
-                                    data.i32f();
+                                    uncompressedData.resource(ResourceType.FILE_OF_BYTES, true);
+                                    uncompressedData.i32f();
                                 }
 
                                 int size = data.offset - begin;
-                                data.seek(begin);
+                                uncompressedData.seek(begin);
 
-                                buffer = data.bytes(size);
+                                buffer = uncompressedData.bytes(size);
                             }
 
                         case " ":
                             {
-                                if (magic.equals("TEX")) data.forward(2);
-                                else if (magic.equals("GTF")) data.forward(0x1a);
+                                if (magic.equals("TEX")) uncompressedData.forward(2);
+                                else if (magic.equals("GTF")) uncompressedData.forward(0x1a);
                                 else break;
-                                int count = data.i16();
+                                int count = uncompressedData.i16();
                                 int size = 0;
                                 for (int j = 0; j < count; ++j) {
-                                    size += data.i16();
-                                    data.i16();
+                                    size += uncompressedData.i16();
+                                    uncompressedData.i16();
                                 }
-                                data.forward(size);
+                                uncompressedData.forward(size);
 
 
                                 if (data.offset < 0 || ((data.offset + 1) >= data.length)) {
-                                    data.seek(begin + 1);
+                                    uncompressedData.seek(begin + 1);
                                     continue;
                                 }
 
                                 size = data.offset - begin;
-                                data.seek(begin);
-                                buffer = data.bytes(size);
+                                uncompressedData.seek(begin);
+                                buffer = uncompressedData.bytes(size);
                             }
 
 
                     }
 
-                    data.seek(begin + 1);
+                    uncompressedData.seek(begin + 1);
 
                     if (buffer != null) {
                         int querySize = ((buffer.length * 10) + farc.queueSize + farc.hashTable.length + 8 + (farc.entries.size() * 0x1C)) * 2;
@@ -280,7 +280,7 @@ public class ScanCallback {
                     }
 
                 } catch (Exception e) {
-                    data.seek(begin + 1);
+                    uncompressedData.seek(begin + 1);
                 }
             }
 
