@@ -8,6 +8,7 @@ import cwlib.util.Nodes;
 import cwlib.types.swing.SearchParameters;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
+import cwlib.types.archives.SaveArchive;
 import cwlib.types.ParamSFO;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.ex.SerializationException;
@@ -21,10 +22,11 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SlotType;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.types.databases.FileDBRow;
+import cwlib.types.databases.FileEntry;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.inventory.InventoryItemDetails;
-import cwlib.types.FileSave;
 
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
@@ -39,9 +41,14 @@ import javax.swing.*;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
 import cwlib.types.*;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.ResourceInfo;
 import cwlib.types.mods.Mod;
+import cwlib.types.save.BigSave;
+import cwlib.types.save.SaveEntry;
 import cwlib.util.Bytes;
+import cwlib.util.Crypto;
 import cwlib.util.Images;
 import toolkit.configurations.Config;
 import toolkit.configurations.ApplicationFlags;
@@ -79,13 +86,13 @@ public class Toolkit extends javax.swing.JFrame {
                 } else {
                     useContext = false;
                     tree.setSelectionPath(null);
-                    ResourceSystem.lastSelected = null;
+                    ResourceSystem.resetSelections();
                 }
                 if (selRow > -1) {
                     tree.setSelectionRow(selRow);
                     useContext = true;
                 } else useContext = false;
-                getLastSelected(tree);
+                ResourceSystem.updateSelections(tree);
                 generateEntryContext(tree, e.getX(), e.getY());
             }
         }
@@ -194,15 +201,15 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void checkForChanges() {
         for (FileData data: ResourceSystem.getDatabases()) {
-            if (data.shouldSave) {
-                int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.type, data.path), "Pending changes", JOptionPane.YES_NO_OPTION);
-                if (result == JOptionPane.YES_OPTION) data.save(data.path);
+            if (data.hasChanges()) {
+                int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", data.getType().getName(), data.getFile().getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION) data.save();
             }
         }
 
-        for (FileArchive archive: ResourceSystem.getArchives()) {
-            if (archive.shouldSave) {
-                int result = JOptionPane.showConfirmDialog(null, String.format("Your FileArchive (%s) has pending changes, do you want to save?", archive.file.getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
+        for (Fart archive: ResourceSystem.getArchives()) {
+            if (archive.shouldSave()) {
+                int result = JOptionPane.showConfirmDialog(null, String.format("Your FileArchive (%s) has pending changes, do you want to save?", archive.getFile().getAbsolutePath()), "Pending changes", JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) archive.save();
             }
         }
@@ -212,26 +219,30 @@ public class Toolkit extends javax.swing.JFrame {
         closeTab.setVisible(fileDataTabs.getTabCount() != 0);
         installProfileMod.setVisible(false);
         int archiveCount = ResourceSystem.getArchives().size();
-        FileData db = getCurrentDB();
+        FileData database = ResourceSystem.getSelectedDatabase();
 
-        if (db != null) {
+        FileNode lastSelected = ResourceSystem.getSelected();
+        FileNode[] selected = ResourceSystem.getAllSelected();
+
+
+        if (database != null) {
             editMenu.setVisible(true);
-            if (db.shouldSave) {
-                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name + " *");
+            if (database.hasChanges()) {
+                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), database.getName() + " *");
                 saveMenu.setEnabled(true);
             } else {
-                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), db.name);
+                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), database.getName());
                 saveMenu.setEnabled(false);
             }
         } else editMenu.setVisible(false);
 
         fileExists = false;
-        if (ResourceSystem.lastSelected != null && ResourceSystem.getSelected().getEntry() != null) {
-            if (ResourceSystem.getSelected().getEntry().data != null)
+        if (ResourceSystem.getSelected() != null && ResourceSystem.getSelected().getEntry() != null) {
+            if (ResourceSystem.getSelected().getEntry().getInfo() != null)
                 fileExists = true;
-        } else if (ResourceSystem.selected.size() > 1) fileExists = true;
+        } else if (ResourceSystem.getAllSelected().length > 1) fileExists = true;
 
-        if (archiveCount != 0 || db != null) {
+        if (archiveCount != 0 || database != null) {
             saveDivider.setVisible(true);
             saveMenu.setVisible(true);
         } else {
@@ -247,7 +258,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         else if (ResourceSystem.canExtract() && ResourceSystem.getDatabaseType() != DatabaseType.MOD) {
             FARMenu.setVisible(true); 
-            if (ResourceSystem.getDatabaseType() == DatabaseType.MAP)
+            if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE)
                 addFolder.setVisible(true);
         }
         else FARMenu.setVisible(false);
@@ -260,7 +271,7 @@ public class Toolkit extends javax.swing.JFrame {
             saveAs.setVisible(false);
         }
 
-        if (db == null) {
+        if (database == null) {
             saveDivider.setVisible(false);
             dumpHashes.setVisible(false);
             MAPMenu.setVisible(false);
@@ -269,7 +280,7 @@ public class Toolkit extends javax.swing.JFrame {
             saveDivider.setVisible(true);
             dumpHashes.setVisible(true);
             dumpRLST.setVisible(false);
-            if (ResourceSystem.getDatabaseType() == DatabaseType.MAP) {
+            if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE) {
                 if (archiveCount != 0)
                     installProfileMod.setVisible(true);
                 MAPMenu.setVisible(true);
@@ -279,7 +290,7 @@ public class Toolkit extends javax.swing.JFrame {
             }
         }
 
-        if (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) {
+        if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
             ProfileMenu.setVisible(true);
             installProfileMod.setVisible(true);
         } else ProfileMenu.setVisible(false);
@@ -319,11 +330,17 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (!useContext && isDependencyTree) return;
 
-        if (!isDependencyTree && (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE && useContext)) 
+        if (!isDependencyTree && (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && useContext)) 
             deleteContext.setVisible(true);
 
-        if (!(ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) && ResourceSystem.getDatabases().size() != 0) {
-            if ((useContext && ResourceSystem.getSelected().getEntry() == null) && !isDependencyTree) {
+        FileNode node = ResourceSystem.getSelected();
+        FileEntry entry = node.getEntry();
+        ResourceInfo info = entry == null ? entry.getInfo() : null;
+        ResourceType type = info == null ? ResourceType.INVALID : info.getType();
+        
+
+        if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0) {
+            if ((useContext && entry == null) && !isDependencyTree) {
                 newItemContext.setVisible(true);
                 newFolderContext.setVisible(true);
                 renameFolder.setVisible(true);
@@ -333,33 +350,33 @@ public class Toolkit extends javax.swing.JFrame {
                     zeroContext.setVisible(true);
                     deleteContext.setVisible(true);
                 }
-                if (ResourceSystem.getSelected().getEntry() != null) {
+                if (entry != null) {
                     duplicateContext.setVisible(true);
-                    if (ResourceSystem.getDatabaseType() == DatabaseType.MAP && !isDependencyTree)
+                    if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE && !isDependencyTree)
                         editMenuContext.setVisible(true);
                 }
             }
         }
 
-        if (ResourceSystem.canExtract() && ResourceSystem.lastSelected != null && ResourceSystem.getSelected().getEntry() != null) {
+        if (ResourceSystem.canExtract() && node != null && entry != null) {
             replaceContext.setVisible(true);
-            if (ResourceSystem.getSelected().getName().endsWith(".tex"))
+            if (node.getName().endsWith(".tex"))
                 replaceImage.setVisible(true);
         }
 
         if (ResourceSystem.canExtract() && fileExists && useContext) {
-
             extractContextMenu.setVisible(true);
 
-            if (ResourceSystem.getSelected().getEntry() != null) {
-                if ((ResourceSystem.getDatabaseType() == DatabaseType.PROFILE || ResourceSystem.getDatabases().size() != 0) && ResourceSystem.getSelected().getEntry().canReplaceDecompressed) {
+            if (entry != null) {
+                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0) && info != null && info.isResource()) {
                     replaceDecompressed.setVisible(true);
-                    if (ResourceSystem.getSelected().getEntry().dependencies != null && ResourceSystem.getSelected().getEntry().dependencies.size() != 0) {
+
+                    if (info != null && info.getType() != ResourceType.INVALID && info.getDependencies().length != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
-                        if (ResourceSystem.getSelected().getName().endsWith(".bin") || ResourceSystem.getSelected().getName().endsWith(".plan")) {
+                        if (node.getName().endsWith(".bin") || node.getName().endsWith(".plan")) {
                             exportBackupGroup.setVisible(true);
-                            if (ResourceSystem.getSelected().getEntry().GUID != -1) {
+                            if (entry.getKey() != null) {
                                 exportAsBackupGUID.setVisible(true);
                             }
                         }
@@ -367,75 +384,59 @@ public class Toolkit extends javax.swing.JFrame {
                         dependencyGroup.setVisible(true);
                     }
                 }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".anim")) {
-                    if (ResourceSystem.getSelected().getEntry().getResource("animation") != null) {
+
+                if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
+                if (info.getResource() != null) {
+                    if (type == ResourceType.ANIMATION) {
                         exportGroup.setVisible(true);
                         exportAnimation.setVisible(true);
                     }
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".smh")) {
-                    replaceDecompressed.setVisible(false);
-                    RStaticMesh mesh = ResourceSystem.getSelected().getEntry().getResource("staticMesh");
-                    if (mesh != null) {
-                        exportGroup.setVisible(true);
-                        exportModelGroup.setVisible(true);
-                        exportOBJ.setVisible(false);
+                    
+                    if (type == ResourceType.STATIC_MESH) {
+                        replaceDecompressed.setVisible(false);
+                        if (info.getResource() != null) {
+                            exportGroup.setVisible(true);
+                            exportModelGroup.setVisible(true);
+                            exportOBJ.setVisible(false);
+                        }
                     }
-                }
-
-                if (ResourceSystem.getSelected().getName().endsWith(".mol")) {
-                    RMesh mesh = ResourceSystem.getSelected().getEntry().getResource("mesh");
-                    if (mesh != null) {
+    
+                    if (type == ResourceType.MESH) {
+                        RMesh mesh = info.getResource();
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
-                        int count = mesh.attributeCount;
+                        int count = mesh.getAttributeCount();
                         if (count != 0) 
                             exportOBJ.setVisible(true);
                         exportOBJTEXCOORD0.setVisible((count > 0));
                         exportOBJTEXCOORD1.setVisible((count > 1));
                         exportOBJTEXCOORD2.setVisible((count > 2));
                     }
-                }
-                if (ResourceSystem.getSelected().getName().endsWith(".tex")) {
-                    exportGroup.setVisible(true);
-                    exportTextureGroupContext.setVisible(true);
-                    if (!isDependencyTree)
-                        replaceImage.setVisible(true);
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".slt") && !isDependencyTree) {
-                    RSlotList slots = ResourceSystem.getSelected().getEntry().getResource("slots");
-                    if (slots != null)
+
+                    if ((type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE)) {
+                        exportGroup.setVisible(true);
+                        exportTextureGroupContext.setVisible(true);
+                        if (!isDependencyTree)
+                            replaceImage.setVisible(true);
+                    }
+                    
+                    if (type == ResourceType.SLOT_LIST && !isDependencyTree) 
                         editSlotContext.setVisible(true);
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".adc") && !isDependencyTree) {
-                    RAdventureCreateProfile profile = ResourceSystem.getSelected().getEntry().getResource("adventure");
-                    if (profile != null)
+                    
+                    if (type == ResourceType.ADVENTURE_CREATE_PROFILE && !isDependencyTree)
                         editSlotContext.setVisible(true);
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".plan") && !isDependencyTree) {
-                    RPlan plan = ResourceSystem.getSelected().getEntry().getResource("item");
-                    if (plan != null)
+                    
+                    if (type == ResourceType.PLAN && !isDependencyTree) 
                         editItemContext.setVisible(true);
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".pck") && !isDependencyTree) {
-                    RPacks pack = ResourceSystem.getSelected().getEntry().getResource("pack");
-                    if (pack != null)
+                    
+                    if (type == ResourceType.PACKS && !isDependencyTree) 
                         editSlotContext.setVisible(true);
-                }
-                
-                if (ResourceSystem.getSelected().getName().endsWith(".bin") && ResourceSystem.getDatabaseType() == DatabaseType.PROFILE && !isDependencyTree) {
-                    Slot slot = ResourceSystem.getSelected().getEntry().getResource("slot");
-                    if (slot != null)
-                       editSlotContext.setVisible(true); 
+                    
+                    if (type == ResourceType.LEVEL && ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && !isDependencyTree)
+                        editSlotContext.setVisible(true); 
                 }
 
-                if (ResourceSystem.getSelected().getName().endsWith(".trans")) {
+                if (node.getName().endsWith(".trans")) {
                     exportGroup.setVisible(true);
                     loadLAMSContext.setVisible(true);
                     exportLAMSContext.setVisible(true);
@@ -1639,6 +1640,8 @@ public class Toolkit extends javax.swing.JFrame {
         JScrollPane panel = new JScrollPane();
         panel.setViewportView(tree);
 
+        data.getModel().reload();
+
         fileDataTabs.addTab(data.getName(), panel);
 
         search.setEditable(true);
@@ -1668,8 +1671,8 @@ public class Toolkit extends javax.swing.JFrame {
     public int isArchiveLoaded(File file) {
         String path = file.getAbsolutePath();
         for (int i = 0; i < ResourceSystem.getArchives().size(); ++i) {
-            FileArchive archive = ResourceSystem.getArchives().get(i);
-            if (archive.file.getAbsolutePath().equals(path))
+            Fart archive = ResourceSystem.getArchives().get(i);
+            if (archive.getFile().getAbsolutePath().equals(path))
                 return i;
         }
         return -1;
@@ -1715,8 +1718,11 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportOBJTEXCOORD0ActionPerformed
 
     private void loadLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLAMSContextActionPerformed
-        ResourceSystem.LAMS = new RTranslationTable(new MemoryInputStream(ResourceSystem.getSelected().getEntry().data));
-        if (ResourceSystem.LAMS != null) StringMetadata.setEnabled(true);
+        byte[] data = ResourceSystem.extract(ResourceSystem.getSelected().getEntry());
+        if (data == null) return;
+        RTranslationTable table = new RTranslationTable(data);
+        if (table != null) StringMetadata.setEnabled(true);
+        ResourceSystem.setLAMS(table);
     }//GEN-LAST:event_loadLAMSContextActionPerformed
 
     private void locationFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationFieldActionPerformed
@@ -1724,36 +1730,42 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_locationFieldActionPerformed
 
     private void LAMSMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LAMSMetadataActionPerformed
-        InventoryItemDetails metadata = ResourceSystem.getSelected().getEntry().<RPlan>getResource("item").details;
-        titleField.setText("" + metadata.titleKey);
-        descriptionField.setText("" + metadata.descriptionKey);
-        locationField.setText("" + metadata.location);
-        categoryField.setText("" + metadata.category);
+        ResourceInfo info = ResourceSystem.getSelected().getEntry().getInfo();
+        if (info == null || info.getType() != ResourceType.PLAN || info.getResource() == null) return;
+        InventoryItemDetails details = info.<RPlan>getResource().inventoryData;
+
+        titleField.setText("" + details.titleKey);
+        descriptionField.setText("" + details.descriptionKey);
+        locationField.setText("" + details.location);
+        categoryField.setText("" + details.category);
     }//GEN-LAST:event_LAMSMetadataActionPerformed
 
     private void StringMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StringMetadataActionPerformed
-        InventoryItemDetails metadata = ResourceSystem.getSelected().getEntry().<RPlan>getResource("item").details;
+        ResourceInfo info = ResourceSystem.getSelected().getEntry().getInfo();
+        if (info == null || info.getType() != ResourceType.PLAN || info.getResource() == null) return;
+        InventoryItemDetails details = info.<RPlan>getResource().inventoryData;
 
         titleField.setText("");
         categoryField.setText("");
         locationField.setText("");
         categoryField.setText("");
         
-        if (ResourceSystem.LAMS != null) {
-            metadata.translatedTitle = ResourceSystem.LAMS.translate(metadata.titleKey);
-            metadata.translatedDescription = ResourceSystem.LAMS.translate(metadata.descriptionKey);
-            metadata.translatedCategory = ResourceSystem.LAMS.translate(metadata.category);
-            metadata.translatedLocation = ResourceSystem.LAMS.translate(metadata.location);
+        RTranslationTable LAMS = ResourceSystem.getLAMS();
+        if (LAMS != null) {
+            details.translatedTitle = LAMS.translate(details.titleKey);
+            details.translatedDescription = LAMS.translate(details.descriptionKey);
+            details.translatedCategory = LAMS.translate(details.category);
+            details.translatedLocation = LAMS.translate(details.location);
             
-            titleField.setText(metadata.translatedTitle);
-            descriptionField.setText(metadata.translatedDescription);
-            locationField.setText(metadata.translatedLocation);
-            categoryField.setText(metadata.translatedCategory);
+            titleField.setText(details.translatedTitle);
+            descriptionField.setText(details.translatedDescription);
+            locationField.setText(details.translatedLocation);
+            categoryField.setText(details.translatedCategory);
         }
         
-        if (metadata.userCreatedDetails != null) {
-            titleField.setText(metadata.userCreatedDetails.title);
-            descriptionField.setText(metadata.userCreatedDetails.description);
+        if (details.userCreatedDetails != null) {
+            titleField.setText(details.userCreatedDetails.name);
+            descriptionField.setText(details.userCreatedDetails.description);
         }
     }//GEN-LAST:event_StringMetadataActionPerformed
 
@@ -1774,8 +1786,9 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     private void searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchActionPerformed
-        getCurrentDB().query = search.getText();
-        JTree tree = getCurrentTree();
+        FileData database = ResourceSystem.getSelectedDatabase();
+        database.setLastSearch(search.getText());
+        JTree tree = database.getTree();
         Nodes.filter((FileNode) tree.getModel().getRoot(), new SearchParameters(search.getText()));
         ((FileModel) tree.getModel()).reload();
         tree.updateUI();
@@ -1790,26 +1803,27 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
     private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
-        boolean isAdventure = ResourceSystem.getSelected().getEntry().getResource("adventure") != null;
-        if (isAdventure) {
-            new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RAdventureCreateProfile>getResource("adventure")).setVisible(true);
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+        ResourceInfo info = entry.getInfo();
+        if (info == null  || info.getType() == ResourceType.INVALID || info.getResource() == null) return;
+
+
+        if (info.getType() == ResourceType.ADVENTURE_CREATE_PROFILE) {
+            new SlotManager(entry, (RAdventureCreateProfile) info.getResource()).setVisible(true);
             return;
         }
         
-        if (ResourceSystem.getDatabaseType() == DatabaseType.PROFILE) {
-            Slot slot = ResourceSystem.getSelected().getEntry().getResource("slot");
+        if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
+            Slot slot = ((SaveEntry)entry).getSlot();
             if (slot == null) return;
-            new SlotManager((BigSave)this.getCurrentDB(), slot).setVisible(true);
+            new SlotManager((BigSave)entry.getSource(), slot).setVisible(true);
             return;
         }
-        
-        boolean isSlotsFile = ResourceSystem.getSelected().getEntry().getResource("pack") == null;
-        if (isSlotsFile) {
-            new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RSlotList>getResource("slots")).setVisible(true);
-            return;
-        }
-        
-        new SlotManager(ResourceSystem.getSelected().getEntry(), ResourceSystem.getSelected().getEntry().<RPacks>getResource("pack")).setVisible(true);
+
+        if (info.getType() == ResourceType.SLOT_LIST) 
+            new SlotManager(entry, (RSlotList) info.getResource()).setVisible(true);
+        else if (info.getType() == ResourceType.PACKS)
+            new SlotManager(entry, (RPacks) info.getResource()).setVisible(true);
     }//GEN-LAST:event_editSlotContextActionPerformed
 
     private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed
@@ -1864,18 +1878,18 @@ public class Toolkit extends javax.swing.JFrame {
         File file = FileChooser.openFile("example.mod", "mod", false);
         if (file == null) return;
         Mod mod = ModCallbacks.loadMod(file);
-        if (mod != null && mod.isParsed) {
+        if (mod != null) {
             addTab(mod);
             updateWorkspace();
         }
     }//GEN-LAST:event_loadModActionPerformed
 
     private void openModMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openModMetadataActionPerformed
-        new ModEditor((Mod) getCurrentDB(), false).setVisible(true);
+        new ModEditor(ResourceSystem.getSelectedDatabase(), false).setVisible(true);
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        new SlotManager((BigSave) this.getCurrentDB(), null).setVisible(true);
+        new SlotManager((BigSave) ResourceSystem.getSelectedDatabase(), null).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
@@ -1904,7 +1918,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new ItemManager((BigSave) this.getCurrentDB()).setVisible(true);
+        new ItemManager((BigSave) ResourceSystem.getSelectedDatabase()).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed
@@ -2003,34 +2017,30 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAnimationActionPerformed
 
     private void loadSavedataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadSavedataActionPerformed
-        String directory = FileChooser.openDirectory();
-        if (directory == null) return;
-        if (directory.isEmpty()) return;
-        FileSave save = new FileSave(new File(directory));
-        this.addTab(save);
-        this.updateWorkspace();
-        
+        // REMOVED
     }//GEN-LAST:event_loadSavedataActionPerformed
 
     private void swapProfilePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapProfilePlatformActionPerformed
         File FAR4 = FileChooser.openFile("bigfart", null, false);
         if (FAR4 == null) return;
         if (FAR4.exists()) {
-            FileArchive archive = null;
-            try { archive = new FileArchive(FAR4); }
+            SaveArchive archive = null;
+            try { archive = new SaveArchive(FAR4); }
             catch (SerializationException ex) {
                 System.err.println(ex.getMessage());
                 return;
             }
-            if (archive.archiveType != ArchiveType.FAR4) {
+            if (archive.getArchiveRevision() != 4) {
                 System.out.println("FileArchive isn't a FAR4!");
                 return;
             }
-            archive.swapSaveKeyEndianness();
+            boolean wasPS4 = archive.isLittleEndian();
+            archive.setLittleEndian(!wasPS4);
+
             FileIO.write(archive.build(), FAR4.getAbsolutePath());
             JOptionPane.showMessageDialog(this, 
                     String.format("FAR4 has been swapped to %s endianness.", 
-                            (archive.saveKey[0x38] != 0x00) ? "PS4" : "PS3"));
+                            (!wasPS4) ? "PS4" : "PS3"));
         } else 
             System.out.println(String.format("%s does not exist!", FAR4.getAbsolutePath()));
     }//GEN-LAST:event_swapProfilePlatformActionPerformed
@@ -2054,105 +2064,106 @@ public class Toolkit extends javax.swing.JFrame {
     }
     
     private void exportAsBackupTpl(ExportMode mode) {
-        FileEntry entry = ResourceSystem.getSelected().getEntry();
-        String name = Paths.get(ResourceSystem.getSelected().getEntry().path).getFileName().toString();
+        // TODO: Actually reimplement this
+        // FileEntry entry = ResourceSystem.getSelected().getEntry();
+        // String name = Paths.get(ResourceSystem.getSelected().getEntry().path).getFileName().toString();
 
-        String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
-        if (titleID == null) return;
+        // String titleID = JOptionPane.showInputDialog(Toolkit.instance, "TitleID", "BCUS98148");
+        // if (titleID == null) return;
         
-        String directory = FileChooser.openDirectory();
-        if (directory == null) return;
+        // String directory = FileChooser.openDirectory();
+        // if (directory == null) return;
         
-        Revision fartRevision = new Revision(0x272, 0x4c44, 0x0017);
-        FileArchive archive = new FileArchive();
+        // Revision fartRevision = new Revision(0x272, 0x4c44, 0x0017);
+        // FileArchive archive = new FileArchive();
         
-        Slot slot = new Slot();
-        slot.title = name;
-        slot.id = new SlotID(SlotType.FAKE, 0);
-        slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
+        // Slot slot = new Slot();
+        // slot.title = name;
+        // slot.id = new SlotID(SlotType.FAKE, 0);
+        // slot.icon = new ResourceDescriptor(10682, ResourceType.TEXTURE);
         
-        // NOTE(Aidan): Cheap trick, but it's what I'm doing for now.
-        Resource resource = null;
-        switch (mode) {
-            case Hash:
-                resource = new Resource(ResourceSystem.extract(entry.hash));
-                break;
-            case GUID:
-                resource = new Resource(ResourceSystem.extract(entry.GUID));
-                break;
-        }
-        Mod mod = new Mod();
-        SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
+        // // NOTE(Aidan): Cheap trick, but it's what I'm doing for now.
+        // Resource resource = null;
+        // switch (mode) {
+        //     case Hash:
+        //         resource = new Resource(ResourceSystem.extract(entry.hash));
+        //         break;
+        //     case GUID:
+        //         resource = new Resource(ResourceSystem.extract(entry.GUID));
+        //         break;
+        // }
+        // Mod mod = new Mod();
+        // SHA1 hash = Bytes.hashinate(mod, resource, entry, null);
 
-        archive.entries = mod.entries;
+        // archive.entries = mod.entries;
         
-        if (entry.path.endsWith(".bin"))
-            switch (mode) {
-                case Hash:
-                    slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
-                    break;
-                case GUID:
-                    slot.root = new ResourceDescriptor(entry.GUID, ResourceType.LEVEL);
-                    break;
-            }
-        else if (entry.path.endsWith(".plan")) {
-            Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
-            switch (mode) {
-                case Hash:
-                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
-                    break;
-                case GUID:
-                    level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(entry.GUID, ResourceType.PLAN));
-                    break;
-            }
-            byte[] levelData = level.compressToResource();
-            archive.add(levelData);
-            slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
-        }
+        // if (entry.path.endsWith(".bin"))
+        //     switch (mode) {
+        //         case Hash:
+        //             slot.root = new ResourceDescriptor(hash, ResourceType.LEVEL);
+        //             break;
+        //         case GUID:
+        //             slot.root = new ResourceDescriptor(entry.GUID, ResourceType.LEVEL);
+        //             break;
+        //     }
+        // else if (entry.path.endsWith(".plan")) {
+        //     Resource level = new Resource(FileIO.getResourceFile("/prize_template"));
+        //     switch (mode) {
+        //         case Hash:
+        //             level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(hash, ResourceType.PLAN));
+        //             break;
+        //         case GUID:
+        //             level.replaceDependency(level.dependencies.get(0xB), new ResourceDescriptor(entry.GUID, ResourceType.PLAN));
+        //             break;
+        //     }
+        //     byte[] levelData = level.compressToResource();
+        //     archive.add(levelData);
+        //     slot.root = new ResourceDescriptor(SHA1.fromBuffer(levelData), ResourceType.LEVEL);
+        // }
         
-        Serializer serializer = new Serializer(1024, fartRevision, (byte) 0x7);
-        serializer.array(new Slot[] { slot }, Slot.class);
-        byte[] slotList = Resource.compressToResource(serializer.output, ResourceType.SLOT_LIST);
-        archive.add(slotList);
-        SHA1 rootHash = SHA1.fromBuffer(slotList);
+        // Serializer serializer = new Serializer(1024, fartRevision, (byte) 0x7);
+        // serializer.array(new Slot[] { slot }, Slot.class);
+        // byte[] slotList = Resource.compressToResource(serializer.output, ResourceType.SLOT_LIST);
+        // archive.add(slotList);
+        // SHA1 rootHash = SHA1.fromBuffer(slotList);
         
-        archive.setFatDataSource(rootHash);
-        archive.setFatResourceType(ResourceType.SLOT_LIST);
-        archive.setFatRevision(fartRevision);
+        // archive.setFatDataSource(rootHash);
+        // archive.setFatResourceType(ResourceType.SLOT_LIST);
+        // archive.setFatRevision(fartRevision);
         
-        Random random = new Random();
-        byte[] UID = new byte[4];
-        random.nextBytes(UID);
-        titleID += "LEVEL" + Bytes.toHex(UID).toUpperCase();
+        // Random random = new Random();
+        // byte[] UID = new byte[4];
+        // random.nextBytes(UID);
+        // titleID += "LEVEL" + Bytes.toHex(UID).toUpperCase();
         
-        Path saveDirectory = Path.of(directory, titleID);
-        try { Files.createDirectories(saveDirectory); } 
-        catch (IOException ex) {
-            System.err.println("There was an error creating directory!");
-            return;
-        }
+        // Path saveDirectory = Path.of(directory, titleID);
+        // try { Files.createDirectories(saveDirectory); } 
+        // catch (IOException ex) {
+        //     System.err.println("There was an error creating directory!");
+        //     return;
+        // }
         
-        FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
-        FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
+        // FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
+        // FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
         
-        // NOTE(Aidan): This seems terribly inefficient in terms of memory cost,
-        // but the levels exported should be low, so it's not entirely an issue,
-        // FOR NOW.
+        // // NOTE(Aidan): This seems terribly inefficient in terms of memory cost,
+        // // but the levels exported should be low, so it's not entirely an issue,
+        // // FOR NOW.
         
-        byte[][] profiles = null;
-        {
-            byte[] profile = archive.build();
-            profile = Arrays.copyOfRange(profile, 0, profile.length - 4);
-            profiles = Bytes.split(profile, 0x240000);
-        }
+        // byte[][] profiles = null;
+        // {
+        //     byte[] profile = archive.build();
+        //     profile = Arrays.copyOfRange(profile, 0, profile.length - 4);
+        //     profiles = Bytes.split(profile, 0x240000);
+        // }
         
-        for (int i = 0; i < profiles.length; ++i) {
-            byte[] part = profiles[i];
-            part = TEA.encrypt(part);
-            if (i + 1 == profiles.length)
-                part = Bytes.combine(part, new byte[] { 0x46, 0x41, 0x52, 0x34 });
-            FileIO.write(part, (Path.of(saveDirectory.toString(), String.valueOf(i))).toString());
-        }
+        // for (int i = 0; i < profiles.length; ++i) {
+        //     byte[] part = profiles[i];
+        //     part = Crypto.XXTEA(part, false);
+        //     if (i + 1 == profiles.length)
+        //         part = Bytes.combine(part, new byte[] { 0x46, 0x41, 0x52, 0x34 });
+        //     FileIO.write(part, (Path.of(saveDirectory.toString(), String.valueOf(i))).toString());
+        // }
     }                                              
 
     private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
@@ -2191,9 +2202,9 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_customCollectorActionPerformed
 
     private void renameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameFolderActionPerformed
-        FileNode node = ResourceSystem.lastSelected;
-        FileNode[] selected = ResourceSystem.selected.toArray(new FileNode[ResourceSystem.selected.size()]);
-        String parent = node.path + node.header;
+        FileNode node = ResourceSystem.getSelected();
+        FileNode[] selected = ResourceSystem.getAllSelected();
+        String parent = node.getPath() + node.getName();
         
         String newFolder = JOptionPane.showInputDialog(Toolkit.instance, "Folder", parent);
         if (newFolder == null) return;
@@ -2202,16 +2213,17 @@ public class Toolkit extends javax.swing.JFrame {
             newFolder = newFolder.substring(0, newFolder.length() - 1);
         if (newFolder == parent) return;
         
-        FileData database = this.getCurrentDB();
+        FileData database = node.getEntry().getSource();
         FileNode lastNode = null;
         for (FileNode child : selected) {
             if (child == node) continue;
-            child.removeFromParent();
-            if (child.entry != null) {
-                child.entry.path = newFolder + child.path.substring(parent.length()) + child.header;
-                lastNode = database.addNode(child.entry);
+            if (child.getEntry() != null) {
+                node.move(newFolder);
+                lastNode = node;
             }
+            else node.removeFromParent(); 
         }
+
         boolean foundParent = false;
         FileNode theParent = lastNode;
         while (theParent != null) {
@@ -2224,9 +2236,9 @@ public class Toolkit extends javax.swing.JFrame {
             node.removeFromParent();
         }
         
-        database.shouldSave = true;
+        database.setHasChanges();
 
-        JTree tree = this.getCurrentTree();
+        JTree tree = node.getEntry().getSource().getTree();
         TreePath treePath = new TreePath(((FileNode) lastNode.getParent()).getPath());
         
         FileModel m = (FileModel) tree.getModel();
@@ -2258,9 +2270,9 @@ public class Toolkit extends javax.swing.JFrame {
             byte[] fragment = FileIO.read(fragments[i].getAbsolutePath());
             if (i + 1 == fragments.length) 
                 fragment = Arrays.copyOfRange(fragment, 0, fragment.length - 4);
-            data[i] = TEA.decrypt(fragment);
+            data[i] = Crypto.XXTEA(fragment, true);
         }
-        File save = new File(ResourceSystem.workingDirectory, directory.getName());
+        File save = new File(ResourceSystem.getWorkingDirectory(), directory.getName());
         save.deleteOnExit();
         FileIO.write(Bytes.combine(data), save.getAbsolutePath());
         ProfileCallbacks.loadProfile(save);
@@ -2279,7 +2291,7 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void editItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItemContextActionPerformed
         FileEntry entry = ResourceSystem.getSelected().getEntry();
-        RPlan plan = entry.getResource("item");
+        RPlan plan = entry.getInfo().getResource();
         if (plan == null) return;
         ItemManager manager = new ItemManager(entry, plan);
         manager.setVisible(true);
@@ -2294,50 +2306,29 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAsModCustomActionPerformed
 
     public void generateDependencyTree(FileEntry entry, FileModel model) {
-        if (entry.dependencies != null) {
-            FileNode root = (FileNode) model.getRoot();
-            for (int i = 0; i < entry.dependencies.size(); ++i) {
-                FileEntry dependencyEntry = ResourceSystem.get(entry.dependencies.get(i));
-                if (dependencyEntry == null || dependencyEntry.path == null) continue;
-                Nodes.addNode(root, dependencyEntry);
-                if (dependencyEntry.dependencies != null && dependencyEntry != entry)
-                    generateDependencyTree(dependencyEntry, model);
-            }
-        }
-    }
-
-    public FileNode getLastSelected(JTree tree) {
-        ResourceSystem.selected.clear();
-        TreePath[] treePaths = tree.getSelectionPaths();
-        if (treePaths == null) {
-            ResourceSystem.lastSelected = null;
-            return null;
-        }
-        for (int i = 0; i < treePaths.length; ++i) {
-            FileNode node = (FileNode) treePaths[i].getLastPathComponent();
-            if (node == null) {
-                ResourceSystem.lastSelected = null;
-                return null;
-            };
-            if (node.getChildCount() > 0)
-                Nodes.loadChildren(ResourceSystem.selected, node, true);
-            ResourceSystem.selected.add(node);
-        }
-        FileNode selected = (FileNode) treePaths[treePaths.length - 1].getLastPathComponent();
-        ResourceSystem.lastSelected = selected;
-        return selected;
+        // TODO: FIX DEPENDENCY TREE
+        // if (entry.dependencies != null) {
+        //     FileNode root = (FileNode) model.getRoot();
+        //     for (int i = 0; i < entry.dependencies.size(); ++i) {
+        //         FileEntry dependencyEntry = ResourceSystem.get(entry.dependencies.get(i));
+        //         if (dependencyEntry == null || dependencyEntry.path == null) continue;
+        //         Nodes.addNode(root, dependencyEntry);
+        //         if (dependencyEntry.dependencies != null && dependencyEntry != entry)
+        //             generateDependencyTree(dependencyEntry, model);
+        //     }
+        // }
     }
 
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
-        InventoryItemDetails metadata = item.details;
+        InventoryItemDetails metadata = item.inventoryData;
         if (metadata == null) return;
 
         iconField.setText("");
-        if (metadata.icon != null && (metadata.icon.hash != null || metadata.icon.GUID != -1))
+        if (metadata.icon != null)
             loadImage(metadata.icon, item);
 
-        if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") != item) return;
+        if (ResourceSystem.getSelected().getEntry().getInfo().getResource() != item) return;
 
         setPlanDescriptions(metadata);
 
@@ -2362,14 +2353,15 @@ public class Toolkit extends javax.swing.JFrame {
         locationField.setText("" + metadata.location);
         categoryField.setText("" + metadata.category);
 
-        if (ResourceSystem.LAMS != null) {
+        RTranslationTable LAMS = ResourceSystem.getLAMS();
+        if (LAMS != null) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
             
-            metadata.translatedTitle = ResourceSystem.LAMS.translate(metadata.titleKey);
-            metadata.translatedDescription = ResourceSystem.LAMS.translate(metadata.descriptionKey);
-            metadata.translatedCategory = ResourceSystem.LAMS.translate(metadata.category);
-            metadata.translatedLocation = ResourceSystem.LAMS.translate(metadata.location);
+            metadata.translatedTitle = LAMS.translate(metadata.titleKey);
+            metadata.translatedDescription = LAMS.translate(metadata.descriptionKey);
+            metadata.translatedCategory = LAMS.translate(metadata.category);
+            metadata.translatedLocation = LAMS.translate(metadata.location);
 
             titleField.setText(metadata.translatedTitle);
             descriptionField.setText(metadata.translatedDescription);
@@ -2384,8 +2376,8 @@ public class Toolkit extends javax.swing.JFrame {
         if (metadata.userCreatedDetails != null && metadata.titleKey == 0 && metadata.descriptionKey == 0) {
             StringMetadata.setEnabled(true);
             StringMetadata.setSelected(true);
-            if (metadata.userCreatedDetails.title != null)
-                titleField.setText(metadata.userCreatedDetails.title);
+            if (metadata.userCreatedDetails.name != null)
+                titleField.setText(metadata.userCreatedDetails.name);
 
             if (metadata.userCreatedDetails.description != null)
                 descriptionField.setText(metadata.userCreatedDetails.description);
@@ -2396,24 +2388,25 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public void loadImage(ResourceDescriptor resource, RPlan item) {
-        if (resource == null) return;
-        iconField.setText(resource.toString());
-        FileEntry entry = ResourceSystem.findEntry(resource);
+        // TODO: FIX LOADING IMAGE PREVIEWS
+        // if (resource == null) return;
+        // iconField.setText(resource.toString());
+        // FileEntry entry = ResourceSystem.findEntry(resource);
         
-        if (entry == null) return;
+        // if (entry == null) return;
 
-        RTexture texture = entry.getResource("texture");
-        if (entry != null && texture != null)
-            setImage(texture.getImageIcon(320, 320));
-        else {
-            byte[] data = ResourceSystem.extract(resource);
-            if (data == null) return;
-            texture = new RTexture(data);
-            if (entry != null) entry.setResource("texture", texture);
-            if (texture.parsed == true)
-                if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") == item)
-                    setImage(texture.getImageIcon(320, 320));
-        }
+        // RTexture texture = entry.getResource("texture");
+        // if (entry != null && texture != null)
+        //     setImage(texture.getImageIcon(320, 320));
+        // else {
+        //     byte[] data = ResourceSystem.extract(resource);
+        //     if (data == null) return;
+        //     texture = new RTexture(data);
+        //     if (entry != null) entry.setResource("texture", texture);
+        //     if (texture.parsed == true)
+        //         if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") == item)
+        //             setImage(texture.getImageIcon(320, 320));
+        // }
     }
 
     public void setImage(ImageIcon image) {
@@ -2427,34 +2420,40 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public void setEditorPanel(FileNode node) {
-        FileEntry entry = node.entry;
+        FileEntry entry = node.getEntry();
+        
         if (entry == null) {
-            entryTable.setValueAt(node.path + node.header, 0, 1);
+            entryTable.setValueAt(node.getFilePath() + node.getName(), 0, 1);
             for (int i = 1; i < 8; ++i)
                 entryTable.setValueAt("N/A", i, 1);
             return;
         }
 
-        entryTable.setValueAt(entry.path, 0, 1);
+        entryTable.setValueAt(entry.getPath(), 0, 1);
 
-        if (entry.timestamp != 0) {
-            Timestamp timestamp = new Timestamp(entry.timestamp * 1000L);
+        if (entry instanceof FileDBRow) {
+            Timestamp timestamp = new Timestamp(((FileDBRow)entry).getDate() * 1000L);
             entryTable.setValueAt(timestamp.toString(), 1, 1);
         } else entryTable.setValueAt("N/A", 1, 1);
-        entryTable.setValueAt(entry.hash, 2, 1);
-        if (entry.size != -1)
-            entryTable.setValueAt(Integer.valueOf(entry.size), 3, 1);
-        if (entry.GUID != -1) {
-            entryTable.setValueAt("g" + Long.valueOf(entry.GUID), 4, 1);
-            entryTable.setValueAt(Bytes.toHex(entry.GUID), 5, 1);
-            entryTable.setValueAt(Bytes.toHex(Bytes.encode(entry.GUID)), 6, 1);
+        entryTable.setValueAt(entry.getSHA1(), 2, 1);
+        entryTable.setValueAt(entry.getSize(), 3, 1);
+
+        GUID guid = (entry instanceof FileDBRow) ? ((FileDBRow)entry).getGUID() : null;
+        if (guid != null) {
+            entryTable.setValueAt(guid.toString(), 4, 1);
+            entryTable.setValueAt(Bytes.toHex((int) guid.getValue()), 5, 1);
+            // TODO: Fix ULEB128 table
+            //entryTable.setValueAt(Bytes.toHex(Bytes.encode(entry.GUID)), 6, 1);
+            entryTable.setValueAt("N/A", 6, 1);
         } else {
             entryTable.setValueAt("N/A", 4, 1);
             entryTable.setValueAt("N/A", 5, 1);
             entryTable.setValueAt("N/A", 6, 1);
         }
-        if (entry.revision != null && entry.revision.head != 0)
-            entryTable.setValueAt(Bytes.toHex(entry.revision.head), 7, 1);
+
+        ResourceInfo info = entry.getInfo();
+        if (info != null && info.getType() != ResourceType.INVALID)
+            entryTable.setValueAt(Bytes.toHex(info.getRevision().getHead()), 7, 1);
         else entryTable.setValueAt("N/A", 7,  1);
     }
 

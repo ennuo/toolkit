@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.HashSet;
 
 public class BigSave extends FileData {
-    private ArrayList<SaveEntry> entries;
+    private ArrayList<SaveEntry> entries = new ArrayList<>();
     
     /**
      * Used for determing which moon model positions to use

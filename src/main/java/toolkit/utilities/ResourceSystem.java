@@ -8,6 +8,7 @@ import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
 import cwlib.util.FileIO;
+import cwlib.util.Nodes;
 import cwlib.types.archives.Fart;
 import cwlib.types.databases.FileEntry;
 import toolkit.windows.Toolkit;
@@ -19,11 +20,19 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
+
 /**
  * Global utilities for working with
  * loaded databases.
  */
 public class ResourceSystem {
+    /**
+     * Enables logging, should be disabled during big ops
+     */
+    public static boolean ENABLE_LOGS = true;
+
     private static File workingDirectory;
     static {
         try {
@@ -35,12 +44,12 @@ public class ResourceSystem {
     private static final ExecutorService databaseService = Executors.newSingleThreadExecutor();
     private static final ExecutorService resourceService = Executors.newSingleThreadExecutor();
 
-    private static ArrayList<FileData> databases;
-    private static ArrayList<Fart> archives;
+    private static ArrayList<FileData> databases = new ArrayList<>();
+    private static ArrayList<Fart> archives = new ArrayList<>();
 
     private static RTranslationTable LAMS;
 
-    private static ArrayList<FileNode> selected;
+    private static ArrayList<FileNode> selected = new ArrayList<>();
     private static FileNode lastSelected;
 
     private static FileData selectedDatabase;
@@ -54,8 +63,8 @@ public class ResourceSystem {
 
         ResourceSystem.LAMS = null;
 
-        ResourceSystem.getArchives().clear();
-        ResourceSystem.getDatabases().clear();
+        ResourceSystem.archives.clear();
+        ResourceSystem.databases.clear();
     }
 
     public static boolean canExtract() {
@@ -168,9 +177,11 @@ public class ResourceSystem {
         return ResourceSystem.add(data, entry.getSource());
     }
 
-    public static ArrayList<FileData> getDatabases() { return ResourceSystem.getDatabases(); }
-    public static ArrayList<Fart> getArchives() { return ResourceSystem.getArchives(); }
+    public static ArrayList<FileData> getDatabases() { return ResourceSystem.databases; }
+    public static ArrayList<Fart> getArchives() { return ResourceSystem.archives; }
+
     public static RTranslationTable getLAMS() { return ResourceSystem.LAMS; }
+    public static void setLAMS(RTranslationTable table) { ResourceSystem.LAMS = table; }
 
     public static FileNode getSelected() { return ResourceSystem.lastSelected; }
     public static FileNode[] getAllSelected() { return ResourceSystem.selected.toArray(FileNode[]::new); }
@@ -208,6 +219,36 @@ public class ResourceSystem {
 
     public static ExecutorService getDatabaseService() { return ResourceSystem.databaseService; }
     public static ExecutorService getResourceService() { return ResourceSystem.resourceService; }
+
+    public static void resetSelections() {
+        ResourceSystem.lastSelected = null;
+        ResourceSystem.selected.clear();
+    }
+
+    public static FileNode updateSelections() { 
+        FileData data = ResourceSystem.getSelectedDatabase();
+        return ResourceSystem.updateSelections((data == null) ? null : data.getTree());
+    }
+
+    public static FileNode updateSelections(JTree tree) {
+        ResourceSystem.resetSelections();
+        if (tree == null) return null;
+        TreePath[] paths = tree.getSelectionPaths();
+        if (paths == null) return null;
+        for (TreePath path : paths) {
+            FileNode node = (FileNode) path.getLastPathComponent();
+            if (node == null) {
+                ResourceSystem.lastSelected = null;
+                return null;
+            }
+            if (node.getChildCount() > 0)
+                Nodes.loadChildren(ResourceSystem.selected, node, true);
+        }
+
+        FileNode selected = (FileNode) paths[paths.length - 1].getLastPathComponent();
+        ResourceSystem.lastSelected = selected;
+        return selected;
+    }
 
     // public int registerDependencies(Resource resource, boolean recursive) {
     //     if (this.method != SerializationType.BINARY) return 0;

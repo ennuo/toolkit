@@ -13,9 +13,9 @@ import cwlib.resources.RMesh;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
-import cwlib.types.BigSave;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
+import cwlib.types.save.BigSave;
 
 import java.io.File;
 import javax.swing.JOptionPane;

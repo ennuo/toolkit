@@ -10,8 +10,8 @@ import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
-import cwlib.types.BigSave;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.save.BigSave;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -33,15 +33,15 @@ import javax.swing.tree.TreePath;
 public class ArchiveCallbacks {
     public static void loadFileArchive(File file) {
         int index = Toolkit.instance.isArchiveLoaded(file);
-        if (index == -1) {
-            FileArchive archive = null;
-            try { archive = new FileArchive(file); }
-            catch (SerializationException ex) {
-                System.err.println(ex.getMessage());
-                return;
-            }
-            ResourceSystem.getArchives().add(archive);
-        } else ResourceSystem.getArchives().get(index).process();
+        FileArchive archive = null;
+        try { archive = new FileArchive(file); }
+        catch (SerializationException ex) {
+            System.err.println(ex.getMessage());
+            return;
+        }
+        if (index != -1) ResourceSystem.getArchives().set(index, archive);
+        else ResourceSystem.getArchives().add(archive);
+        
         Toolkit.instance.updateWorkspace();
     }
     

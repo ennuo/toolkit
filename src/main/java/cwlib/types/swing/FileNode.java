@@ -1,6 +1,7 @@
 package cwlib.types.swing;
 
 import cwlib.types.databases.FileEntry;
+import cwlib.util.Nodes;
 
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -18,11 +19,6 @@ public class FileNode extends DefaultMutableTreeNode {
     private String path;
 
     /**
-     * Name of node.
-     */
-    private String name;
-
-    /**
      * Whether or not the node is currently visible in the tree.
      */
     private boolean visible = true;
@@ -31,7 +27,6 @@ public class FileNode extends DefaultMutableTreeNode {
         super(name);
         this.entry = entry;
         this.path = path;
-        this.name = name;
     }
 
     public FileNode getChildAt(int index, boolean isFiltered) {
@@ -65,6 +60,19 @@ public class FileNode extends DefaultMutableTreeNode {
         return count;
     }
 
+    public void move(String folder) {
+        if (folder.endsWith("/")) folder = folder.substring(0, folder.length() - 1);
+        FileNode node = Nodes.addFolder((FileNode) this.getRoot(), folder);
+        this.removeFromParent();
+
+        this.path = folder;
+        if (!folder.endsWith("/")) this.path += "/";
+
+        this.getEntry().setPath(this.path + this.getName());
+        
+        this.setParent(node);
+    }
+
     public void delete() {
         if (this.parent != null) 
             this.removeFromParent();
@@ -72,7 +80,8 @@ public class FileNode extends DefaultMutableTreeNode {
 
     public FileEntry getEntry() { return this.entry; }
     public String getFilePath() { return this.path; }
-    public String getName() { return this.name; }
+    public String getName() { return (String) this.userObject; }
+    public void setName(String name) { this.userObject = name; }
     public boolean isVisible() { return this.visible; }
 
     public void setVisible(boolean visible) { this.visible = visible; }

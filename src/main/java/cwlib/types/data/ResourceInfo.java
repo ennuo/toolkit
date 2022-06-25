@@ -26,11 +26,14 @@ public class ResourceInfo {
         this.compressionFlags = resource.getCompressionFlags();
         this.dependencies = resource.getDependencies();
 
+        System.out.println(String.format("[ResourceSystem] Processing Resource of type %s", this.type));
+
+
         Class<? extends Serializable> clazz = this.type.getCompressable();
         if (clazz != null) {
             try { this.resource = resource.loadResource(clazz); } 
             catch (Exception ex) { this.resource = null; }
-        }
+        } else System.out.println(String.format("[ResourceSystem] %s is unregistered!", this.type));
 
         if (this.type == ResourceType.GTF_TEXTURE || this.type == ResourceType.TEXTURE)
             this.resource = new RTexture(resource);

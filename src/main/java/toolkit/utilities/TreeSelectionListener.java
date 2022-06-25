@@ -32,7 +32,7 @@ public class TreeSelectionListener {
         if (tree.getSelectionPath() == null)
             return;
 
-        FileNode node = toolkit.getLastSelected(tree);
+        FileNode node = ResourceSystem.updateSelections(tree);
         FileEntry entry = node.getEntry();
 
         toolkit.setEditorPanel(node);
@@ -70,7 +70,7 @@ public class TreeSelectionListener {
             //     entry.dependencyModel = model;
             // }
 
-            // if (ResourceSystem.lastSelected == node && entry.dependencyModel != null && tree == currentTree)
+            // if (ResourceSystem.getSelected() == node && entry.dependencyModel != null && tree == currentTree)
             //     toolkit.dependencyTree.setModel(entry.dependencyModel);
             
             toolkit.setEditorPanel(node);

@@ -15,11 +15,11 @@ import cwlib.structs.slot.Slot;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
-import cwlib.types.BigSave;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
+import cwlib.types.save.BigSave;
 
 import java.awt.Color;
 import java.io.File;
@@ -157,7 +157,7 @@ public class DatabaseCallbacks {
         if (folder == null || folder.equals("")) return;
 
         TreePath treePath = null;
-        if (ResourceSystem.lastSelected == null)
+        if (ResourceSystem.getSelected() == null)
             treePath = new TreePath(Toolkit.instance.getCurrentDB().addNode(folder).getPath());
         else if (ResourceSystem.getSelected().getEntry() == null)
             treePath = new TreePath(Toolkit.instance.getCurrentDB().addNode(ResourceSystem.getSelected().path + ResourceSystem.getSelected().getName() + "/" + folder).getPath());
@@ -186,7 +186,7 @@ public class DatabaseCallbacks {
     }
     
     public static void changeGUID() {
-        FileNode node = ResourceSystem.lastSelected;
+        FileNode node = ResourceSystem.getSelected();
         FileEntry entry = node.entry;
         FileData db = Toolkit.instance.getCurrentDB();
         

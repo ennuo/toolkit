@@ -68,6 +68,22 @@ public class Nodes {
         return visibleCount;
     }
 
+    public static FileNode addFolder(FileNode root, String path) {
+        String[] components = path.split("/");
+        String parent = "";
+        for (String component : components) {
+            int index = Nodes.childIndex(root, component);
+            if (index == -1) {
+                FileNode child = new FileNode(component, parent , null);
+                root.insert(child, root.getChildCount());
+                root = child;
+                continue;
+            } else root = (FileNode) root.getChildAt(index);
+            parent += (component + "/");
+        }
+        return root;
+    }
+
     public static FileNode addNode(FileNode node, FileEntry entry) {
         return Nodes.addNode(node, entry, null);
     }
