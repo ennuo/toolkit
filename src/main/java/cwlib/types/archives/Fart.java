@@ -10,12 +10,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Base class for archive resources.
  */
-public abstract class Fart {
+public abstract class Fart implements Iterable<Fat> {
     /**
      * Archive path on local disk.
      */
@@ -213,5 +215,9 @@ public abstract class Fart {
      */
     public boolean shouldSave() {
         return this.queue.size() != 0;
+    }
+
+    @Override public Iterator<Fat> iterator() {
+        return Arrays.stream(this.entries).iterator();
     }
 }

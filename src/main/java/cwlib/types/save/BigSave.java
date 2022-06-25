@@ -3,6 +3,7 @@ package cwlib.types.save;
 import cwlib.resources.RAdventureCreateProfile;
 import cwlib.util.Bytes;
 import cwlib.types.Resource;
+import cwlib.types.archives.Fat;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.archives.SaveKey;
 import cwlib.types.data.ResourceDescriptor;
@@ -24,7 +25,6 @@ import cwlib.resources.RBigProfile;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -104,9 +104,12 @@ public class BigSave extends FileData {
             }
         }
 
-
-
-
+        for (Fat fat : this.archive) {
+            SHA1 sha1 = fat.getSHA1();
+            if (locked.contains(sha1)) continue;
+            byte[] data = fat.extract();
+            this.entries.add(new SaveEntry(this, this.generatePath(data, sha1), fat.getSize(), sha1));
+        }
     }
 
     public String generatePath(byte[] data, SHA1 sha1) {

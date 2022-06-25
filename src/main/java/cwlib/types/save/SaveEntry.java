@@ -4,7 +4,6 @@ import cwlib.enums.ResourceType;
 import cwlib.resources.RAdventureCreateProfile;
 import cwlib.resources.RPlan;
 import cwlib.structs.profile.InventoryItem;
-import cwlib.structs.profile.StringLookupTable;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
 import cwlib.types.Resource;
