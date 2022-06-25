@@ -100,8 +100,6 @@ public class Toolkit extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         
         EasterEgg.initialize(this);
-        if (ApplicationFlags.ENABLE_NEW_SAVEDATA)
-            this.loadSavedata.setVisible(true);
         
         this.entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {

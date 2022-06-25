@@ -3,7 +3,6 @@ package cwlib.util;
 import cwlib.types.swing.FileNode;
 import cwlib.types.swing.SearchParameters;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public class Nodes {
         Enumeration<TreeNode> children = node.children();
         while (children.hasMoreElements()) {
             FileNode child = (FileNode) children.nextElement();
-            if (!node.isVisible && isFiltered)
+            if (!node.isVisible() && isFiltered)
                 continue;
             nodes.add(child);
             Nodes.loadChildren(nodes, child, isFiltered);
@@ -42,35 +41,30 @@ public class Nodes {
             for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements();) {
                 FileNode node = (FileNode) e.nextElement();
                 boolean isVisible = false;
-                if (node.entry != null) {
+                FileEntry entry = node.getEntry();
+                if (entry != null) {
                     ResourceDescriptor resource = params.getResource();
                     if (resource != null) {
                         if (resource.isHash())
-                            isVisible = node.entry.getSHA1().equals(resource.getSHA1());
+                            isVisible = entry.getSHA1().equals(resource.getSHA1());
                         else if (resource.isGUID()) {
-                            if (node.entry instanceof FileDBRow)
-                                isVisible = ((FileDBRow) node.entry).getGUID().equals(resource.getGUID());
-                            else
-                                isVisible = false;
+                            isVisible = entry.getKey().equals(resource.getGUID());
                         }
-                    } else if (node.entry.getPath().contains(params.getPath()))
+                    } else if (entry.getPath().contains(params.getPath()))
                         isVisible = true;
-                    node.isVisible = isVisible;
+                    node.setVisible(isVisible);
                     if (isVisible)
                         visibleCount++;
                 } else if (filter(node, params) == 0)
-                    node.isVisible = false;
+                    node.setVisible(false);
                 else {
-                    node.isVisible = true;
+                    node.setVisible(true);
                     visibleCount++;
                 }
             }
 
-        if (visibleCount == 0)
-            root.isVisible = false;
-        else
-            root.isVisible = true;
-
+        root.setVisible((visibleCount != 0));
+        
         return visibleCount;
     }
 
@@ -88,15 +82,12 @@ public class Nodes {
         for (int i = 0; i < strings.length; i++) {
             int index = Nodes.childIndex(node, strings[i]);
             if (index == -1) {
-                FileNode child = new FileNode(strings[i], relativePath, null);
-                if (i + 1 == strings.length)
-                    child.entry = entry;
+                FileNode child = new FileNode(strings[i], relativePath, (i + 1 == strings.length) ? entry : null);
                 node.insert(child, node.getChildCount());
                 node = child;
             } else {
                 if (i + 1 == strings.length) {
-                    FileNode child = new FileNode(strings[i], relativePath, null);
-                    child.entry = entry;
+                    FileNode child = new FileNode(strings[i], relativePath, entry);
                     node.insert(child, node.getChildCount());
                 } else
                     node = (FileNode) node.getChildAt(index);
