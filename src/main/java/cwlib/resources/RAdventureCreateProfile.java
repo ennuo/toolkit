@@ -1,11 +1,13 @@
 package cwlib.resources;
 
-import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
 import cwlib.types.data.Revision;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
+import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
@@ -20,8 +22,10 @@ import java.util.Set;
  * create profile, since I don't have everything setup to parse the
  * world data, this is solely for editing the slots contained within.
  */
-public class RAdventureCreateProfile implements Serializable {
-    public HashMap<SlotID, Slot> adventureSlots;
+public class RAdventureCreateProfile implements Serializable, Compressable {
+    public static final int BASE_ALLOCATION_SIZE = 0x8;
+
+    private HashMap<SlotID, Slot> adventureSlots = new HashMap<>();
 
     private byte[] unparsedData;
     private HashSet<ResourceDescriptor> dependencyCache;
@@ -32,7 +36,8 @@ public class RAdventureCreateProfile implements Serializable {
                 (structure == null) ? new RAdventureCreateProfile() : (RAdventureCreateProfile) structure;
         
         if (!serializer.isWriting()) {
-            this.dependencyCache = new HashSet<>(serializer.getDependencies());
+            for (ResourceDescriptor descriptor : serializer.getDependencies())
+                profile.dependencyCache.add(descriptor);
             serializer.clearDependencies();
         }
         
@@ -73,16 +78,29 @@ public class RAdventureCreateProfile implements Serializable {
         
         return profile;
     }
+
+    @Override public int getAllocatedSize() {
+        int size = RAdventureCreateProfile.BASE_ALLOCATION_SIZE;
+        for (Slot slot : this.adventureSlots.values())
+            size += slot.getAllocatedSize() + SlotID.BASE_ALLOCATION_SIZE;
+        if (this.unparsedData != null) size += this.unparsedData.length;
+        return size;
+    }
     
-    public byte[] build(Revision revision, byte compressionFlags) {
-        int dataSize = 0x1000 * this.adventureSlots.size() + this.unparsedData.length;
-        Serializer serializer = new Serializer(dataSize, revision, compressionFlags);
-        
-        // Re-add dependencies from unparsed data.
+    @Override public SerializationData build(Revision revision, byte compressionFlags) {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+        serializer.struct(this, RAdventureCreateProfile.class);
         for (ResourceDescriptor descriptor : this.dependencyCache)
             serializer.addDependency(descriptor);
-
-        this.serialize(serializer, this);
-        return Resource.compressToResource(serializer.output, ResourceType.ADVENTURE_CREATE_PROFILE);      
+        return new SerializationData(
+            serializer.getBuffer(), 
+            revision, 
+            compressionFlags,
+            ResourceType.PLAN,
+            SerializationType.BINARY, 
+            serializer.getDependencies()
+        );
     }
+
+    public HashMap<SlotID, Slot> getAdventureSlots() { return this.adventureSlots; }
 }

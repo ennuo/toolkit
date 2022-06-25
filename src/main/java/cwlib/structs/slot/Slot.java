@@ -255,4 +255,12 @@ public class Slot implements Serializable {
             return "Unnamed Level";
         return this.name;
     }
+
+    public boolean isAdventure() {
+        return this.adventure != null && this.root == null;
+    }
+    
+    public boolean isLevel() { 
+        return this.adventure == null && this.root != null;
+    }
 }

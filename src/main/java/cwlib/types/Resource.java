@@ -150,7 +150,10 @@ public class Resource {
      * @return Data deserializer from current resource data
      */
     public Serializer getSerializer() {
-        return new Serializer(this.data, this.revision, this.compressionFlags);
+        Serializer serializer = new Serializer(this.data, this.revision, this.compressionFlags);
+        for (ResourceDescriptor descriptor : this.dependencies)
+            serializer.addDependency(descriptor);
+        return serializer;
     }
 
     /**
@@ -169,14 +172,6 @@ public class Resource {
      */
     public <T extends Serializable> T loadResource(Class<T> clazz) {
         Serializer serializer = this.getSerializer();
-        
-        // Hacky way of keeping dependency table even though
-        // we can't parse all thing data
-        if (clazz.equals(RPlan.class)) {
-            for (ResourceDescriptor descriptor : this.dependencies)
-                serializer.addDependency(descriptor);
-        }
-
         return serializer.struct(null, clazz);
     }
 
