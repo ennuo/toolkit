@@ -121,7 +121,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.items = new ArrayList<InventoryItemDetails>(this.inventory.size());
         for (InventoryItem item : this.inventory)
             this.items.add(item.details);
-        this.revision = new Resource(profile.rootProfileEntry.uncompressedData).revision;
+        this.revision = new Resource(profile.rootProfileEntry.data).revision;
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {

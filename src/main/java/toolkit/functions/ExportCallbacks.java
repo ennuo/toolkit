@@ -80,7 +80,7 @@ public class ExportCallbacks {
         );
         
         if (file == null) return;
-
+        
         String GUID = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
         if (GUID == null) return;
         GUID = GUID.replaceAll("\\s", "");
@@ -118,6 +118,7 @@ public class ExportCallbacks {
 
         if (file == null) return;
 
+        
         RTexture texture = ResourceSystem.getSelected().getEntry().getResource("texture");
         if (texture == null || !texture.parsed) return;
 
@@ -143,7 +144,7 @@ public class ExportCallbacks {
         RTexture texture = ResourceSystem.getSelected().getEntry().getResource("texture");
         if (texture == null || !texture.parsed) return;
 
-        FileIO.write(texture.uncompressedData, file.getAbsolutePath());
+        FileIO.write(texture.data, file.getAbsolutePath());
     }
 
     public static void exportTranslations() {

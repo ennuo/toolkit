@@ -32,7 +32,6 @@ import cwlib.structs.things.parts.PWorld;
 import cwlib.structs.things.parts.PAnimation;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PCheckpoint;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.enums.Branch;
 import cwlib.enums.PartHistory;
 import cwlib.enums.Revisions;
@@ -148,7 +147,7 @@ public class Thing implements Serializable {
         int parts = Thing.getCompressedPartsRevision(head);
         parts = (int) serializer.i32d(parts);
         
-        if (head > 0x297 || revision.isAfterLeerdammerRevision(2))
+        if (head > 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES))
             flags = serializer.i64(flags);
         
         if (((flags & (1 << 0)) != 0) && parts >= PartHistory.BODY)
@@ -215,5 +214,11 @@ public class Thing implements Serializable {
                 thing.physicsTweak = serializer.reference(thing.physicsTweak, PPhysicsTweak.class);
 
         return thing;
+    }
+
+    @Override
+    public int getAllocatedSize() {
+        // TODO Auto-generated method stub
+        return 0;
     }    
 }

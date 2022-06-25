@@ -27,7 +27,7 @@ public class ProfileCallbacks {
         File file = FileChooser.openFile("profile.bpr", "bpr", true);
         if (file == null) return;
         BigSave save = (BigSave) Toolkit.instance.getCurrentDB();
-        FileIO.write(new Resource(save.rootProfileEntry.uncompressedData).handle.uncompressedData, file.getAbsolutePath());
+        FileIO.write(new Resource(save.rootProfileEntry.data).handle.data, file.getAbsolutePath());
     }
     
     public static void addKey() {                                       

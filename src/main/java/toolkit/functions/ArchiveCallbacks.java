@@ -185,12 +185,12 @@ public class ArchiveCallbacks {
                 if (node.entry != null) {
                     total++;
                     byte[] data;
-                    if (node.entry.uncompressedData == null)
+                    if (node.entry.data == null)
                         data = ResourceSystem.extract(node.entry.hash);
                     else
-                        data = node.entry.uncompressedData;
+                        data = node.entry.data;
                     if (data != null) {
-                        data = (decompress) ? new Resource(data).handle.uncompressedData : data;
+                        data = (decompress) ? new Resource(data).handle.data : data;
                         String output = Paths.get(path, node.path, node.header).toString();
                         File file = new File(output);
                         if (file.getParentFile() != null)
@@ -204,11 +204,11 @@ public class ArchiveCallbacks {
         } else {
             FileNode node = ResourceSystem.selected.get(0);
             if (node.entry != null) {
-                byte[] data = node.entry.uncompressedData;
+                byte[] data = node.entry.data;
                 if (data == null)
                     data = ResourceSystem.extract(node.entry.hash);
                 if (data != null) {
-                    data = (decompress) ? new Resource(data).handle.uncompressedData : data;
+                    data = (decompress) ? new Resource(data).handle.data : data;
                     File file = FileChooser.openFile(node.header, null, true);
                     if (file != null)
                         if (FileIO.write(data, file.getAbsolutePath()))

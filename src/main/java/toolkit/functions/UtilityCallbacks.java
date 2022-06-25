@@ -8,13 +8,12 @@ import toolkit.windows.editors.ModEditor;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
+import cwlib.types.archives.FileArchive;
 import cwlib.resources.RMesh;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.BigSave;
-import cwlib.types.FileArchive;
-import cwlib.types.FileDB;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 
@@ -32,7 +31,7 @@ public class UtilityCallbacks {
             new ModEditor(mod, true).setVisible(true);
             mod.save(file.getAbsolutePath());
             mod = ModCallbacks.loadMod(file);
-            if (mod != null && mod.isParsed) {
+            if (mod != null) {
                 Toolkit.instance.addTab(mod);
                 Toolkit.instance.updateWorkspace();
             }
@@ -47,15 +46,10 @@ public class UtilityCallbacks {
         if (data == null) return;
 
         Resource resource = new Resource(data);
-
-        if (resource.handle.uncompressedData == null) {
-            System.err.println("Failed to decompress resource.");
-            return;
-        }
-
+        
         File out = FileChooser.openFile(file.getName() + ".dec", null, true);
         if (out != null)
-            FileIO.write(resource.handle.uncompressedData, out.getAbsolutePath());
+            FileIO.write(resource.getStream().getBuffer(), out.getAbsolutePath());
     }
     
     public static void mergeFileArchives() {         
