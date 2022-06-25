@@ -15,6 +15,7 @@ import cwlib.resources.RPalette;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.ResourceType;
 import cwlib.types.swing.FileData;
+import cwlib.types.swing.FileNode;
 
 /**
  * The FileDB is a resource used by the game for assigning
@@ -244,6 +245,14 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         FileDBRow newEntry = this.newFileDBRow(entry.getPath(), entry.getGUID());
         newEntry.setDetails(entry);
         return newEntry;
+    }
+
+    @Override public void remove(FileEntry entry) {
+        if (entry.getSource() != this) 
+            throw new IllegalArgumentException("FileDBRow doesn't belong to this database!");
+        this.entries.remove(entry);
+        FileNode node = entry.getNode();
+        if (node != null) node.delete();
     }
 
     /**

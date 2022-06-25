@@ -13,6 +13,7 @@ import cwlib.enums.DatabaseType;
 import cwlib.types.swing.FileData;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
+import cwlib.types.databases.FileEntry;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -122,8 +123,8 @@ public class Mod extends FileData {
         }
         return row;
     }
-    
 
+    @Override public void remove(FileEntry entry) { this.database.remove(entry); }
     @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
     @Override public boolean save(File file) {

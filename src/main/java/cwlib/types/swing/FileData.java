@@ -130,6 +130,10 @@ public abstract class FileData {
         throw new UnsupportedOperationException(String.format("Unable to add data to database of type %s", this.type));
     }
 
+    public void remove(FileEntry entry) {
+        throw new UnsupportedOperationException(String.format("Unable to remove entry on database of type %s", this.type));
+    }
+
     public File getFile() { return this.file; }
     public String getName() { return this.name; }
     public File getBase() { return this.base; }
