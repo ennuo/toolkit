@@ -14,7 +14,7 @@ public enum Branch {
     /**
      * Custom branched revision for Toolkit custom resources.
      */
-    MIZUKI(0x021803f9, 0x544b, 0x5);
+    MIZUKI(0x021803f9, 0x4d5a, 0x5);
 
     private final int head;
     private final short id;
@@ -29,4 +29,10 @@ public enum Branch {
     public int getHead() { return this.head; }
     public short getID() { return this.id; }
     public short getRevision() { return this.revision; }
+
+    public static Branch fromID(short ID) {
+        for (Branch branch : Branch.values())
+            if (branch.getID() == ID) return branch;
+        return null;
+    }
 }

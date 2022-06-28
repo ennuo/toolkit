@@ -28,10 +28,7 @@ import javax.swing.tree.TreePath;
  * loaded databases.
  */
 public class ResourceSystem {
-    /**
-     * Enables logging, should be disabled during big ops
-     */
-    public static boolean ENABLE_LOGS = true;
+    public static boolean DISABLE_LOGS = false;
 
     private static File workingDirectory;
     static {
@@ -54,6 +51,16 @@ public class ResourceSystem {
 
     private static FileData selectedDatabase;
     private static DatabaseType databaseType = DatabaseType.NONE;
+
+    public static void println(Object message) {
+        if (ResourceSystem.DISABLE_LOGS || message == null) return;
+        System.out.println("[ResourceSystem] " + message.toString());
+    }
+
+    public static void println(String channel, Object message) {
+        if (ResourceSystem.DISABLE_LOGS || message == null) return;
+        System.out.println("[" + channel + "] " + message.toString());
+    }
     
     public static void reset() {
         ResourceSystem.databaseType = DatabaseType.NONE;

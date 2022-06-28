@@ -4,6 +4,7 @@ import cwlib.types.Resource;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
 import cwlib.util.Images;
+import toolkit.utilities.ResourceSystem;
 import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
@@ -59,10 +60,10 @@ public class RTexture {
         switch (resource.getSerializationType()) {
             case COMPRESSED_TEXTURE:
                 if (type == ResourceType.TEXTURE) {
-                    System.out.println("Decompressing TEX to DDS");
+                    ResourceSystem.println("Texture", "Detected COMPRESSED_TEXTURE, decompressing to DDS");
                     this.cached = Images.fromDDS(this.data);
                 } else {
-                    System.out.println("Converting GTF texture to DDS");
+                    ResourceSystem.println("Texture", "Detected GTF_TEXTURE, generating DDS header");
                     this.parseGTF();
                 }
                 break;
@@ -70,8 +71,8 @@ public class RTexture {
             case GXT_SWIZZLED:
                 if (type != ResourceType.GTF_TEXTURE)
                     throw new SerializationException("Invalid ResourceType in GXT/GTF swizzled load");
-                System.out.println("Converting GXT texture to DDS.");
-                System.out.println("Unswizzling isn't correctly implemented, so this will probably be broken!");
+                ResourceSystem.println("Texture", "Converting GXT texture to DDS.");
+                ResourceSystem.println("Texture", "Unswizzling isn't correctly implemented, so this will probably be broken!");
                 this.parseGTF();
                 break;
             default: throw new SerializationException("Invalid serialization type in RTexture resource!");

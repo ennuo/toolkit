@@ -41,7 +41,7 @@ public class TreeSelectionListener {
             return;
         }
 
-        ResourceSystem.getResourceService().submit(() -> {
+        // ResourceSystem.getResourceService().submit(() -> {
             if (!ResourceSystem.canExtract()) return;
 
             byte[] data = ResourceSystem.extract(entry);
@@ -53,8 +53,10 @@ public class TreeSelectionListener {
             
             int magic = Bytes.toIntegerBE(data);
 
-            if (entry.getInfo() == null)
+            if (entry.getInfo() == null) {
+                ResourceSystem.println("Loading " + entry.getPath());
                 entry.setInfo(new ResourceInfo(data));
+            }
             
             // if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
             //     FileModel model = new FileModel(new FileNode("x", null, entry));
@@ -77,6 +79,6 @@ public class TreeSelectionListener {
             
             if (services.containsKey(magic))
                 ((ResourceService)services.get(magic)).process(tree, entry, data);
-        });
+        // });
     }
 }
