@@ -29,7 +29,7 @@ public class UtilityCallbacks {
         if (Toolkit.instance.confirmOverwrite(file)) {
             Mod mod = new Mod();
             new ModEditor(mod, true).setVisible(true);
-            mod.save(file.getAbsolutePath());
+            mod.save(file);
             mod = ModCallbacks.loadMod(file);
             if (mod != null) {
                 Toolkit.instance.addTab(mod);

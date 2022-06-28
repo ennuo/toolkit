@@ -60,7 +60,8 @@ public class ResourceInfo {
             }
             if (this.type == ResourceType.STATIC_MESH)
                 this.resource = new RStaticMesh(resource);
-        }
+        } else if (method == SerializationType.TEXT)
+            ResourceSystem.println("Gathering variables of text based resources is currently unsupported.");
 
         if (this.type == ResourceType.GTF_TEXTURE || this.type == ResourceType.TEXTURE) {
             RTexture texture = new RTexture(resource);

@@ -1,5 +1,7 @@
 package cwlib.types.mods.patches;
 
+import cwlib.enums.PatchType;
+
 public abstract class ModPatch {
     private PatchType type;
     private String name;

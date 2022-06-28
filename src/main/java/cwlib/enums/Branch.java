@@ -3,18 +3,21 @@ package cwlib.enums;
 public enum Branch {
     /**
      * Branched revision for Leerdammer update in LittleBigPlanet 1.
+     * Tag: LD
      */
-    LEERDAMMER(0x272, 0x4c44, 0x17),
+    LEERDAMMER(Revisions.LD_HEAD, 0x4c44, Revisions.LD_MAX),
 
     /**
      * LittleBigPlanet Vita branched revision
+     * Tag: D1
      */
-    DOUBLE11(0x3e2, 0x4431, 0x87),
+    DOUBLE11(Revisions.D1_HEAD, 0x4431, Revisions.D1_MAX),
 
     /**
      * Custom branched revision for Toolkit custom resources.
+     * Tag: MZ
      */
-    MIZUKI(0x021803f9, 0x4d5a, 0x5);
+    MIZUKI(Revisions.MZ_HEAD, 0x4d5a, Revisions.MZ_MAX);
 
     private final int head;
     private final short id;

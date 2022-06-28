@@ -82,6 +82,11 @@ public class Revisions {
     public static final int WATER_MAGNITUDE = 0x270; // Added water wave magnitude fields to PWorld
     public static final int BRANCHES = 0x271; // Added branch descriptions to resources
     public static final int AIRTIME = 0x272; // airTimeLeft added to PCreature
+    
+    public static final int LBP1_MAX = 0x272; // last revision for lbp1
+    
+    // Deploy/LBP2 revisions
+
     public static final int ARCADE = 0x273; // Robo boots (wall jump), custom guns, recordings, logic
     public static final int INPUT_UPDATE_TYPE = 0x274; // added updateType to PSwitchInput
     public static final int INPUT_LETHAL_TYPE = 0x275; // added lethalType to PSwitchInput
@@ -161,8 +166,13 @@ public class Revisions {
     public static final int SLOT_CROSS_COMPATIBLE = 0x3e9; // crossCompatible added to slot
     public static final int PROFILE_CROSS_DEPENDENCIES = 0x3eb; // Added Vita cross dependency hashes to RBigProfile
     public static final int DATALABELS = 0x3ef;  // Creator data labels added to RBigProfile
+    
+    public static final int LBP2_MAX = 0x3f8; // last revision for lbp2, technically 0x3f9, but no resource exists with this until lbp3
 
     // Leerdammmer revisions
+
+    public static final int LD_HEAD = 0x272; // Head revision for Leerdammer branch
+
     public static final int LD_WATER_SETTINGS = 0x0; // Adds scuba gear and water related tweak settings
     public static final int LD_WATER_TINT = 0x1; // Adds water tint and murkiness to PWorld
     public static final int LD_RESOURCES = 0x2; // Remove's depreciated CValue from PMetaData, adds compressionFlags to Resource's, adds compressed parts to CThing
@@ -187,8 +197,12 @@ public class Revisions {
     public static final int LD_USED_SCUBA = 0x15; // Added hasUsedScuba to RGame
     public static final int LD_OWNER_ID = 0x16; // Added ownerUserId to RLocalProfile
     public static final int LD_WATER_LEVELS = 0x17; // Added numWaterLevelsPlayed to RLocalProfile
+    
+    public static final int LD_MAX = 0x17; // last revision for leerdammer revisions
 
     // Vita revisions
+
+    public static final int D1_HEAD = 0x3e2; // Head revision for Double11/Vita branch
 
     public static final int D1_PERFDATA = 0x4; // Added perf data to RGfxMaterial
     public static final int D1_SHADER = 0x10; // Added additional shaders to RGfxMaterial
@@ -221,6 +235,8 @@ public class Revisions {
     public static final int D1_PLANET_DECORATIONS = 0x7b; // Planet decorations added to RBigProfile
     public static final int D1_DETAILS_PROPORTIONAL = 0x7d; // add makeSizeProportional to InventoryItemDetails
     public static final int D1_SLOT_REVISION = 0x80; // download revision added to slot
+    
+    public static final int D1_MAX = 0x87; // last revision for vita
 
     // LBP3 revisions
 
@@ -254,12 +270,37 @@ public class Revisions {
     public static final int SIMON_SAYS_PIN = 0x209; // added simonSaysProgress to PinsAwarded
     public static final int SPRINGINATOR = 0x20c; // Added springinator fields
     public static final int SLOT_ENFORCE_MINMAX = 0x215; // add enforceMinMaxPlayers to slot
+    
+    public static final int LBP3_MAX = 0x218;
 
     // Toolkit revisions
+
+    public static final int MZ_HEAD = 0x021803f9;
+
     public static final int MZ_BASE = 0x0; // Base revision for Toolkit assets
     public static final int MZ_BST_REMOVE_SK = 0x1; // Remove skeleton type from RBoneSet
     public static final int MZ_CGC_ORBIS = 0x2; // Keep track if a shader cache is for PS4 or not.
     public static final int MZ_CGC_PATH = 0x3; // Keep original path of RGfxMaterial in RShaderCache
     public static final int MZ_CGC_SWIZZLE = 0x4; // Swizzled color vector in RShaderCache
     public static final int MZ_CGC_SHORT_FLAGS = 0x5; // Use short flags in RShaderCache
+    
+    public static final int MZ_MAX = 0x5; // last revision for toolkit revisions
+
+    // Legacy mod revisions
+    // Somewhat weird, but apparently Toolkit started with mod
+    // revisions of 0x3, all older ones were only present in early versions
+    // of Workbench
+
+    public static final int LM_OLD_HEAD = 0xffff; // Head revision for mods prior to LM_TYPES
+    public static final int LM_HEAD = 0x01ae03fa; // Head revision for mods >= LM_TYPES
+
+    public static final int LM_BASE = 0x0; // Base revisions for old mods
+    public static final int LM_ITEMS = 0x1; // Added cached item metadata
+    public static final int LM_TRANSLATIONS = 0x2; // Store translated locations/categories in mod
+    public static final int LM_TOOLKIT = 0x3; // When mods were added to Toolkit, move icon to bottom of mod, title/desription use wstr instead of int16 size + char, added minor version, entries now contain data size rather, file data is now one big buffer rather than an array of bytearrays
+    public static final int LM_SLOTS_TIMESTAMPS = 0x4; // Timestamps added to each entry, slot array added
+    public static final int LM_MINMAX = 0x5; // Added min/max revision to entries, meant for mods to contain multiple versions of gmats/plans, never used.
+    public static final int LM_TYPES = 0x6; // author is now str16, itemCount switched from u16 to u32, base revision bumped to support LBP3 slot metadata
+    
+    public static final int LM_MAX = 0x6; // last revision fo legacy mods
 }

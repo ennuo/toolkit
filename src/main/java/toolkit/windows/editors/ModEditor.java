@@ -4,6 +4,7 @@ import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 import cwlib.types.mods.Mod;
+import cwlib.types.mods.ModInfo;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -24,20 +25,22 @@ public class ModEditor extends javax.swing.JDialog {
         setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         setTitle("Mod Editor");
         
+        ModInfo config = mod.getConfig();
         
-        modID.setText(mod.config.ID);
-        String[] version = mod.config.version.split("[.]");
+        modID.setText(config.ID);
+        String[] version = config.version.split("[.]");
         major.setValue(Integer.valueOf(version[0]));
         minor.setValue(Integer.valueOf(version[1]));
         
-        title.setText(mod.config.title);
-        creator.setText(mod.config.author);
-        description.setText(mod.config.description);
+        title.setText(config.title);
+        creator.setText(config.author);
+        description.setText(config.description);
         
         modIcon.setText("");
         
-        if (mod.icon != null)
-            modIcon.setIcon(mod.icon);
+        ImageIcon icon = mod.getIcon();
+        if (icon != null)
+            modIcon.setIcon(icon);
         else modIcon.setText("Mod has no icon.");
     }
     
@@ -167,12 +170,13 @@ public class ModEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionPerformed
-        mod.icon = (ImageIcon) modIcon.getIcon();
-        mod.config.ID = modID.getText();
-        mod.config.version = major.getValue() + "." + minor.getValue();
-        mod.config.title = title.getText();
-        mod.config.author = creator.getText();
-        mod.config.description = description.getText();
+        mod.setIcon((ImageIcon) modIcon.getIcon());
+        ModInfo config = mod.getConfig();
+        config.ID = modID.getText();
+        config.version = major.getValue() + "." + minor.getValue();
+        config.title = title.getText();
+        config.author = creator.getText();
+        config.description = description.getText();
         mod.setHasChanges();
         System.out.println("Updated mod metadata!");
         dispose();

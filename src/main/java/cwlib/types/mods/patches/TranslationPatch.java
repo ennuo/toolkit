@@ -2,6 +2,8 @@ package cwlib.types.mods.patches;
 
 import java.util.ArrayList;
 
+import cwlib.enums.PatchType;
+
 public class TranslationPatch extends ModPatch {
     public static class TranslationData {
         private String tag, string;

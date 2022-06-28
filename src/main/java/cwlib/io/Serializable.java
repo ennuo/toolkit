@@ -1,5 +1,7 @@
 package cwlib.io;
 
+import java.lang.reflect.InvocationTargetException;
+
 import cwlib.io.serializer.Serializer;
 
 /**
@@ -17,11 +19,15 @@ public interface Serializable {
      * @return Instance of structure that was (de)serialized
      */
     public static <T extends Serializable> T serialize(Serializer serializer, T structure, Class<T> clazz) {
-        try {
-            if (structure == null) structure = clazz.getDeclaredConstructor().newInstance();
-            return structure.serialize(serializer, structure);
-        } catch (Exception ex) { ex.printStackTrace(); }
-        return null;
+        if (structure == null)
+            try {
+                structure = clazz.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                e.printStackTrace();
+                return null;
+            }
+        return structure.serialize(serializer, structure);
     }
     
     /**

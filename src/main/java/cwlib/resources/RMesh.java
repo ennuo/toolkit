@@ -225,7 +225,7 @@ public class RMesh implements Compressable, Serializable {
     private SkeletonType skeletonType;
 
     /* Creates an empty mesh, used for serialization. */
-    private RMesh() {};
+    public RMesh() {};
 
     /**
      * Creates a new mesh from raw streams.
