@@ -133,6 +133,7 @@ public class Resource {
                 break;
             case TEXT:
                 this.data = stream.bytes(stream.getLength() - stream.getOffset());
+                break;
             case COMPRESSED_TEXTURE:
             case GTF_SWIZZLED:
             case GXT_SWIZZLED:
