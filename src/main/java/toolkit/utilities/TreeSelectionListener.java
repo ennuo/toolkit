@@ -12,7 +12,10 @@ import javax.swing.JTree;
 
 public class TreeSelectionListener {
     public static HashMap<Integer, ResourceService> services = new HashMap<>();
-    static { TreeSelectionListener.addService(new TextureService()); }
+    static { 
+        TreeSelectionListener.addService(new TextureService()); 
+        TreeSelectionListener.addService(new PlanService());
+    }
     public static void addService(ResourceService service) {
         for (int header : service.getSupportedHeaders())
             services.put(header, service);
