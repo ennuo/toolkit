@@ -6,7 +6,6 @@ import cwlib.types.mods.patches.TranslationPatch.TranslationData;
 import cwlib.ex.SerializationException;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.slot.Slot;
 import cwlib.util.Images;

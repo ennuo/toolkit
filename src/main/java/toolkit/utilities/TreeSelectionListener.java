@@ -22,6 +22,8 @@ public class TreeSelectionListener {
     }
     
     public static void listener(JTree tree) {
+        ResourceSystem.setCanExtractSelected(false);
+
         Toolkit toolkit = Toolkit.instance;
         toolkit.setImage(null);
         JTree currentTree = ResourceSystem.getSelectedDatabase().getTree();
@@ -40,6 +42,8 @@ public class TreeSelectionListener {
 
         toolkit.setEditorPanel(node);
         if (entry == null) {
+            if (ResourceSystem.getAllSelected().length > 1)
+                ResourceSystem.setCanExtractSelected(true);
             toolkit.updateWorkspace();
             return;
         }
@@ -53,12 +57,13 @@ public class TreeSelectionListener {
             toolkit.setHexEditor(data);
             
             if (data == null || data.length < 4) return;
+            ResourceSystem.setCanExtractSelected(true);
             
             int magic = Bytes.toIntegerBE(data);
 
             if (entry.getInfo() == null) {
                 ResourceSystem.println("Loading " + entry.getPath());
-                entry.setInfo(new ResourceInfo(data));
+                entry.setInfo(new ResourceInfo(node.getName(), data));
             }
             
             // if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {

@@ -1,11 +1,16 @@
 package toolkit.functions;
 
+import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
+import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.util.Compressor;
 import cwlib.util.FileIO;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;
+import cwlib.types.data.ResourceInfo;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
@@ -170,53 +175,82 @@ public class ArchiveCallbacks {
         System.out.println("Added files to queue, make sure to save your workspace!");
     }   
 
-    public static void extract(boolean decompress) {
-        if (ResourceSystem.selected.size() == 0) {
-            System.out.println("You need to select files to extract.");
-            return;
+    private static byte[] tryDecompress(String name, byte[] data) {
+        if (name.endsWith(".vpo") || name.endsWith(".gpo") || name.endsWith(".fpo")) {
+            try {
+                return Compressor.decompressData(new MemoryInputStream(data), data.length);
+            } catch (Exception ex) {
+                // Resource essentially failed to extract if it
+                // can't be decompressed.
+                return null;
+            }
+        } else {
+            ResourceType type = ResourceType.fromMagic(new String(new byte[] { data[0], data[1], data[2] }));
+            SerializationType method = SerializationType.fromValue(Character.toString((char) data[3]));
+            if (type == ResourceType.INVALID || type == ResourceType.FONTFACE || method == SerializationType.UNKNOWN) return null;
+            try {
+                return new Resource(data).getStream().getBuffer();
+            } catch (Exception ex) {
+                // Some error occurred while decompressing resource
+                return null;
+            }
         }
-        if (ResourceSystem.selected.size() != 1) {
+    }
+
+    public static void extract(boolean decompress) {
+        FileNode[] selected = ResourceSystem.getAllSelected();
+        System.out.println(selected.length);
+        if (selected.length == 0) return;
+        if (selected.length > 1) {
             int success = 0;
             int total = 0;
             String path = FileChooser.openDirectory();
             if (path == null) return;
-            for (int i = 0; i < ResourceSystem.selected.size(); ++i) {
-                FileNode node = ResourceSystem.selected.get(i);
-                if (node.entry != null) {
+            ResourceSystem.DISABLE_LOGS = true;
+            for (int i = 0; i < selected.length; ++i) {
+                FileNode node = selected[i];
+                FileEntry entry = node.getEntry();
+                if (entry != null) {
                     total++;
-                    byte[] data;
-                    if (node.entry.data == null)
-                        data = ResourceSystem.extract(node.entry.hash);
-                    else
-                        data = node.entry.data;
-                    if (data != null) {
-                        data = (decompress) ? new Resource(data).handle.data : data;
-                        String output = Paths.get(path, node.path, node.header).toString();
-                        File file = new File(output);
-                        if (file.getParentFile() != null)
-                            file.getParentFile().mkdirs();
-                        if (FileIO.write(data, output))
-                            success++;
+                    byte[] data = ResourceSystem.extract(node.getEntry());
+                    if (data == null) continue;
+                    if (decompress) {
+                        data = tryDecompress(node.getName(), data);
+                        if (data == null) continue;
                     }
+                    String output = Paths.get(path, node.getFilePath(), node.getName()).toString();
+                    File file = new File(output);
+                    if (file.getParentFile() != null)
+                        file.getParentFile().mkdirs();
+                    if (FileIO.write(data, output))
+                        success++;
                 }
             }
+            ResourceSystem.DISABLE_LOGS = false;
             System.out.println("Finished extracting " + success + "/" + total + " entries.");
-        } else {
-            FileNode node = ResourceSystem.selected.get(0);
-            if (node.entry != null) {
-                byte[] data = node.entry.data;
-                if (data == null)
-                    data = ResourceSystem.extract(node.entry.hash);
-                if (data != null) {
-                    data = (decompress) ? new Resource(data).handle.data : data;
-                    File file = FileChooser.openFile(node.header, null, true);
-                    if (file != null)
-                        if (FileIO.write(data, file.getAbsolutePath()))
-                            System.out.println("Successfully extracted entry!");
-                        else System.err.println("Failed to extract entry.");
-                } else System.err.println("Could not extract! Entry is missing data!");
-            } else System.err.println("Node is missing an entry! Can't extract!");
+            return;
         }
+
+        FileNode node = selected[0];
+        FileEntry entry = node.getEntry();
+        if (entry == null) return;
+        byte[] data = ResourceSystem.extract(entry);
+        if (data == null) {
+            ResourceSystem.println("Failed to extract entry");
+            return;
+        }
+        if (decompress) {
+            data = tryDecompress(node.getName(), data);
+            if (data == null) {
+                ResourceSystem.println("Data failed to decompress!");
+                return;
+            }
+        }
+
+        File file = FileChooser.openFile(node.getName(), null, true);
+        if (file == null) return;
+        if (FileIO.write(data, file.getAbsolutePath()))
+            ResourceSystem.println("Successfully extracted entry!");
 
     }
 }

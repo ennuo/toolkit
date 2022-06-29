@@ -2,7 +2,6 @@ package cwlib.util;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,11 +13,12 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
+import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 public class FileIO {
     public static String getResourceFileAsString(String fileName) throws IOException {
-        System.out.println("Reading " + fileName + " from class path...");
+        ResourceSystem.println("FileIO", "Reading " + fileName + " from class path");
         try (InputStream is = Toolkit.class.getResourceAsStream(fileName)) {
             if (is == null) return null;
             try (InputStreamReader isr = new InputStreamReader(is); BufferedReader reader = new BufferedReader(isr)) {
@@ -26,28 +26,15 @@ public class FileIO {
             }
         }
     }
-    
-    public static byte[] getResourceFile(String fileName) {
-        System.out.println("Reading " + fileName + " from class path...");
-        try (InputStream is = Toolkit.class.getResourceAsStream(fileName)) {
-            int length;
-            if (is == null) return null;
-            byte[] buffer = new byte[1024];
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            while ((length = is.read(buffer, 0, 1024)) != -1)
-                outputStream.write(buffer, 0, 1024);
-            return outputStream.toByteArray();
-        } catch (IOException ex) { return null; }
-    }
 
     public static boolean write(byte[] data, String path) {
         try {
-            System.out.println("Writing file to " + path);
+            ResourceSystem.println("FileIO", "Writing file to " + path);
             FileOutputStream stream = new FileOutputStream(path);
             stream.write(data);
             stream.close();
         } catch (IOException ex) {
-            System.err.println("Failed to write file to " + path);
+            ResourceSystem.println("FileIO", "Failed to write file to " + path);
             return false;
         }
         return true;
@@ -60,7 +47,7 @@ public class FileIO {
         try {
             image = ImageIO.read(file);
         } catch (IOException ex) {
-            System.err.println("Failed to read image");
+            ResourceSystem.println("FileIO", "Failed to read image");
         }
         return image;
     }
@@ -70,14 +57,14 @@ public class FileIO {
             byte[] data = Files.readAllBytes(path);
             return new String(data);
         } catch (IOException ex) {
-            System.err.println("An error occurred reading file.");
+            ResourceSystem.println("FileIO", "An error occurred reading file.");
             return null;
         }
     }
 
     public static byte[] read(String path) {
         try {
-            System.out.println("Reading file at " + path);
+            ResourceSystem.println("FileIO", "Reading file at " + path);
 
             File file = new File(path);
 
@@ -90,7 +77,7 @@ public class FileIO {
             stream.close();
             return buffer;
         } catch (IOException ex) {
-            System.err.println("Failed to read file at path (" + path + "), does it exist?");
+            ResourceSystem.println("FileIO", "Failed to read file at path (" + path + "), does it exist?");
             return null;
         }
     }

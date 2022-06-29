@@ -7,9 +7,13 @@ import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.streams.MemoryInputStream;
 import cwlib.resources.RStaticMesh;
 import cwlib.resources.RTexture;
+import cwlib.resources.RTranslationTable;
 import cwlib.types.Resource;
+import cwlib.util.Bytes;
+import cwlib.util.Compressor;
 import toolkit.utilities.ResourceSystem;
 
 public class ResourceInfo {
@@ -17,11 +21,47 @@ public class ResourceInfo {
     private Revision revision;
     private ResourceType type = ResourceType.INVALID;
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
-    private ResourceDescriptor[] dependencies;
+    private ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     private boolean isMissingDependencies;
 
-    public <T extends Compressable> ResourceInfo(byte[] source) {
+    public <T extends Compressable> ResourceInfo(String name, byte[] source) {
         if (source == null || source.length < 4) return;
+
+        int magic = Bytes.toIntegerBE(source);
+        
+        // PNG, JPG, DDS
+        if (magic == 0x89504e47 || magic == 0xFFD8FFE0 || magic == 0x44445320) {
+            this.type = ResourceType.TEXTURE;
+            this.resource = new RTexture(source);
+            return;
+        }
+
+        if (name.endsWith(".fpo") || name.endsWith(".vpo") || name.endsWith(".gpo")) {
+            ResourceSystem.println("Assuming resource is shader from extension");
+            this.type = ResourceType.VERTEX_SHADER;
+            if (name.endsWith(".fpo"))
+                this.type = ResourceType.PIXEL_SHADER;
+            try {
+                // Only decompressing the data to see if it's valid data,
+                // might be better to just check for zlib flags, but it'll do.
+                Compressor.decompressData(new MemoryInputStream(source), source.length);
+            } catch (Exception ex) {
+                ResourceSystem.println("Failed to decompress shader, marking resource as invalid.");
+                this.type = ResourceType.INVALID;
+            }
+            return;
+        }
+
+        if (name.endsWith(".trans")) {
+            ResourceSystem.println("Assuming resource is translation table from extension");
+            this.type = ResourceType.TRANSLATION;
+            try { this.resource = new RTranslationTable(source); }
+            catch (Exception ex) {
+                ResourceSystem.println("Failed to process RTranslationTable, marking resource as invalid");
+                this.type = ResourceType.INVALID;
+            }
+            return;
+        }
 
         ResourceType type = ResourceType.fromMagic(new String(new byte[] { source[0], source[1], source[2] }));
         SerializationType method = SerializationType.fromValue(Character.toString((char) source[3]));

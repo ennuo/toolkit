@@ -1,16 +1,12 @@
 package toolkit.windows;
 
-import cwlib.io.serializer.Serializer;
 import cwlib.types.swing.FileNode;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.util.Nodes;
 import cwlib.types.swing.SearchParameters;
-import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.SaveArchive;
-import cwlib.types.ParamSFO;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.ex.SerializationException;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
@@ -19,13 +15,9 @@ import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
-import cwlib.enums.SlotType;
-import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.structs.slot.Slot;
-import cwlib.structs.slot.SlotID;
 import cwlib.structs.inventory.InventoryItemDetails;
 
 import java.awt.Color;
@@ -34,13 +26,9 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.*;
 import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.SimpleDataProvider;
-import cwlib.types.*;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
@@ -51,7 +39,6 @@ import cwlib.util.Bytes;
 import cwlib.util.Crypto;
 import cwlib.util.Images;
 import toolkit.configurations.Config;
-import toolkit.configurations.ApplicationFlags;
 import toolkit.configurations.Profile;
 import toolkit.functions.*;
 import toolkit.streams.CustomPrintStream;
@@ -61,17 +48,14 @@ import toolkit.windows.editors.*;
 
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.regex.Pattern;
 import javax.swing.tree.TreePath;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
 
-    public boolean fileExists = false;
     public boolean useContext = false;
 
     MouseListener showContextMenu = new MouseAdapter() {
@@ -221,10 +205,6 @@ public class Toolkit extends javax.swing.JFrame {
         int archiveCount = ResourceSystem.getArchives().size();
         FileData database = ResourceSystem.getSelectedDatabase();
 
-        FileNode lastSelected = ResourceSystem.getSelected();
-        FileNode[] selected = ResourceSystem.getAllSelected();
-
-
         if (database != null) {
             editMenu.setVisible(true);
             if (database.hasChanges()) {
@@ -235,12 +215,6 @@ public class Toolkit extends javax.swing.JFrame {
                 saveMenu.setEnabled(false);
             }
         } else editMenu.setVisible(false);
-
-        fileExists = false;
-        if (ResourceSystem.getSelected() != null && ResourceSystem.getSelected().getEntry() != null) {
-            if (ResourceSystem.getSelected().getEntry().getInfo() != null)
-                fileExists = true;
-        } else if (ResourceSystem.getAllSelected().length > 1) fileExists = true;
 
         if (archiveCount != 0 || database != null) {
             saveDivider.setVisible(true);
@@ -258,8 +232,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         else if (ResourceSystem.canExtract() && ResourceSystem.getDatabaseType() != DatabaseType.MOD) {
             FARMenu.setVisible(true); 
-            if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE)
-                addFolder.setVisible(true);
+            addFolder.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE);
         }
         else FARMenu.setVisible(false);
 
@@ -295,9 +268,7 @@ public class Toolkit extends javax.swing.JFrame {
             installProfileMod.setVisible(true);
         } else ProfileMenu.setVisible(false);
 
-        if (ResourceSystem.getDatabaseType() == DatabaseType.MOD) modMenu.setVisible(true);
-        else modMenu.setVisible(false);
-
+        modMenu.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.MOD);
     }
 
     private void generateEntryContext(JTree tree, int x, int y) {
@@ -330,14 +301,13 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (!useContext && isDependencyTree) return;
 
-        if (!isDependencyTree && (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && useContext)) 
+        if (!isDependencyTree || (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && useContext)) 
             deleteContext.setVisible(true);
 
         FileNode node = ResourceSystem.getSelected();
-        FileEntry entry = node.getEntry();
-        ResourceInfo info = entry == null ? entry.getInfo() : null;
+        FileEntry entry = node == null ? null : node.getEntry();
+        ResourceInfo info = entry == null ? null : entry.getInfo();
         ResourceType type = info == null ? ResourceType.INVALID : info.getType();
-        
 
         if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0) {
             if ((useContext && entry == null) && !isDependencyTree) {
@@ -360,25 +330,21 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (ResourceSystem.canExtract() && node != null && entry != null) {
             replaceContext.setVisible(true);
-            if (node.getName().endsWith(".tex"))
+            if (node.getName().endsWith(".tex") || (info != null && info.getType() == ResourceType.TEXTURE))
                 replaceImage.setVisible(true);
         }
 
-        if (ResourceSystem.canExtract() && fileExists && useContext) {
+        if (ResourceSystem.canExtract() && ResourceSystem.canExtractSelected() && useContext) {
             extractContextMenu.setVisible(true);
-
-            if (entry != null) {
-                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0) && info != null && info.isResource()) {
+            if (info != null && info.isResource() && type != ResourceType.FONTFACE && type != ResourceType.VERTEX_SHADER && type != ResourceType.PIXEL_SHADER && type != ResourceType.TRANSLATION) {
+                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0)) {
                     replaceDecompressed.setVisible(true);
-
-                    if (info != null && info.getType() != ResourceType.INVALID && info.getDependencies().length != 0) {
+                    if (info.getDependencies().length != 0) {
                         exportGroup.setVisible(true);
                         exportModGroup.setVisible(true);
-                        if (node.getName().endsWith(".bin") || node.getName().endsWith(".plan")) {
+                        if (info.getType() == ResourceType.PLAN || info.getType() == ResourceType.LEVEL) {
                             exportBackupGroup.setVisible(true);
-                            if (entry.getKey() != null) {
-                                exportAsBackupGUID.setVisible(true);
-                            }
+                            exportAsBackupGUID.setVisible(entry.getKey() != null);
                         }
                         replaceDependencies.setVisible(true);
                         dependencyGroup.setVisible(true);
@@ -435,12 +401,12 @@ public class Toolkit extends javax.swing.JFrame {
                     if (type == ResourceType.LEVEL && ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && !isDependencyTree)
                         editSlotContext.setVisible(true); 
                 }
+            }
 
-                if (node.getName().endsWith(".trans")) {
-                    exportGroup.setVisible(true);
-                    loadLAMSContext.setVisible(true);
-                    exportLAMSContext.setVisible(true);
-                }
+            if (node.getName().endsWith(".trans")) {
+                exportGroup.setVisible(true);
+                loadLAMSContext.setVisible(true);
+                exportLAMSContext.setVisible(true);
             }
         }
 

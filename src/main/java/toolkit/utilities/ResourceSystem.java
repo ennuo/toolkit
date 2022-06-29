@@ -52,6 +52,8 @@ public class ResourceSystem {
     private static FileData selectedDatabase;
     private static DatabaseType databaseType = DatabaseType.NONE;
 
+    private static boolean canExtractLastNode = false;
+
     public static void println(Object message) {
         if (ResourceSystem.DISABLE_LOGS || message == null) return;
         System.out.println("[ResourceSystem] " + message.toString());
@@ -227,6 +229,9 @@ public class ResourceSystem {
     public static ExecutorService getDatabaseService() { return ResourceSystem.databaseService; }
     public static ExecutorService getResourceService() { return ResourceSystem.resourceService; }
 
+    public static boolean canExtractSelected() { return ResourceSystem.canExtractLastNode; }
+    public static void setCanExtractSelected(boolean value) { ResourceSystem.canExtractLastNode = value; }
+
     public static void resetSelections() {
         ResourceSystem.lastSelected = null;
         ResourceSystem.selected.clear();
@@ -250,6 +255,7 @@ public class ResourceSystem {
             }
             if (node.getChildCount() > 0)
                 Nodes.loadChildren(ResourceSystem.selected, node, true);
+            ResourceSystem.selected.add(node);
         }
 
         FileNode selected = (FileNode) paths[paths.length - 1].getLastPathComponent();

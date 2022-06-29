@@ -1,7 +1,10 @@
 package toolkit.utilities.services;
 
+import cwlib.resources.RTexture;
 import cwlib.types.databases.FileEntry;
+import toolkit.windows.Toolkit;
 
+import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
 public class TextureService implements ResourceService  {
@@ -9,20 +12,15 @@ public class TextureService implements ResourceService  {
 
     @Override
     public void process(JTree tree, FileEntry entry, byte[] data) {
-        // RTexture texture = entry.getResource("texture");
-        // if (texture == null) {
-        //     try { texture = new RTexture(data); entry.setResource("texture", texture); }
-        //     catch (Exception e) { System.err.println("There was an error processing RTexture file."); }
-        // }
+        RTexture texture = entry.getInfo().getResource();
+        if (texture == null) {
+            System.out.println("Failed to create Texture instance, is this an appropriate resource?");
+            return;
+        }
         
-        // if (texture == null) {
-        //     System.out.println("Failed to create Texture instance, is this an appropriate resource?");
-        //     return;
-        // }
-        
-        // ImageIcon icon = texture.getImageIcon(320, 320);
-        // if (icon != null) Toolkit.instance.setImage(icon);
-        // else System.out.println("Failed to set icon, it's null?");
+        ImageIcon icon = texture.getImageIcon(320, 320);
+        if (icon != null) Toolkit.instance.setImage(icon);
+        else System.out.println("Failed to set icon, it's null?");
     }
 
     @Override
