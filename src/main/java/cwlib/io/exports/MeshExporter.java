@@ -59,7 +59,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class MeshIO {
+public class MeshExporter {
     public static class OBJ {
         public static void export(String path, RMesh mesh) { export(path, mesh, 0); }
         public static void export(String path, RMesh mesh, int channel) {
@@ -300,7 +300,7 @@ public class MeshIO {
                         try {
                             byte[] data = ResourceSystem.extract(entry);
                             if (data != null) 
-                                glPrimitive.setMaterial(glb.createMaterial(materialName, new Resource(data).loadResource(RGfxMaterial.class));   
+                                glPrimitive.setMaterial(glb.createMaterial(materialName, new Resource(data).loadResource(RGfxMaterial.class)));   
                             else glPrimitive.setMaterial(glb.createMaterial(materialName));
                         } catch (Exception e) {
                             glPrimitive.setMaterial(glb.createMaterial(materialName));
@@ -652,7 +652,7 @@ public class MeshIO {
                     try {
                         image = ImageIO.read(png);
                     } catch (IOException ex) {
-                        Logger.getLogger(MeshIO.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(MeshExporter.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     
                     HashMap<String, float[]> transforms = new HashMap<String, float[]>();
@@ -883,33 +883,34 @@ public class MeshIO {
             MemoryOutputStream output = new MemoryOutputStream(mesh.numVerts * 0x40 + ((mesh.numVerts - 1) * 0x8));
             output.setLittleEndian(true);
 
-            for (Vector3f vertex : mesh.vertices) {
+            for (Vector3f vertex : mesh.getVertices()) {
                 output.f32(vertex.x);
                 output.f32(vertex.y);
                 output.f32(vertex.z);
             }
             createBufferView("VERTICES", 0, output.getOffset());
             int normalStart = output.getOffset();
-            for (Vector3f normal : mesh.normals) {
+            for (Vector3f normal : mesh.getNormals()) {
                 output.f32(normal.x);
                 output.f32(normal.y);
                 output.f32(normal.z);
             }
             createBufferView("NORMALS", normalStart, output.getOffset() - normalStart);
             int uvStart = output.getOffset();
-            for (Vector2f uv : mesh.uv0) {
+            for (Vector2f uv : mesh.getUV0()) {
                 output.f32(uv.x);
                 output.f32(uv.y);
             }
             createBufferView("TEXCOORD_0", uvStart, output.getOffset() - uvStart);
             uvStart = output.getOffset();
-            for (Vector2f uv : mesh.uv1) {
+            for (Vector2f uv : mesh.getUV1()) {
                 output.f32(uv.x);
                 output.f32(uv.y);
             }
             createBufferView("TEXCOORD_1", uvStart, output.getOffset() - uvStart);       
-            for (int i = 0; i < mesh.info.primitives.length; ++i) {
-                StaticPrimitive primitive = mesh.info.primitives[i];
+            StaticPrimitive[] primitives = mesh.getMeshInfo().primitives;
+            for (int i = 0; i < primitives.length; ++i) {
+                StaticPrimitive primitive = primitives[i];
                 int primitiveStart = output.getOffset();
                 int[] triangles = 
                         RMesh.getIndices(mesh.indices, primitive.indexStart, primitive.numIndices, primitive.type);
@@ -923,7 +924,7 @@ public class MeshIO {
         }
         
         private byte[] getBufferFromMesh(RMesh mesh) {
-            MemoryOutputStream output = new MemoryOutputStream( (mesh.numVerts * 0x40) + ((mesh.numVerts - 1) * 8) + (mesh.attributeCount * mesh.numVerts * 8) + (mesh.morphCount * mesh.numVerts * 0x18) + (mesh.getBones().length * 0x40));
+            MemoryOutputStream output = new MemoryOutputStream( (mesh.getNumVerts() * 0x40) + ((mesh.getNumVerts() - 1) * 8) + (mesh.getAttributeCount() * mesh.getNumVerts() * 8) + (mesh.getMorphCount() * mesh.getNumVerts() * 0x18) + (mesh.getBones().length * 0x40));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices()) {
@@ -1050,7 +1051,7 @@ public class MeshIO {
                 writer.writeBinary(gltfAssetV2, stream);
                 stream.close();  
             } catch (IOException ex) {
-                Logger.getLogger(MeshIO.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(MeshExporter.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

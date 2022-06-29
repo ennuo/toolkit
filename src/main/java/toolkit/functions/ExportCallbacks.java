@@ -9,7 +9,7 @@ import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
 import cwlib.enums.ResourceType;
-import cwlib.io.exports.MeshIO;
+import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RPlan;
 import cwlib.resources.RStaticMesh;
 import cwlib.types.databases.FileEntry;
@@ -41,7 +41,7 @@ public class ExportCallbacks {
         );
 
         if (file != null)
-            MeshIO.OBJ.export(file.getAbsolutePath(), info.getResource(), channel);
+            MeshExporter.OBJ.export(file.getAbsolutePath(), info.getResource(), channel);
     }
     
     public static void exportGLB() {
@@ -66,9 +66,9 @@ public class ExportCallbacks {
         
         if (file != null) {
             if (backdrop != null) 
-                MeshIO.GLB.FromMesh(backdrop).export(file.getAbsolutePath());
+                MeshExporter.GLB.FromMesh(backdrop).export(file.getAbsolutePath());
             else
-                MeshIO.GLB.FromMesh(mesh).export(file.getAbsolutePath());
+                MeshExporter.GLB.FromMesh(mesh).export(file.getAbsolutePath());
         }
     }
     
@@ -106,7 +106,7 @@ public class ExportCallbacks {
         }
         
         RAnimation animation = ResourceSystem.getSelected().getEntry().getResource("animation");
-        MeshIO.GLB.FromAnimation(animation, mesh).export(file.getAbsolutePath());
+        MeshExporter.GLB.FromAnimation(animation, mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {
