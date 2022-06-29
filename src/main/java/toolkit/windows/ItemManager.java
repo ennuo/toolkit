@@ -3,16 +3,20 @@ package toolkit.windows;
 import cwlib.resources.RPlan;
 import cwlib.types.Resource;
 import cwlib.resources.RTexture;
+import cwlib.resources.RTranslationTable;
+import cwlib.enums.Branch;
 import cwlib.enums.GameVersion;
 import cwlib.enums.InventoryItemFlags;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SlotType;
 import cwlib.enums.ToolType;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.inventory.CreationHistory;
@@ -54,15 +58,16 @@ public class ItemManager extends javax.swing.JFrame {
         }
         
         @Override public String toString() {
-            if (this.details.titleKey != 0 && ResourceSystem.LAMS != null) {
-                String translated = ResourceSystem.LAMS.translate(this.details.titleKey);
+            RTranslationTable LAMS = ResourceSystem.getLAMS();
+            if (this.details.titleKey != 0 && LAMS != null) {
+                String translated = LAMS.translate(this.details.titleKey);
                 if (translated != null) return translated;
             }
             
             UserCreatedDetails uad = this.details.userCreatedDetails;
             if (uad != null) {
-                if (uad.title != null && !uad.title.isEmpty())
-                    return uad.title;
+                if (uad.name != null && !uad.name.isEmpty())
+                    return uad.name;
             }
             
             return DEFAULT_TITLE;
@@ -92,8 +97,8 @@ public class ItemManager extends javax.swing.JFrame {
         this.entry = entry;
         this.items = new ArrayList<>(1);
         this.plan = plan;
-        this.items.add(plan.details);
-        this.revision = new Revision(plan.revision);
+        this.items.add(plan.inventoryData);
+        this.revision = plan.revision;
         this.setup();
         
         /* Remove the list related elemenets, since we're only dealing with a single item. */
@@ -117,11 +122,11 @@ public class ItemManager extends javax.swing.JFrame {
     
     public ItemManager(BigSave profile) {
         this.profile = profile;
-        this.inventory = profile.bigProfile.inventory;
+        this.inventory = profile.getProfile().inventory;
         this.items = new ArrayList<InventoryItemDetails>(this.inventory.size());
         for (InventoryItem item : this.inventory)
             this.items.add(item.details);
-        this.revision = new Resource(profile.rootProfileEntry.data).revision;
+        this.revision = profile.getArchive().getGameRevision();
         this.setup();
         
         this.addWindowListener(new WindowAdapter() {
@@ -145,9 +150,8 @@ public class ItemManager extends javax.swing.JFrame {
         if (!newHash.equals(this.originalDetailsHash)) {
             int result = JOptionPane.showConfirmDialog(null, "Do you want to save your changes?", "Pending changes", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                plan.details = newDetails;
-                ResourceSystem.replaceEntry(this.entry, plan.build(this.entry.revision, this.entry.compressionFlags, true));
-                this.entry.resetResources(false);
+                plan.inventoryData = newDetails;
+                ResourceSystem.replace(this.entry, Resource.compress(plan, plan.revision, plan.compressionFlags));
             }
         }
         this.dispose();
@@ -155,25 +159,6 @@ public class ItemManager extends javax.swing.JFrame {
     
     private void onCloseProfile() {
         this.dispose();
-    }
-    
-    /**
-     * Debug
-     */
-    public ItemManager() {
-        this.items = new ArrayList<>();
-       
-            
-        Arrays.asList(1046484, 412572, 1113767, 1022588, 1022587).stream().forEach(GUID -> {
-            byte[] data = ResourceSystem.extract(GUID);
-            RPlan plan = new Serializer(new Resource(data).handle).struct(null, RPlan.class);
-            this.revision = new Resource(data).revision;
-            this.items.add(plan.details);
-        });
-        
-        this.closeButton.addActionListener(e -> { this.dispose(); });
-
-        this.setup();
     }
     
     private void setup() {
@@ -231,9 +216,9 @@ public class ItemManager extends javax.swing.JFrame {
         /* Disable types that aren't applicable for game
            these items are built for.
         */
-        int version = GameVersion.getFlag(this.revision);
+        int gameFlags = GameVersion.getFlag(this.revision);
         
-        if ((version & GameVersion.LBP1) == 0) {
+        if ((gameFlags & GameVersion.LBP1) == 0) {
             this.lbp1TypesLabel.setVisible(false);
             this.lbp1TypeContainer.setVisible(false); 
         }
@@ -241,7 +226,7 @@ public class ItemManager extends javax.swing.JFrame {
             this.lbp2TypeContainer.setVisible(false);
             this.lbp2TypesLabel.setVisible(false);
         }
-        if ((version & GameVersion.LBP3) == 0) {
+        if ((gameFlags & GameVersion.LBP3) == 0) {
             this.lbp3TypesLabel.setVisible(false);
             this.lbp3TypesContainer.setVisible(false);
         } else {
@@ -250,32 +235,35 @@ public class ItemManager extends javax.swing.JFrame {
             this.earthToolCheckbox.setVisible(false);
         }
         
+        int version = this.revision.getVersion();
+        int subVersion = this.revision.getSubVersion();
+
         // Hide painting field if it wasn't added yet.
-        if (this.revision.head <= 0x3c7) {
+        if (version <= 0x3c7) {
             this.paintingLabel.setVisible(false);
             this.paintingResourceTextEntry.setVisible(false);
         }
         
         // Disable user category index if it wasn't added yet.
-        if (this.revision.head <= 0x349) {
+        if (version <= 0x349) {
             this.categoryIndexSpinner.setVisible(false);
             this.categoryIndexLabel.setVisible(false);
         }
         
         // Disable eyetoy outline if it wasn't added yet.
-        if (this.revision.head <= 0x39f) {
+        if (version <= 0x39f) {
             this.outlineLabel.setVisible(false);
             this.outlineTextEntry.setVisible(false);
         }
         
         // Disable GUID if it wasn't added yet.
-        if (!this.revision.isAfterLBP3Revision(0x105)) {
+        if (subVersion <= 0x105) {
             this.guidLabel.setVisible(false);
             this.guidSpinner.setVisible(false);
         }
         
         // Disable plan flags if they weren't added yet.
-        if (this.revision.head <= 0x334) {
+        if (version <= 0x334) {
             this.planFlagsLabel.setVisible(false);
             this.planFlagsContainer.setVisible(false);
         }
@@ -400,9 +388,9 @@ public class ItemManager extends javax.swing.JFrame {
                 this.titleTextEntry.setText(DEFAULT_TITLE);
                 this.descriptionTextEntry.setText(DEFAULT_DESCRIPTION);
             } else {
-                if (ucd.title == null || ucd.title.isEmpty())
+                if (ucd.name == null || ucd.name.isEmpty())
                     this.titleTextEntry.setText(DEFAULT_TITLE);
-                else this.titleTextEntry.setText(ucd.title);
+                else this.titleTextEntry.setText(ucd.name);
                 if (ucd.description == null || ucd.description.isEmpty())
                     this.descriptionTextEntry.setText(DEFAULT_DESCRIPTION);
                 else this.descriptionTextEntry.setText(ucd.description);
@@ -413,9 +401,10 @@ public class ItemManager extends javax.swing.JFrame {
             this.titleTextEntry.setText(DEFAULT_TITLE);
             this.descriptionTextEntry.setText("A valid translation table needs to be loaded for the title and description to appear. Alternatively, remove the translation keys, and set your own title/description.");
 
-            if (ResourceSystem.LAMS != null) {
-                this.titleTextEntry.setText(ResourceSystem.LAMS.translate(details.titleKey));
-                this.descriptionTextEntry.setText(ResourceSystem.LAMS.translate(details.descriptionKey));   
+            RTranslationTable LAMS = ResourceSystem.getLAMS();
+            if (LAMS != null) {
+                this.titleTextEntry.setText(LAMS.translate(details.titleKey));
+                this.descriptionTextEntry.setText(LAMS.translate(details.descriptionKey));   
             }
         }
     }
@@ -444,7 +433,7 @@ public class ItemManager extends javax.swing.JFrame {
     }
     
     private void changeTranslationType(boolean isUCD) {
-        boolean isUsingKeys = (this.revision.isAfterLeerdammerRevision(7) || this.revision.head > 0x2ba);
+        boolean isUsingKeys = (this.revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || this.revision.getVersion() >= Revisions.LAMS_KEYS);
         if (isUCD) {
             this.setTranslationKeyFieldVisibility(false);
             this.setTranslationTagFieldVisibility(false);
@@ -593,8 +582,8 @@ public class ItemManager extends javax.swing.JFrame {
             this.categoryTextEntry.setText(details.categoryTag);
             this.locationTextEntry.setText(details.locationTag);
         } else {
-            this.categoryTextEntry.setText(this.profile.bigProfile.stringTable.get(details.categoryIndex));
-            this.locationTextEntry.setText(this.profile.bigProfile.stringTable.get(details.locationIndex));
+            this.categoryTextEntry.setText(this.profile.getProfile().stringTable.get(details.categoryIndex).string);
+            this.locationTextEntry.setText(this.profile.getProfile().stringTable.get(details.locationIndex).string);
         }
         
         boolean useUCD = (details.userCreatedDetails != null) || (details.titleKey == 0 && details.descriptionKey == 0);
@@ -624,8 +613,8 @@ public class ItemManager extends javax.swing.JFrame {
         
         // Other tab
         
-        this.unlockSlotTypeCombo.setSelectedItem(details.levelUnlockSlotID.type);
-        this.unlockSlotNumberSpinner.setValue(details.levelUnlockSlotID.ID);
+        this.unlockSlotTypeCombo.setSelectedItem(details.levelUnlockSlotID.slotType);
+        this.unlockSlotNumberSpinner.setValue(details.levelUnlockSlotID.slotNumber);
         this.highlightSoundSpinner.setValue(details.highlightSound);
         this.dateAddedSpinner.setValue(new Date(details.dateAdded * 1000));
         
@@ -659,11 +648,11 @@ public class ItemManager extends javax.swing.JFrame {
             this.stickerResourceTextEntry.setText(data.sticker != null ? data.sticker.toString() : "");
             this.paintingResourceTextEntry.setText(data.painting != null ? data.painting.toString() : "");
             
-            PhotoMetadata metadata = data.photoMetadata;
+            PhotoMetadata metadata = data.getPhotoMetadata();
             
             this.photoResourceTextEntry.setText(metadata.photo != null ? metadata.photo.toString() : "");
-            this.photoLevelTypeCombo.setSelectedItem(metadata.level.type);
-            this.photoLevelNumberSpinner.setValue(metadata.level.ID);
+            this.photoLevelTypeCombo.setSelectedItem(metadata.level.slotType);
+            this.photoLevelNumberSpinner.setValue(metadata.level.slotNumber);
             this.photoLevelHashTextEntry.setText(metadata.levelHash.toString());
             this.photoTimestamp.setValue(new Date(metadata.timestamp * 1000));
             if (metadata.users != null)
@@ -705,7 +694,7 @@ public class ItemManager extends javax.swing.JFrame {
             InventoryItem item = this.selectedItem;
             if (item.plan != null) this.planTextField.setText(item.plan.toString());
             else this.planTextField.setText("");
-            this.guidSpinner.setValue(item.GUID);
+            this.guidSpinner.setValue((item.guid != null) ? item.guid.getValue() : 0l);
             this.uidSpinner.setValue(item.UID);
             this.categoryIndexSpinner.setValue(item.userCategoryIndex);
             
@@ -724,12 +713,12 @@ public class ItemManager extends javax.swing.JFrame {
     private ResourceDescriptor getDescriptor(JTextField field, ResourceType type) {
         String resource = field.getText();
         if (Strings.isGUID(resource) || Strings.isSHA1(resource))
-            return new ResourceDescriptor(type, resource);
+            return new ResourceDescriptor(resource, type);
         return null;
     }
     
     private void saveItem(InventoryItemDetails details, InventoryItem item) {
-        boolean isUsingKeys = (this.revision.isAfterLeerdammerRevision(7) || this.revision.head > 0x2ba);
+        boolean isUsingKeys = (this.revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || this.revision.getVersion() >= Revisions.LAMS_KEYS);
         boolean isUCD = this.ucdRadio.isSelected();
         
         
@@ -755,7 +744,7 @@ public class ItemManager extends javax.swing.JFrame {
             // I don't keep track of the extra data aside from the PSID,
             // so patch it if it exists.
             if (details.creator == null) details.creator = new NetworkPlayerID(creator);
-            else details.creator.handle.setData(creator);
+            else details.creator.getHandle().setData(creator);
         }
         
         // Get title and description
@@ -790,8 +779,8 @@ public class ItemManager extends javax.swing.JFrame {
             }
         } else {
             // If we're editing a profile, categories/locations are resolved by index in string table
-            details.categoryIndex = (short) this.profile.bigProfile.stringTable.add(this.categoryTextEntry.getText(), 0);
-            details.locationIndex = (short) this.profile.bigProfile.stringTable.add(this.locationTextEntry.getText(), 0);
+            details.categoryIndex = (short) this.profile.getProfile().stringTable.add(this.categoryTextEntry.getText(), 0);
+            details.locationIndex = (short) this.profile.getProfile().stringTable.add(this.locationTextEntry.getText(), 0);
         }
         
         if (this.creationHistoryCheckbox.isSelected()) {
@@ -848,7 +837,9 @@ public class ItemManager extends javax.swing.JFrame {
                 (long) this.unlockSlotNumberSpinner.getValue()
         );
         
-        details.highlightSound = (long) this.highlightSoundSpinner.getValue();
+        long highlightSound = (long) this.highlightSoundSpinner.getValue();
+        if (highlightSound == 0) details.highlightSound = null;
+        else details.highlightSound = new GUID(highlightSound);
         
         details.dateAdded = ((Date)this.dateAddedSpinner.getValue()).getTime() / 1000;
         
@@ -879,23 +870,24 @@ public class ItemManager extends javax.swing.JFrame {
             data.icon = this.getDescriptor(this.photoIconResourceTextEntry, ResourceType.TEXTURE);
             data.sticker = this.getDescriptor(this.stickerResourceTextEntry, ResourceType.TEXTURE);
             data.painting = this.getDescriptor(this.paintingResourceTextEntry, ResourceType.PAINTING);
-            data.photoMetadata.photo = this.getDescriptor(this.photoResourceTextEntry, ResourceType.TEXTURE);
-            data.photoMetadata.level = new SlotID(
+            PhotoMetadata metadata = data.getPhotoMetadata();
+            metadata.photo = this.getDescriptor(this.photoResourceTextEntry, ResourceType.TEXTURE);
+            metadata.level = new SlotID(
                 (SlotType) this.photoLevelTypeCombo.getSelectedItem(),
                 (long) this.photoLevelNumberSpinner.getValue()
             );
             
             String levelHash = this.photoLevelHashTextEntry.getText();
             if (levelHash.isEmpty() || !Strings.isSHA1(levelHash))
-                data.photoMetadata.levelHash = new SHA1();
-            else data.photoMetadata.levelHash = new SHA1(levelHash);
+                metadata.levelHash = new SHA1();
+            else metadata.levelHash = new SHA1(levelHash);
             
-            data.photoMetadata.timestamp = ((Date)this.photoTimestamp.getValue()).getTime() / 1000;
+            metadata.timestamp = ((Date)this.photoTimestamp.getValue()).getTime() / 1000;
             
             PhotoUser[] users = new PhotoUser[this.photoUsers.size()];
             for (int i = 0; i < this.photoUsers.size(); ++i)
                 users[i] = (PhotoUser) this.photoUsers.getElementAt(i);
-            data.photoMetadata.users = users;
+            metadata.users = users;
             
             details.photoData = data;
         } else details.photoData = null;
@@ -910,7 +902,9 @@ public class ItemManager extends javax.swing.JFrame {
         
         if (item != null) {
             item.plan = this.getDescriptor(this.planTextField, ResourceType.PLAN);
-            item.GUID = (int) this.guidSpinner.getValue();
+            int guid = (int) this.guidSpinner.getValue();
+            if (guid == 0) item.guid = null;
+            else item.guid = new GUID(guid);
             item.UID = (int) this.uidSpinner.getValue();
             item.userCategoryIndex = (int) this.categoryIndexSpinner.getValue();
             
@@ -932,7 +926,7 @@ public class ItemManager extends javax.swing.JFrame {
         }
         
         if (this.profile != null) {
-            this.profile.shouldSave = true;
+            this.profile.setHasChanges();
             Toolkit.instance.updateWorkspace();
         }
     }
@@ -2910,7 +2904,7 @@ public class ItemManager extends javax.swing.JFrame {
         this.items.add(details);
         if (this.inventory != null) {
             InventoryItem item = new InventoryItem();
-            item.UID = this.profile.getNextUID();
+            item.UID = this.profile.getProfile().getNextUID();
             item.details = details;
             this.inventory.add(item);
         }

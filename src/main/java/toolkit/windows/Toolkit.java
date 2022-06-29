@@ -1585,8 +1585,6 @@ public class Toolkit extends javax.swing.JFrame {
         JScrollPane panel = new JScrollPane();
         panel.setViewportView(tree);
 
-        data.getModel().reload();
-
         fileDataTabs.addTab(data.getName(), panel);
 
         search.setEditable(true);
@@ -1595,6 +1593,7 @@ public class Toolkit extends javax.swing.JFrame {
         search.setForeground(Color.GRAY);
 
         fileDataTabs.setSelectedIndex(fileDataTabs.getTabCount() - 1);
+        ResourceSystem.reloadSelectedModel();
     }
 
     public int isDatabaseLoaded(File file) {

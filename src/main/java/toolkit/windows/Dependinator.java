@@ -10,6 +10,8 @@ import toolkit.windows.Toolkit;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -36,18 +38,17 @@ public class Dependinator extends javax.swing.JFrame {
         this.entry = entry;
         
         // Get the resource data
-        byte[] data = entry.data;
-        if (data == null) data = ResourceSystem.extract(entry.hash);
+        byte[] data = ResourceSystem.extract(entry);
         if (data == null) {
             this.dispose();
             return;
         }
         
         this.resource = new Resource(data);
-        this.modifications = new ArrayList<>(resource.dependencies.size());
-        
+        this.modifications = new ArrayList<>();
+
         // Create a new copy of the dependencies list, so indexes aren't offset if the user removes dependencies.
-        this.dependencies = new ArrayList<>(resource.dependencies);
+        this.dependencies = new ArrayList<>(Arrays.asList(resource.getDependencies()));
         
         for (int i = 0; i < this.dependencies.size(); ++i) {
             ResourceDescriptor descriptor = this.dependencies.get(i);

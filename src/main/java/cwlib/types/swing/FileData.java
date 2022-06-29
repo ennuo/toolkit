@@ -134,6 +134,14 @@ public abstract class FileData {
         throw new UnsupportedOperationException(String.format("Unable to remove entry on database of type %s", this.type));
     }
 
+    /**
+     * Gets next available GUID in database above FileDB.MIN_SAFE_GUID.
+     * @return Next available GUID
+     */
+    public GUID getNextGUID() {
+        throw new UnsupportedOperationException(String.format("Unable to get next GUID on database of type %s", this.type));
+    }
+
     public File getFile() { return this.file; }
     public String getName() { return this.name; }
     public File getBase() { return this.base; }

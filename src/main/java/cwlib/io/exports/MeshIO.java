@@ -294,13 +294,13 @@ public class MeshIO {
                 
                 String materialName = "DIFFUSE";
                 if (primitive.gmat != null) {
-                    FileEntry entry = ResourceSystem.findEntry(primitive.gmat);
+                    FileEntry entry = ResourceSystem.get(primitive.gmat);
                     if (entry != null) {
                         materialName = Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "");
                         try {
-                            byte[] data = ResourceSystem.extractFile(entry.getSHA1());
+                            byte[] data = ResourceSystem.extract(entry);
                             if (data != null) 
-                                glPrimitive.setMaterial(glb.createMaterial(materialName, new RGfxMaterial(new Resource(data))));   
+                                glPrimitive.setMaterial(glb.createMaterial(materialName, new Resource(data).loadResource(RGfxMaterial.class));   
                             else glPrimitive.setMaterial(glb.createMaterial(materialName));
                         } catch (Exception e) {
                             glPrimitive.setMaterial(glb.createMaterial(materialName));
@@ -442,13 +442,13 @@ public class MeshIO {
 
                     String materialName = "DIFFUSE";
                     if (primitive.getMaterial() != null) {
-                        FileEntry entry = ResourceSystem.findEntry(primitive.getMaterial());
+                        FileEntry entry = ResourceSystem.get(primitive.getMaterial());
                         if (entry != null) {
                             materialName = Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "");
                             try {
-                                byte[] data = ResourceSystem.extractFile(entry.getSHA1());
+                                byte[] data = ResourceSystem.extract(entry);
                                 if (data != null) 
-                                    glPrimitive.setMaterial(glb.createMaterial(materialName, new RGfxMaterial(new Resource(data))));   
+                                    glPrimitive.setMaterial(glb.createMaterial(materialName, new Resource(data).loadResource(RGfxMaterial.class)));   
                                 else glPrimitive.setMaterial(glb.createMaterial(materialName));
                             } catch (Exception e) {
                                 glPrimitive.setMaterial(glb.createMaterial(materialName));
@@ -641,7 +641,7 @@ public class MeshIO {
                     float[] textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[3]) };
                     int channel = (int) params[4];
                     int textureIndex = (int) params[5];
-                    FileEntry entry = ResourceSystem.findEntry(gmat.textures[textureIndex]);
+                    FileEntry entry = ResourceSystem.get(gmat.textures[textureIndex]);
                     if (entry == null) continue;
                     byte[] texture = gmat.extractTexture(textureIndex);
                     if (texture == null) continue;

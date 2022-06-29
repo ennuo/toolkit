@@ -210,6 +210,22 @@ public abstract class Fart implements Iterable<Fat> {
     }
 
     /**
+     * Validates that all SHA1s match their corresponding buffers in FAT
+     * @return Number of entries that failed validation
+     */
+    public int validate() {
+        ArrayList<Fat> entries = new ArrayList<>(this.entries.length);
+        for (Fat fat : this.entries) {
+            SHA1 sha1 = SHA1.fromBuffer(fat.extract());
+            if (sha1.equals(fat.getSHA1()))
+                entries.add(fat);
+        }
+        int missing = this.entries.length - entries.size();
+        this.entries = entries.toArray(Fat[]::new);
+        return missing;
+    }
+
+    /**
      * Checks if the archive contains data to save.
      * @return Whether or not the archive should save.
      */

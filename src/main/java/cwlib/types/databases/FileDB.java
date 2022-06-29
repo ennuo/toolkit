@@ -302,11 +302,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         return palette;
     }
 
-    /**
-     * Gets next available GUID in database above FileDB.MIN_SAFE_GUID.
-     * @return Next available GUID
-     */
-    public GUID getNextGUID() {
+    @Override public GUID getNextGUID() {
         long lastGUID = this.entries
             .stream()
             .mapToLong(entry -> entry.getGUID().getValue())

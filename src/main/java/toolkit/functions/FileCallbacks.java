@@ -1,7 +1,6 @@
 package toolkit.functions;
 
 import cwlib.types.swing.FileData;
-import cwlib.util.Resources;
 import cwlib.types.archives.Fart;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;

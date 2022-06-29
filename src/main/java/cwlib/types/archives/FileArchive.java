@@ -55,9 +55,7 @@ public class FileArchive extends Fart {
         // The FARC is way too massive to build every time
         // you save, so we only ever save when there's
         // data that needs to be added.
-
-        if (this.queue.isEmpty()) return true;
-
+        
         long size = this.getQueueSize();
 
         // This usually shouldn't be an issue, but since

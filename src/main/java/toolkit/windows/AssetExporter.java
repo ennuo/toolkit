@@ -214,9 +214,9 @@ public class AssetExporter extends JDialog {
         
         for (Asset asset : assets) {
             if (asset.data == null) continue;
-            if (asset.entry == null || asset.entry.GUID == -1) {
-                if (asset.entry != null && !asset.entry.path.isEmpty())
-                    mod.add(asset.entry.path, asset.entry.data);
+            if (asset.entry == null || asset.entry.getKey() == null) {
+                if (asset.entry != null && !asset.entry.getPath().isEmpty())
+                    mod.add(asset.entry.getPath(), asset.entry.data);
                 else {
                     String sha1 = SHA1.fromBuffer(asset.data).toString();
                     mod.add("resources/" + sha1, asset.entry.data);
@@ -236,7 +236,7 @@ public class AssetExporter extends JDialog {
         return null;
     }
     
-    private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets, HashMap<Integer, MaterialEntry> remap) {
+    private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets) {
         if (asset.data == null) return asset.descriptor;
         Resource resource = new Resource(asset.data);
         if (resource.method != SerializationType.BINARY || asset.recursed) {

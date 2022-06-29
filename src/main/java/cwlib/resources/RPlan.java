@@ -36,7 +36,7 @@ public class RPlan implements Compressable, Serializable {
     /**
      * Compression flags used during the loading of the thing data.
      */
-    private byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+    public byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
 
     @SuppressWarnings("unchecked")
     @Override public RPlan serialize(Serializer serializer, Serializable structure) {

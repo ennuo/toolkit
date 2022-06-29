@@ -12,6 +12,15 @@ public class PhotoUser implements Serializable {
     public String user;
     public Vector4f bounds = new Vector4f().zero();
 
+    public PhotoUser() {};
+    public PhotoUser(String psid) {
+        if (psid == null) return;
+        if (psid.length() > 0x14)
+            psid = psid.substring(0, 0x14);
+        this.PSID = psid;
+        this.user = psid;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public PhotoUser serialize(Serializer serializer, Serializable structure) {
         PhotoUser user = (structure == null) ? new PhotoUser() : (PhotoUser) structure;

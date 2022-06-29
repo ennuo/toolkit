@@ -6,6 +6,7 @@ import cwlib.enums.DatabaseType;
 import cwlib.resources.RTranslationTable;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
+import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.util.FileIO;
 import cwlib.util.Nodes;
@@ -28,6 +29,28 @@ import javax.swing.tree.TreePath;
  * loaded databases.
  */
 public class ResourceSystem {
+    public static final int MAX_CACHE_ENTRIES = 16;
+    /**
+     * Resource info cache, gets cleaned when it reaches
+     * max capacity
+     */
+    public static final FileNode[] CACHE = new FileNode[MAX_CACHE_ENTRIES];
+    public static int CACHE_INDEX = 0;
+
+    public static void addCache(FileNode node) {
+        if (CACHE_INDEX == MAX_CACHE_ENTRIES) {
+            ResourceSystem.println("Clearing cache");
+            for (int i = 0; i < MAX_CACHE_ENTRIES; ++i) {
+                CACHE[i].getEntry().setInfo(null);
+                CACHE[i] = null;
+            }
+            CACHE_INDEX = 0;
+        }
+
+        int index = CACHE_INDEX++;
+        CACHE[index] = node;   
+    }
+
     public static boolean DISABLE_LOGS = false;
 
     private static File workingDirectory;
@@ -205,6 +228,19 @@ public class ResourceSystem {
                 return i;
         }
         return -1;
+    }
+
+    public static void reloadModel(FileData database) {
+        if (database == null) return;
+        JTree tree = database.getTree();
+        TreePath selectionPath = tree.getSelectionPath();
+        ((FileModel) tree.getModel()).reload();
+        tree.setSelectionPath(selectionPath);
+        tree.scrollPathToVisible(selectionPath);
+    }
+
+    public static void reloadSelectedModel() {
+        ResourceSystem.reloadModel(ResourceSystem.getSelectedDatabase());
     }
 
     @SuppressWarnings("unchecked")

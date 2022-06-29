@@ -10,6 +10,7 @@ import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 import cwlib.structs.profile.InventoryItem;
+import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
 import cwlib.structs.slot.Slot;
 import cwlib.types.swing.FileData;
@@ -98,57 +99,45 @@ public class DatabaseCallbacks {
     public static void newItem() {                                               
         String file = JOptionPane.showInputDialog(Toolkit.instance, "New Item", "");
         if (file == null) return;
+            
+        FileData database = ResourceSystem.getSelectedDatabase();
+        JTree tree = database.getTree();
+
+        if (!database.getType().hasGUIDs()) return;
         
-        JTree tree = Toolkit.instance.getCurrentTree();
+        long nextGUID = database.getNextGUID().getValue();
+        
+        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        if (input == null) return;
+        input = input.replaceAll("\\s", "");
         
         
-        FileData db = Toolkit.instance.getCurrentDB();
-        
-        long nextGUID = db.lastGUID + 1;
-        
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
-        if (GUID == null) return;
-        GUID = GUID.replaceAll("\\s", "");
-        
-        
-        long parsedGUID = Strings.getLong(GUID);
+        long parsedGUID = Strings.getLong(input);
         if (parsedGUID == -1) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
-        
-        boolean alreadyExists = false;
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)
-            alreadyExists = ((Mod) db).find(parsedGUID) != null;
-        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
-        
-        if (alreadyExists) {
+
+        GUID guid = new GUID(parsedGUID);
+
+        if (database.get(guid) != null) {
             System.err.println("This GUID already exists!");
             return;
         }
-        
-        if (parsedGUID > nextGUID) db.lastGUID = parsedGUID;
-        else if (parsedGUID == nextGUID) db.lastGUID++;
-        
-        FileEntry entry = new FileEntry(ResourceSystem.getSelected().path + ResourceSystem.getSelected().getName() + "/" + file, parsedGUID);
 
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)
-            ((Mod) db).add(entry);
-        else((FileDB) db).add(entry);
+        String path = ResourceSystem.getSelected().getFilePath() + ResourceSystem.getSelected().getName() + "/" + file;
 
-        db.shouldSave = true;
+        FileEntry entry = null;
+        if (database instanceof FileDB)
+            entry = ((FileDB)database).newFileDBRow(path, guid);
+        else
+            entry = ((Mod)database).add(path, null, guid);
 
-        TreePath treePath = new TreePath(db.addNode(entry).getPath());
-
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
-
+        database.setHasChanges();
+        ResourceSystem.reloadModel(database);
         Toolkit.instance.updateWorkspace();
 
-        System.out.println("Added entry! -> " + entry.path);
+        System.out.println("Added entry! -> " + entry.getPath());
 
     } 
     
@@ -354,7 +343,7 @@ public class DatabaseCallbacks {
         File file = FileChooser.openFile("blurayguids.map", "map", true);
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {
-            FileIO.write(output.buffer, file.getAbsolutePath());
+            FileIO.write(output.getBuffer(), file.getAbsolutePath());
             DatabaseCallbacks.loadFileDB(file);
         }
     }

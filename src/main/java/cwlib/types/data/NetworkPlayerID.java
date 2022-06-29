@@ -32,6 +32,8 @@ public class NetworkPlayerID implements Serializable {
         return id;
     }
 
+    public NetworkOnlineID getHandle() { return this.handle; }
+
     
     @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
     

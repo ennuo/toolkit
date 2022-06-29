@@ -64,6 +64,7 @@ public class TreeSelectionListener {
             if (entry.getInfo() == null) {
                 ResourceSystem.println("Loading " + entry.getPath());
                 entry.setInfo(new ResourceInfo(node.getName(), data));
+                ResourceSystem.addCache(node);
             }
             
             // if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {

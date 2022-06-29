@@ -4,6 +4,7 @@ import cwlib.resources.RAdventureCreateProfile;
 import cwlib.resources.RPacks;
 import cwlib.types.Resource;
 import cwlib.resources.RSlotList;
+import cwlib.resources.RTranslationTable;
 import cwlib.enums.ContentsType;
 import cwlib.enums.Crater;
 import cwlib.enums.GameMode;
@@ -13,9 +14,7 @@ import cwlib.enums.SlotType;
 import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.Compressable;
-import cwlib.io.serializer.Serializer;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.BigSave;
 import cwlib.types.data.GUID;
@@ -23,7 +22,6 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
 import cwlib.util.Strings;
 import toolkit.utilities.ResourceSystem;
-import toolkit.windows.Toolkit;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
@@ -31,7 +29,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
@@ -114,8 +111,11 @@ public class SlotManager extends javax.swing.JFrame {
     
     public SlotManager(BigSave profile, Slot selectedSlot) {
         this.type = EditorType.SAVE;
-        this.entry = profile.rootProfileEntry;
-        this.slots = new ArrayList<>(profile.bigProfile.myMoonSlots.values());
+
+        this.entry = null;
+        this.game = profile.getArchive().getGameRevision().getSubVersion() > 0x105 ? 3 : 1;
+
+        this.slots = new ArrayList<>(profile.getProfile().myMoonSlots.values());
         
         this.setup();
         
@@ -148,7 +148,7 @@ public class SlotManager extends javax.swing.JFrame {
     
     public SlotManager(FileEntry entry, RAdventureCreateProfile profile) {
         this.type = EditorType.ADVENTURE;
-        this.slots = new ArrayList<>(profile.adventureSlots.values());
+        this.slots = new ArrayList<>(profile.getAdventureSlots().values());
         this.entry = entry;
         this.adventure = profile;
             
@@ -185,7 +185,7 @@ public class SlotManager extends javax.swing.JFrame {
         HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
         for (Slot slot : this.slots)
             slotMap.put(slot.id, slot);
-        profile.bigProfile.myMoonSlots = slotMap;
+        profile.getProfile().myMoonSlots = slotMap;
         
         profile.setHasChanges();
         Toolkit.instance.updateWorkspace();
@@ -199,10 +199,10 @@ public class SlotManager extends javax.swing.JFrame {
             Compressable compressable = null;
             if (this.type == EditorType.PACK) compressable = new RPacks(this.packs);
             else if (this.type == EditorType.ADVENTURE) {
-                HashMap<SlotID, Slot> slotMap = new HashMap<>(this.slots.size());
+                HashMap<SlotID, Slot> slotMap = adventure.getAdventureSlots();
+                slotMap.clear();
                 for (Slot slot : this.slots)
                     slotMap.put(slot.id, slot);
-                adventure.adventureSlots = slotMap;
                 compressable = adventure;
             } else if (this.type == EditorType.SLOT_LIST) compressable = new RSlotList(this.slots);
             ResourceSystem.replace(this.entry, Resource.compress(compressable, info.getRevision(), info.getCompressionFlags()));
@@ -215,7 +215,8 @@ public class SlotManager extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
         this.setResizable(false);
         
-        this.game = this.entry.getInfo().getRevision().isAfterLBP3Revision(0x105) ? 3 : 1;
+        if (this.entry != null)
+            this.game = this.entry.getInfo().getRevision().getSubVersion() > 0x105 ? 3 : 1;
         
         this.slotList.setModel(this.model);
         this.groupCombo.setModel(this.groups);
@@ -566,9 +567,10 @@ public class SlotManager extends javax.swing.JFrame {
             this.titleTextEntry.setText(tag);
             this.descriptionTextEntry.setText("A valid translation table needs to be loaded for the title and description to appear. Alternatively, remove the translation key, and set your own title/description.");
 
-            if (ResourceSystem.LAMS != null) {
-                this.titleTextEntry.setText(ResourceSystem.LAMS.translate(tag + "_NAME"));
-                this.descriptionTextEntry.setText(ResourceSystem.LAMS.translate(tag + "_DESC"));   
+            RTranslationTable LAMS = ResourceSystem.getLAMS();
+            if (LAMS != null) {
+                this.titleTextEntry.setText(LAMS.translate(tag + "_NAME"));
+                this.descriptionTextEntry.setText(LAMS.translate(tag + "_DESC"));   
             }
         }
     }

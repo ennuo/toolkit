@@ -1,22 +1,18 @@
 package toolkit.functions;
 
+import cwlib.enums.DatabaseType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
 import cwlib.util.Compressor;
 import cwlib.util.FileIO;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;
-import cwlib.types.data.ResourceInfo;
-import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
-import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.save.BigSave;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
@@ -26,14 +22,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
 
 public class ArchiveCallbacks {
     public static void loadFileArchive(File file) {
@@ -72,31 +65,10 @@ public class ArchiveCallbacks {
         File file = FileChooser.openFile("data.farc", "farc", false);
         if (file == null) return;
         FileArchive archive = new FileArchive(file);
-        int count = 0;
-        MemoryOutputStream table = new MemoryOutputStream(archive.entries.size() * 0x1c);
-        ArrayList<FileEntry> toRemove = new ArrayList<FileEntry>(archive.entries.size());
-        for (int i = 0; i < archive.entries.size(); ++i) {
-            FileEntry entry = archive.entries.get(i);
-            byte[] data = archive.extract(entry);
-            if (data == null) continue;
-            String realSHA1 = SHA1.fromBuffer(data).toString();
-            String storedSHA1 = entry.hash.toString();
-            if (realSHA1.equals(storedSHA1)) {
-                table.sha1(entry.hash);
-                table.i32f((int) entry.offset);
-                table.i32f(entry.size);
-            } else {
-                toRemove.add(entry);
-                archive.lookup.remove(storedSHA1);
-                count++;
-            }
-        }
-        for (FileEntry entry : toRemove)
-            archive.entries.remove(entry);
-        table.shrink();
-        archive.hashTable = table.buffer;
-        archive.save(null, true);
-        System.out.println(String.format("%d files failed integrity check and were removed.", count));
+        int missing = archive.validate();
+        if (missing != 0)
+            archive.save();
+        System.out.println(String.format("%d files failed integrity check and were removed.", missing));
     }
     
     public static void addFile() {
@@ -105,14 +77,12 @@ public class ArchiveCallbacks {
         File[] files = FileChooser.openFiles(null);
         if (files == null) return;
 
-        FileData database = ResourceSystem.getSelectedDatabase();
-        
         Fart[] archives = null;
-        if (database.getType().containsData()) {
-            
-        }
 
-        if (ResourceSystem.getDatabaseType() != Globals.ResourceSystem.PROFILE) {
+        FileData database = ResourceSystem.getSelectedDatabase();
+        DatabaseType type = database.getType();
+
+        if (!type.containsData()) {
             archives = Toolkit.instance.getSelectedArchives();
             if (archives == null) return;
         }
@@ -121,21 +91,16 @@ public class ArchiveCallbacks {
             byte[] data = FileIO.read(file.getAbsolutePath());
             if (data == null) return;
 
-            if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE)
-                ((BigSave) Toolkit.instance.getCurrentDB()).add(data);
+            if (type.containsData()) database.add(data);
             else ResourceSystem.add(data, archives);
         }
 
         Toolkit.instance.updateWorkspace();
 
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
-            JTree tree = Toolkit.instance.getCurrentTree();
-            TreePath selectionPath = tree.getSelectionPath();
-            ((FileModel) tree.getModel()).reload();
-            tree.setSelectionPath(selectionPath);
-        }
+        if (type.containsData()) 
+            ResourceSystem.reloadModel(database);
 
-        System.out.println("Added file to queue, make sure to save your workspace!");
+        System.out.println("Added file(s) to queue, make sure to save your workspace!");
     }
     
     public static void addFolder() {                                        
@@ -144,7 +109,7 @@ public class ArchiveCallbacks {
         String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
         
-        FileArchive[] archives = Toolkit.instance.getSelectedArchives();
+        Fart[] archives = Toolkit.instance.getSelectedArchives();
         if (archives == null) return;
         
         try (Stream<Path> stream = Files.walk(Paths.get(directory))) {
@@ -165,12 +130,8 @@ public class ArchiveCallbacks {
 
         Toolkit.instance.updateWorkspace();
 
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
-            JTree tree = Toolkit.instance.getCurrentTree();
-            TreePath selectionPath = tree.getSelectionPath();
-            ((FileModel) tree.getModel()).reload();
-            tree.setSelectionPath(selectionPath);
-        }
+        if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART)
+            ResourceSystem.reloadSelectedModel();
 
         System.out.println("Added files to queue, make sure to save your workspace!");
     }   
