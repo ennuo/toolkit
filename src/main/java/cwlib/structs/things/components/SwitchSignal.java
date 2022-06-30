@@ -1,4 +1,4 @@
-package cwlib.structs.things;
+package cwlib.structs.things.components;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;

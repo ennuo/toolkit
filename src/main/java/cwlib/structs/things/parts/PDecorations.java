@@ -1,8 +1,8 @@
 package cwlib.structs.things.parts;
 
-import cwlib.structs.things.Decoration;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.things.components.Decoration;
 
 public class PDecorations implements Serializable {
     public Decoration[] decorations;

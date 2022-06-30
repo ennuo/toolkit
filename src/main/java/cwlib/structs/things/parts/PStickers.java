@@ -2,8 +2,8 @@ package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.things.Decal;
-import cwlib.structs.things.PaintControlPoint;
+import cwlib.structs.things.components.decals.Decal;
+import cwlib.structs.things.components.decals.PaintControlPoint;
 import cwlib.structs.inventory.EyetoyData;
 
 /**

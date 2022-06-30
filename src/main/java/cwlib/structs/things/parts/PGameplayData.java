@@ -1,8 +1,8 @@
 package cwlib.structs.things.parts;
 
-import cwlib.structs.things.EggLink;
 import cwlib.types.data.Revision;
 import cwlib.structs.slot.SlotID;
+import cwlib.structs.things.components.EggLink;
 import cwlib.enums.GameplayPartType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;

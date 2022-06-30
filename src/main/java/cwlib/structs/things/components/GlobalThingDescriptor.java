@@ -1,4 +1,4 @@
-package cwlib.structs.things;
+package cwlib.structs.things.components;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
