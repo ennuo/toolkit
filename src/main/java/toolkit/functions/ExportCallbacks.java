@@ -174,7 +174,7 @@ public class ExportCallbacks {
         Mod mod = new Mod();
         if (hashinate)
             Bytes.hashinate(mod, resource, entry);
-        else Bytes.getAllDependencies(mod, resource, entry);;
+        else Bytes.getAllDependencies(mod, resource, entry);
 
         mod.config.title = name;
         
