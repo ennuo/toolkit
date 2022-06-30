@@ -170,23 +170,6 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
     }
 
     /**
-     * Removes an entry in the database by its GUID.
-     * @param guid GUID to remove
-     */
-    public void remove(GUID guid) {
-        final FileDBRow entry = this.get(guid);
-        if (entry == null) return;
-        this.lookup.remove(guid);
-        this.entries.remove(entry);
-    }
-
-    /**
-     * Removes an entry in the database by its GUID.
-     * @param guid GUID to remove
-     */
-    public void remove(long guid) { this.remove(new GUID(guid)); }
-
-    /**
      * Updates the lookup tables with entry's new GUID.
      * The GUID is not set in this method.
      * @param oldGUID Old identifier for entry
@@ -251,6 +234,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         if (entry.getSource() != this) 
             throw new IllegalArgumentException("FileDBRow doesn't belong to this database!");
         this.entries.remove(entry);
+        this.lookup.remove(entry.getKey());
         FileNode node = entry.getNode();
         if (node != null) node.delete();
     }

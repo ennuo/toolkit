@@ -104,8 +104,6 @@ public final class SaveEntry extends FileEntry {
                 // but that ain't updating the cached details.
             }
         }
-
-
     }
 
     @Override public String toString() {

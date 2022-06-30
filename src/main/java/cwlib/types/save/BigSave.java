@@ -15,11 +15,13 @@ import cwlib.enums.ResourceType;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.slot.SlotID;
 import cwlib.types.swing.FileData;
+import cwlib.types.swing.FileNode;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.types.data.SHA1;
+import cwlib.types.databases.FileEntry;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.resources.RBigProfile;
 
@@ -127,6 +129,22 @@ public class BigSave extends FileData {
     }
 
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
+
+    @Override public void remove(FileEntry entry) {
+        if (entry.getSource() != this) 
+            throw new IllegalArgumentException("SaveEntry doesn't belong to this database!");
+        SaveEntry saveEntry = (SaveEntry) entry;
+        this.entries.remove(saveEntry);
+        if (saveEntry.isLevel())
+            this.profile.myMoonSlots.remove(saveEntry.getSlot().id);
+        if (saveEntry.isItem())
+            this.profile.inventory.remove(saveEntry.getItem());
+        if (saveEntry.isAdventureLevel()) {
+            // TODO: Handle this case some other time, not that important.
+        }
+        FileNode node = saveEntry.getNode();
+        if (node != null) node.delete();
+    }
 
     public void addItem(ResourceDescriptor resource, InventoryItemDetails details) {
         InventoryItem item = new InventoryItem();

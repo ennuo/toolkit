@@ -21,6 +21,7 @@ import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.types.save.BigSave;
+import cwlib.types.save.SaveEntry;
 
 import java.awt.Color;
 import java.io.File;
@@ -101,7 +102,6 @@ public class DatabaseCallbacks {
         if (file == null) return;
             
         FileData database = ResourceSystem.getSelectedDatabase();
-        JTree tree = database.getTree();
 
         if (!database.getType().hasGUIDs()) return;
         
@@ -112,13 +112,11 @@ public class DatabaseCallbacks {
         input = input.replaceAll("\\s", "");
         
         
-        long parsedGUID = Strings.getLong(input);
-        if (parsedGUID == -1) {
+        GUID guid = Strings.getGUID(input);
+        if (guid == null) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
-
-        GUID guid = new GUID(parsedGUID);
 
         if (database.get(guid) != null) {
             System.err.println("This GUID already exists!");
@@ -137,6 +135,11 @@ public class DatabaseCallbacks {
         ResourceSystem.reloadModel(database);
         Toolkit.instance.updateWorkspace();
 
+        TreePath treePath = new TreePath(entry.getNode().getPath());
+        JTree tree = database.getTree();
+        tree.setSelectionPath(treePath);
+        tree.scrollPathToVisible(treePath);
+
         System.out.println("Added entry! -> " + entry.getPath());
 
     } 
@@ -145,19 +148,19 @@ public class DatabaseCallbacks {
         String folder = (String) JOptionPane.showInputDialog("Please input a name for the folder.");
         if (folder == null || folder.equals("")) return;
 
-        TreePath treePath = null;
-        if (ResourceSystem.getSelected() == null)
-            treePath = new TreePath(Toolkit.instance.getCurrentDB().addNode(folder).getPath());
-        else if (ResourceSystem.getSelected().getEntry() == null)
-            treePath = new TreePath(Toolkit.instance.getCurrentDB().addNode(ResourceSystem.getSelected().path + ResourceSystem.getSelected().getName() + "/" + folder).getPath());
+        FileData database = ResourceSystem.getSelectedDatabase();
+        FileNode selected = ResourceSystem.getSelected();
 
-        JTree tree = Toolkit.instance.getCurrentTree();
-
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
+        TreePath path = null;
+        if (selected == null)
+            path = new TreePath(database.addNode(folder).getPath());
+        else if (selected.getEntry() == null)
+            path = new TreePath(database.addNode(selected.getFilePath() + selected.getName() + "/" + folder).getPath());
+            
+        ResourceSystem.reloadSelectedModel();
+        JTree tree = database.getTree();
+        tree.setSelectionPath(path);
+        tree.scrollPathToVisible(path);
     }
     
     public static void changeHash() {
@@ -176,36 +179,32 @@ public class DatabaseCallbacks {
     
     public static void changeGUID() {
         FileNode node = ResourceSystem.getSelected();
-        FileEntry entry = node.entry;
-        FileData db = Toolkit.instance.getCurrentDB();
-        
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + entry.GUID);
-        if (GUID == null) return;
-        
-        long parsedGUID = Strings.getLong(GUID);
-        if (parsedGUID == -1) {
+        FileEntry baseEntry = ResourceSystem.getSelected().getEntry();
+        if (!baseEntry.getSource().getType().hasGUIDs()) return;
+        FileDBRow entry = (FileDBRow) baseEntry;
+        if (entry.getGUID() == null) return;
+
+        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", entry.getGUID().toString());
+        if (input == null) return;
+
+        GUID guid = Strings.getGUID(input);
+        if (guid == null) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
-        
-        if (parsedGUID == entry.GUID) {
+
+        if (guid.equals(entry.getGUID())) {
             System.err.println("The GUID is unchanged!");
             return;
         }
-        
-        boolean alreadyExists = false;
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)
-            alreadyExists = ((Mod) db).find(parsedGUID) != null;
-        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
-        
-        
-        if (alreadyExists) {
+
+        if (entry.getFileDB().exists(guid)) {
             System.err.println("This GUID already exists!");
             return;
         }
-        
-        ((FileDB)Toolkit.instance.getCurrentDB()).edit(entry, parsedGUID);
-        
+
+        entry.setGUID(guid);
+
         Toolkit.instance.updateWorkspace();
         Toolkit.instance.setEditorPanel(node);
     }
@@ -286,54 +285,22 @@ public class DatabaseCallbacks {
         Toolkit.instance.updateWorkspace();
 
         System.out.println("Duplicated entry!");
-        System.out.println(entry.path + " -> " + duplicate.path);
+        System.out.println(entry.getPath() + " -> " + duplicate.getPath());
     }
     
     public static void delete() {      
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.NONE)
-            return;
-        JTree tree = Toolkit.instance.getCurrentTree();
-
-        TreePath[] paths = tree.getSelectionPaths();
-        TreeSelectionModel model = tree.getSelectionModel();
-        int[] rows = tree.getSelectionRows();
-        
-        if (rows == null || rows.length == 0)
-            return;
-
-        if (ResourceSystem.getDatabaseType() != Globals.ResourceSystem.PROFILE) {
-            FileData db = Toolkit.instance.getCurrentDB();
-            for (FileNode node: ResourceSystem.selected) {
-                FileEntry entry = node.entry;
-                node.removeFromParent();
-                if (node.entry == null) continue;
-                if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)((Mod) db).remove(entry);
-                else((FileDB) db).remove(entry);
+        FileData database = ResourceSystem.getSelectedDatabase();
+        FileNode[] selections = ResourceSystem.getAllSelected();
+        for (FileNode node : selections) {
+            FileEntry entry = node.getEntry();
+            if (entry == null) {
+                node.delete();
+                continue;
             }
+            database.remove(entry);
         }
-
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
-            BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
-            for (FileNode node: ResourceSystem.selected) {
-                FileEntry entry = node.entry;
-                node.removeFromParent();
-                if (entry == null) continue;
-                Slot slot = entry.getResource("slot");
-                if (slot != null) profile.bigProfile.myMoonSlots.remove(slot.id);
-                InventoryItem item = entry.getResource("profileItem");
-                if (item != null) profile.bigProfile.inventory.remove(item);
-                profile.entries.remove(entry);
-                profile.shouldSave = true;
-            }
-        }
-
-        ((FileModel) tree.getModel()).reload();
-
         Toolkit.instance.updateWorkspace();
-
-        tree.setSelectionPaths(paths);
-        tree.setSelectionRows(rows);
-        tree.setSelectionModel(model);
+        ResourceSystem.reloadSelectedModel();
     }
     
     public static void newFileDB(int header) {

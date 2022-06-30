@@ -76,11 +76,6 @@ public final class FileDBRow extends FileEntry {
         this.setGUID(entry.getGUID());
     }
 
-    /**
-     * Removes this FileDBRow from attached database.
-     */
-    public void remove() { this.getFileDB().remove(this.getGUID()); }
-
     @Override public String toString() {
         return String.format("FileDBRow (%s, %s, %s)", this.path, this.sha1, this.key);
     }

@@ -1,5 +1,6 @@
 package cwlib.util;
 
+import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
 import java.util.regex.Pattern;
 
@@ -54,6 +55,17 @@ public final class Strings {
     public static final SHA1 getSHA1(String hash) {
         if (hash == null || hash.isEmpty() || !Strings.isSHA1(hash)) return null;
         return new SHA1(hash);
+    }
+
+    /**
+     * Gets a GUID from a string
+     * @param number String containing GUID
+     * @return GUID from string.
+     */
+    public static final GUID getGUID(String number) {
+        long value = Strings.getLong(number);
+        if (value <= 0) return null;
+        return new GUID(value);
     }
     
     /**

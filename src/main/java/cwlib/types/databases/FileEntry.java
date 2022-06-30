@@ -132,6 +132,8 @@ public abstract class FileEntry {
         this.resources[key] = resource;
     }
 
+    public void remove() { this.source.remove(this); }
+
     @SuppressWarnings("unchecked")
     public <T> T getResource(int key) {
         Object value = this.resources[key];
