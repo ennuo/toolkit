@@ -11,4 +11,6 @@ public class PCreature implements Serializable {
         return creature;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

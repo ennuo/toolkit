@@ -16,6 +16,6 @@ public class PDecorations implements Serializable {
         return decorations;
     }
 
-    
-    
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

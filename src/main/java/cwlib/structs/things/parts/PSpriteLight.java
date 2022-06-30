@@ -48,4 +48,6 @@ public class PSpriteLight implements Serializable {
         return spriteLight;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

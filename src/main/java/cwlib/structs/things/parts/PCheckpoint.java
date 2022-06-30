@@ -27,5 +27,8 @@ public class PCheckpoint implements Serializable {
         
         return checkpoint;
     }
-    
+
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
+  
 }

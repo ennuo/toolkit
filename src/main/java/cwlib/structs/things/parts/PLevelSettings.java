@@ -11,4 +11,6 @@ public class PLevelSettings implements Serializable {
         return levelSettings;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

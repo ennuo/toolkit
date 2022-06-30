@@ -18,5 +18,7 @@ public class PAnimation implements Serializable {
         
         return animation;
     }
-    
+
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

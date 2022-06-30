@@ -11,4 +11,6 @@ public class PEmitter implements Serializable {
         return emitter;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

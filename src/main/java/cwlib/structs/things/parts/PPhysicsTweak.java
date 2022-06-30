@@ -25,4 +25,6 @@ public class PPhysicsTweak implements Serializable {
         return physicsTweak;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

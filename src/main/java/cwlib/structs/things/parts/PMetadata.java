@@ -1,11 +1,14 @@
 package cwlib.structs.things.parts;
 
 import cwlib.resources.RTranslationTable;
+import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.structs.inventory.PhotoMetadata;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 
 public class PMetadata implements Serializable {
     public String nameTranslationTag, descTranslationTag;
@@ -25,20 +28,24 @@ public class PMetadata implements Serializable {
     public boolean referencable;
     public boolean allowEmit;
     
-    public PMetadata serialize(Serializer serializer, Serializable structure) {
+    @SuppressWarnings("unchecked")
+    @Override public PMetadata serialize(Serializer serializer, Serializable structure) {
         PMetadata metadata = (structure == null) ? new PMetadata() : (PMetadata) structure;
         
-        if ((serializer.revision.head == 0x272 && serializer.revision.branchID != 0) || serializer.revision.head > 0x2ba) {
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+
+        if (revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || version > 0x2ba) {
             metadata.titleKey = serializer.u32(metadata.titleKey);
             metadata.descriptionKey = serializer.u32(metadata.descriptionKey);
             metadata.location = serializer.u32(metadata.location);
             metadata.category = serializer.u32(metadata.category);
         } else {
-            metadata.nameTranslationTag = serializer.str8(metadata.nameTranslationTag);
-            metadata.descTranslationTag = serializer.str8(metadata.descTranslationTag);
-            metadata.locationTag = serializer.str8(metadata.locationTag);
-            metadata.categoryTag = serializer.str8(metadata.categoryTag);
-            if (!serializer.isWriting) {
+            metadata.nameTranslationTag = serializer.str(metadata.nameTranslationTag);
+            metadata.descTranslationTag = serializer.str(metadata.descTranslationTag);
+            metadata.locationTag = serializer.str(metadata.locationTag);
+            metadata.categoryTag = serializer.str(metadata.categoryTag);
+            if (!serializer.isWriting()) {
                 metadata.titleKey =
                         RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag);
                 metadata.descriptionKey =
@@ -65,4 +72,6 @@ public class PMetadata implements Serializable {
         return metadata;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

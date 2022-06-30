@@ -3,7 +3,6 @@ package cwlib.structs.things.parts;
 import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
-import cwlib.enums.ShadowCastMode;
 import cwlib.enums.ShadowType;
 import cwlib.enums.VisibilityFlags;
 import cwlib.io.Serializable;

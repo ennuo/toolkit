@@ -20,7 +20,7 @@ public class PAudioWorld implements Serializable {
     public PAudioWorld serialize(Serializer serializer, Serializable structure) {
         PAudioWorld audioWorld = (structure == null) ? new PAudioWorld() : (PAudioWorld) structure;
         
-        audioWorld.soundName = serializer.str8(audioWorld.soundName);
+        audioWorld.soundName = serializer.str(audioWorld.soundName);
         
         audioWorld.initialVolume = serializer.f32(audioWorld.initialVolume);
         audioWorld.initialPitch = serializer.f32(audioWorld.initialPitch);
@@ -44,5 +44,8 @@ public class PAudioWorld implements Serializable {
         
         return audioWorld;
     }
+
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
     
 }

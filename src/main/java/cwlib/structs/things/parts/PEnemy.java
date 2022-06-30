@@ -26,4 +26,6 @@ public class PEnemy implements Serializable {
         return enemy;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

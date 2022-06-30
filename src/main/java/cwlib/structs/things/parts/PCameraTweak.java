@@ -11,4 +11,7 @@ public class PCameraTweak implements Serializable {
         return cameraTweak;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
+
 }

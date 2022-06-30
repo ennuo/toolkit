@@ -17,4 +17,6 @@ public class PScript implements Serializable {
         return script;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

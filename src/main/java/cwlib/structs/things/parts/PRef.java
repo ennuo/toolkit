@@ -25,4 +25,6 @@ public class PRef implements Serializable {
         return ref;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

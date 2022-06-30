@@ -10,5 +10,7 @@ public class PCostume implements Serializable {
         
         return costume;
     }
-    
+
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }

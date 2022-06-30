@@ -11,4 +11,6 @@ public class PSwitch implements Serializable {
         return switchBase;
     }
     
+    // TODO: Actually implement
+    @Override public int getAllocatedSize() { return 0; }
 }
