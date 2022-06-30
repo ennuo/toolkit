@@ -20,6 +20,7 @@ public class ResourceInfo {
     private Object resource;
     private Revision revision;
     private ResourceType type = ResourceType.INVALID;
+    private SerializationType method = SerializationType.UNKNOWN;
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
     private ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     private boolean isMissingDependencies;
@@ -32,6 +33,7 @@ public class ResourceInfo {
         // PNG, JPG, DDS
         if (magic == 0x89504e47 || magic == 0xFFD8FFE0 || magic == 0x44445320) {
             this.type = ResourceType.TEXTURE;
+            this.method = SerializationType.COMPRESSED_TEXTURE;
             this.resource = new RTexture(source);
             return;
         }
@@ -45,6 +47,7 @@ public class ResourceInfo {
                 // Only decompressing the data to see if it's valid data,
                 // might be better to just check for zlib flags, but it'll do.
                 Compressor.decompressData(new MemoryInputStream(source), source.length);
+                this.method = SerializationType.BINARY;
             } catch (Exception ex) {
                 ResourceSystem.println("Failed to decompress shader, marking resource as invalid.");
                 this.type = ResourceType.INVALID;
@@ -69,6 +72,7 @@ public class ResourceInfo {
 
         Resource resource = new Resource(source);
         this.type = resource.getResourceType();
+        this.method = resource.getSerializationType();
         this.revision = resource.getRevision();
         this.compressionFlags = resource.getCompressionFlags();
         this.dependencies = resource.getDependencies();
@@ -112,8 +116,13 @@ public class ResourceInfo {
     @SuppressWarnings("unchecked") public <T> T getResource() { return (T) this.resource; }
     public Revision getRevision() { return this.revision; }
     public ResourceType getType() { return this.type; }
+    public SerializationType getMethod() { return this.method; }
     public byte getCompressionFlags() { return this.compressionFlags; }
     public ResourceDescriptor[] getDependencies() { return this.dependencies; }
     public boolean isMissingDependencies() { return this.isMissingDependencies; }
     public boolean isResource() { return this.type != ResourceType.INVALID; }
+    public boolean isCompressedResource() { 
+        return this.type != ResourceType.INVALID && 
+        (this.method == SerializationType.BINARY || this.method == SerializationType.ENCRYPTED_BINARY); 
+    }
 }

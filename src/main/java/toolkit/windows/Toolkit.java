@@ -336,8 +336,8 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (ResourceSystem.canExtract() && ResourceSystem.canExtractSelected() && useContext) {
             extractContextMenu.setVisible(true);
-            if (info != null && info.isResource() && type != ResourceType.FONTFACE && type != ResourceType.VERTEX_SHADER && type != ResourceType.PIXEL_SHADER && type != ResourceType.TRANSLATION) {
-                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0)) {
+            if (info != null && info.isResource() && type != ResourceType.FONTFACE && type != ResourceType.TRANSLATION) {
+                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0) && info.isCompressedResource()) {
                     replaceDecompressed.setVisible(true);
                     if (info.getDependencies().length != 0) {
                         exportGroup.setVisible(true);
