@@ -13,6 +13,8 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Colors;
 
 public class PRenderMesh implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
+
     public ResourceDescriptor mesh;
     public Thing[] boneThings;
     public ResourceDescriptor anim;
@@ -75,5 +77,11 @@ public class PRenderMesh implements Serializable {
         }
 
         return mesh;
+    }
+
+    @Override public int getAllocatedSize() {
+        int size = PRenderMesh.BASE_ALLOCATION_SIZE;
+        if (this.boneThings != null) size += (this.boneThings.length * 0x4);
+        return size;
     }
 }
