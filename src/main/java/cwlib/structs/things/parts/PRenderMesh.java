@@ -46,10 +46,10 @@ public class PRenderMesh implements Serializable {
         if (version > 0x31a) mesh.editorColor = serializer.i32(mesh.editorColor);
         else {
             if (serializer.isWriting())
-                serializer.getOutput().v4(Colors.RGBA.toVector(mesh.editorColor));
+                serializer.getOutput().v4(Colors.RGBA32.toVector(mesh.editorColor));
             else {
                 Vector4f color = serializer.getInput().v4();
-                mesh.editorColor = Colors.RGBA.fromVector(color);
+                mesh.editorColor = Colors.RGBA32.fromVector(color);
             }
         }
         

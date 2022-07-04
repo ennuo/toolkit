@@ -9,7 +9,7 @@ public final class Colors {
     /**
      * Nested utilities for RGBA colors
      */
-    public static final class RGBA {
+    public static final class RGBA32 {
         /**
          * Converts a normalized vector containing RGBA colors
          * to an integer.
