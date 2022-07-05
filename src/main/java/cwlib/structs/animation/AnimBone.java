@@ -29,15 +29,23 @@ public class AnimBone implements Serializable {
      */
     public int nextSibling;
 
+    public AnimBone() {};
+    public AnimBone(int animHash, int parent, int firstChild, int nextSibling) {
+        this.animHash = animHash;
+        this.parent = parent;
+        this.firstChild = firstChild;
+        this.nextSibling = nextSibling;
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override public AnimBone serialize(Serializer serializer, Serializable structure) {
         AnimBone bone = (structure == null) ? new AnimBone() : (AnimBone) structure;
         
         bone.animHash = serializer.i32(bone.animHash);
-        bone.parent = serializer.i32(bone.parent);
-        bone.firstChild = serializer.i32(bone.firstChild);
-        bone.nextSibling = serializer.i32(bone.nextSibling);
+        bone.parent = serializer.i32d(bone.parent);
+        bone.firstChild = serializer.i32d(bone.firstChild);
+        bone.nextSibling = serializer.i32d(bone.nextSibling);
 
         return bone;
     }

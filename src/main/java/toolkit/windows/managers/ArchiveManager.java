@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.managers;
 
 import cwlib.ex.SerializationException;
 import cwlib.types.archives.Fart;
@@ -11,6 +11,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import toolkit.windows.Toolkit;
 
 public class ArchiveManager extends javax.swing.JDialog {
     private final DefaultListModel<String> archiveModel = new DefaultListModel<>();

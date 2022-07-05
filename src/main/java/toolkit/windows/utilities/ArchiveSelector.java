@@ -1,10 +1,11 @@
-package toolkit.windows;
+package toolkit.windows.utilities;
 
 import cwlib.types.archives.Fart;
 import toolkit.utilities.ResourceSystem;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import toolkit.windows.Toolkit;
 
 public class ArchiveSelector extends javax.swing.JDialog {
     private DefaultListModel<String> model = new DefaultListModel<>();

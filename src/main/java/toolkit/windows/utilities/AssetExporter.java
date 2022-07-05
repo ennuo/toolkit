@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.utilities;
 
 import cwlib.resources.RPlan;
 import cwlib.types.Resource;
@@ -22,6 +22,7 @@ import java.util.HashSet;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import toolkit.windows.Toolkit;
 
 public class AssetExporter extends JDialog {
     private enum MaterialLibrary {

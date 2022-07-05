@@ -1,34 +1,32 @@
 package cwlib.structs.animation;
 
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.Serializer;
 import org.joml.Vector3f;
 
-public class Locator {
+public class Locator implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x12;
+
     public Vector3f position;
     public String name;
     public byte looping, type;
-    
-    public Locator(MemoryInputStream data) {
-        position = data.v3();
-        name = data.str();
-        looping = data.i8();
-        type = data.i8();
+
+    @SuppressWarnings("unchecked")
+    @Override public Locator serialize(Serializer serializer, Serializable structure) {
+        Locator locator = (structure == null) ? new Locator() : (Locator) structure;
+
+        locator.position = serializer.v3(locator.position);
+        locator.name = serializer.str(locator.name);
+        locator.looping = serializer.i8(locator.looping);
+        locator.type = serializer.i8(locator.type);
+
+        return locator;
     }
-    
-    public static Locator[] array(MemoryInputStream data) {
-        int count = data.i32();
-        Locator[] out = new Locator[count];
-        for (int i = 0; i < count; ++i)
-            out[i] = new Locator(data);
-        return out;
+
+    @Override public int getAllocatedSize() {
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.name != null)
+            size += (this.name.length());
+        return size;
     }
-    
-    public void serialize(MemoryOutputStream output) {
-        output.v3(position);
-        output.str(name);
-        output.i8(looping);
-        output.i8(type);
-    }
-    
 }

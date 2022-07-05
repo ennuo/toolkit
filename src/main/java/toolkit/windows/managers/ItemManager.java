@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.managers;
 
 import cwlib.resources.RPlan;
 import cwlib.types.Resource;
@@ -45,6 +45,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import org.joml.Vector4f;
+import toolkit.windows.Toolkit;
 
 public class ItemManager extends javax.swing.JFrame {
     private static final String DEFAULT_TITLE = "Some kind of object";

@@ -28,13 +28,15 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.JOptionPane;
+
 public class ArchiveCallbacks {
     public static void loadFileArchive(File file) {
         int index = Toolkit.instance.isArchiveLoaded(file);
         FileArchive archive = null;
         try { archive = new FileArchive(file); }
         catch (SerializationException ex) {
-            System.err.println(ex.getMessage());
+            JOptionPane.showMessageDialog(Toolkit.instance, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (index != -1) ResourceSystem.getArchives().set(index, archive);

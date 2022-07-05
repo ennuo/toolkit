@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.managers;
 
 import java.io.File;
 import javax.swing.DefaultListModel;

@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.utilities;
 
 import cwlib.types.Resource;
 import cwlib.enums.CompressionFlags;
@@ -40,7 +40,7 @@ public class Compressinator extends javax.swing.JFrame {
         jFormattedTextField1 = new javax.swing.JFormattedTextField();
         headerPanel = new javax.swing.JPanel();
         headerCategoryLabel = new javax.swing.JLabel();
-        resourceCombo = new javax.swing.JComboBox(cwlib.enums.ResourceType.values());
+        resourceCombo = new javax.swing.JComboBox(cwlib.enums.Magic.values());
         magicLabel = new javax.swing.JLabel();
         revisionLabel = new javax.swing.JLabel();
         revision = new javax.swing.JTextField();

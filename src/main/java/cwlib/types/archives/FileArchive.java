@@ -16,12 +16,12 @@ public class FileArchive extends Fart {
         byte[] fatTable = null;
 
         if (!this.file.exists())
-            throw new SerializationException("File archive specified doesn't exist!");
+            throw new SerializationException("FARC specified doesn't exist!");
 
         try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
             if (archive.length() < 0x8) {
                 archive.close();
-                throw new SerializationException("Invalid FileArchive, size is less than minimum of 8 bytes!");
+                throw new SerializationException("Invalid FARC, size is less than minimum of 8 bytes!");
             }
 
             archive.seek(archive.length() - 0x8); // Seek to the bottom of the archive to read entry count and magic.
@@ -29,7 +29,7 @@ public class FileArchive extends Fart {
             int entryCount = archive.readInt();
             this.entries = new Fat[entryCount];
             if (archive.readInt() != 0x46415243 /* FARC */)
-                throw new SerializationException("Invalid FileArchive, magic does not match!");
+                throw new SerializationException("Invalid FARC, magic does not match!");
             this.fatOffset = archive.length() - 0x8 - (entryCount * 0x1c);
 
             fatTable = new byte[entryCount * 0x1c];
@@ -37,7 +37,7 @@ public class FileArchive extends Fart {
             archive.seek(this.fatOffset);
             archive.read(fatTable);
         } catch (IOException ex) {
-            throw new SerializationException("An I/O error occurred while reading the FileArchive.");
+            throw new SerializationException("An I/O error occurred while reading the FARC.");
         }
 
         // Faster to read the fat table in-memory since it's small.

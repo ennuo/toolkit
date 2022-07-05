@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.utilities;
 
 import cwlib.types.databases.FileEntry;
 import cwlib.types.Resource;
@@ -17,6 +17,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import toolkit.windows.Toolkit;
 
 public class Dependinator extends javax.swing.JFrame {
     private Resource resource;

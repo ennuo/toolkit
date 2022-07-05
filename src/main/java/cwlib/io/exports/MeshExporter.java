@@ -32,6 +32,7 @@ import cwlib.resources.RAnimation;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
+import cwlib.resources.RAnimation.AnimationType;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
@@ -48,6 +49,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -115,51 +118,66 @@ public class MeshExporter {
 
                 glb.gltf.addNodes(root);
 
-                for (AnimBone bone : animation.bones) {
+                for (int i = 0; i < animation.getBoneCount(); ++i) {
+                    Vector4f pos = animation.getBasePosition(i);
+                    Vector4f rot = animation.getBaseRotation(i);
+                    Vector4f scale = animation.getBaseScale(i);
+
                     Node child = new Node();
-                    child.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
-                    child.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
-                    child.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
+
+                    child.setTranslation(new float[] { pos.x, pos.y, pos.z });
+                    child.setRotation(new float[] { rot.x, rot.y, rot.z, rot.w });
+                    child.setScale(new float[] { scale.x, scale.y, scale.z });
+                    
                     glb.gltf.addNodes(child);
                 }
 
                 Skin skin = new Skin();
 
-                for (int i = 0; i < animation.bones.length; ++i) {
+                AnimBone[] bones = animation.getBones();
+                for (int i = 0; i < bones.length; ++i) {
                     skin.addJoints(i + 1);
-                    if (animation.bones[i].parent != -1)
-                        glb.gltf.getNodes().get(animation.bones[i].parent + 1).addChildren(i + 1);
+                    if (bones[i].parent != -1)
+                        glb.gltf.getNodes().get(bones[i].parent + 1).addChildren(i + 1);
                 }
 
                 glb.gltf.addSkins(skin);
             } else {
-                glb = GLB.FromMesh(mesh);
-                byte[] dataBuffer = glb.getBufferFromAnimation(animation);
-                glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
-                glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
-                for (AnimBone bone : animation.bones) {
-                    System.out.println(bone.animHash);
-                    System.out.println(mesh.getBoneName(bone.animHash));
-                    Node node = glb.getNode(mesh.getBoneName(bone.animHash));
-                    node.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
-                    node.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
-                    node.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
-                }
+                throw new RuntimeException("lol");
+                // glb = GLB.FromMesh(mesh);
+                // byte[] dataBuffer = glb.getBufferFromAnimation(animation);
+                // glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
+                // glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
+                // for (AnimBone bone : animation.bones) {
+                //     System.out.println(bone.animHash);
+                //     System.out.println(mesh.getBoneName(bone.animHash));
+                //     Node node = glb.getNode(mesh.getBoneName(bone.animHash));
+                //     node.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
+                //     node.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
+                //     node.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
+                // }
             }
             
-            if (animation.morphCount != 0)
+            if (animation.getMorphCount() != 0)
+                
+
+
                 for (Node node : glb.gltf.getNodes()) {
+                    float[] weights = animation.getBaseWeights();
+                    List<Float> gltfWeights = new ArrayList<>();
+                    for (float weight : weights) gltfWeights.add(weight);
                     if (node.getMesh() != null)
-                        glb.gltf.getMeshes().get(node.getMesh()).setWeights(animation.initialMorphs);
+                        glb.gltf.getMeshes().get(node.getMesh()).setWeights(gltfWeights);
                 }
             
-            int time = glb.createAccessor("TIME", 5126, "SCALAR", 0, animation.numFrames - 1);
+            int time = glb.createAccessor("TIME", 5126, "SCALAR", 0, animation.getNumFrames());
             
             Animation glAnim = new Animation();
             
             int samplerIndex = 0;
-            
-            if (animation.morphsAnimatedCount != 0) {
+
+            byte[] morphsAnimated = animation.getMorphsAnimated();
+            if (morphsAnimated.length != 0) {
                 for (int i = 0; i < glb.gltf.getNodes().size(); ++i) {
                     Node node = glb.gltf.getNodes().get(i);
                     if (node.getMesh() == null) continue;
@@ -171,7 +189,7 @@ public class MeshExporter {
                     AnimationSampler sampler = new AnimationSampler();
                     sampler.setInput(time);
                     sampler.setInterpolation("LINEAR");
-                    sampler.setOutput(glb.createAccessor("MORPHS_ANIMATED", 5126, "SCALAR", 0, animation.morphCount * (animation.numFrames - 1)));
+                    sampler.setOutput(glb.createAccessor("MORPHS_ANIMATED", 5126, "SCALAR", 0, animation.getMorphCount() * (animation.getNumFrames())));
                     channel.setSampler(samplerIndex);
                     samplerIndex++;
                     glAnim.addChannels(channel);
@@ -179,54 +197,57 @@ public class MeshExporter {
                 }
             }
             
-            for (short rot : animation.posBonesAnimated) {
+            AnimBone[] bones = animation.getBones();
+
+            for (byte pos : animation.getPosAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                if (mesh != null)
-                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
-                else target.setNode(rot + 1);
+                // if (mesh != null)
+                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(bones[rot].animHash)));
+                target.setNode(pos + 1);
                 target.setPath("translation");
                 channel.setTarget(target);
                 AnimationSampler sampler = new AnimationSampler();
                 sampler.setInput(time);
                 sampler.setInterpolation("LINEAR");
-                sampler.setOutput(glb.createAccessor("BONE_TRANSLATION_" + animation.bones[rot].animHash, 5126, "VEC3", 0, animation.numFrames - 1));
+                sampler.setOutput(glb.createAccessor("BONE_TRANSLATION_" + bones[pos].animHash, 5126, "VEC3", 0, animation.getNumFrames()));
                 channel.setSampler(samplerIndex);
                 samplerIndex++;
                 glAnim.addChannels(channel);
                 glAnim.addSamplers(sampler);
             }
-            
-            for (short rot : animation.scaledBonesAnimated) {
+
+            for (byte scale : animation.getScaleAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                if (mesh != null)
-                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
-                else target.setNode(rot + 1);
+                // if (mesh != null)
+                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[scale].animHash)));
+                target.setNode(scale + 1);
                 target.setPath("scale");
                 channel.setTarget(target);
                 AnimationSampler sampler = new AnimationSampler();
                 sampler.setInput(time);
                 sampler.setInterpolation("LINEAR");
-                sampler.setOutput(glb.createAccessor("BONE_SCALE_" + animation.bones[rot].animHash, 5126, "VEC3", 0, animation.numFrames - 1));
+                sampler.setOutput(glb.createAccessor("BONE_SCALE_" + bones[scale].animHash, 5126, "VEC3", 0, animation.getNumFrames()));
                 channel.setSampler(samplerIndex);
                 samplerIndex++;
                 glAnim.addChannels(channel);
                 glAnim.addSamplers(sampler);
             }
             
-            for (short rot : animation.rotBonesAnimated) {
+            for (byte rot : animation.getRotAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                if (mesh != null)
-                    target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
-                else target.setNode(rot + 1);
+                // if (mesh != null)
+                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
+                // else target.setNode(rot + 1);
+                target.setNode(rot + 1);
                 target.setPath("rotation");
                 channel.setTarget(target);
                 AnimationSampler sampler = new AnimationSampler();
                 sampler.setInput(time);
                 sampler.setInterpolation("LINEAR");
-                sampler.setOutput(glb.createAccessor("BONE_ROTATION_" + animation.bones[rot].animHash, 5126, "VEC4", 0, animation.numFrames - 1));
+                sampler.setOutput(glb.createAccessor("BONE_ROTATION_" + bones[rot].animHash, 5126, "VEC4", 0, animation.getNumFrames()));
                 channel.setSampler(samplerIndex);
                 samplerIndex++;
                 glAnim.addChannels(channel);
@@ -820,21 +841,22 @@ public class MeshExporter {
         }
         
         private byte[] getBufferFromAnimation(RAnimation animation) {
-            float timestep = 1.0f / ((float) animation.FPS);
+            float timestep = 1.0f / ((float) animation.getFPS());
             
-            MemoryOutputStream output = new MemoryOutputStream(animation.numFrames * animation.FPS * animation.boneCount + (animation.posBonesAnimatedCount + animation.rotBonesAnimatedCount + animation.scaledBonesAnimatedCount) * 0x50 + 0xFF0);
+            MemoryOutputStream output = new MemoryOutputStream(animation.getNumFrames() * animation.getFPS() * animation.getBoneCount() + (animation.getPosAnimated().length + animation.getRotAnimated().length + animation.getScaleAnimated().length) * 0x50 + 0xFF0);
             output.setLittleEndian(true);
 
             float step = 0.0f;
-            for (int i = 0; i < animation.numFrames - 1; ++i, step += timestep)
+            for (int i = 0; i < animation.getNumFrames(); ++i, step += timestep)
                 output.f32(step);
             createBufferView("TIME", 0, output.getOffset());
-            for (int i = 0; i < animation.bones.length; ++i) {
-                AnimBone bone = animation.bones[i];
-                
-                if (bone.positions[0] != null) {
+            AnimBone[] bones = animation.getBones();
+            for (int i = 0; i < bones.length; ++i) {
+                AnimBone bone = bones[i];
+
+                if (animation.isAnimated(bone, AnimationType.POSITION)) {
                     int posStart = output.getOffset();
-                    for (Vector4f pos : bone.positions) {
+                    for (Vector4f pos : animation.getPositionFrames(bone)) {
                         output.f32(pos.x);
                         output.f32(pos.y);
                         output.f32(pos.z);
@@ -842,9 +864,9 @@ public class MeshExporter {
                     createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.getOffset() - posStart);
                 }
                 
-                if (bone.rotations[0] != null) {
+                if (animation.isAnimated(bone, AnimationType.ROTATION)) {
                     int rotStart = output.getOffset();
-                    for (Vector4f rot : bone.rotations) {
+                    for (Vector4f rot : animation.getRotationFrames(bone)) {
                         output.f32(rot.x);
                         output.f32(rot.y);
                         output.f32(rot.z);
@@ -853,9 +875,9 @@ public class MeshExporter {
                     createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.getOffset() - rotStart);
                 }
                 
-                if (bone.scales[0] != null) {
+                if (animation.isAnimated(bone, AnimationType.SCALE)) {
                     int scaleStart = output.getOffset();
-                    for (Vector4f scale : bone.scales) {
+                    for (Vector4f scale : animation.getScaleFrames(bone)) {
                         output.f32(scale.x);
                         output.f32(scale.y);
                         output.f32(scale.z);
@@ -863,13 +885,23 @@ public class MeshExporter {
                     createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.getOffset() - scaleStart);
                 }
             }
-            
-            
-            if (animation.morphsAnimatedCount != 0) {
+
+            if (animation.getMorphsAnimated().length != 0) {
+                float[][] morphFrames = new float[animation.getMorphCount()][];
+                for (int i = 0; i < animation.getMorphCount(); ++i) {
+                    if (animation.isAnimated(i)) morphFrames[i] = animation.getMorphFrames(i);
+                    else {
+                        float[] weights = new float[animation.getNumFrames()];
+                        float base = animation.getBaseWeight(i);
+                        for (int j = 0; j < weights.length; ++j)
+                            weights[j] = base;
+                    }
+                }
+
                 int morphStart = output.getOffset();
-                for (int i = 0; i < animation.numFrames - 1; ++i) {
-                    for (int j = 0; j < animation.morphCount; ++j)
-                        output.f32(animation.morphs[j].getValueAtFrame(i));
+                for (int i = 0; i < animation.getNumFrames(); ++i) {
+                    for (int j = 0; j < animation.getMorphCount(); ++j)
+                        output.f32(morphFrames[j][i]);
                 }
                 createBufferView("MORPHS_ANIMATED",  morphStart, output.getOffset() - morphStart);
             }

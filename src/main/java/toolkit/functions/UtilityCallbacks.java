@@ -4,7 +4,7 @@ import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
-import toolkit.windows.editors.ModEditor;
+import toolkit.windows.managers.ModManager;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
@@ -28,7 +28,7 @@ public class UtilityCallbacks {
         if (file == null) return;
         if (Toolkit.instance.confirmOverwrite(file)) {
             Mod mod = new Mod();
-            new ModEditor(mod, true).setVisible(true);
+            new ModManager(mod, true).setVisible(true);
             mod.save(file);
             mod = ModCallbacks.loadMod(file);
             if (mod != null) {

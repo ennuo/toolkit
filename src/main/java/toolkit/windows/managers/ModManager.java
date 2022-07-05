@@ -1,4 +1,4 @@
-package toolkit.windows.editors;
+package toolkit.windows.managers;
 
 import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
@@ -13,17 +13,17 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
-public class ModEditor extends javax.swing.JDialog {
+public class ModManager extends javax.swing.JDialog {
     private Mod mod;
     
-    public ModEditor(Mod mod, boolean modal) {
+    public ModManager(Mod mod, boolean modal) {
         super(Toolkit.instance, modal);
         initComponents();
         setResizable(false);
         this.mod = mod;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
-        setTitle("Mod Editor");
+        setTitle("Mod Manager");
         
         ModInfo config = mod.getConfig();
         

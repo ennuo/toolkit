@@ -81,35 +81,38 @@ public class ExportCallbacks {
         
         if (file == null) return;
         
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
-        if (GUID == null) return;
-        GUID = GUID.replaceAll("\\s", "");
+        String input = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
+        if (input == null) return;
+        input = input.replaceAll("\\s", "");
         
-        long integer = Strings.getLong(GUID);
-        if (integer == -1) {
+        long guid = Strings.getLong(input);
+        if (guid == -1) {
             System.err.println("You entered an invalid GUID!");
             return;
         }
         
         RMesh mesh = null;
-        if (integer != 0) {
-            FileEntry entry = ResourceSystem.get(integer);
+        if (guid != 0) {
+            FileEntry entry = ResourceSystem.get(guid);
             if (entry == null) 
-                System.err.println("Couldn't find model! Exporting without model!");
+                ResourceSystem.println("Couldn't find model! Exporting without model!");
             else {
-                byte[] data = ResourceSystem.extract(integer);
+                byte[] data = ResourceSystem.extract(guid);
                 if (data == null) System.err.println("Couldn't find data for model in any archives.");
-                else
-                    mesh = new RMesh(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
+                // else
+                //     mesh = new RMesh(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
             }
             
         }
         
-        RAnimation animation = ResourceSystem.getSelected().getEntry().getResource("animation");
+        RAnimation animation = ResourceSystem.getSelected().getEntry().getInfo().getResource();
         MeshExporter.GLB.FromAnimation(animation, mesh).export(file.getAbsolutePath());
     }
 
     public static void exportTexture(String extension) {
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+        if (entry == null) return;
+
         File file = FileChooser.openFile(
             ResourceSystem.getSelected().getName().substring(0, ResourceSystem.getSelected().getName().length() - 4) + "." + extension,
             extension,
@@ -118,18 +121,20 @@ public class ExportCallbacks {
 
         if (file == null) return;
 
-        
-        RTexture texture = ResourceSystem.getSelected().getEntry().getResource("texture");
-        if (texture == null || !texture.parsed) return;
+        ResourceInfo info = entry.getInfo();
+        if (info == null || (info.getType() != ResourceType.TEXTURE && info.getType() != ResourceType.GTF_TEXTURE)) 
+            return;
 
-        try {
-            ImageIO.write(texture.getImage(), extension, file);
-        } catch (IOException ex) {
-            System.err.println("There was an error exporting the image.");
+        RTexture texture = info.getResource();
+        if (texture == null) return;
+
+        try { ImageIO.write(texture.getImage(), extension, file); } 
+        catch (IOException ex) {
+            ResourceSystem.println("There was an error exporting the image.");
             return;
         }
 
-        System.out.println("Successfully exported textures!");
+        ResourceSystem.println("Successfully exported selected textures!");
     }
 
     public static void exportDDS() {

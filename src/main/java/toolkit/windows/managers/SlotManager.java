@@ -1,4 +1,4 @@
-package toolkit.windows;
+package toolkit.windows.managers;
 
 import cwlib.resources.RAdventureCreateProfile;
 import cwlib.resources.RPacks;
@@ -36,6 +36,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import toolkit.windows.Toolkit;
 
 public class SlotManager extends javax.swing.JFrame {
     private static Slot EMPTY_SLOT;

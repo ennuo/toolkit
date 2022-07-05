@@ -1,5 +1,14 @@
 package toolkit.windows;
 
+import toolkit.windows.utilities.Compressinator;
+import toolkit.windows.utilities.ArchiveSelector;
+import toolkit.windows.utilities.AssetExporter;
+import toolkit.windows.utilities.Dependinator;
+import toolkit.windows.managers.ModManager;
+import toolkit.windows.managers.ProfileManager;
+import toolkit.windows.managers.ArchiveManager;
+import toolkit.windows.managers.ItemManager;
+import toolkit.windows.managers.SlotManager;
 import cwlib.types.swing.FileNode;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
@@ -44,7 +53,6 @@ import toolkit.functions.*;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
 import toolkit.utilities.*;
-import toolkit.windows.editors.*;
 
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
@@ -1829,7 +1837,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_loadModActionPerformed
 
     private void openModMetadataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openModMetadataActionPerformed
-        new ModEditor(ResourceSystem.getSelectedDatabase(), false).setVisible(true);
+        new ModManager(ResourceSystem.getSelectedDatabase(), false).setVisible(true);
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed

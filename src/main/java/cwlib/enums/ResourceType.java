@@ -3,6 +3,7 @@ package cwlib.enums;
 import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
 import cwlib.resources.RAdventureCreateProfile;
+import cwlib.resources.RAnimation;
 import cwlib.resources.RBevel;
 import cwlib.resources.RBigProfile;
 import cwlib.resources.RGfxMaterial;
@@ -28,7 +29,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     MESH("MSH", 2, RMesh.class, "meshes/", ".mol"),
     PIXEL_SHADER(null, 3, "shaders/fragment/", ".fpo"),
     VERTEX_SHADER(null, 4, "shaders/vertex/", ".vpo"),
-    ANIMATION("ANM", 5, "animations/", ".anim"),
+    ANIMATION("ANM", 5, RAnimation.class, "animations/", ".anim"),
     GUID_SUBSTITUTION("GSB", 6, "guid_subst/", ".gsub"),
     GFX_MATERIAL("GMT", 7, RGfxMaterial.class, "gfx_materials/", ".gmat"),
     SPU_ELF(null, 8, "spu/", ".sbu"),
