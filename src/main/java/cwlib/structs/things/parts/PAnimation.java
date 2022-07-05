@@ -6,10 +6,13 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
 public class PAnimation implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x30;
+
     public ResourceDescriptor animation;
     public float velocity, position;
-    
-    public PAnimation serialize(Serializer serializer, Serializable structure) {
+
+    @SuppressWarnings("unchecked")
+    @Override public PAnimation serialize(Serializer serializer, Serializable structure) {
         PAnimation animation = (structure == null) ? new PAnimation() : (PAnimation) structure;
         
         animation.animation = serializer.resource(animation.animation, ResourceType.ANIMATION);
@@ -19,6 +22,5 @@ public class PAnimation implements Serializable {
         return animation;
     }
 
-    // TODO: Actually implement
-    @Override public int getAllocatedSize() { return 0; }
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
 }
