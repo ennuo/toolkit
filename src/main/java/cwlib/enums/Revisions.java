@@ -216,6 +216,7 @@ public class Revisions {
     public static final int D1_SLOT_REWARDS = 0x3d; // Added rewards and acingEnabled fields to slot
     public static final int D1_SLOT_ENFORCE_MINMAX = 0x4c; // added enforceMinMaxPlayers to slot
     public static final int D1_SLOT_SAME_SCREEN = 0x4d; // added sameScreenGame to slot
+    public static final int D1_CHECKPOINT_PLAY_AUDIO = 0x50; // added playAudio to PCheckpoint
     public static final int D1_NEAR_CHALLENGES = 0x57; // Near challenges added to RBigProfile
     public static final int D1_3G_CONNECTIVITY = 0x58; // added total3gUp/DownStream to RLocalProfile
     public static final int D1_NEAR_TREASURES = 0x59; // Near treasure log added to RBigProfile
