@@ -43,9 +43,9 @@ public class AnimBone implements Serializable {
         AnimBone bone = (structure == null) ? new AnimBone() : (AnimBone) structure;
         
         bone.animHash = serializer.i32(bone.animHash);
-        bone.parent = serializer.i32d(bone.parent);
-        bone.firstChild = serializer.i32d(bone.firstChild);
-        bone.nextSibling = serializer.i32d(bone.nextSibling);
+        bone.parent = serializer.s32(bone.parent);
+        bone.firstChild = serializer.s32(bone.firstChild);
+        bone.nextSibling = serializer.s32(bone.nextSibling);
 
         return bone;
     }

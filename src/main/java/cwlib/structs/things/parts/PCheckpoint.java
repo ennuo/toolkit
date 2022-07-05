@@ -7,7 +7,7 @@ import cwlib.structs.things.Thing;
 public class PCheckpoint implements Serializable {
     public boolean active;
     public int activationFrame;
-    public byte spawnsLeft, maxSpawnsLeft;
+    public int spawnsLeft, maxSpawnsLeft;
     public boolean instanceInfiniteSpawns;
     public Thing[] spawningList;
     public int spawningDelay;
@@ -18,8 +18,8 @@ public class PCheckpoint implements Serializable {
         
         checkpoint.active = serializer.bool(checkpoint.active);
         checkpoint.activationFrame = serializer.i32(checkpoint.activationFrame);
-        checkpoint.spawnsLeft = serializer.i8(checkpoint.spawnsLeft);
-        checkpoint.maxSpawnsLeft = serializer.i8(checkpoint.maxSpawnsLeft);
+        checkpoint.spawnsLeft = serializer.s32(checkpoint.spawnsLeft);
+        checkpoint.maxSpawnsLeft = serializer.s32(checkpoint.maxSpawnsLeft);
         checkpoint.instanceInfiniteSpawns = serializer.bool(checkpoint.instanceInfiniteSpawns);
         checkpoint.spawningList = serializer.array(checkpoint.spawningList, Thing.class, true);
         checkpoint.spawningDelay = serializer.i32(checkpoint.spawningDelay);

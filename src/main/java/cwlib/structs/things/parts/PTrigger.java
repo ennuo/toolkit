@@ -43,7 +43,7 @@ public class PTrigger implements Serializable {
             trigger.zOffset = serializer.f32(trigger.zOffset);
 
         if (subVersion >= 0x90)
-            trigger.scoreValue = serializer.i32d(trigger.scoreValue);
+            trigger.scoreValue = serializer.s32(trigger.scoreValue);
         
         return trigger;
     }

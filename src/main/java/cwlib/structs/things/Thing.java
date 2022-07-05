@@ -145,7 +145,7 @@ public class Thing implements Serializable {
         
         long flags = Thing.getCompressedPartsFlags(thing, head);
         int parts = Thing.getCompressedPartsRevision(head);
-        parts = (int) serializer.i32d(parts);
+        parts = (int) serializer.s32(parts);
         
         if (head > 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES))
             flags = serializer.i64(flags);

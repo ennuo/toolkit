@@ -239,11 +239,13 @@ public class Serializer {
     }
 
     /**
-     * (De)serializes a doubled 32-bit integer to/from the stream, compressed depending on the flags.
+     * (De)serializes a signed 32-bit integer to/from the stream, compressed depending on the flags.
+     * This function modifies the value written to the stream to fit an unsigned value, prefer i32
+     * for normal values that are technically unsigned, but read as signed integers.
      * @param value Integer to write
      * @return Integer (de)serialized
      */
-    public final int i32d(int value) {
+    public final int s32(int value) {
         boolean isCompressed = 
             (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0;
         if (this.isWriting) {

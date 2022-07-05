@@ -27,7 +27,7 @@ public class PGameplayData implements Serializable {
         if (subVersion >= 0xef)
             data.gameplayType = serializer.enum32(data.gameplayType);
         
-        data.fluffCost = serializer.i32d(data.fluffCost);
+        data.fluffCost = serializer.s32(data.fluffCost);
         data.eggLink = serializer.reference(data.eggLink, EggLink.class);
         data.keyLink = serializer.reference(data.keyLink, SlotID.class);
 

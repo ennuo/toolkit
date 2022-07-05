@@ -41,8 +41,8 @@ public class Decoration implements Serializable {
         decoration.baryV = serializer.f32(decoration.baryV);
         
         decoration.decorationAngle = serializer.f32(decoration.decorationAngle);
-        decoration.onCostumePiece = serializer.i32d(decoration.onCostumePiece);
-        decoration.earthDecoration = serializer.i32d(decoration.earthDecoration);
+        decoration.onCostumePiece = serializer.s32(decoration.onCostumePiece);
+        decoration.earthDecoration = serializer.s32(decoration.earthDecoration);
         decoration.decorationScale = serializer.f32(decoration.decorationScale);
         
         if (version >= 0x214)

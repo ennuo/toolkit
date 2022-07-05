@@ -19,8 +19,8 @@ public class MaterialWire implements Serializable {
     @Override public MaterialWire serialize(Serializer serializer, Serializable structure) {
         MaterialWire wire = (structure == null) ? new MaterialWire() : (MaterialWire) structure;
 
-        wire.boxFrom = serializer.i32d(wire.boxFrom);
-        wire.boxTo = serializer.i32d(wire.boxTo);
+        wire.boxFrom = serializer.s32(wire.boxFrom);
+        wire.boxTo = serializer.s32(wire.boxTo);
         wire.portFrom = serializer.i8(wire.portFrom);
         wire.portTo = serializer.i8(wire.portTo);
         for (int i = 0; i < SWIZZLE_ELEMENT_COUNT; ++i)

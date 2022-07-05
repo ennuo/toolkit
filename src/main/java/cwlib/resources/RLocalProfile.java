@@ -369,7 +369,7 @@ public class RLocalProfile implements Compressable, Serializable {
             profile.lbp2VOPlayed = serializer.longvector(profile.lbp2VOPlayed);
 
         if (version > 0x23a)
-            profile.subtitleMode = serializer.i32d(profile.subtitleMode);
+            profile.subtitleMode = serializer.s32(profile.subtitleMode);
 
         if (version > 0x255 && version < 0x351) {
             serializer.i32(0);

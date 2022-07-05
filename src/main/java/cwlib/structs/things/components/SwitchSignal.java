@@ -23,7 +23,7 @@ public class SwitchSignal implements Serializable {
 
         signal.activation = serializer.f32(signal.activation);
         if (version >= 0x310)
-            signal.ternary = serializer.i32d(signal.ternary);
+            signal.ternary = serializer.s32(signal.ternary);
         if (version >= 0x2a3)
             signal.player = serializer.i32(signal.player);
 
