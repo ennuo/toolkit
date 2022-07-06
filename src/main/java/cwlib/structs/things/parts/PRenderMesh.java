@@ -30,10 +30,12 @@ public class PRenderMesh implements Serializable {
     @SuppressWarnings("unchecked")
     @Override public PRenderMesh serialize(Serializer serializer, Serializable structure) {
         PRenderMesh mesh = (structure == null) ? new PRenderMesh() : (PRenderMesh) structure;
-        
+
+
         int version = serializer.getRevision().getHead();
 
         mesh.mesh = serializer.resource(mesh.mesh, ResourceType.MESH);
+
         mesh.boneThings = serializer.array(mesh.boneThings, Thing.class, true);
         
         mesh.anim = serializer.resource(mesh.anim, ResourceType.ANIMATION);
@@ -55,7 +57,7 @@ public class PRenderMesh implements Serializable {
         
         mesh.castShadows = serializer.enum8(mesh.castShadows);
         mesh.RTTEnable = serializer.bool(mesh.RTTEnable);
-
+        
         if (version > 0x2e2)
             mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
         else {

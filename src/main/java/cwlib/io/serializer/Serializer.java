@@ -762,9 +762,16 @@ public class Serializer {
         if (reference == 0) return null;
         if (this.referenceIDs.containsKey(reference))
             return (T) this.referenceIDs.get(reference);
-        T struct = Serializable.serialize(this, null, clazz);
+        T struct = null;
+        try { struct = clazz.getDeclaredConstructor().newInstance(); } 
+        catch (Exception ex) {
+            throw new SerializationException("Failed to create class instance in serializer!");
+        }
         this.referenceIDs.put(reference, struct);
         this.referenceObjects.put(struct, reference);
+
+        struct = Serializable.serialize(this, struct, clazz);
+
         return struct;
     }
 
@@ -869,6 +876,7 @@ public class Serializer {
                     output[i] = clazz.cast(Serializable.serialize(this, null, clazz));
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new SerializationException("There was an error (de)serializing an array!");
         }
         return output;

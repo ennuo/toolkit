@@ -10,7 +10,7 @@ public class Note implements Serializable {
     // Each type is actually a byte, but that's pretty inconvenient, since
     // there's no unsigned type
     public int x = 0, y = 0, volume = 0x60, timbre = 0x40;
-    public boolean triplet, single;
+    public boolean triplet, end;
 
     @SuppressWarnings("unchecked")
     @Override public Note serialize(Serializer serializer, Serializable structure) {
@@ -19,7 +19,7 @@ public class Note implements Serializable {
         if (serializer.isWriting()) {
             MemoryOutputStream stream = serializer.getOutput();
             stream.u8((note.x & 0x7f) | ((note.triplet) ? 0x80 : 0x0));
-            stream.u8((note.y & 0x7f) | ((note.single) ? 0x80 : 0x0));
+            stream.u8((note.y & 0x7f) | ((note.end) ? 0x80 : 0x0));
             stream.u8(note.volume & 0xff);
             stream.u8(note.timbre & 0xff);
             return note;
@@ -30,11 +30,11 @@ public class Note implements Serializable {
         note.triplet = (struct[0] >> 0x7) != 0;
         note.x = (struct[0] & 0x7f);
 
-        note.single = (struct[1] >> 0x7) != 0;
+        note.end = (struct[1] >> 0x7) != 0;
         note.y = (struct[1] & 0x7f);
 
-        note.volume = struct[0x3];
-        note.timbre = struct[0x4];
+        note.volume = struct[0x2];
+        note.timbre = struct[0x3];
 
         return note;
     }

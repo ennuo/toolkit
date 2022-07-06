@@ -15,7 +15,7 @@ public class PPos implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public Thing thingOfWhichIAmABone;
-    public long animHash;
+    public int animHash;
     public Matrix4f localPosition;
     public Matrix4f worldPosition;
 
@@ -25,8 +25,8 @@ public class PPos implements Serializable {
         
         int version = serializer.getRevision().getVersion();
 
-        pos.thingOfWhichIAmABone = serializer.struct(pos.thingOfWhichIAmABone, Thing.class);
-        pos.animHash = serializer.u32(pos.animHash);
+        pos.thingOfWhichIAmABone = serializer.reference(pos.thingOfWhichIAmABone, Thing.class);
+        pos.animHash = serializer.i32(pos.animHash);
         
         if (version <= 0x340)
             pos.localPosition = serializer.m44(pos.localPosition);

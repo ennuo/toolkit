@@ -5,6 +5,7 @@ import cwlib.types.data.ResourceInfo;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
+import toolkit.utilities.ResourceSystem;
 
 public abstract class FileEntry {
     /**
@@ -68,7 +69,7 @@ public abstract class FileEntry {
         this.size = size;
         this.sha1 = sha1;
 
-        this.node = source.addNode(this);
+        this.node = ResourceSystem.API_MODE ? null : source.addNode(this);
     }
     
     public FileData getSource() { return this.source; }

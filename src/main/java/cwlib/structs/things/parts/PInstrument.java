@@ -20,7 +20,7 @@ public class PInstrument implements Serializable {
     @SuppressWarnings("unchecked")
     @Override public PInstrument serialize(Serializer serializer, Serializable structure) {
         PInstrument instrument = (structure == null) ? new PInstrument() : (PInstrument) structure;
-
+        
         instrument.instrument = serializer.resource(instrument.instrument, ResourceType.INSTRUMENT);
 
         instrument.name = serializer.wstr(instrument.name);

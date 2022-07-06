@@ -52,6 +52,7 @@ public class ResourceSystem {
     }
 
     public static boolean DISABLE_LOGS = false;
+    public static boolean API_MODE = false;
 
     private static File workingDirectory;
     static {

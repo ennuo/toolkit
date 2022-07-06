@@ -31,20 +31,7 @@ public class Thing implements Serializable {
     public boolean hidden;
     public byte flags, extraFlags;
 
-    public PBody body;
-    public PJoint joint;
-    public PRenderMesh renderMesh;
-    public PPos pos;
-    public PTrigger trigger;
-    public PAnimation animation;
-    public PGeneratedMesh generatedMesh;
-    public PScriptName scriptName;
-    public PCheckpoint checkpoint;
-    public PStickers stickers;
-    public PShape shape;
-    public PEffector effector;
-    public PSwitchKey switchKey;
-    public PGroup group;
+    private Serializable[] parts = new Serializable[0x36];
 
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
@@ -103,7 +90,7 @@ public class Thing implements Serializable {
         
         if (serializer.isWriting()) 
             throw new SerializationException("Writing CThing is not supported!");
-        int parts = serializer.s32(PartHistory.STREAMING_HINT);
+        int partsRevision = serializer.s32(PartHistory.STREAMING_HINT);
         long flags = -1;
         if (version >= 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES))
             flags = serializer.i64(-1);
@@ -113,14 +100,17 @@ public class Thing implements Serializable {
 
         /* Reflection magic! I really didn't want to write all this */
         for (Part part : Part.values()) {
-            if (!part.serialize(this, parts, flags, serializer))
+            if (!part.serialize(this.parts, partsRevision, flags, serializer))
                 throw new SerializationException(part.name() + " failed to serialize!");
-            if (part.hasPart(parts, flags))
+            if (part.hasPart(partsRevision, flags))
                 System.out.println(part.name() + ": " + serializer.getOffset());
         }
         
         return thing;
     }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
 
     @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }
 }

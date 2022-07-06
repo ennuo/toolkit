@@ -95,6 +95,8 @@ public enum Part {
         this.serializable = serializable;
     }
 
+    public int getIndex() { return this.index; }
+
     /**
      * Prepares a name used when serializating
      * this part using reflection.
@@ -155,36 +157,16 @@ public enum Part {
      * @return Whether or not the operation succeeded
      */
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> boolean serialize(Thing thing, int version, long flags, Serializer serializer) {
-        Field field = null;
-        try {
-            /* The Thing doesn't have this part, so it's "successful" */
-            if (!this.hasPart(version, flags))
-                return true;
-
-            if (this.serializable == null)
-                return false;
-
-            /* Get the part field via reflection */
-            field = thing.getClass().getDeclaredField(this.getNameForReflection());
-            if (field == null) return false;
-            field.setAccessible(true); // Oh, dear
-            T part = (T) field.get(thing);
-
-            /* Serialize the value and set the field if we're not writing */
-            T value = serializer.reference(part, (Class<T>)this.serializable);
-            if (!serializer.isWriting())
-                field.set(thing, value);
-            
-            /* If we got to this point, it succeeded. */
+    public <T extends Serializable> boolean serialize(Serializable[] parts, int version, long flags, Serializer serializer) {
+        /* The Thing doesn't have this part, so it's "successful" */
+        if (!this.hasPart(version, flags))
             return true;
-        } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-            /* Don't really care */
-        } finally {
-            /* Make sure we restore the original accessibility */
-            if (field != null)
-                field.setAccessible(false);
-        }
-        return false; // D'oh!
+
+        if (this.serializable == null)
+            return false;
+
+        parts[this.index] = serializer.reference((T) parts[this.index], (Class<T>)this.serializable);
+
+        return true;
     }
 }
