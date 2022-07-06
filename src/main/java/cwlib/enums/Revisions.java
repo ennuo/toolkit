@@ -6,6 +6,7 @@ public class Revisions {
     public static final int DEPENDENCIES = 0x109; // Added self describing depenency table to resources
     public static final int SLOT_GROUPS = 0x134; // Added primaryLinkGroup to Slot
     public static final int SLOT_AUTHOR_NAME = 0x13b; // Added authorName to Slot
+    public static final int CLEANUP_CLEANUP_EVERYBODY_EVERYWHERE = 0x13c; // removed PPaint, PParticleClump, PParticleEmitter, PKeyframedPosition, PCameraZone, PCamera, and PTriggerEffector, fucked around and removed half of RMaterial
     public static final int REF_STRIP_CHILDREN = 0x13d; // Added stripChildren to PRef
     public static final int WORLD_IS_PAUSED = 0x14a; // Added isPaused to PWorld
     public static final int WORLD_COLOR_CORRECTION = 0x152; // Added lighting and color correction factor to PWorld
@@ -26,6 +27,7 @@ public class Revisions {
     public static final int DETAILS_PHOTO_DATA = 0x182; // photoData, copyright, and creator added to InventoryItemDetails
     public static final int SLOT_TRANSLATION_TAG = 0x183; // Added translationTag to slot
     public static final int COMPRESSED_RESOURCES = 0x189; // Added optional compressed field to resources
+    public static final int REMOVE_PARTICLE_CLUMP_2 = 0x18c; // Removed PParticleClump
     public static final int YELLOWHEAD_ON_SCREEN_COUNTER = 0x194; // Added onScreenCounter to PYellowHead
     public static final int DETAILS_PRIMARY_INDEX = 0x195; // Added primaryIndex to InventoryItemDetails
     public static final int WORLD_FOG_FACTOR = 0x196; // Added fog/darkness settings to PWorld
