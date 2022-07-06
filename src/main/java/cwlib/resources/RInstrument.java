@@ -22,11 +22,11 @@ public class RInstrument implements Serializable, Compressable {
 
     private Sample[] samples = new Sample[MAX_SAMPLES];
     private GUID[] sampleGUIDs = new GUID[MAX_SAMPLES];
-    public int[] splitNotes = new int[MAX_SPLITS];  // KEY NUMBER (PIANO) -> https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies 
-    public int numStack = 1;
+    private int[] splitNotes = new int[MAX_SPLITS];  // KEY NUMBER (PIANO) -> https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies 
+    private int numStack = 1;
     private Vector2f[] params = new Vector2f[MAX_PARAMS];
     private byte[] arpeggio = new byte[MAX_ARPEGGIO];
-    public boolean arpeggiate = false;
+    private boolean arpeggiate = false;
 
     public RInstrument() {
         for (int i = 0; i < MAX_SAMPLES; ++i)
@@ -87,6 +87,12 @@ public class RInstrument implements Serializable, Compressable {
             serializer.getDependencies()
         );
     }
+
+    public int getNumStack() { return this.numStack; }
+    public void setNumStack(int numStack) { this.numStack = numStack; }
+
+    public boolean getArpeggiate() { return this.arpeggiate; }
+    public void setArpeggiate(boolean arpeggiate) { this.arpeggiate = arpeggiate; }
 
     public Sample[] getSamples() { return this.samples; }
     public GUID[] getSampleGUIDs() { return this.sampleGUIDs; }
