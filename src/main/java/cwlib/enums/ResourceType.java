@@ -7,6 +7,7 @@ import cwlib.resources.RAnimation;
 import cwlib.resources.RBevel;
 import cwlib.resources.RBigProfile;
 import cwlib.resources.RGfxMaterial;
+import cwlib.resources.RInstrument;
 import cwlib.resources.RJoint;
 import cwlib.resources.RLocalProfile;
 import cwlib.resources.RMaterial;
@@ -72,7 +73,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     ANIMATED_TEXTURE("ATX", 45, "animated_textures/", ".atx"),
     VOIP_RECORDING("VOP", 46, "audio/", ".vop"),
     PINS("PIN", 47, "pins/", ".pin"),
-    INSTRUMENT("INS", 48, "instruments/", ".rinst"),
+    INSTRUMENT("INS", 48, RInstrument.class, "instruments/", ".rinst"),
     SAMPLE(null, 49, "samples/", ".smp"),
     OUTFIT_LIST("OFT", 50, "outfits/", ".oft"),
     PAINT_BRUSH("PBR", 51, "paintbrushes/", ".pbr"),
