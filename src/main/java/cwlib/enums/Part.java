@@ -48,7 +48,7 @@ public enum Part {
     MICROCHIP(0x21, PartHistory.MICROCHIP, null),
     MATERIAL_TWEAK(0x22, PartHistory.MATERIAL_TWEAK, null),
     MATERIAL_OVERRIDE(0x23, PartHistory.MATERIAL_OVERRIDE, null),
-    INSTRUMENT(0x24, PartHistory.INSTRUMENT, null),
+    INSTRUMENT(0x24, PartHistory.INSTRUMENT, PInstrument.class),
     SEQUENCER(0x25, PartHistory.SEQUENCER, null),
     CONTROLINATOR(0x26, PartHistory.CONTROLINATOR, null),
     POPPET_POWERUP(0x27, PartHistory.POPPET_POWERUP, null),
