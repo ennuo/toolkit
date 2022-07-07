@@ -1,5 +1,7 @@
 package cwlib.structs.things.parts;
 
+import java.util.ArrayList;
+
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -14,16 +16,18 @@ public class PInstrument implements Serializable {
     public int color, loops = 1, key, scale;
     public float level = 1.0f, pan = 0.5f, echoSend, reverbSend;
     public short scrollX, scrollY, cursorX, cursorY;
-    public Note[] notes;
+    public ArrayList<Note> notes = new ArrayList<>();
     public ResourceDescriptor icon;
     
     @SuppressWarnings("unchecked")
     @Override public PInstrument serialize(Serializer serializer, Serializable structure) {
         PInstrument instrument = (structure == null) ? new PInstrument() : (PInstrument) structure;
-        
+        int version = serializer.getRevision().getVersion();
+
         instrument.instrument = serializer.resource(instrument.instrument, ResourceType.INSTRUMENT);
 
-        instrument.name = serializer.wstr(instrument.name);
+        if (version >= 0x35b)
+            instrument.name = serializer.wstr(instrument.name);
 
         instrument.color = serializer.i32(instrument.color);
         instrument.loops = serializer.i32(instrument.loops);
@@ -35,21 +39,24 @@ public class PInstrument implements Serializable {
         instrument.echoSend = serializer.f32(instrument.echoSend);
         instrument.reverbSend = serializer.f32(instrument.reverbSend);
 
-        instrument.scrollX = serializer.i16(instrument.scrollX);
-        instrument.scrollY = serializer.i16(instrument.scrollY);
-        instrument.cursorX = serializer.i16(instrument.cursorX);
-        instrument.cursorY = serializer.i16(instrument.cursorY);
+        if (version >= 0x389) {
+            instrument.scrollX = serializer.i16(instrument.scrollX);
+            instrument.scrollY = serializer.i16(instrument.scrollY);
+            instrument.cursorX = serializer.i16(instrument.cursorX);
+            instrument.cursorY = serializer.i16(instrument.cursorY);
+        }
 
-        instrument.notes = serializer.array(instrument.notes, Note.class);
+        instrument.notes = serializer.arraylist(instrument.notes, Note.class);
 
-        instrument.icon = serializer.resource(instrument.icon, ResourceType.TEXTURE);
+        if (version >= 0x379)
+            instrument.icon = serializer.resource(instrument.icon, ResourceType.TEXTURE);
 
         return instrument;
     }
 
     @Override public int getAllocatedSize() {
         int size = PInstrument.BASE_ALLOCATION_SIZE;
-        if (this.notes != null) size += (this.notes.length * Note.BASE_ALLOCATION_SIZE);
+        if (this.notes != null) size += (this.notes.size() * Note.BASE_ALLOCATION_SIZE);
         return size;
     }
 }
