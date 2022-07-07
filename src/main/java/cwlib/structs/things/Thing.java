@@ -9,7 +9,6 @@ import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.things.parts.*;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 
@@ -31,7 +30,7 @@ public class Thing implements Serializable {
     public boolean hidden;
     public byte flags, extraFlags;
 
-    private Serializable[] parts = new Serializable[0x36];
+    private Serializable[] parts = new Serializable[0x3f];
 
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
@@ -94,34 +93,46 @@ public class Thing implements Serializable {
         long flags = -1;
 
         if (serializer.isWriting()) {
-            serializer.log("generating flags");
+            serializer.log("GENERATING FLAGS");
             Part lastPart = null;
             if (isCompressed) flags = 0;
             for (Part part : Part.values()) {
-                if (this.parts[part.getIndex()] != null) {
-                    flags |= (1l << part.getIndex());
+                int index = part.getIndex();
+                if (version >= 0x13c && (index >= 0x36 && index <= 0x3c)) continue;
+                if (version >= 0x18c && index == 0x3d) continue;
+                if (subVersion >= 0x107 && index == 0x3e) continue;
+                else if (index == 0x3e) {
+                    if (this.parts[index] != null) {
+                        flags |= (1l << 0x29);
+                        lastPart = part;
+                    }
+                    continue;
+                }
+
+                if (this.parts[index] != null) {
+                    // Offset due to PCreatorAnim
+                    if (subVersion < 0x107 && index > 0x3e) index++; 
+
+                    flags |= (1l << index);
+
                     lastPart = part;
                 }
             }
-            partsRevision = lastPart.getVersion();
+            if (lastPart != null)
+                partsRevision = lastPart.getVersion();
         }
 
         partsRevision = serializer.s32(partsRevision);
         if (isCompressed)
             flags = serializer.i64(flags);
         
-        System.out.println(Arrays.toString(Part.fromFlags(flags)));
+        Part[] parts = Part.fromFlags(revision.getHead(), flags, partsRevision);
+        System.out.println(Arrays.toString(parts));
 
-        // if (serializer.isWriting()) {
-        //     throw new SerializationException("you thought you would win?");
-        // }
-        
-        /* Reflection magic! I really didn't want to write all this */
-        for (Part part : Part.values()) {
+        for (Part part : parts) {
             if (!part.serialize(this.parts, partsRevision, flags, serializer))
                 throw new SerializationException(part.name() + " failed to serialize!");
-            if (part.hasPart(partsRevision, flags))
-                System.out.println(part.name() + ": " + serializer.getOffset());
+            System.out.println(part.name() + ": " + serializer.getOffset());
         }
         
         return thing;

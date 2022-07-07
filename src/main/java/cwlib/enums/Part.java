@@ -18,12 +18,19 @@ public enum Part {
     RENDER_MESH(0x3, PartHistory.RENDER_MESH, PRenderMesh.class),
     POS(0x4, PartHistory.POS, PPos.class),
     TRIGGER(0x5, PartHistory.TRIGGER, PTrigger.class),
+    @Deprecated TRIGGER_EFFECTOR(0x36, PartHistory.TRIGGER_EFFECTOR, null),
+    @Deprecated PAINT(0x37, PartHistory.TRIGGER_EFFECTOR, null),
     YELLOWHEAD(0x6, PartHistory.YELLOWHEAD, null),
     AUDIO_WORLD(0x7, PartHistory.AUDIO_WORLD, null),
     ANIMATION(0x8, PartHistory.ANIMATION, PAnimation.class),
     GENERATED_MESH(0x9, PartHistory.GENERATED_MESH, PGeneratedMesh.class),
+    @Deprecated PARTICLE_CLUMP(0x38, PartHistory.PARTICLE_CLUMP, null),
+    @Deprecated PARTICLE_EMITTER(0x39, PartHistory.PARTICLE_EMITTER, null),
+    @Deprecated CAMERA_ZONE(0x3a, PartHistory.CAMERA_ZONE, null),
     LEVEL_SETTINGS(0xA, PartHistory.LEVEL_SETTINGS, null),
     SPRITE_LIGHT(0xB, PartHistory.SPRITE_LIGHT, null),
+    @Deprecated KEYFRAMED_POSITION(0x3b, PartHistory.KEYFRAMED_POSITION, null),
+    @Deprecated CAMERA(0x3c, PartHistory.CAMERA, null),
     SCRIPT_NAME(0xC, PartHistory.SCRIPT_NAME, PScriptName.class),
     CREATURE(0xD, PartHistory.CREATURE, null),
     CHECKPOINT(0xE, PartHistory.CHECKPOINT, PCheckpoint.class),
@@ -34,12 +41,13 @@ public enum Part {
     EFFECTOR(0x13, PartHistory.EFFECTOR, PEffector.class),
     EMITTER(0x14, PartHistory.EMITTER, null),
     REF(0x15, PartHistory.REF, null),
-    METADATA(0x16, PartHistory.METADATA, null),
+    METADATA(0x16, PartHistory.METADATA, PMetadata.class),
     COSTUME(0x17, PartHistory.COSTUME, null),
+    @Deprecated PARTICLE_EMITTER_2(0x3d, PartHistory.PARTICLE_EMITTER_2, null),
     CAMERA_TWEAK(0x18, PartHistory.CAMERA_TWEAK, null),
     SWITCH(0x19, PartHistory.SWITCH, null),
     SWITCH_KEY(0x1a, PartHistory.SWITCH_KEY, PSwitchKey.class),
-    GAMEPLAY_DATA(0x1b, PartHistory.GAMEPLAY_DATA, null),
+    GAMEPLAY_DATA(0x1b, PartHistory.GAMEPLAY_DATA, PGameplayData.class),
     ENEMY(0x1c, PartHistory.ENEMY, null),
     GROUP(0x1d, PartHistory.GROUP, PGroup.class),
     PHYSICS_TWEAK(0x1e, PartHistory.PHYSICS_TWEAK, null),
@@ -53,6 +61,7 @@ public enum Part {
     CONTROLINATOR(0x26, PartHistory.CONTROLINATOR, null),
     POPPET_POWERUP(0x27, PartHistory.POPPET_POWERUP, null),
     POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, null),
+    @Deprecated CREATOR_ANIM(0x3e, PartHistory.CREATOR_ANIM, null),
     TRANSITION(0x29, PartHistory.TRANSITION, null),
     FADER(0x2a, PartHistory.FADER, null),
     ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, null),
@@ -125,27 +134,46 @@ public enum Part {
     /**
      * Gets all the parts that can be serialized
      * by a set of flags.
+     * @param head Head revision of resource
      * @param flags Flags determing what parts can be serialized by a Thing
+     * @param version Parts revision
      * @return Parts
      */
-    public static Part[] fromFlags(long flags) {
+    public static Part[] fromFlags(int head, long flags, int version) {
         ArrayList<Part> parts = new ArrayList<>(64);
-        for (Part part : Part.values())
-            if (((1L << part.index) & flags) != 0)
+        for (Part part : Part.values()) {
+            if (part.hasPart(head, flags, version))
                 parts.add(part);
+        }
         return parts.toArray(Part[]::new);
     }
 
     /**
      * Checks whether or not a thing contains this part
     * based on version and part flags.
-     * @param version Version determing what parts existed at this point
+     * @param head Head revision of resource
      * @param flags Flags determing what parts can be serialized by a Thing
+     * @param version Version determing what parts existed at this point
      * @return Whether or not a thing contains this part
      */
-    public boolean hasPart(int version, long flags) {
+    public boolean hasPart(int head, long flags, int version) {
+        if ((head & 0xFFFF) >= 0x13c && (this.index >= 0x36 && this.index <= 0x3c))
+            return false;
+        if ((head & 0xFFFF) >= 0x18c && this == Part.PARTICLE_EMITTER_2)
+            return false;
+
+        int index = this.index;
+        if ((head >> 0x10) >= 0x107) {
+            if (this == Part.CREATOR_ANIM) return false;
+        }
+        else if (version >= PartHistory.CREATOR_ANIM) {
+            if (this == Part.CREATOR_ANIM)
+                return ((1L << 0x29) & flags) != 0;
+            index++;
+        }
+
         return version >= this.version
-            && ((1L << this.index) & flags) != 0;
+            && ((1L << index) & flags) != 0;
     }
 
     /**
@@ -160,7 +188,7 @@ public enum Part {
     @SuppressWarnings("unchecked")
     public <T extends Serializable> boolean serialize(Serializable[] parts, int version, long flags, Serializer serializer) {
         /* The Thing doesn't have this part, so it's "successful" */
-        if (!this.hasPart(version, flags))
+        if (!this.hasPart(serializer.getRevision().getHead(), flags, version))
             return true;
 
         T part = (T) parts[this.index];
