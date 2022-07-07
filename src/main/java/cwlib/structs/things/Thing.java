@@ -87,17 +87,35 @@ public class Thing implements Serializable {
             if (subVersion >= 0x110)
                 thing.extraFlags = serializer.i8(thing.extraFlags);
         }
-        
-        if (serializer.isWriting()) 
-            throw new SerializationException("Writing CThing is not supported!");
-        int partsRevision = serializer.s32(PartHistory.STREAMING_HINT);
-        long flags = -1;
-        if (version >= 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES))
-            flags = serializer.i64(-1);
-        else flags = -1;
 
+        boolean isCompressed = (version >= 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
+        
+        int partsRevision = PartHistory.STREAMING_HINT;
+        long flags = -1;
+
+        if (serializer.isWriting()) {
+            serializer.log("generating flags");
+            Part lastPart = null;
+            if (isCompressed) flags = 0;
+            for (Part part : Part.values()) {
+                if (this.parts[part.getIndex()] != null) {
+                    flags |= (1l << part.getIndex());
+                    lastPart = part;
+                }
+            }
+            partsRevision = lastPart.getVersion();
+        }
+
+        partsRevision = serializer.s32(partsRevision);
+        if (isCompressed)
+            flags = serializer.i64(flags);
+        
         System.out.println(Arrays.toString(Part.fromFlags(flags)));
 
+        // if (serializer.isWriting()) {
+        //     throw new SerializationException("you thought you would win?");
+        // }
+        
         /* Reflection magic! I really didn't want to write all this */
         for (Part part : Part.values()) {
             if (!part.serialize(this.parts, partsRevision, flags, serializer))
