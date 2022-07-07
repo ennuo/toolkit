@@ -751,9 +751,9 @@ public class Serializer {
             if (reference == -1) {
                 int next = this.nextReference++;
                 this.output.i32(next);
-                Serializable.serialize(this, value, clazz);
                 this.referenceIDs.put(next, value);
                 this.referenceObjects.put(value, next);
+                Serializable.serialize(this, value, clazz);
                 return value;
             } else this.output.i32(reference);
             return value;

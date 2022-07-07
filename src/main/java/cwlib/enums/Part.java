@@ -60,7 +60,7 @@ public enum Part {
     POWER_UP(0x2d, PartHistory.POWER_UP, null),
     HUD_ELEM(0x2e, PartHistory.HUD_ELEM, null),
     TAG_SYNCHRONIZER(0x2f, PartHistory.TAG_SYNCHRONIZER, null),
-    WORMHOLE(0x30, PartHistory.WORLD, null),
+    WORMHOLE(0x30, PartHistory.WORMHOLE, null),
     QUEST(0x31, PartHistory.QUEST, null),
     CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, null),
     ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, null),
@@ -96,6 +96,7 @@ public enum Part {
     }
 
     public int getIndex() { return this.index; }
+    public int getVersion() { return this.version; }
 
     /**
      * Prepares a name used when serializating
@@ -137,7 +138,7 @@ public enum Part {
 
     /**
      * Checks whether or not a thing contains this part
-     * based on version and part flags.
+    * based on version and part flags.
      * @param version Version determing what parts existed at this point
      * @param flags Flags determing what parts can be serialized by a Thing
      * @return Whether or not a thing contains this part
@@ -162,10 +163,17 @@ public enum Part {
         if (!this.hasPart(version, flags))
             return true;
 
-        if (this.serializable == null)
-            return false;
+        T part = (T) parts[this.index];
 
-        parts[this.index] = serializer.reference((T) parts[this.index], (Class<T>)this.serializable);
+        if (this.serializable == null) {
+            if (part == null) {
+                serializer.i32(0);
+                return true;
+            }
+            return false;
+        }
+
+        parts[this.index] = serializer.reference(part, (Class<T>)this.serializable);
 
         return true;
     }
