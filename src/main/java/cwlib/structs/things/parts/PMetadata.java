@@ -5,12 +5,17 @@ import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.structs.inventory.PhotoMetadata;
+import cwlib.structs.things.components.Value;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PMetadata implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x160;
+
+    @Deprecated public Value value = new Value();
+
     public String nameTranslationTag, descTranslationTag;
     public String locationTag, categoryTag;
     
@@ -35,6 +40,11 @@ public class PMetadata implements Serializable {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
 
+        boolean hasDepreciatedValue = (version < 0x297 && !revision.isLeerdammer()) || (revision.isLeerdammer() && !revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
+
+        if (hasDepreciatedValue)
+            metadata.value = serializer.struct(metadata.value, Value.class);
+        
         if (revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || version > 0x2ba) {
             metadata.titleKey = serializer.u32(metadata.titleKey);
             metadata.descriptionKey = serializer.u32(metadata.descriptionKey);
@@ -42,7 +52,8 @@ public class PMetadata implements Serializable {
             metadata.category = serializer.u32(metadata.category);
         } else {
             metadata.nameTranslationTag = serializer.str(metadata.nameTranslationTag);
-            metadata.descTranslationTag = serializer.str(metadata.descTranslationTag);
+            if (version < 0x159)
+                metadata.descTranslationTag = serializer.str(metadata.descTranslationTag);
             metadata.locationTag = serializer.str(metadata.locationTag);
             metadata.categoryTag = serializer.str(metadata.categoryTag);
             if (!serializer.isWriting()) {
@@ -57,21 +68,34 @@ public class PMetadata implements Serializable {
             }
         }
         
-        metadata.primaryIndex = serializer.i32(metadata.primaryIndex);
+        if (version >= 0x195)
+            metadata.primaryIndex = serializer.i32(metadata.primaryIndex);
         metadata.fluffCost = serializer.i32(metadata.fluffCost);
+
+        if (hasDepreciatedValue) serializer.i32(0); // unknown
+        
         metadata.type = serializer.i32(metadata.type);
         metadata.subType = serializer.i32(metadata.subType);
-        metadata.creationDate = serializer.i64(metadata.creationDate);
+        metadata.creationDate = serializer.u32(metadata.creationDate);
         
         metadata.icon = serializer.resource(metadata.icon, ResourceType.TEXTURE);
         metadata.photoMetadata = serializer.reference(metadata.photoMetadata, PhotoMetadata.class);
         
-        metadata.referencable = serializer.bool(metadata.referencable);
-        metadata.allowEmit = serializer.bool(metadata.allowEmit);
+        if (version >= 0x15f)
+            metadata.referencable = serializer.bool(metadata.referencable);
+        if (version >= 0x205)
+            metadata.allowEmit = serializer.bool(metadata.allowEmit);
         
         return metadata;
     }
-    
-    // TODO: Actually implement
-    @Override public int getAllocatedSize() { return 0; }
+
+    @Override public int getAllocatedSize() {
+        int size = BASE_ALLOCATION_SIZE;
+        if (this.nameTranslationTag != null) size += this.nameTranslationTag.length();
+        if (this.descTranslationTag != null) size += this.descTranslationTag.length();
+        if (this.locationTag != null) size += this.locationTag.length();
+        if (this.categoryTag != null) size += this.categoryTag.length();
+        if (this.photoMetadata != null) size += this.photoMetadata.getAllocatedSize();
+        return size;
+    }
 }

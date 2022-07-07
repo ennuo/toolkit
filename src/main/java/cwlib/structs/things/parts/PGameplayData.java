@@ -42,5 +42,10 @@ public class PGameplayData implements Serializable {
         return data;
     }
 
-    @Override public int getAllocatedSize() { return PGameplayData.BASE_ALLOCATION_SIZE; }
+    @Override public int getAllocatedSize() {
+        int size = PGameplayData.BASE_ALLOCATION_SIZE;
+        if (this.eggLink != null) size += this.eggLink.getAllocatedSize();
+        if (this.keyLink != null) size += this.keyLink.getAllocatedSize();
+        return size;
+    }
 }

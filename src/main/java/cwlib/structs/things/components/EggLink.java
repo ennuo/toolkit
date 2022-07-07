@@ -9,6 +9,9 @@ import cwlib.types.data.ResourceDescriptor;
 public class EggLink implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
+    @Deprecated public GlobalThingDescriptor item;
+    @Deprecated public InventoryItemDetails details;
+
     public ResourceDescriptor plan;
     public boolean shareable = true;
     
@@ -18,12 +21,12 @@ public class EggLink implements Serializable {
         int version = serializer.getRevision().getVersion();
 
         if (version < 0x197) // Don't know if I want to keep this stored
-            serializer.struct(null, GlobalThingDescriptor.class);
+            link.item = serializer.struct(link.item, GlobalThingDescriptor.class);
         else
             link.plan = serializer.resource(link.plan, ResourceType.PLAN);
 
         if (version > 0x15f && version < 0x197)
-            serializer.struct(null, InventoryItemDetails.class);
+            link.details = serializer.struct(link.details, InventoryItemDetails.class);
 
         if (version > 0x207 || version < 0x22a)
             serializer.bool(false); // Unknown value
@@ -34,5 +37,9 @@ public class EggLink implements Serializable {
         return link;
     }
 
-    @Override public int getAllocatedSize() { return EggLink.BASE_ALLOCATION_SIZE; }
+    @Override public int getAllocatedSize() { 
+        int size = EggLink.BASE_ALLOCATION_SIZE;
+        if (this.details != null) size += this.details.getAllocatedSize();
+        return size;
+    }
 }
