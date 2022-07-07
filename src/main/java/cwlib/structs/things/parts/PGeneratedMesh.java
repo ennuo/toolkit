@@ -106,7 +106,7 @@ public class PGeneratedMesh implements Serializable {
 
         if (subVersion >= 0xb)
             mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
-        else {
+        else if (version >= 0x27c) {
             if (serializer.isWriting())
                 serializer.getOutput().bool((mesh.visibilityFlags & VisibilityFlags.PLAY_MODE) != 0);
             else {
