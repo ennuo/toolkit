@@ -70,6 +70,13 @@ public final class ResourceDescriptor {
         this.flags = ResourceFlags.NONE;
     }
 
+    public ResourceDescriptor(GUID guid, SHA1 sha1, ResourceType type) {
+        this.sha1 = sha1;
+        this.type = type;
+        this.guid = guid;
+        this.flags = ResourceFlags.NONE;
+    }
+
     /**
      * Is this resource a GUID reference?
      * @return Whether or not this resource contains a GUID reference
@@ -99,6 +106,8 @@ public final class ResourceDescriptor {
     }
 
     @Override public String toString() {
+        if (this.sha1 != null && this.guid != null)
+            return String.format("%s (%s)", this.sha1, this.guid);
         if (this.sha1 != null) 
             return "h" + this.sha1.toString();
         else if (this.guid != null)

@@ -20,7 +20,10 @@ public class EggLink implements Serializable {
         EggLink link = (structure == null) ? new EggLink() : (EggLink) structure;
         int version = serializer.getRevision().getVersion();
 
-        if (version < 0x197) // Don't know if I want to keep this stored
+
+        // The game technically removes this field at 0x197,
+        // but it's essentially the same as link.plan at 0x160
+        if (version < 0x160) 
             link.item = serializer.struct(link.item, GlobalThingDescriptor.class);
         else
             link.plan = serializer.resource(link.plan, ResourceType.PLAN);
@@ -28,7 +31,7 @@ public class EggLink implements Serializable {
         if (version > 0x15f && version < 0x197)
             link.details = serializer.struct(link.details, InventoryItemDetails.class);
 
-        if (version > 0x207 || version < 0x22a)
+        if (version > 0x207 && version < 0x22a)
             serializer.bool(false); // Unknown value
         
         if (version > 0x23b)

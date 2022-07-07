@@ -9,6 +9,7 @@ import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.things.parts.PJoint;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 
@@ -56,17 +57,13 @@ public class Thing implements Serializable {
 
         thing.groupHead = serializer.reference(thing.groupHead, Thing.class);
 
-        if (version > 0x1c6)
+        if (version >= 0x1c7)
             thing.oldEmitter = serializer.reference(thing.oldEmitter, Thing.class);
 
-        if (version >= 0x1a6 && version < 0x1bc) {
-            int size = serializer.i32(0);
-            // pjoint list
-            if (size != 0)
-                throw new SerializationException("Joint list is not supported!");
-        }
+        if (version >= 0x1a6 && version < 0x1bc)
+            serializer.array(null, PJoint.class, true);
         
-        if (version > 0x213) {
+        if (version >= 0x214) {
             thing.createdBy = serializer.i16(thing.createdBy);
             thing.changedBy = serializer.i16(thing.changedBy);
         }
@@ -118,13 +115,15 @@ public class Thing implements Serializable {
                     lastPart = part;
                 }
             }
-            if (lastPart != null)
-                partsRevision = lastPart.getVersion();
+            partsRevision = (lastPart == null) ? 0 : lastPart.getVersion();
         }
 
         partsRevision = serializer.s32(partsRevision);
         if (isCompressed)
             flags = serializer.i64(flags);
+
+        // I have no idea why they did this
+        if (version == 0x13c) partsRevision += 7;
         
         Part[] parts = Part.fromFlags(revision.getHead(), flags, partsRevision);
         System.out.println(Arrays.toString(parts));
@@ -140,6 +139,7 @@ public class Thing implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
+    public <T extends Serializable> void setPart(Part part, T value) { this.parts[part.getIndex()] = value; }
 
     @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }
 }

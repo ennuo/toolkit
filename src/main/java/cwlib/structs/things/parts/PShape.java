@@ -6,8 +6,11 @@ import org.joml.Vector4f;
 import cwlib.enums.AudioMaterial;
 import cwlib.enums.LethalType;
 import cwlib.enums.ResourceType;
+import cwlib.enums.ShapeFlags;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.things.components.shapes.ContactCache;
 import cwlib.structs.things.components.shapes.Polygon;
 import cwlib.types.data.ResourceDescriptor;
@@ -63,12 +66,11 @@ public class PShape implements Serializable {
 
     public LethalType lethalType = LethalType.NOT;
 
-    public boolean collidableGame, collidablePoppet, collidableWithParent;
 
     public AudioMaterial soundEnumOverride = AudioMaterial.NONE;
     public byte playerNumberColor;
 
-    public short flags;
+    public short flags = ShapeFlags.DEFAULT_FLAGS;
 
     public ContactCache contactCache = new ContactCache();
 
@@ -121,6 +123,9 @@ public class PShape implements Serializable {
         if (version >= 0x15c)
             shape.oldMaterial = serializer.resource(shape.oldMaterial, ResourceType.MATERIAL);
         
+        if (version < 0x13c)
+            serializer.u8(0);
+
         shape.thickness = serializer.f32(shape.thickness);
         if (version >= 0x227)
             shape.massDepth = serializer.f32(shape.massDepth);
@@ -134,10 +139,16 @@ public class PShape implements Serializable {
             }
         } else shape.color = serializer.i32(shape.color);
 
+        if (version < 0x13c)
+            serializer.resource(null, ResourceType.TEXTURE);
+
         if (version >= 0x301)
             shape.brightness = serializer.f32(shape.brightness);
         
         shape.bevelSize = serializer.f32(shape.bevelSize);
+
+        if (version < 0x13c)
+            serializer.i32(0);
         
         if (version <= 0x340 || version >= 0x38e)
             shape.COM = serializer.m44(shape.COM);
@@ -162,13 +173,27 @@ public class PShape implements Serializable {
             else shape.lethalType = LethalType.fromValue(serializer.getInput().u16());
         }
 
-        if (version <= 0x2b4) {
-            shape.collidableGame = serializer.bool(shape.collidableGame);
-            if (version >= 0x224)
-                shape.collidablePoppet = serializer.bool(shape.collidablePoppet);
-            shape.collidableWithParent = serializer.bool(shape.collidableWithParent);
+        if (version < 0x2b5) {
+            if (!serializer.isWriting()) {
+                MemoryInputStream stream = serializer.getInput();
+                shape.flags = 0;
+                if (stream.bool()) shape.flags |= ShapeFlags.COLLIDABLE_GAME;
+                if (version >= 0x224 && stream.bool()) shape.flags |= ShapeFlags.COLLIDABLE_POPPET;
+                if (stream.bool()) shape.flags |= ShapeFlags.COLLIDABLE_WITH_PARENT;
+            } else {
+                MemoryOutputStream stream = serializer.getOutput();
+                stream.bool((shape.flags & ShapeFlags.COLLIDABLE_GAME) != 0);
+                if (version >= 0x224)
+                    stream.bool((shape.flags & ShapeFlags.COLLIDABLE_POPPET) != 0);
+                stream.bool((shape.flags & ShapeFlags.COLLIDABLE_WITH_PARENT) != 0);
+            }
         }
 
+        if (version < 0x13c) {
+            serializer.u8(0);
+            serializer.f32(0); // Is this a float, or is it just because it's an early revision?
+        }
+        
         shape.soundEnumOverride = serializer.enum32(shape.soundEnumOverride);
 
         if (version >= 0x2a3) {

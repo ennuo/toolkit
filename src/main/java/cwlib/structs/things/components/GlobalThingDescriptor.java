@@ -16,13 +16,9 @@ public class GlobalThingDescriptor implements Serializable {
         GlobalThingDescriptor descriptor = 
             (structure == null) ? new GlobalThingDescriptor() : (GlobalThingDescriptor) structure;
         
-        int version = serializer.getRevision().getVersion();
+        descriptor.levelDesc = serializer.resource(descriptor.levelDesc, ResourceType.LEVEL, true, false);
+        descriptor.UID = serializer.i32(descriptor.UID);
 
-        if (version < 0x160) {
-            descriptor.levelDesc = serializer.resource(descriptor.levelDesc, ResourceType.LEVEL);
-            descriptor.UID = serializer.i32(descriptor.UID);
-        } else descriptor.levelDesc = serializer.resource(descriptor.levelDesc, ResourceType.PLAN);
-        
         return descriptor;
     }
 

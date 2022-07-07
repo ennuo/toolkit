@@ -26,7 +26,7 @@ public class RPlan implements Compressable, Serializable {
     /**
      * Cache of dependencies in thing data
      */
-    private HashSet<ResourceDescriptor> dependencyCache = new HashSet<>();
+    public HashSet<ResourceDescriptor> dependencyCache = new HashSet<>();
 
     public boolean isUsedForStreaming = false;
     public Revision revision = new Revision(Revision.LBP1_FINAL_REVISION, 0x4c44, 0x17);

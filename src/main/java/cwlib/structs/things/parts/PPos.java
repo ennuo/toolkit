@@ -24,14 +24,16 @@ public class PPos implements Serializable {
         PPos pos = (structure == null) ? new PPos() : (PPos) structure;
         
         int version = serializer.getRevision().getVersion();
-
+        
         pos.thingOfWhichIAmABone = serializer.reference(pos.thingOfWhichIAmABone, Thing.class);
         pos.animHash = serializer.i32(pos.animHash);
         
-        if (version <= 0x340)
+        if (version < 0x341)
             pos.localPosition = serializer.m44(pos.localPosition);
 
         pos.worldPosition = serializer.m44(pos.worldPosition);
+        if (version >= 0x340 && !serializer.isWriting())
+            pos.localPosition = pos.worldPosition;
 
         // Unknown value, depreciated very early
         if (version < 0x155)

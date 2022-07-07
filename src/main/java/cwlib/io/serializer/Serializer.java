@@ -527,7 +527,7 @@ public class Serializer {
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
-        return this.resource(value, type, false);
+        return this.resource(value, type, false, true);
     }
 
     /**
@@ -538,8 +538,21 @@ public class Serializer {
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor) {
+        return this.resource(value, type, isDescriptor, true);
+    }
+
+    /**
+     * (De)serializes a resource to/from the stream.
+     * @param value Resource to write
+     * @param type Type of resource
+     * @param isDescriptor Whether or not to skip resource flags
+     * @param cp Flag toggle
+     * @return Resource (de)serialized
+     */
+    public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor, boolean cp) {
         byte NONE = 0, HASH = 1, GUID = 2;
-        if (this.revision.getVersion() <= 0x18b) {
+        // is it 0x191 or 0x18c
+        if (this.revision.getVersion() < 0x191 && cp) {
             HASH = 2;
             GUID = 1;
         }
@@ -549,12 +562,24 @@ public class Serializer {
                 this.input.i32(); // Flags, we don't need them.
             byte guidHashFlag = this.input.i8();
             ResourceDescriptor descriptor = null;
-            if (guidHashFlag == GUID)
-                descriptor = new ResourceDescriptor(this.input.guid(), type);
-            else if (guidHashFlag == HASH)
-                descriptor = new ResourceDescriptor(this.input.sha1(), type);
-            else if (guidHashFlag == NONE) return null;
-            else throw new SerializationException("Invalid GUID/Hash serialization flag!");
+
+            GUID guid = null;
+            SHA1 sha1 = null;
+
+
+            if (guidHashFlag == NONE) return null;
+            if (guidHashFlag > 0x3 || guidHashFlag < 0x0) throw new SerializationException("Invalid GUID/Hash serialization flag!");
+
+            if ((guidHashFlag & GUID) != 0)
+                guid = this.input.guid();
+            if ((guidHashFlag & HASH) != 0)
+                sha1 = this.input.sha1();
+
+            descriptor = new ResourceDescriptor(guid, sha1, type);
+
+            if (guid != null) descriptor = new ResourceDescriptor(guid, type);
+            else descriptor = new ResourceDescriptor(guid, type);
+            
             this.dependencies.add(descriptor);
             return descriptor;
         }
@@ -563,15 +588,17 @@ public class Serializer {
             this.output.u32(0); // The flags don't really matter.
 
         if (value != null) {
-            if (value.getSHA1() != null) {
-                this.output.i8(HASH);
-                this.output.sha1(value.getSHA1());
-                this.dependencies.add(value);
-            } else if (value.getGUID() != null) {
-                this.output.i8(GUID);
+            byte flags = 0;
+            if (value.getSHA1() != null) flags |= HASH;
+            if (value.getGUID() != null) flags |= GUID;
+            this.output.i8(flags);
+
+            if ((flags & GUID) != 0)
                 this.output.guid(value.getGUID());
-                this.dependencies.add(value);
-            } else this.i8(NONE);
+            if ((flags & HASH) != 0)
+                this.output.sha1(value.getSHA1());
+
+            this.dependencies.add(value);
         } else this.i8(NONE);
 
         return value;
