@@ -12,6 +12,12 @@ public class Note implements Serializable {
     public int x = 0, y = 0, volume = 0x60, timbre = 0x40;
     public boolean triplet, end;
 
+    public Note(){};
+    public Note(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override public Note serialize(Serializer serializer, Serializable structure) {
         Note note = (structure == null) ? new Note() : (Note) structure;
