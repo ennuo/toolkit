@@ -3,6 +3,9 @@ package cwlib.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -15,17 +18,23 @@ import cwlib.io.gson.NetworkPlayerIDSerializer;
 import cwlib.io.gson.PatchSerializer;
 import cwlib.io.gson.SHA1Serializer;
 import cwlib.io.gson.SlotIDSerializer;
+import cwlib.io.gson.ThingSerializer;
 import cwlib.io.gson.Vector2fSerializer;
 import cwlib.io.gson.Vector3fSerializer;
 import cwlib.io.gson.Vector4fSerializer;
 import cwlib.types.data.NetworkOnlineID;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
+import cwlib.structs.things.Thing;
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
 import cwlib.types.mods.patches.ModPatch;
 
 public final class GsonUtils {
+    public static final HashMap<Integer, Thing> THINGS = new HashMap<>();
+    public static final HashSet<Integer> UIDs = new HashSet<>();
+
+
     /**
      * Default GSON serializer object with type-adapters
      * pre-set.
@@ -43,6 +52,7 @@ public final class GsonUtils {
         .registerTypeAdapter(GUID.class, new GUIDSerializer())
         .registerTypeAdapter(NetworkPlayerID.class, new NetworkPlayerIDSerializer())
         .registerTypeAdapter(NetworkOnlineID.class, new NetworkOnlineIDSerializer())
+        .registerTypeAdapter(Thing.class, new ThingSerializer())
         .create();
 
     /**
@@ -53,6 +63,8 @@ public final class GsonUtils {
      * @return Deserialized object
      */
     public static <T> T fromJSON(String json, Class<T> clazz) { 
+        THINGS.clear();
+        UIDs.clear();
         return GSON.fromJson(json, clazz);
     }
 
@@ -62,6 +74,8 @@ public final class GsonUtils {
      * @return Serialized JSON string
      */
     public static String toJSON(Object object) {
+        THINGS.clear();
+        UIDs.clear();
         return GSON.toJson(object);
     }
 }
