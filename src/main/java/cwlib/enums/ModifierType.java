@@ -26,6 +26,14 @@ public enum ModifierType {
 
     public int getValue() { return this.value; }
 
+    public static short getFlags(EnumSet<ModifierType> set) {
+        short flags = 0;
+        if (set == null) return flags;
+        for (ModifierType type : set)
+            flags |= (1 << type.value);
+        return flags;
+    }
+
     public static EnumSet<ModifierType> fromValue(int value) {
         EnumSet<ModifierType> bitset = EnumSet.noneOf(ModifierType.class);
         for (ModifierType type : ModifierType.values())

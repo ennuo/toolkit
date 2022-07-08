@@ -21,6 +21,7 @@ public class RTranslationTable {
      * @return Hashed key from translation tag
      */
     public static final long makeLamsKeyID(String tag) {
+        if (tag == null) tag = "";
         long v0 = 0, v1 = 0xC8509800L;
         for (int i = 32; i > 0; --i) {
             long c = 0x20;

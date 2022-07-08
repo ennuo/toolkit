@@ -31,8 +31,6 @@ public class PTrigger implements Serializable {
         if (subVersion >= 0x2a)
             trigger.zRangeHundreds = serializer.i8(trigger.zRangeHundreds);
         
-    
-
         if (version < 0x1d5)
             serializer.i32(0); // zLayers?
         trigger.allZLayers = serializer.bool(trigger.allZLayers);

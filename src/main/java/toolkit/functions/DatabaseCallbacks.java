@@ -217,6 +217,8 @@ public class DatabaseCallbacks {
 
         entry.setPath(path);
 
+        ResourceSystem.reloadModel(entry.getSource());
+
         Toolkit.instance.updateWorkspace();
     }
     

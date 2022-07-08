@@ -99,8 +99,16 @@ public class ExportCallbacks {
             else {
                 byte[] data = ResourceSystem.extract(guid);
                 if (data == null) System.err.println("Couldn't find data for model in any archives.");
-                // else
-                //     mesh = new RMesh(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), new Resource(data));
+                else {
+                    // old code for getting mesh name, might need it later?
+                    // entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "")
+                    try {
+
+                    } catch (Exception ex)
+
+
+                    mesh = new Resource(data).loadResource(RMesh.class);
+                }
             }
             
         }

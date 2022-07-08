@@ -129,9 +129,13 @@ public class Thing implements Serializable {
         System.out.println(Arrays.toString(parts));
 
         for (Part part : parts) {
-            if (!part.serialize(this.parts, partsRevision, flags, serializer))
+            serializer.log(part.name() + " [START]");
+            if (!part.serialize(this.parts, partsRevision, flags, serializer)) {
+                serializer.log(part.name() + " FAILED");
+                System.exit(0);
                 throw new SerializationException(part.name() + " failed to serialize!");
-            System.out.println(part.name() + ": " + serializer.getOffset());
+            }
+            serializer.log(part.name() + " [END]");
         }
         
         return thing;

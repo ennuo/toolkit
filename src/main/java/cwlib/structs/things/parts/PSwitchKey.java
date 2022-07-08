@@ -40,8 +40,10 @@ public class PSwitchKey implements Serializable {
                 key.isDummy = (flags & 0x40) != 0;
             }
         } else {
-            key.hideInPlayMode = serializer.bool(key.hideInPlayMode);
-            key.isDummy = serializer.bool(key.isDummy);
+            if (version > 0x1bc)
+                key.hideInPlayMode = serializer.bool(key.hideInPlayMode);
+            if (subVersion >= 0x132)
+                key.isDummy = serializer.bool(key.isDummy);
         }
 
         // isActiveBoolOldForSerialisation

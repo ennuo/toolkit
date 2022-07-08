@@ -14,11 +14,14 @@ import cwlib.types.data.ResourceDescriptor;
 public class PGroup implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
+    @Deprecated public Thing[] things;
+
     public ResourceDescriptor planDescriptor;
     public NetworkPlayerID creator = new NetworkPlayerID();
     public Thing emitter;
     public int lifetime, aliveFrames;
     public int flags;
+    @Deprecated public boolean mainSelectableObject;
 
     @SuppressWarnings("unchecked")
     @Override public PGroup serialize(Serializer serializer, Serializable structure) {
@@ -27,18 +30,24 @@ public class PGroup implements Serializable {
         int version = serializer.getRevision().getVersion();
         boolean isWriting = serializer.isWriting();
 
-        if (version >= 0x18e && version <= 0x340) {
+        if (!(version < 0x18e || version > 0x1b0)) {
+            group.things = serializer.array(group.things, Thing.class, true);
+            return group;
+        }
+
+        if (version >= 0x18e && version < 0x341) {
             if (isWriting) serializer.getOutput().bool((group.flags & GroupFlags.COPYRIGHT) != 0);
             else if (serializer.getInput().bool())
                 group.flags |= GroupFlags.COPYRIGHT;
         }
 
-        if (version >= 0x235)
+        if (version >= 0x18e)
             group.creator = serializer.struct(group.creator, NetworkPlayerID.class);
 
-        group.planDescriptor = serializer.resource(group.planDescriptor, ResourceType.PLAN, true);
+        if (version >= 0x25e || version == 0x252)
+            group.planDescriptor = serializer.resource(group.planDescriptor, ResourceType.PLAN, true);
 
-        if (version >= 0x25e && version <= 0x340) {
+        if (version >= 0x25e && version < 0x341) {
             if (isWriting) serializer.getOutput().bool((group.flags & GroupFlags.EDITABLE) != 0);
             else if (serializer.getInput().bool())
                 group.flags |= GroupFlags.EDITABLE;
@@ -50,15 +59,14 @@ public class PGroup implements Serializable {
             group.aliveFrames = serializer.i32(group.aliveFrames);
         }
 
-        if (version >= 0x26e && version <= 0x340) {
+        if (version >= 0x26e && version < 0x341) {
             if (isWriting) serializer.getOutput().bool((group.flags & GroupFlags.PICKUP_ALL_MEMBERS) != 0);
             else if (serializer.getInput().bool())
                 group.flags |= GroupFlags.PICKUP_ALL_MEMBERS;
         }
 
-        // PGroup.MainSelectableObject, not valid past this revision
-        if (version >= 0x30f && version <= 0x340)
-            serializer.bool(false);
+        if (version >= 0x30f && version < 0x341)
+            group.mainSelectableObject = serializer.bool(group.mainSelectableObject);
 
         if (version >= 0x341)
             group.flags = serializer.u8(group.flags);

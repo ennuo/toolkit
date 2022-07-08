@@ -952,6 +952,16 @@ public class Serializer {
         this.dependencies.clear();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getPointer(int index) { return (T) this.referenceIDs.get(index); }
+
+    public void setPointer(int index, Object value) { 
+        this.referenceIDs.put(index, value);
+        this.referenceObjects.put(value, index);
+    }
+
+    public int getNextReference() { return this.nextReference++; }
+    
     public final boolean isWriting() { return this.isWriting; }
     public final Revision getRevision() { return this.revision; }
     public final byte getCompressionFlags() { return this.compressionFlags; }

@@ -14,7 +14,7 @@ import cwlib.structs.things.parts.*;
 public enum Part {
     BODY(0x0, PartHistory.BODY, PBody.class),
     JOINT(0x1, PartHistory.JOINT, PJoint.class),
-    WORLD(0x2, PartHistory.WORLD, null),
+    WORLD(0x2, PartHistory.WORLD, PWorld.class),
     RENDER_MESH(0x3, PartHistory.RENDER_MESH, PRenderMesh.class),
     POS(0x4, PartHistory.POS, PPos.class),
     TRIGGER(0x5, PartHistory.TRIGGER, PTrigger.class),
@@ -27,7 +27,7 @@ public enum Part {
     @Deprecated PARTICLE_CLUMP(0x38, PartHistory.PARTICLE_CLUMP, null),
     @Deprecated PARTICLE_EMITTER(0x39, PartHistory.PARTICLE_EMITTER, null),
     @Deprecated CAMERA_ZONE(0x3a, PartHistory.CAMERA_ZONE, null),
-    LEVEL_SETTINGS(0xA, PartHistory.LEVEL_SETTINGS, null),
+    LEVEL_SETTINGS(0xA, PartHistory.LEVEL_SETTINGS, PLevelSettings.class),
     SPRITE_LIGHT(0xB, PartHistory.SPRITE_LIGHT, null),
     @Deprecated KEYFRAMED_POSITION(0x3b, PartHistory.KEYFRAMED_POSITION, null),
     @Deprecated CAMERA(0x3c, PartHistory.CAMERA, null),
@@ -36,11 +36,11 @@ public enum Part {
     CHECKPOINT(0xE, PartHistory.CHECKPOINT, PCheckpoint.class),
     STICKERS(0xF, PartHistory.STICKERS, PStickers.class),
     DECORATIONS(0x10, PartHistory.DECORATIONS, null),
-    SCRIPT(0x11, PartHistory.SCRIPT, null),
+    SCRIPT(0x11, PartHistory.SCRIPT, PScript.class),
     SHAPE(0x12, PartHistory.SHAPE, PShape.class),
     EFFECTOR(0x13, PartHistory.EFFECTOR, PEffector.class),
     EMITTER(0x14, PartHistory.EMITTER, null),
-    REF(0x15, PartHistory.REF, null),
+    REF(0x15, PartHistory.REF, PRef.class),
     METADATA(0x16, PartHistory.METADATA, PMetadata.class),
     COSTUME(0x17, PartHistory.COSTUME, null),
     @Deprecated PARTICLE_EMITTER_2(0x3d, PartHistory.PARTICLE_EMITTER_2, null),
@@ -194,8 +194,16 @@ public enum Part {
         T part = (T) parts[this.index];
 
         if (this.serializable == null) {
-            if (part == null) {
-                serializer.i32(0);
+            if (serializer.isWriting()) {
+                if (part != null) return false;
+                else {
+                    serializer.i32(0);
+                    return true;
+                }
+            }
+            else if (!serializer.isWriting()) {
+                if (serializer.i32(0) != 0)
+                    return false;
                 return true;
             }
             return false;
