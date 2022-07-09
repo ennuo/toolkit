@@ -11,6 +11,11 @@ public class PlayerRecord implements Serializable {
     private int[] playerNumbers = new int[32];
     private int offset;
 
+    public PlayerRecord() {
+        for (int i = 0; i < this.playerNumbers.length; ++i)
+            playerNumbers[i] = -1;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public PlayerRecord serialize(Serializer serializer, Serializable structure) {
         PlayerRecord record = (structure == null) ? new PlayerRecord() : (PlayerRecord) structure;
