@@ -3,9 +3,11 @@ package cwlib.resources;
 import java.util.ArrayList;
 
 import cwlib.enums.Branch;
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.io.Compressable;
@@ -16,6 +18,14 @@ import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.script.InstanceLayout;
+import cwlib.structs.things.parts.PBody;
+import cwlib.structs.things.parts.PEffector;
+import cwlib.structs.things.parts.PGameplayData;
+import cwlib.structs.things.parts.PLevelSettings;
+import cwlib.structs.things.parts.PPos;
+import cwlib.structs.things.parts.PScript;
+import cwlib.structs.things.parts.PWorld;
 
 public class RLevel implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
@@ -34,6 +44,31 @@ public class RLevel implements Serializable, Compressable {
     public GUID musicGUID;
     public GUID musicSettingsGUID;
     public float[] musicStemVolumes;
+
+    public RLevel() {
+        Thing thing = new Thing(-1);
+
+        PWorld world = new PWorld();
+
+        thing.setPart(Part.BODY, new PBody());
+        thing.setPart(Part.WORLD, world);
+        thing.setPart(Part.POS, new PPos());
+        thing.setPart(Part.LEVEL_SETTINGS, new PLevelSettings());
+        thing.setPart(Part.EFFECTOR, new PEffector());
+
+        PScript script = new PScript();
+        script.script = new ResourceDescriptor(19744, ResourceType.SCRIPT);
+
+        // thing.setPart(Part.SCRIPT, script);
+        thing.setPart(Part.GAMEPLAY_DATA, new PGameplayData());
+
+
+        world.things.add(thing);
+        // world.things.add(new Thing(1));
+        
+
+        this.world = thing;
+    }
 
     @SuppressWarnings("unchecked")
     @Override public RLevel serialize(Serializer serializer, Serializable structure) {
@@ -75,7 +110,7 @@ public class RLevel implements Serializable, Compressable {
 
 
         if (subVersion >= 0x169) { /* adventure data */}
-
+        
         // dceUuid
         // adventureData
 
