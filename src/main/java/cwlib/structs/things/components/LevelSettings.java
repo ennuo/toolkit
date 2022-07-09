@@ -10,22 +10,24 @@ import cwlib.types.data.Revision;
 public class LevelSettings implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xb0;
 
-    public Vector3f sunPosition;
-    public float sunPositionScale;
-    public Vector4f sunColor, ambientColor;
-    public float sunMultiplier, exposure;
-    public Vector4f fogColor;
-    public float fogNear, fogFar;
-    public Vector4f rimColor, rimColor2;
+    public Vector3f sunPosition = new Vector3f(0.86f, 0.986f, 0.586f);
+    public float sunPositionScale = 300000f;
+    public Vector4f sunColor = new Vector4f(0.49f, 0.441f, 0.392f, 0.49f);
+    public Vector4f ambientColor = 	new Vector4f(0.4f, 0.6f, 0.8f, 1.0f);
+    public float sunMultiplier = 1.0f, exposure = 1.0f;
+    public Vector4f fogColor = new Vector4f(0.3f, 0.5f, 0.7f, 1.0f);
+    public float fogNear = 1000f, fogFar = 4000f;
+    public Vector4f rimColor = new Vector4f(0.45f, 0.3f, 0.15f, 1.5f);
+    public Vector4f rimColor2 = new Vector4f(0.3f, 0.4f, 0.5f, 1.0f);
 
-    public float bakedShadowAmount, bakedShadowBlur;
-    public float bakedAOBias, bakedAOScale;
-    public float dynamicAOAmount;
+    public float bakedShadowAmount, bakedShadowBlur = 0.1f;
+    public float bakedAOBias, bakedAOScale = 1.0f;
+    public float dynamicAOAmount = 0.4f;
     public float dofNear = 4000f, dofFar = 50000f;
 
     public float zEffectAmount = 0f, zEffectBright = 0f, zEffectContrast = 0.333f;
 
-    public float dofNear2, dofFar2, dofFar3;
+    public float dofNear2 = -7500f, dofFar2 = -3500f, dofFar3 = -100000f;
 
     @SuppressWarnings("unchecked")
     @Override public LevelSettings serialize(Serializer serializer, Serializable structure) {

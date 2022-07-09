@@ -19,6 +19,10 @@ public class PLevelSettings extends LevelSettings {
     public int backgroundRepeatFlags;
     public float backgroundSkyHeight;
 
+    public PLevelSettings() {
+        this.presets.add(new LevelSettings());
+    }
+
     @SuppressWarnings("unchecked")
     @Override public PLevelSettings serialize(Serializer serializer, Serializable structure) {
         PLevelSettings settings = (structure == null) ? new PLevelSettings() : (PLevelSettings) structure;
@@ -35,7 +39,7 @@ public class PLevelSettings extends LevelSettings {
         if (0x152 < version && version < 0x15a)
             serializer.f32(0);
 
-        if (!(version < 0x154 || 0x155 < version)) 
+        if (!(version < 0x154 || 0x155 < version))  
             throw new SerializationException("Unsupported serialization object!");
 
         settings.backdropAmbience = serializer.str(settings.backdropAmbience);
