@@ -3,6 +3,7 @@ package cwlib.types;
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.SerializationType;
@@ -103,11 +104,10 @@ public class Resource {
                     if (head >= 0x189) {
                         if (this.type != ResourceType.STATIC_MESH) {
                             if (head >= 0x271) { 
-                                // NOTE(Aidan): Were they actually added on 0x27a, but how can it be on 0x272 then?!
                                 branchID = stream.i16();
                                 branchRevision = stream.i16();
                             }
-                            if (head >= 0x297 || (head == Branch.LEERDAMMER.getHead() && branchID == Branch.LEERDAMMER.getID()) && branchRevision > 5)
+                            if (head >= 0x297 || (head == Branch.LEERDAMMER.getHead() && branchID == Branch.LEERDAMMER.getID()) && branchRevision >= Revisions.LD_RESOURCES)
                                 this.compressionFlags = stream.i8();
                             this.isCompressed = stream.bool();
                         } else this.meshInfo = new Serializer(stream, new Revision(head)).struct(null, StaticMeshInfo.class);
