@@ -11,10 +11,10 @@ public class PGameplayData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public GameplayPartType gameplayType = GameplayPartType.UNDEFINED;
-    public int fluffCost;
+    public int fluffCost = 100000;
     public EggLink eggLink;
     public SlotID keyLink;
-    public int treasureType, treasureCount;
+    public int treasureType, treasureCount = 1;
 
     @SuppressWarnings("unchecked")
     @Override public PGameplayData serialize(Serializer serializer, Serializable structure) {

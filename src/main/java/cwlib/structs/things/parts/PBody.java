@@ -28,7 +28,7 @@ public class PBody implements Serializable {
     /**
      * The state of this object
      */
-    public int frozen;
+    public int frozen = 1;
 
     /**
      * The player that's currently editing this thing(?)

@@ -129,7 +129,7 @@ public class PShape implements Serializable {
         shape.thickness = serializer.f32(shape.thickness);
         if (version >= 0x227)
             shape.massDepth = serializer.f32(shape.massDepth);
-
+        
         if (version <= 0x389) {
             if (serializer.isWriting())
                 serializer.getOutput().v4(Colors.RGBA32.toVector(shape.color));
@@ -161,10 +161,18 @@ public class PShape implements Serializable {
         if (version >= 0x303)
             shape.behavior = serializer.i32(shape.behavior);
 
-        if (version >= 0x38a)
-            shape.colorOff = serializer.i32(shape.colorOff);
-        if (version >= 0x303)
+
+        if (version >= 0x303) {
+            if (version < 0x38a) {
+                if (serializer.isWriting())
+                serializer.getOutput().v4(Colors.RGBA32.toVector(shape.colorOff));
+                else {
+                    Vector4f color = serializer.getInput().v4();
+                    shape.colorOff = Colors.RGBA32.fromVector(color);
+                }
+            } else shape.colorOff = serializer.i32(shape.colorOff);
             shape.brightnessOff = serializer.f32(shape.brightnessOff);
+        }
 
         if (version <= 0x345)
             shape.lethalType = serializer.enum32(shape.lethalType);
@@ -195,6 +203,12 @@ public class PShape implements Serializable {
         }
         
         shape.soundEnumOverride = serializer.enum32(shape.soundEnumOverride);
+
+        if (version >= 0x29d && version < 0x30c) {
+            serializer.f32(0); // restitution
+            if (version < 0x2b5)
+                serializer.u8(0); // unk
+        }
 
         if (version >= 0x2a3) {
             if (version <= 0x367)

@@ -30,9 +30,8 @@ public class PRenderMesh implements Serializable {
     @SuppressWarnings("unchecked")
     @Override public PRenderMesh serialize(Serializer serializer, Serializable structure) {
         PRenderMesh mesh = (structure == null) ? new PRenderMesh() : (PRenderMesh) structure;
-
-
-        int version = serializer.getRevision().getHead();
+        
+        int version = serializer.getRevision().getVersion();
 
         mesh.mesh = serializer.resource(mesh.mesh, ResourceType.MESH);
 

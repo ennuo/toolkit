@@ -36,7 +36,7 @@ public class PaletteDemo {
     public static void main(String[] args) {
         ResourceSystem.API_MODE = true;
 
-        Resource resource = new Resource("C:/Users/Rueezus/Desktop/bubble.plan");
+        Resource resource = new Resource("E:/work/sample/bubble.plan");
         RPlan plan = resource.loadResource(RPlan.class);
         Revision revision = new Revision(0x132);
 
@@ -64,7 +64,7 @@ public class PaletteDemo {
         byte[] output = Resource.compress(plan.build(plan.revision, plan.compressionFlags), false);
 
         byte[] json = GsonUtils.toJSON(things).getBytes(StandardCharsets.UTF_8);
-        FileIO.write(json, "C:/Users/Rueezus/Desktop/test.json");
+        FileIO.write(json, "E:/work/sample/bubble.plan.json");
 
 
         FileIO.write(output, "E:/PS3/dev_hdd0/game/LBP3DEBUG/USRDIR/item/test.plan");

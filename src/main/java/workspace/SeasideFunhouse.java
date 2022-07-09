@@ -12,17 +12,14 @@ import cwlib.util.GsonUtils;
 
 public class SeasideFunhouse {
     public static void main(String[] args) {
-        Resource resource = new Resource("C:/Users/Rueezus/Desktop/seaside.bin");
+        Resource resource = new Resource("E:/work/sample/seaside.bin");
         RLevel level = resource.loadResource(RLevel.class);
         byte[] rebuild = Resource.compress(level.build(resource.getRevision(), CompressionFlags.USE_NO_COMPRESSION), false);
-        FileIO.write(rebuild, "C:/Users/Rueezus/Desktop/test.bin");
+        FileIO.write(rebuild, "E:/work/sample/seaside.rebuild.bin");
 
-        new Resource("C:/Users/Rueezus/Desktop/test.bin").loadResource(RLevel.class);
-
-        
+        new Resource("E:/work/sample/seaside.rebuild.bin").loadResource(RLevel.class);
 
         byte[] json = GsonUtils.toJSON(level.world).getBytes(StandardCharsets.UTF_8);
-        FileIO.write(json, "C:/Users/Rueezus/Desktop/test.json");
-
+        FileIO.write(json, "E:/work/sample/seaside.bin.json");
     }
 }

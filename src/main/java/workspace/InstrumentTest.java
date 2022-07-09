@@ -24,7 +24,7 @@ public class InstrumentTest {
     public static void main(String[] args) {
         ResourceSystem.API_MODE = true;
 
-        Resource resource = new Resource("C:/Users/Rueezus/Desktop/instrument.plan");
+        Resource resource = new Resource("E:/work/sample/instrument.plan");
         RPlan plan = resource.loadResource(RPlan.class);
         Revision revision = new Revision(0x272, 0x4c44, 0x0017);
 
@@ -33,7 +33,7 @@ public class InstrumentTest {
         Serializer serializer = new Serializer(0xFFFF, revision, CompressionFlags.USE_NO_COMPRESSION);
         serializer.array(things, Thing.class, true);
         plan.revision = revision;
-        plan.thingData = Bytes.combine(serializer.getBuffer(), FileIO.read("C:/Users/Rueezus/Desktop/kratos.zip"));
+        plan.thingData = serializer.getBuffer();
         plan.compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
 
         plan.inventoryData.userCreatedDetails = new UserCreatedDetails("Acoustic", "Test for rebuilding instrument data");
@@ -45,9 +45,8 @@ public class InstrumentTest {
         
         byte[] output = Resource.compress(plan.build(plan.revision, plan.compressionFlags), false);
 
-        FileIO.write(output, "C:/Users/Rueezus/Desktop/instrument.rebuild.plan");
-
-        PInstrument instrument = things[0].getPart(Part.INSTRUMENT);
+        FileIO.write(output, "E:/work/sample/instrument.rebuild.plan");
+        FileIO.write(GsonUtils.toJSON(things).getBytes(StandardCharsets.UTF_8), "E:/work/sample/instrument.plan.json");
 
         
 

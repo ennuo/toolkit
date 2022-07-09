@@ -19,13 +19,13 @@ import cwlib.types.data.Revision;
 public class Thing implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
-    public int UID;
+    public int UID = 1;
     public Thing world;
     public Thing parent;
     public Thing groupHead;
     public Thing oldEmitter;
 
-    public short createdBy, changedBy;
+    public short createdBy = -1, changedBy = -1;
     public boolean isStamping;
     public GUID planGUID;
     public boolean hidden;
@@ -33,6 +33,9 @@ public class Thing implements Serializable {
 
     private Serializable[] parts = new Serializable[0x3f];
 
+    public Thing(){};
+    public Thing(int UID) { this.UID = UID; }
+    
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
@@ -42,8 +45,10 @@ public class Thing implements Serializable {
         int subVersion = revision.getSubVersion();
 
         // Test serialization marker.
-        if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER))
+        if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER)) {
+            serializer.log("TEST_SERIALISATION_MARKER");
             serializer.u8(0xAA);
+        }
 
         if (version < 0x1fd)
             thing.world = serializer.reference(thing.world, Thing.class);
