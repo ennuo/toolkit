@@ -124,8 +124,10 @@ public class Thing implements Serializable {
         }
 
         partsRevision = serializer.s32(partsRevision);
-        if (isCompressed)
+        if (isCompressed) {
+            serializer.log("FLAGS");
             flags = serializer.i64(flags);
+        }
 
         // I have no idea why they did this
         if (version == 0x13c) partsRevision += 7;

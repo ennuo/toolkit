@@ -69,7 +69,7 @@ public abstract class FileEntry {
         this.size = size;
         this.sha1 = sha1;
 
-        this.node = ResourceSystem.API_MODE ? null : source.addNode(this);
+        this.node = ResourceSystem.GUI_MODE ? source.addNode(this) : null;
     }
     
     public FileData getSource() { return this.source; }

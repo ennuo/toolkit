@@ -22,8 +22,6 @@ import toolkit.utilities.ResourceSystem;
 
 public class InstrumentTest {
     public static void main(String[] args) {
-        ResourceSystem.API_MODE = true;
-
         Resource resource = new Resource("E:/work/sample/instrument.plan");
         RPlan plan = resource.loadResource(RPlan.class);
         Revision revision = new Revision(0x272, 0x4c44, 0x0017);

@@ -34,8 +34,6 @@ import toolkit.utilities.ResourceSystem;
 
 public class PaletteDemo {
     public static void main(String[] args) {
-        ResourceSystem.API_MODE = true;
-
         Resource resource = new Resource("E:/work/sample/bubble.plan");
         RPlan plan = resource.loadResource(RPlan.class);
         Revision revision = new Revision(0x132);
