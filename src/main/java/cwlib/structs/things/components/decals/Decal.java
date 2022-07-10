@@ -75,6 +75,9 @@ public class Decal implements Serializable {
         decal.yvecu = serializer.f32(decal.yvecu);
         decal.yvecv = serializer.f32(decal.yvecv);
 
+        if (version >= 0x14e && version < 0x25c) 
+            serializer.i32(0); // u32 color
+
         if (version >= 0x260)
             decal.color = serializer.i16(decal.color);
         
