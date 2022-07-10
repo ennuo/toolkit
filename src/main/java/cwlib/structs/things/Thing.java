@@ -113,7 +113,7 @@ public class Thing implements Serializable {
 
                 if (this.parts[index] != null) {
                     // Offset due to PCreatorAnim
-                    if (subVersion < 0x107 && index > 0x3e) index++; 
+                    if (subVersion < 0x107 && index > 0x28) index++; 
 
                     flags |= (1l << index);
 
