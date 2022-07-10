@@ -56,7 +56,7 @@ public class ScriptObject implements Serializable {
                 if (serializer.isWriting()) type = descriptor.getType();
                 type = serializer.enum32(type);
 
-                object.value = serializer.resource(descriptor, type);
+                object.value = (type == ResourceType.INVALID) ? null : serializer.resource(descriptor, type);
 
                 break;
             }
