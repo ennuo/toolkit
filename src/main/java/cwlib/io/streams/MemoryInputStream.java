@@ -271,11 +271,27 @@ public class MemoryInputStream {
 
     /**
      * Reads a 16 bit floating point number from the stream.
+     * https://stackoverflow.com/questions/6162651/half-precision-floating-point-in-java
      * @return Float read from the stream
      */
     public final float f16() {
-        short half = this.i16();
-        return Float.intBitsToFloat(((half & 0x8000) << 16) | (((half & 0x7c00) + 0x1C000) << 13) | ((half & 0x03FF) << 13));
+        int half = this.u16();
+        int mant = half & 0x03ff;
+        int exp = half & 0x7c00;
+        if (exp == 0x7c00) exp = 0x3fc00;
+        else if (exp != 0) {
+            exp += 0x1c000;
+            if (mant == 0 && exp > 0x1c400)
+                return Float.intBitsToFloat((half & 0x8000) << 16 | exp << 13 | 0x3ff);
+        } else if (mant != 0) {
+            exp = 0x1c400;
+            do {
+                mant <<= 1;
+                exp -= 0x400;
+            } while ((mant & 0x400) != 0);
+            mant &= 0x3ff;
+        }
+        return Float.intBitsToFloat((half & 0x8000) << 16 | (exp | mant) << 13);
     }
 
     /**

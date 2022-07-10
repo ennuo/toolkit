@@ -370,6 +370,19 @@ public class Serializer {
     }
 
     /**
+     * (De)serializes a 16-bit floating point number to/from the stream.
+     * @param value Float to write
+     * @return Float (de)serialized
+     */
+    public final float f16(float value) {
+        if (this.isWriting) {
+            this.output.f16(value);
+            return value;
+        }
+        return this.input.f16();
+    }
+
+    /**
      * (De)serializes a 32-bit floating point number to/from the stream.
      * @param value Float to write
      * @return Float (de)serialized

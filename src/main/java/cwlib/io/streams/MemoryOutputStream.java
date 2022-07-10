@@ -282,6 +282,34 @@ public class MemoryOutputStream {
             this.i64(value);
         return this;
     }
+    
+    /**
+     * Writes a 16 bit floating point number to the stream.
+     * https://stackoverflow.com/questions/6162651/half-precision-floating-point-in-java
+     * @param value Float to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream f16(float value) {
+        int fbits = Float.floatToIntBits(value);
+        int sign = fbits >>> 16 & 0x8000;
+        int val = (fbits & 0x7fffffff) + 0x1000;
+
+        if (val >= 0x47800000) {
+            if ((fbits & 0x7fffffff) >= 0x47800000) {
+                if (val < 0x7f800000)
+                    return this.u16(sign | 0x7c00);
+                return this.u16(sign | 0x7c00 | (fbits & 0x007fffff) >>> 13);
+            }
+            return this.u16(sign | 0x7bff);
+        }
+
+        if (val >= 0x38800000)
+            return this.u16(sign | val - 0x38000000 >>> 13);
+        if (val < 0x33000000)
+            return this.u16(sign);
+        val = (fbits & 0x7fffffff) >>> 23;
+        return this.u16(sign | ((fbits & 0x7fffff | 0x800000) + (0x800000 >>> val - 102) >>> 126 - val));
+    }
 
     /**
      * Writes a 32 bit floating point number to the stream.
