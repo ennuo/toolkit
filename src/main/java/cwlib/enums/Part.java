@@ -161,17 +161,16 @@ public enum Part {
             return false;
         if ((head & 0xFFFF) >= 0x18c && this == Part.PARTICLE_EMITTER_2)
             return false;
-
+        if ((head >> 0x10) >= 0x107 && this == Part.CREATOR_ANIM)
+            return false;
+        
         int index = this.index;
-        if ((head >> 0x10) >= 0x107) {
-            if (this == Part.CREATOR_ANIM) return false;
-        }
-        else if (version >= PartHistory.CREATOR_ANIM) {
+        if (version >= PartHistory.CREATOR_ANIM) {
             if (this == Part.CREATOR_ANIM)
                 return ((1L << 0x29) & flags) != 0;
-            index++;
+            if (index > 0x28) index++;
         }
-
+        
         return version >= this.version
             && ((1L << index) & flags) != 0;
     }
