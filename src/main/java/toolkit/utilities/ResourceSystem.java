@@ -53,6 +53,7 @@ public class ResourceSystem {
 
     public static boolean DISABLE_LOGS = false;
     public static boolean GUI_MODE = false;
+    public static int LOG_LEVEL = 0;
 
     private static File workingDirectory;
     static {

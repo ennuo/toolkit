@@ -23,6 +23,7 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.util.Bytes;
+import toolkit.utilities.ResourceSystem;
 
 /**
  * Reversible serializer for assets, also handles
@@ -943,10 +944,17 @@ public class Serializer {
     }
 
     public void log(String message) {
+        this.log(message, 0);
+    }
+
+    public void log(String message, int level) {
+        if (ResourceSystem.DISABLE_LOGS) return;
+        if (level < ResourceSystem.LOG_LEVEL) return;
         if (this.isWriting) {
             System.out.println("[WRITING] @ 0x" + Bytes.toHex(Bytes.toBytesBE(this.getOffset())) + " -> " + message);
         } else
         System.out.println("[READING] @ 0x" + Bytes.toHex(Bytes.toBytesBE(this.getOffset())) + " -> " + message);
+
     }
 
     /**

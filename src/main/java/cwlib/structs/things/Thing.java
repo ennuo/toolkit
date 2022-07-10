@@ -12,6 +12,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PJoint;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
+import toolkit.utilities.ResourceSystem;
 
 /**
  * Represents an object in the game world.
@@ -125,7 +126,7 @@ public class Thing implements Serializable {
 
         partsRevision = serializer.s32(partsRevision);
         if (isCompressed) {
-            serializer.log("FLAGS");
+            // serializer.log("FLAGS");
             flags = serializer.i64(flags);
         }
 
@@ -133,7 +134,8 @@ public class Thing implements Serializable {
         if (version == 0x13c) partsRevision += 7;
         
         Part[] parts = Part.fromFlags(revision.getHead(), flags, partsRevision);
-        System.out.println(Arrays.toString(parts));
+        if (!ResourceSystem.DISABLE_LOGS)
+            serializer.log(Arrays.toString(parts));
 
         for (Part part : parts) {
             serializer.log(part.name() + " [START]");

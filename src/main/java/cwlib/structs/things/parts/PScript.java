@@ -42,6 +42,9 @@ public class PScript implements Serializable {
                 reflectDivergent = serializer.bool(reflectDivergent);
             FieldLayoutDetails[] fields = script.instanceLayout.getFieldsForReflection(reflectDivergent);
             boolean writing = serializer.isWriting();
+
+
+            serializer.log(Arrays.toString(fields));
             for (FieldLayoutDetails field : fields) {
                 if (0x198 < version && version < 0x19d) serializer.u8(0);
                 serializer.log(field.name + " " + field.machineType);
