@@ -24,26 +24,43 @@ public class RAnimation implements Serializable, Compressable {
 
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
-    private AnimBone[] bones;
+    public AnimBone[] bones;
 
-    private short numFrames, fps, loopStart;
-    private byte morphCount;
+    public short numFrames = 19, fps = 30, loopStart = 0;
+    public byte morphCount;
 
-    private byte[] rotBonesAnimated;
-    private byte[] posBonesAnimated;
-    private byte[] scaledBonesAnimated;
-    private byte[] morphsAnimated;
+    public byte[] rotBonesAnimated;
+    public byte[] posBonesAnimated;
+    public byte[] scaledBonesAnimated;
+    public byte[] morphsAnimated;
 
-    private Vector4f posOffset, posScale;
-    private boolean fat;
+    public Vector4f posOffset = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f), posScale = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+    public boolean fat; // if fat, each element is 4 bytes, otherwise 2 bytes, probably just alignment?
 
-    private Vector4f[] packedRotation;
-    private Vector4f[] packedPosition;
-    private Vector4f[] packedScale;
-    private float[] packedMorph;
+    public Vector4f[] packedRotation;
+    public Vector4f[] packedPosition;
+    public Vector4f[] packedScale;
+    public float[] packedMorph;
 
-    private Locator[] locators;
+    public Locator[] locators;
 
+    public static int calculateAnimationHash(String value) {
+        long animHash = 0, offset = 0;
+
+        if (value.contains(" R ")) {
+            offset = 3;
+            value = value.replace(" R ", "");
+        } else if (value.contains(" L ")) {
+            offset = 2;
+            value = value.replace(" L ", "");
+        }
+
+        for (char c : value.toCharArray())
+            animHash = ((long)c) + animHash * 0x1003fl;
+        
+        return (int) (((animHash * 4l) & 0xFFFFFFFFl) + offset);
+    }
+    
     @SuppressWarnings("unchecked")
     @Override public RAnimation serialize(Serializer serializer, Serializable structure) {
         RAnimation anim = (structure == null) ? new RAnimation() : (RAnimation) structure;
@@ -115,8 +132,68 @@ public class RAnimation implements Serializable, Compressable {
         anim.morphCount = serializer.i8(anim.morphCount);
 
         if (isWriting) {
-            // TODO: Generate anim data buffer
-            throw new SerializationException("RAnimation >=0x378 writing not supported!");
+            MemoryOutputStream stream = new MemoryOutputStream(0x8000);
+            for (AnimBone bone : this.bones) {
+                stream.i32(bone.animHash);
+                stream.u8(bone.parent);
+                stream.u8(bone.firstChild);
+                stream.u8(bone.nextSibling);
+                stream.u8(0); // Padding
+            }
+
+            for (byte bone : this.rotBonesAnimated) stream.i8(bone);
+            for (byte bone : this.posBonesAnimated) stream.i8(bone);
+            for (byte bone : this.scaledBonesAnimated) stream.i8(bone);
+            for (byte bone : this.morphsAnimated) stream.i8(bone);
+
+            if ((stream.getOffset() % 2) != 0) stream.u8(0);
+
+            for (Vector4f rotation : this.packedRotation) {
+                stream.i16((short) (Math.round(rotation.x * 0x7fff)));
+                stream.i16((short) (Math.round(rotation.y * 0x7fff)));
+                stream.i16((short) (Math.round(rotation.z * 0x7fff)));
+            }
+
+            for (Vector4f position : this.packedPosition) {
+                stream.f16(position.x);
+                stream.f16(position.y);
+                stream.f16(position.z);
+            }
+
+            for (Vector4f scale : this.packedScale) {
+                stream.f16(scale.x);
+                stream.f16(scale.y);
+                stream.f16(scale.z);
+            }
+
+            for (float morph : this.packedMorph) stream.f16(morph);
+
+            while (stream.getOffset() % 16 != 0) stream.u8(0);
+
+            stream.shrink();
+
+            byte[] animData = stream.getBuffer();
+            stream = serializer.getOutput();
+
+            stream.u8(this.bones.length);
+            stream.u8(this.rotBonesAnimated.length);
+            stream.u8(this.posBonesAnimated.length);
+            stream.u8(this.scaledBonesAnimated.length);
+            stream.u8(this.morphsAnimated.length);
+            stream.u16(0); // locatorKeys
+
+            if (version > 0x38b) {
+                stream.v4(anim.posOffset);
+                stream.v4(anim.posScale);
+                if (version > 0x3b1)
+                    stream.bool(anim.fat);
+            }
+
+            stream.bytearray(animData);
+
+            serializer.array(anim.locators, Locator.class);
+
+            return anim;
         }
 
         MemoryInputStream stream = serializer.getInput();
@@ -137,13 +214,17 @@ public class RAnimation implements Serializable, Compressable {
 
         byte[] animData = stream.bytearray();
 
+        System.out.println("Length: " + animData.length);
+
         anim.locators = serializer.array(anim.locators, Locator.class);
 
         stream = new MemoryInputStream(animData);
 
         anim.bones = new AnimBone[boneCount];
-        for (int i = 0; i < boneCount; ++i)
-            anim.bones[i] = new AnimBone(stream.i32(), stream.u8(), stream.u8(), stream.u8());
+        for (int i = 0; i < boneCount; ++i) {
+            anim.bones[i] = new AnimBone(stream.i32(), stream.i8(), stream.i8(), stream.i8());
+            stream.i8(); 
+        }
 
         anim.rotBonesAnimated = new byte[rotAnims];
         anim.posBonesAnimated = new byte[posAnims];
@@ -157,10 +238,14 @@ public class RAnimation implements Serializable, Compressable {
 
         if (stream.getOffset() % 2 != 0) stream.i8(); // Alignment
 
+        if (locatorKeys != 0) throw new SerializationException("locator keys just aint it!");
+
         anim.packedRotation = new Vector4f[boneCount + (rotAnims * (anim.numFrames - 1))];
         anim.packedPosition = new Vector4f[boneCount + (posAnims * (anim.numFrames - 1))];
         anim.packedScale = new Vector4f[boneCount + (scaleAnims * (anim.numFrames - 1))];
         anim.packedMorph = new float[morphCount + (morphAnims * (anim.numFrames - 1))];
+
+        System.out.println("Rotation Buffer Start: " + stream.getOffset());
 
         for (int i = 0; i < anim.packedRotation.length; ++i) {
             float x = ((float) stream.i16()) / 0x7FFF;
@@ -171,16 +256,21 @@ public class RAnimation implements Serializable, Compressable {
             anim.packedRotation[i] = new Vector4f(x, y, z, w);
         }
 
+        System.out.println("Position Buffer Start: " + stream.getOffset());
+
         for (int i = 0; i < anim.packedPosition.length; ++i)
             anim.packedPosition[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
+
+        System.out.println("Scale Buffer Start: " + stream.getOffset());
 
         for (int i = 0; i < anim.packedScale.length; ++i)
             anim.packedScale[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
 
+        System.out.println("Morph Start: " + stream.getOffset());
         for (int i = 0; i < anim.packedMorph.length; ++i)
             anim.packedMorph[i] = stream.f16();
 
-        // TODO: What do locator keys look like, are they just another array of locators?
+        System.out.println(stream.getOffset());
 
         return anim;
     }
@@ -196,7 +286,7 @@ public class RAnimation implements Serializable, Compressable {
         return weights;
     }
 
-    private int getBoneIndex(int animHash) {
+    public int getBoneIndex(int animHash) {
         for (int i = 0; i < this.bones.length; ++i) {
             AnimBone bone = this.bones[i];
             if (bone.animHash == animHash)
