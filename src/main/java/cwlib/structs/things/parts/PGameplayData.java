@@ -31,7 +31,7 @@ public class PGameplayData implements Serializable {
         data.eggLink = serializer.reference(data.eggLink, EggLink.class);
         data.keyLink = serializer.reference(data.keyLink, SlotID.class);
 
-        if (subVersion <= 0xed && version >= 0x2da)
+        if (subVersion <= 0xed && version >= 0x2d1)
             data.gameplayType = serializer.enum32(data.gameplayType);
 
         if (subVersion >= 0xf3) {
