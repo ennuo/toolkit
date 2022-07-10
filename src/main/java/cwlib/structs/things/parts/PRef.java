@@ -26,7 +26,7 @@ public class PRef implements Serializable {
         if (version < 0x160)
             ref.thing = serializer.struct(ref.thing, GlobalThingDescriptor.class);
         else
-            ref.plan = serializer.resource(ref.plan, ResourceType.PLAN, true);
+            ref.plan = serializer.resource(ref.plan, ResourceType.PLAN, true, false);
         
         ref.oldLifetime = serializer.i32(ref.oldLifetime);
         if (version >= 0x1c9)
