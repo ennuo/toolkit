@@ -67,12 +67,12 @@ public class PJoint implements Serializable {
         joint.strength = serializer.f32(joint.strength);
 
         if (version < 0x18d)
-            joint.stiff = 
-                serializer.f32(joint.stiff ? 1.0f : 0.0f) != 1.0f;
-        else
+            serializer.f32(0); // Unknown
+        else {
             joint.stiff = serializer.bool(joint.stiff);
+            joint.slideDir = serializer.v3(joint.slideDir);
+        }
 
-        joint.slideDir = serializer.v3(joint.slideDir);
         joint.animationPattern = serializer.i32(joint.animationPattern);
         joint.animationRange = serializer.f32(joint.animationRange);
         joint.animationTime = serializer.f32(joint.animationTime);
