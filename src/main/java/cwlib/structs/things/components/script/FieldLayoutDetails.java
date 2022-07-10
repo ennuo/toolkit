@@ -57,4 +57,8 @@ public class FieldLayoutDetails implements Serializable {
         if (this.name != null) size += (this.name.length());
         return size;
     }
+
+    @Override public String toString() {
+        return String.format("%s %s %s", this.modifiers, this.machineType, this.name);
+    }
 }

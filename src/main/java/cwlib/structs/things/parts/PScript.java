@@ -1,5 +1,7 @@
 package cwlib.structs.things.parts;
 
+import java.util.Arrays;
+
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -24,6 +26,9 @@ public class PScript implements Serializable {
         PScript script = (structure == null) ? new PScript() : (PScript) structure;
 
         int version = serializer.getRevision().getVersion();
+
+        if (0x179 < version && version < 0x1a1)
+            serializer.bool(false); // unknown
 
         script.script = serializer.resource(script.script, ResourceType.SCRIPT);
 
