@@ -296,7 +296,10 @@ public class Resource {
 
         Revision revision = data.getRevision();
         int head = revision.getHead();
-        boolean isCompressed = false;
+
+        boolean isCompressed = head < 0x189;
+        isCompressed = preferCompressed;
+
         stream.i32(head);
         if (head >= 0x109 || isStaticMesh) {
             stream.i32(0); // Dummy value for dependency table offset.
@@ -316,7 +319,7 @@ public class Resource {
                 new Serializer(stream, revision).struct(data.getStaticMeshInfo(), StaticMeshInfo.class);
         }
 
-        if (isCompressed || preferCompressed || head < 0x189)
+        if (isCompressed || head < 0x189)
             buffer = Compressor.getCompressedStream(buffer, isCompressed);
         
         // Tell the game there are no streams in the zlib data,
