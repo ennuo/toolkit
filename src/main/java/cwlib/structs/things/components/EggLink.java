@@ -14,7 +14,8 @@ public class EggLink implements Serializable {
 
     public ResourceDescriptor plan;
     public boolean shareable = true;
-    
+    public ResourceDescriptor painting;
+
     @SuppressWarnings("unchecked")
     @Override public EggLink serialize(Serializer serializer, Serializable structure) {
         EggLink link = (structure == null) ? new EggLink() : (EggLink) structure;
@@ -36,6 +37,14 @@ public class EggLink implements Serializable {
         
         if (version > 0x23b)
             link.shareable = serializer.bool(link.shareable);
+
+        boolean hasPainting = false;
+        if (version > 0x3e0) {
+            if (serializer.isWriting()) hasPainting = link.painting != null;
+            hasPainting = serializer.bool(hasPainting);
+        }
+        if (hasPainting)
+            link.painting = serializer.resource(link.painting, ResourceType.PAINTING, true);
         
         return link;
     }
