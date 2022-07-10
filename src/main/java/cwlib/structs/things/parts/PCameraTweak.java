@@ -7,6 +7,8 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class PCameraTweak implements Serializable {
+    public static boolean ENABLE_IMPROPER_LOADING = false;
+
     public Vector3f pitchAngle;
     public Vector4f targetBox, triggerBox;
     public float zoomDistance, positionFactor;
@@ -32,18 +34,19 @@ public class PCameraTweak implements Serializable {
         if (version > 0x1f4)
             tweak.photoBoothTimerLength = serializer.i32(tweak.photoBoothTimerLength);
 
-        // some 0x13d levels somehow don't serialize this,
+        // some 0x13d and 0x176 levels somehow don't serialize this,
         // if a level at that revision crashes,
         // it might be this
-        if (version == 0x13d && !serializer.isWriting()) 
-            serializer.log("ADD CAMERA TYPE HERE", 1);
-        System.exit(1);
+        if (ENABLE_IMPROPER_LOADING && (version == 0x13d || version == 0x176)) {
+            if (!serializer.isWriting())
+                serializer.log("ADD CAMERA TYPE HERE", 1);
+        } else {
+            if (version < 0x1d7) 
+                tweak.cameraType = serializer.u8(tweak.cameraType);
+            else
+                tweak.cameraType = serializer.s32(tweak.cameraType);
+        }
         
-        // 0x179
-        if (version < 0x1d7) 
-            tweak.cameraType = serializer.u8(tweak.cameraType);
-        else
-            tweak.cameraType = serializer.s32(tweak.cameraType);
 
         if (version > 0x196 && version < 0x2c4)
             tweak.activationLimit = serializer.f32(tweak.activationLimit);
