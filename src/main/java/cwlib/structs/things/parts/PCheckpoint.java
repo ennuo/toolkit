@@ -41,9 +41,6 @@ public class PCheckpoint implements Serializable {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
-
-        if (version < 0x1f3)
-            throw new SerializationException("PCheckpoint revisions below r499 are not supported!");
         
         if (subVersion < 0x102) checkpoint.activeFlags = serializer.i8(checkpoint.activeFlags);
         else {
@@ -54,6 +51,11 @@ public class PCheckpoint implements Serializable {
         }
 
         checkpoint.activationFrame = serializer.i32(checkpoint.activationFrame);
+
+        if (version < 0x1f3) {
+            serializer.reference(null, Thing.class);
+            serializer.i32(0);
+        }
 
         if (version >= 0x1a7)
             checkpoint.spawnsLeft = serializer.s32(checkpoint.spawnsLeft);
