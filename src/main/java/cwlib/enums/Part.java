@@ -42,7 +42,7 @@ public enum Part {
     EMITTER(0x14, PartHistory.EMITTER, null),
     REF(0x15, PartHistory.REF, PRef.class),
     METADATA(0x16, PartHistory.METADATA, PMetadata.class),
-    COSTUME(0x17, PartHistory.COSTUME, null),
+    COSTUME(0x17, PartHistory.COSTUME, PCostume.class),
     @Deprecated PARTICLE_EMITTER_2(0x3d, PartHistory.PARTICLE_EMITTER_2, null),
     CAMERA_TWEAK(0x18, PartHistory.CAMERA_TWEAK, null),
     SWITCH(0x19, PartHistory.SWITCH, null),
