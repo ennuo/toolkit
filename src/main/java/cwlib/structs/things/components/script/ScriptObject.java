@@ -72,6 +72,8 @@ public class ScriptObject implements Serializable {
             default: throw new SerializationException("Unhandled script object type in field member reflection!");
         }
 
+        serializer.setPointer(reference, object.value);
+        
         return object;
     }
     
