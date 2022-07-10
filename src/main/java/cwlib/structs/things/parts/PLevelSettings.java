@@ -19,10 +19,6 @@ public class PLevelSettings extends LevelSettings {
     public int backgroundRepeatFlags;
     public float backgroundSkyHeight;
 
-    public PLevelSettings() {
-        this.presets.add(new LevelSettings());
-    }
-
     @SuppressWarnings("unchecked")
     @Override public PLevelSettings serialize(Serializer serializer, Serializable structure) {
         PLevelSettings settings = (structure == null) ? new PLevelSettings() : (PLevelSettings) structure;

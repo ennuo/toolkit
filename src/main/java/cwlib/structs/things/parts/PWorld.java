@@ -34,14 +34,14 @@ public class PWorld implements Serializable {
     public EditorSelection[] selections;
     public Thing backdrop, backdropNew;
     public float backdropTimer;
-    public int lbp2NightDaySwapped;
+    public int lbp2NightDaySwapped = 1;
     public boolean isPaused;
-    public float lightingFactor, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
+    public float lightingFactor = 1.0f, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
     public EggLink[] completeRewards, collectRewards, aceRewards;
-    public boolean areRewardsShareable;
+    public boolean areRewardsShareable = true;
     public SlotID scoreboardLevelLinkSlot;
     public KeyLink[] completeUnlocks, collectUnlocks, aceUnlocks;
-    public int deathCount, maxNumPlayers;
+    public int deathCount, maxNumPlayers = 1;
     public Thing[] dissolvingThings, oldDissolvingThings;
     public boolean isTutorialLevel, everSpawned;
     public int spawnFailureCount;

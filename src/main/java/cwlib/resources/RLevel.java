@@ -59,7 +59,7 @@ public class RLevel implements Serializable, Compressable {
         PScript script = new PScript();
         script.script = new ResourceDescriptor(19744, ResourceType.SCRIPT);
 
-        // thing.setPart(Part.SCRIPT, script);
+        thing.setPart(Part.SCRIPT, script);
         thing.setPart(Part.GAMEPLAY_DATA, new PGameplayData());
 
 

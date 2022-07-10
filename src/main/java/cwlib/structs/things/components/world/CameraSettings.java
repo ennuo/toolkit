@@ -7,7 +7,9 @@ public class CameraSettings implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 
     public float defaultZoomMultiplier = 1, maximumZoomMultiplier = 1, zoomDelayMultiplier = 1, zoomSpeedMultiplier = 1;
-    
+    public float defaultPitchMultiplier = 0.254098f, maximumPitchMultiplier = 0.254098f;
+
+
     @SuppressWarnings("unchecked")
     @Override public CameraSettings serialize(Serializer serializer, Serializable structure) {
         CameraSettings settings = (structure == null) ? new CameraSettings() : (CameraSettings) structure;

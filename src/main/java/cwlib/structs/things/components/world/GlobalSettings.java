@@ -6,7 +6,7 @@ import cwlib.io.serializer.Serializer;
 public class GlobalSettings implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x14;
 
-    public float lightingFactor, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
+    public float lightingFactor = 1.0f, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
     
     @SuppressWarnings("unchecked")
     @Override public GlobalSettings serialize(Serializer serializer, Serializable structure) {
