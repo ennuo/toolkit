@@ -20,7 +20,7 @@ public class PCostume implements Serializable {
     public Primitive[] primitives;
     public byte creatureFilter;
     public CostumePiece[] costumePieces;
-    public CostumePiece temporaryCostumePiece;
+    public CostumePiece[] temporaryCostumePiece;
 
     @SuppressWarnings("unchecked")
     @Override public PCostume serialize(Serializer serializer, Serializable structure) {
@@ -44,9 +44,8 @@ public class PCostume implements Serializable {
 
         costume.costumePieces = serializer.array(costume.costumePieces, CostumePiece.class);
 
-        if (version >= 0x2c5 || revision.has(Branch.LEERDAMMER, Revisions.LD_TEMP_COSTUME)) {
-            // temp costume
-        }
+        if (version >= 0x2c5 || revision.has(Branch.LEERDAMMER, Revisions.LD_TEMP_COSTUME))
+            costume.temporaryCostumePiece = serializer.array(costume.temporaryCostumePiece, CostumePiece.class);
 
         return costume;
     }
