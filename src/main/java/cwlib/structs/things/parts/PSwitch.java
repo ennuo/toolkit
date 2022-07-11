@@ -155,7 +155,7 @@ public class PSwitch implements Serializable {
 
         if (version > 0x243) sw.bulletsRequired = serializer.s32(sw.bulletsRequired);
         if (version == 0x244) serializer.i32(0); // ???
-        if (version > 0x244) sw.bulletsRequired = serializer.s32(sw.bulletsDetected);
+        if (version > 0x244) sw.bulletsDetected = serializer.s32(sw.bulletsDetected);
         if (version > 0x245 && version < 0x398) 
             sw.bulletPlayerNumber = serializer.i32(sw.bulletPlayerNumber);
         if (version > 0x248)
