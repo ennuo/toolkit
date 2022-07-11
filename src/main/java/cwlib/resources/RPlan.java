@@ -102,6 +102,7 @@ public class RPlan implements Compressable, Serializable {
         return size;
     }
 
+    public SerializationData build() { return this.build(this.revision, this.compressionFlags); }
     @Override public SerializationData build(Revision revision, byte compressionFlags) {
         Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
         serializer.struct(this, RPlan.class);
@@ -124,5 +125,20 @@ public class RPlan implements Compressable, Serializable {
     public Thing[] getThings() {
         Serializer serializer = new Serializer(this.thingData, this.revision, this.compressionFlags);
         return serializer.array(null, Thing.class, true);
+    }
+
+    /**
+     * Sets the ThingData buffer from an array of things,
+     * serializer uses RPlan's current revision and compressionFlags.
+     * @param things Thing array to set
+     */
+    public void setThings(Thing[] things) {
+        Serializer serializer = new Serializer(0x8000, this.revision, this.compressionFlags);
+        serializer.array(things, Thing.class, true);
+        this.thingData = serializer.getBuffer();
+        ResourceDescriptor[] dependencies = serializer.getDependencies();
+        this.dependencyCache.clear();
+        for (ResourceDescriptor dependency : dependencies)
+            this.dependencyCache.add(dependency);
     }
 }
