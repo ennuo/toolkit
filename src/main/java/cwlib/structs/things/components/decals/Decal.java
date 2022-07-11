@@ -16,50 +16,50 @@ public class Decal implements Serializable {
     /**
      * The texture used for this decal.
      */
-    private ResourceDescriptor texture;
+    public ResourceDescriptor texture;
 
     /**
      * Coordinates of decal on UV map.
      */
-    private float u, v;
+    public float u, v;
 
     /**
      * Rect of decal on UV map.
      */
-    private float xvecu, xvecv, yvecu, yvecv;
+    public float xvecu, xvecv, yvecu, yvecv;
 
     /**
      * Color tint of this decal (RGB565).
      */
-    private short color;
+    public short color;
 
     /**
      * Type of decal
      */
-    private DecalType type = DecalType.STICKER;
+    public DecalType type = DecalType.STICKER;
 
     /* No idea what this is actually used for, probably a reference to the thing containing the PMetaData for this sticker? */
-    private short metadataIndex, numMetadata;
+    public short metadataIndex, numMetadata;
 
     /**
      * Player that placed this decal.
      */
-    private short placedBy;
+    public short placedBy;
 
     /**
      * Number of frames that have passed in play mode.
      */
-    private int playModeFrame;
+    public int playModeFrame;
 
     /**
      * If this decal has a scorch mark on it.
      */
-    private boolean scorchMark;
+    public boolean scorchMark;
 
     /**
      * The plan that this decal came from.
      */
-    private ResourceDescriptor plan;
+    public ResourceDescriptor plan;
 
     @SuppressWarnings("unchecked")
     @Override public Decal serialize(Serializer serializer, Serializable structure) {
