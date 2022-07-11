@@ -4,81 +4,330 @@ public class Revisions {
     // Base revisions
 
     public static final int DEPENDENCIES = 0x109; // Added self describing depenency table to resources
+    // 0x129, added lockStates to RLocalProfile
+    // 0x12a
+    // 0x12b
+    // 0x12c
+    // 0x12d
+    // 0x12e
+    // 0x12f
+    // 0x130
+    // 0x131
+    // 0x132
+    // 0x133
     public static final int SLOT_GROUPS = 0x134; // Added primaryLinkGroup to Slot
+    // 0x134
+    // 0x135, removed unknown int from Poppet
+    // 0x136
+    // 0x137
+    public static final int LIGHTING_RIM_COLOR_2 = 0x138; // Added rimColor2 to PLevelSettings
+    // 0x139
+    // 0x13a
     public static final int SLOT_AUTHOR_NAME = 0x13b; // Added authorName to Slot
     public static final int CLEANUP_CLEANUP_EVERYBODY_EVERYWHERE = 0x13c; // removed PPaint, PParticleClump, PParticleEmitter, PKeyframedPosition, PCameraZone, PCamera, and PTriggerEffector, fucked around and removed half of RMaterial
     public static final int REF_STRIP_CHILDREN = 0x13d; // Added stripChildren to PRef
+    public static final int EMITTER_EMIT_COUNT = 0x13f; // Add currentEmitted to PEmitter
+    public static final int SWITCH_STICKER_PLAN = 0x140; // Add stickerPlan to PSwitch
+    // 0x141
+    // 0x142
+    // 0x143
+    public static final int EMITTER_FLIP = 0x144; // added emitFlip to PEmitter
+    public static final int SCRIPT_FISH_TYPE = 0x145; // added fishType to FieldLayoutDetails in PScript
+    // 0x146
+    public static final int BODY_FROZEN_MODE = 0x147; // replaced frozen boolean with frozen mode in PBody
+    public static final int REMOVE_PRIMITIVE_GMAT = 0x149; // removed alternate gfx material from Primitive
     public static final int WORLD_IS_PAUSED = 0x14a; // Added isPaused to PWorld
-    public static final int WORLD_COLOR_CORRECTION = 0x152; // Added lighting and color correction factor to PWorld
-    public static final int EGGLINK_DETAILS = 0x160; // Reference CInventoryItemDetails in CEggLink for item details
+    // 0x14b removes some array from PWorld
+    // 0x14c
+    // 0x14d
+    public static final int DECAL_U32_COLOR = 0x14e; // added color to decal
     public static final int DETAILS_SOUND_GUID = 0x14f; // highlightSound uses GUID instead of string in InventoryItemDetails
+    public static final int PROFILE_PLAYER_ID = 0x150; // added playerId to RLocalProfile
+    // 0x151
+    public static final int WORLD_COLOR_CORRECTION = 0x152; // Added lighting and color correction factor to PWorld
+    public static final int LIGHTING_PRESETS = 0x153; // Added presets to LevelSettings, also added unknown value to PLevelSettings that was removed in 0x15a (weight?)
+    // 0x154 added some struct to PLevelSettings, has vignetting and matrix stuff?
+    // 0x155 removed unknown field from PPos
+    // 0x156 removed struct added in 0x154
     public static final int DETAILS_COLOR = 0x157; // color added to InventoryItemDetails
     public static final int DECAL_METADATA = 0x158; // added type, metadataIdx, numMetadata to decal
+    public static final int UNIFED_TRANSLATION_TAG = 0x159; // use one translation tag instead of separate one for name/desc
+    // 0x152, removed unknown field added in 0x15a
     public static final int GFXMATERIAL_SOUND_ENUM = 0x15b; // Added soundEnum to RGfxMaterial
-    public static final int ADD_EYETOY_DATA = 0x15e; // Added EyetoyData
+    public static final int SHAPE_OLD_MATERIAL = 0x15c; // added oldMMaterial to PShape
+    public static final int EYETOY_DATA = 0x15d; // added eyetoydata
+    // 0x15e
+    public static final int METADATA_REFERENCABLE = 0x15f; // added referenceable to PMetadata
+    public static final int EGGLINK_DETAILS = 0x160; // Reference CInventoryItemDetails in CEggLink for item details
+    // 0x161
     public static final int DETAILS_EYETOY_DATA = 0x162; // eyetoyData added to InventoryItemDetails
+    // 0x163
+    // 0x164
     public static final int AUDIOWORLD_IS_LOCAL = 0x165; // Added isLocal to PAudioWorld
+    // 0x166
     public static final int MATERIAL_EXPLOSIONS = 0x167; // Added explosion and breakable fields to RMaterial
     public static final int MATERIAL_ANGULAR_EXPLOSIONS = 0x168; // Added explosionMaxAngVel to RMaterial
-    public static final int UNLOCKS_REWARDS = 0x16f; // Added unlocks and rewards to PWorld
+    // 0x169
+    public static final int JOINT_SOUND_ENUM = 0x16a; // added jointSoundEnum to PJoint
+    // 0x16b
+    // 0x16c
+    public static final int LOCAL_MOON_SLOTS = 0x16e; // added oldMyMoonSlots to RLocalProfile 
+    public static final int UNLOCKS_REWARDS = 0x16f; // Added unlocks and rewards to PWorld, and 3 unknown ints to PWorld
+    public static final int PLAYER_METRICS = 0x170; // added playerMetrics to RLocalProfile
+    // 0x171
+    // 0x172 Added unknown boolean to PRef, removed in 0x180
+    // 0x173
     public static final int DETAILS_SINGLE_TRANSLATION_TAG = 0x174; // replace nameTranslationTag/descTranslationTag with translationTag
+    // 0x175
+    public static final int PROFILE_EULA_AGREED = 0x176; // added eulaAgreed to RLocalProfile
     public static final int DETAILS_LEVEL_UNLOCK = 0x177; // add levelUnlockSlotID to InventoryItemDetails
+    // 0x178
     public static final int MESH_TEXTURE_ALTERNATIVES = 0x179; // textureAlternatives added to CPrimitive
+    // 0x17a, added unknown boolean to PScript, removed in 0x1a1
+    // 0x17b
+    // 0x17c
+    // 0x17d
+    public static final int PROFILE_LBP1_VIDEOS_PLAYED = 0x17e; // added lbp1VideosPlayed to RLocalProfile
+    // 0x17f
+    // 0x180, added unknown boolean and NetworkPlayerID to PRef, removed in 0x19e, removes field added in 0x172 
+    // 0x181
     public static final int DETAILS_PHOTO_DATA = 0x182; // photoData, copyright, and creator added to InventoryItemDetails
     public static final int SLOT_TRANSLATION_TAG = 0x183; // Added translationTag to slot
+    public static final int METRICS_MULTIPLAYER_GAMES = 0x184; // added multiplayerGamesCount to PlayerMetrics
+    // 0x185
+    // 0x186
+    // 0x187
+    // 0x188, removed unknown field from Slot
     public static final int COMPRESSED_RESOURCES = 0x189; // Added optional compressed field to resources
-    public static final int REMOVE_PARTICLE_CLUMP_2 = 0x18c; // Removed PParticleClump
+    // 0x18a
+    // 0x18b
+    public static final int REMOVE_PARTICLE_EMITTER_2 = 0x18c; // Removed PParticleEmitter2
+    public static final int JOINT_SLIDE_STIFFNESS = 0x18d; // added slideDir to PJoint, replaced stiff with a float
+    // 0x18e added creator, copyright to PGroup, removed(?) things
+    // 0x18f
+    // 0x190
+    // 0x191, switched guid_hash flags 0x1 = HASH, 0x2 = GUID
+    // 0x192
+    // 0x193
     public static final int YELLOWHEAD_ON_SCREEN_COUNTER = 0x194; // Added onScreenCounter to PYellowHead
     public static final int DETAILS_PRIMARY_INDEX = 0x195; // Added primaryIndex to InventoryItemDetails
     public static final int WORLD_FOG_FACTOR = 0x196; // Added fog/darkness settings to PWorld
     public static final int PLAN_DETAILS = 0x197; // Plan details added to RPlan, removed CInventoryItemDetails from EggLink, reference RPlan instead of CGlobalThingPtr, toolType added to InventoryItemDetails
     public static final int AUDIOWORLD_VISIBILITY = 0x198; // Add hideInPlayMode to PAudioWorld
+    // 0x199 added some unknown value to member variable reflection in PScript, removed in 0x19d
     public static final int COSTUME_ORIGINAL_PLAN = 0x19a; // added originalPlan to CostumePiece
     public static final int TRIGGER_HYSTERESIS = 0x19b; // add hysteresisMultplier and enabled to PTrigger
+    // 0x19c
+    public static final int SCRIPT_REFLECT_DIVERGENT = 0x19d; // added reflectDivergent to PScript, removed field added in 0x199
+    // 0x19e removed field added in 0x180, removed unknown thing list from PRef
     public static final int ENEMY_SNAP = 0x19f; // Add snapVertex to PEnemy
+    // 0x1a0
+    // 0x1a1 - added optional serialize indicator for instance layout in PScript, removed field added in 0x17a
+    public static final int PROFILE_AUDIO_SWITCHES = 0x1a2; // added voipMutedPlayers, voipChatPaused, and enableMusicInPlayMode to RLocalProfile
+    // 0x1a3
+    // 0x1a4 added CGameraCamera to PWorld, removed in 0x1d1, also removes a bunch of floats in PWorld, (related to cgamecamera?)
     public static final int DYNAMIC_SWITCHES = 0x1a5; // added type to PSwitch, switches now carry activation
+    // 0x1a5, removed unknown thing reference from PSwitch, as well as unknown boolean and s32
+    // 0x1a6, added joint array to Thing, removed in 0x1bc
     public static final int CHECKPOINT_SPAWNS_LEFT = 0x1a7; // added spawnsLeft to PCheckpoint
+    // 0x1a8
     public static final int ENEMY_ANIMATION = 0x1a9; // centerOffset, animThing, and animSpeed added to PEnemy
+    // 0x1aa
     public static final int DETAILS_USER_DETAILS = 0x1ab; // userCreatedDetails added to InventoryItemDetails
+    // 0x1ac added storyLevelCompletionCount and levelCompletionCount to PlayerMetrics
+    // 0x1ad added triggerByDestroy to PAudioWorld
+    // 0x1ae added unknown boolean to Slot, removed in 0x1b9, (old game progression state?)
+    // 0x1af
+    // 0x1b0, something with things in PGroup
     public static final int DETAILS_CREATION_HISTORY = 0x1b1; // added creationHistory to InventoryItemDetails
-    public static final int SLOT_PROGRESSION = 0x1b9; // added gameProgressionState to slot
+    // 0x1b2
+    // 0x1b3
+    // 0x1b4
+    // 0x1b5 added enableMusicInPod to RLocalProfile
+    // 0x1b6 added inventory collections/views to RLocalProfile
+    // 0x1b7 unknown floats added to PCameraTweak, removed in 0x1d2
+    // 0x1b8
+    public static final int SLOT_PROGRESSION = 0x1b9; // added gameProgressionState to slot, gameProgressionStatus to RLocalProfile, removed field added in 0x1ae
+    // 0x1ba
+    // 0x1bb
+    // 0x1bc, removed joints array in Thing
     public static final int SWITCHKEY_VISIBILITY = 0x1bd; // added hideInPlayMode to PSwitchKey
+    // 0x1be added unknown int to PWorld, removed in 0x213
+    // 0x1bf, removed 3 unknown ints added to PWorld in 0x16f
+    // 0x1c0
     public static final int DETAILS_USES = 0x1c1; // added numUses and lastUsed to InventoryItemDetails
     public static final int WORLD_DEATH_COUNT = 0x1c2; // Added deathCount to PWorld
+    // 0x1c3
     public static final int WORLD_MAX_PLAYERS = 0x1c4; // Added maxNumPlayers to PWorld
+    // 0x1c5
+    // 0x1c6, added maxSpawnsLeft to PCheckpoint
     public static final int THING_EMITTER = 0x1c7; // added emitter to thing
     public static final int EMITTER_MAX_EMITTED = 0x1c8; // Added maxEmittedAtOnce to PEmitter
     public static final int REF_ALIVE_FRAMES = 0x1c9; // Added oldAliveFrames to PRef
-    public static final int TRIGGER_ZLAYERS = 0x1d5; // added allZLayers to PTrigger
+    // 0x1ca playLadderPoints and gamesWithRandomPlayersCount added to PlayerMetrics
+    // 0x1cb
+    // 0x1cc
+    // 0x1cd
+    // 0x1ce, added emit offset related fields to PEmitter
+    // 0x1cf
+    // 0x1d0, added game progression explanation fields to RLocalProfile
+    // 0x1d1, removed CGameCamera from PWorld
+    // 0x1d2, removed 2 unknown floats from PCameraTweak added in 0x1b7
+    // 0x1d3, remove unknown boolean from RMaterial
+    // 0x1d4
+    public static final int TRIGGER_ZLAYERS = 0x1d5; // added allZLayers to PTrigger, removed unknown int from PTrigger
+    // 0x1d6
+    // 0x1d7, switch cameraType data type from u8 to u32
+    // 0x1d8
+    // 0x1d9
+    // 0x1da
     public static final int WORLD_DISSOLVING_THINGS = 0x1db; // Added dissolving things to PWorld
+    // 0x1dc
+    // 0x1dd
     public static final int WORLD_TUTORIAL_LEVEL = 0x1de; // added isTutorialLevel to PWorld
     public static final int SLOT_LEVEL_TYPE = 0x1df; // Added developerLevelType to slot
-    public static final int SCRIPT_MODIFIERS = 0x1e5; // Added modifiers to RScript
-    public static final int SHARED_SCRIPT_DATA = 0x1ec; // replace all inline script fields with shared pools, and dependingGUIDs in RScript
+    // 0x1e0
+    // 0x1e1, added avatarIcon to RLocalProfile
+    // 0x1e2
+    // 0x1e3
+    // 0x1e4, added tutorialLevelStates to RLocalProfile, videos to PlayedLevelData
+    public static final int SCRIPT_MODIFIERS = 0x1e5; // Added modifiers to RScript, lbp1MainMenuButtonUnlocks added? something might be wrong there
+    // 0x1e6, added lbp1CreateModeVOProgress to RLocalProfile
+    // 0x1e7
+    // 0x1e8
+    // 0x1e9
+    // 0x1ea, added stats to PlayerMetrics
+    // 0x1eb, added instanceInfiniteLives to PCheckpoint
+    public static final int SHARED_SCRIPT_DATA = 0x1ec; // replace all inline script fields with shared pools, and dependingGUIDs in RScript, removed fieldNameIdx from InstanceLayout
+    // 0x1ed
+    // 0x1ee
+    // 0x1ef
+    // 0x1f0
+    // 0x1f1
+    // 0x1f2
+    // 0x1f3, removed unknown thing and int in PCheckpoint, added spawningList and spawnDelay
+    // 0x1f4
+    // 0x1f5, added photoBoothTimerLength to PCameraTweak 
     public static final int RENDERMESH_PARENT_DISTANCE = 0x1f6; // added parentDistanceFront/Side to PRenderMesh
+    // 0x1f7
+    // 0x1f8, added levelsTaggedCount to PlayerMetrics
+    // 0x1f9
+    // 0x1fa, added lifeMultiplier to PCheckpoint
+    // 0x1fb, added connectorPos/Offset fields to PSwitch, removed in 0x327
+    // 0x1fc
+    // 0x1fd, removed world from Thing
+    // 0x1fe, added lastPlayedTimestamp to PlayedLevelData
+    // 0x1ff
+    // 0x200, added gamma and screenSize to RLocalProfile
+    // 0x201, added localHighScore to PlayedLevelData
+    // 0x202
+    // 0x203
+    // 0x204
     public static final int DETAILS_ALLOW_EMIT = 0x205; // add allowEmit flag to InventoryItemDetails
-    public static final int WORLD_SHAREABLE_REWARDS = 0x208; // added areRewardsShareable to PWorld
+    // 0x206, added lbp1VOPlayed to RLocalProfile
+    // 0x207
+    public static final int WORLD_SHAREABLE_REWARDS = 0x208; // added areRewardsShareable to PWorld, (added unknown boolean to EggLink, removed in 0x22a)
+    // 0x209
+    // 0x20a
+    // 0x20b
+    // 0x20c
+    // 0x20d
+    // 0x20e added copiedFromAnotherUser to RLocalProfile
+    // 0x20f
+    // 0x210
+    // 0x211
+    // 0x212
+    // 0x213, removed unknown value added to PWorld in 0x1be
     public static final int THING_CREATED_PLAYER = 0x214; // added createdBy and changedBy to thing, placedBy to decal
     public static final int DECAL_PLAYMODE_FRAME = 0x215; // added playmodeFrame to decal
+    // 0x216
+    // 0x217
+    // 0x218
     public static final int DECAL_SCORCH_MARK = 0x219; // add scrorchMark to decal
+    // 0x21a
     public static final int THING_STAMPING = 0x21b; // isStamping added to thing
+    // 0x21c
+    // 0x21d, tweakTargetMin/MaxLength to PJoint
+    // 0x21e
+    // 0x21f, added currentlyEditing to PJoint
+    // 0x220
+    // 0x221
     public static final int DETAILS_DATE_ADDED = 0x222; // add dateAdded to InventoryItemDetails
     public static final int DETAILS_SHAREABLE = 0x223; // add shareable flag to InventoryItemDetails
-    public static final int SHAPE_MASS_DEPTH = 0x226; // added massDepth to PShape
+    // 0x224, collidablePoppet added to PShape
+    // 0x225
+    // 0x226, added hideInPlayMode to PEmitter
+    public static final int SHAPE_MASS_DEPTH = 0x227; // added massDepth to PShape
+    // 0x228
+    // 0x229
+    // 0x22a, removed unknown value in EggLink that was added in 0x208
+    // 0x22b
+    // 0x22c, added editingPlayer to PBody
+    // 0x22d
     public static final int WORLD_SPAWN_FAILURE = 0x22e; // Added everSpawned and spawnFailureCount to PWorld
-    public static final int DETAILS_RELAYOUT_LBP1 = 0x234; // Re-arrange layout of InventoryItemDetails
+    // 0x22f, added flags to resource descriptor
+    // 0x230, added modScaleActive to PJoint and PEmitter
+    // 0x231,
+    // 0x232, removed unknown v2 from Poppet
+    // 0x233, details relayout lbp1? might actually be 0x234, need to double check
+    // 0x234, re-do network online id struct
     public static final int ITEM_FLAGS = 0x235; // Added UID, flags to InventoryItem, add back pad to InventoryItemDetails
+    // 0x236
+    // 0x237
     public static final int SLOT_DESCRIPTOR = 0x238; // Added shareable and backgroundGUID to Slot
     public static final int MESH_MINMAX_UV = 0x239; // Added min/maxUV and areaScaleFactor to RMesh
+    // 0x23a
+    // 0x23b, added subtitleMode to RLocalProfile
     public static final int EGGLINK_SHAREABLE = 0x23c; // Adds shareable field to CEggLink
-    public static final int MATERIAL_BULLET = 0x244; // Adds bullet ro RMaterial
+    // 0x23d, added saveIcon to RLocalProfile
+    // 0x23e, added angleRange and includeTouching to PSwitch
+    // 0x23f
+    // 0x240
+    // 0x241
+    // 0x242
+    // 0x243
+    public static final int MATERIAL_BULLET = 0x244; // Adds bullet to RMaterial, bulletsRequired to PSwitch, unknown field to PSwitch, removed in 0x245 (unsigned bullets detected?)
+    // 0x245, adds bulletsDetected to PSwitch, removes unknown field added in 0x244
+    // 0x246, added bulletPlayerNumber to PSwitch, removed in 0x398
+    // 0x247
+    // 0x248
+    // 0x249, added bulletRefreshTime to PSwitch
+    // 0x24a
+    // 0x24b, added hideConnectors to PSwitch, removed in 0x327
+    // 0x24c
+    // 0x24d
+    // 0x24e
+    // 0x24f
+    // 0x250
+    // 0x251
+    // 0x252, added plan descriptor, removed the revision after, then added again in 0x25e, or is this something else?
+    // 0x253
     public static final int THING_PLAN_GUID = 0x254; // Adds planGUID to thing
+    // 0x255,
+    // 0x256, added unknown value to RLocalProfile, removed in 0x351
+    // 0x257
     public static final int GENERATEDMESH_PLAN_GUID = 0x258; // Add planGUID to PGeneratedMesh
+    // 0x259
     public static final int WORLD_GLOBAL_SETTINGS = 0x25a; // Added global settings fields to PWorld
     public static final int PART_PLAN_GUIDS = 0x25b; // Plan GUIDs added to various parts
-    public static final int DECAL_COLOR = 0x260; // add packed color to decal
+    // 0x25c, removed u32 color from Decal
+    // 0x25d, added hideInPlayMode to PJoint
+    // 0x25e, added editable and planDescriptor to PGroup
+    // 0x25f, added unknown boolean to ObjectState, removed in 0x2bd 
+    public static final int DECAL_U16_COLOR = 0x260; // replace RGB32 color with RGB565 color in decal
+    // 0x261, added user settings to RLocalProfile
+    // 0x262, removed unknown setting from RLocalProfile
+    // 0x263, added tutorialPrizePlanList to RGame
+    // 0x264, added categoryID to DLCFile
     public static final int ENEMY_WALK_CONSTRAINT = 0x265; // newWalkConstraintMass added to PEnemy
+    // 0x266, dlcPackViewed/Shown added to RLocalProfile, levelHash and levelHasDLC added to PlayedLevelData, (levelHasDLC removed in 0x399)
     public static final int GROUP_EMITTER = 0x267; // emitter, lifetime, aliveFrames added to PGroup
+    // 0x268, fixedUpByDeveloper added to RLocalProfile
+    // 0x269, added discovered and unlocked to PlayedLevelData (both removed in 0x399), removed lockStates from RLocalProfile, changed play/completion/aced counts to u16 instead of u32
+    // 0x26a, added requireAll to PCameraTweak
+    // 0x26b, added levelStateAfterLastFinishedEditing to RGame
+    // 0x26c, added lastGridMoveFrame, lastGridRotateFrame, and lastGridScaleFrame to PoppetTweakObjectPlacement
+    // 0x26d, added demoProgressionStatus to RLocalProfile
     public static final int GROUP_PICKUP_ALL_MEMBERS = 0x26e; // added pickupAllMembers to PGroup
     public static final int WATER_LEVEL = 0x26f; // Addede waterLevel and targetWaterLevel to PWorld
     public static final int WATER_MAGNITUDE = 0x270; // Added water wave magnitude fields to PWorld
