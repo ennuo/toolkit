@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.EnemyPart;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
@@ -9,7 +10,7 @@ import org.joml.Vector3f;
 public class PEnemy implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
-    public int partType;
+    public EnemyPart partType = EnemyPart.LEG;
     public float radius;
     public int snapVertex;
     public Vector3f centerOffset;
@@ -27,7 +28,7 @@ public class PEnemy implements Serializable {
         int version = serializer.getRevision().getVersion();
 
         if (version >= 0x15d)
-            enemy.partType = serializer.s32(enemy.partType);
+            enemy.partType = serializer.enum32(enemy.partType, true);
 
         if (version > 0x15c && version < 0x19f)
             serializer.thing(null);

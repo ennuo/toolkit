@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.TriggerType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
@@ -7,7 +8,7 @@ import cwlib.structs.things.Thing;
 public class PTrigger implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
-    public byte triggerType;
+    public TriggerType triggerType = TriggerType.RADIUS;
     public Thing[] inThings;
     public float radiusMultiplier;
     public byte zRangeHundreds;
@@ -24,7 +25,7 @@ public class PTrigger implements Serializable {
         int version = serializer.getRevision().getVersion();
         int subVersion = serializer.getRevision().getSubVersion();
 
-        trigger.triggerType = serializer.i8(trigger.triggerType);
+        trigger.triggerType = serializer.enum8(trigger.triggerType);
         trigger.inThings = serializer.array(trigger.inThings, Thing.class, true);
         trigger.radiusMultiplier = serializer.f32(trigger.radiusMultiplier);
         

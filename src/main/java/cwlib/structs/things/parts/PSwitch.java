@@ -3,6 +3,8 @@ package cwlib.structs.things.parts;
 import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.SwitchBehavior;
+import cwlib.enums.SwitchLogicType;
 import cwlib.enums.SwitchType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
@@ -44,15 +46,17 @@ public class PSwitch implements Serializable {
     public int includeTouching;
     public int bulletsRequired, bulletsDetected, bulletPlayerNumber, bulletRefreshTime;
     public boolean resetWhenFull, hideConnectors;
-    public int logicType, updateFrame;
+    public SwitchLogicType logicType = SwitchLogicType.AND;
+    public int updateFrame;
     @Deprecated public Thing[] inputList;
     public Thing portThing;
     public boolean includeRigidConnectors;
-    public Vector4f customportOffset, customConnectorOffset;
+    public Vector4f customPortOffset, customConnectorOffset;
     public float timerCount;
     public byte timerAutoCount;
     public int teamFilter;
-    public int behavior, randomBehavior, randomPattern;
+    public SwitchBehavior behavior = SwitchBehavior.OFF_ON;
+    public int randomBehavior, randomPattern;
     public int randomOnTimeMin, randomOnTimeMax;
     public int randomOffTimeMin, randomOffTimeMax;
     public int randomPhaseOn, randomPhaseTime;
@@ -187,7 +191,7 @@ public class PSwitch implements Serializable {
         if (version > 0x24a && version < 0x327) sw.hideConnectors = serializer.bool(sw.hideConnectors);
 
         if (version > 0x272 && version < 0x398)
-            sw.logicType = serializer.i32(sw.logicType);
+            sw.logicType = serializer.enum32(sw.logicType);
         if (version > 0x272 && version < 0x369)
             sw.updateFrame = serializer.i32(sw.updateFrame);
         if (version > 0x272)
@@ -200,7 +204,7 @@ public class PSwitch implements Serializable {
             sw.includeRigidConnectors = serializer.bool(sw.includeRigidConnectors);
         
         if (version > 0x284 && version < 0x327) {
-            sw.customportOffset = serializer.v4(sw.customportOffset);
+            sw.customPortOffset = serializer.v4(sw.customPortOffset);
             sw.customConnectorOffset = serializer.v4(sw.customConnectorOffset);
         }
 
@@ -213,7 +217,7 @@ public class PSwitch implements Serializable {
         if (version > 0x2ad && subVersion < 0x100)
             sw.teamFilter = serializer.i32(sw.teamFilter);
 
-        if (version > 0x2c3) sw.behavior = serializer.i32(sw.behavior);
+        if (version > 0x2c3) sw.behavior = serializer.enum32(sw.behavior);
 
         if (version < 0x329 && version > 0x2c3) serializer.s32(0);
 
