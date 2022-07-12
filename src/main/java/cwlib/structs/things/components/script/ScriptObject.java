@@ -21,7 +21,7 @@ public class ScriptObject implements Serializable {
         if (object.type == ScriptObjectType.NULL) return object;
 
         if (object.type == ScriptObjectType.INSTANCE) {
-            object.value = serializer.reference((PScript) object.value, PScript.class);
+            object.value = serializer.reference((ScriptInstance) object.value, ScriptInstance.class);
             return object;
         }
 
