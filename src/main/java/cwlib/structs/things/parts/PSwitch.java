@@ -6,6 +6,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.structs.things.components.SwitchOutput;
 import cwlib.structs.things.components.SwitchSignal;
 import cwlib.types.data.ResourceDescriptor;
@@ -19,7 +20,10 @@ public class PSwitch implements Serializable {
     public boolean crappyOldLbp1Switch;
     public int behaviorOld;
     public SwitchOutput[] outputs;
+
     public ResourceDescriptor stickerPlan;
+    @Deprecated public GlobalThingDescriptor stickerThing;
+
     public boolean hideInPlayMode;
     public int type;
     public Thing referenceThing;
@@ -102,9 +106,13 @@ public class PSwitch implements Serializable {
             else sw.outputs = new SwitchOutput[] { serializer.struct(null, SwitchOutput.class) };
 
         } else sw.outputs = serializer.array(sw.outputs, SwitchOutput.class, true);
-
-        if (version < 0x398 && 0x140 <= version)
-            sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true);
+        
+        if (version < 0x398 && 0x140 <= version) {
+            if (version < 0x160)
+                sw.stickerThing = serializer.struct(sw.stickerThing, GlobalThingDescriptor.class);
+            else
+                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
+        }
         
         if (0x13f < version && version < 0x1a5) serializer.s32(0);
 

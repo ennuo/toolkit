@@ -67,7 +67,7 @@ public class PEmitter implements Serializable {
         if (version < 0x160)
             emitter.thing = serializer.struct(emitter.thing, GlobalThingDescriptor.class);
         else
-            emitter.plan = serializer.resource(emitter.plan, ResourceType.PLAN, true);
+            emitter.plan = serializer.resource(emitter.plan, ResourceType.PLAN);
 
         emitter.maxEmitted = serializer.i32(emitter.maxEmitted);
         if (version >= 0x1c8)
@@ -109,7 +109,7 @@ public class PEmitter implements Serializable {
 
         if (version >= 0x226)
             emitter.hideInPlayMode = serializer.bool(emitter.hideInPlayMode);
-        if (version >= 0x230)
+        if (version >= 0x230 && version < 0x2c4)
             emitter.modScaleActive = serializer.bool(emitter.modScaleActive);
 
         // serializer.log("UNFINISHED EMITTER");

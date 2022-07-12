@@ -27,7 +27,7 @@ public class EggLink implements Serializable {
         if (version < 0x160) 
             link.item = serializer.struct(link.item, GlobalThingDescriptor.class);
         else
-            link.plan = serializer.resource(link.plan, ResourceType.PLAN);
+            link.plan = serializer.resource(link.plan, ResourceType.PLAN, false, false);
 
         if (version > 0x15f && version < 0x197)
             link.details = serializer.struct(link.details, InventoryItemDetails.class);
