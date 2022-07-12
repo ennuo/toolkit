@@ -69,7 +69,7 @@ public enum Part {
     POWER_UP(0x2d, PartHistory.POWER_UP, null),
     HUD_ELEM(0x2e, PartHistory.HUD_ELEM, null),
     TAG_SYNCHRONIZER(0x2f, PartHistory.TAG_SYNCHRONIZER, null),
-    WORMHOLE(0x30, PartHistory.WORMHOLE, null),
+    WORMHOLE(0x30, PartHistory.WORMHOLE, PWormhole.class),
     QUEST(0x31, PartHistory.QUEST, null),
     CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, null),
     ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, null),
