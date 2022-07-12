@@ -610,8 +610,6 @@ public class Serializer {
 
             descriptor = new ResourceDescriptor(guid, sha1, type);
 
-            System.out.println(descriptor);
-
             if (guid != null) descriptor = new ResourceDescriptor(guid, type);
             else descriptor = new ResourceDescriptor(guid, type);
             

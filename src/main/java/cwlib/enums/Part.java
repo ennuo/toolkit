@@ -28,7 +28,7 @@ public enum Part {
     @Deprecated PARTICLE_EMITTER(0x39, PartHistory.PARTICLE_EMITTER, null),
     @Deprecated CAMERA_ZONE(0x3a, PartHistory.CAMERA_ZONE, null),
     LEVEL_SETTINGS(0xA, PartHistory.LEVEL_SETTINGS, PLevelSettings.class),
-    SPRITE_LIGHT(0xB, PartHistory.SPRITE_LIGHT, null),
+    SPRITE_LIGHT(0xB, PartHistory.SPRITE_LIGHT, PSpriteLight.class),
     @Deprecated KEYFRAMED_POSITION(0x3b, PartHistory.KEYFRAMED_POSITION, null),
     @Deprecated CAMERA(0x3c, PartHistory.CAMERA, null),
     SCRIPT_NAME(0xC, PartHistory.SCRIPT_NAME, PScriptName.class),
