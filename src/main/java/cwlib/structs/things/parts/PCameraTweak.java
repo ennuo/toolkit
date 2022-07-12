@@ -7,31 +7,56 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
 public class PCameraTweak implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
     public static boolean ENABLE_IMPROPER_LOADING = false;
 
-    public Vector3f pitchAngle;
-    public Vector4f targetBox, triggerBox;
-    public float zoomDistance, positionFactor;
+    @Deprecated public Vector3f pitchAngle;
+    @Deprecated public Vector4f targetBox;
+
+    public Vector4f triggerBox;
+
+    public byte triggerLayerOffset, triggerLayerDepth;
+    public boolean isCameraZRelative;
+
+    @Deprecated public float zoomDistance;
+
+    public float positionFactor;
     public int photoBoothTimerLength, cameraType;
     public float activationLimit;
     public boolean disableZoomMode, requireAll = true, motionControllerZone;
     public int behavior;
-    public int cutSceneTransitionType, cutSceneHoldTime;
+    public byte cutSceneTransitionType;
+    public int cutSceneHoldTime;
     public boolean cutSceneSkippable;
+    public byte cutSceneUseHoldTime;
 
     @SuppressWarnings("unchecked")
     @Override public PCameraTweak serialize(Serializer serializer, Serializable structure) {
         PCameraTweak tweak = (structure == null) ? new PCameraTweak() : (PCameraTweak) structure;
 
         int version = serializer.getRevision().getVersion();
+        int subVersion = serializer.getRevision().getSubVersion();
 
-        tweak.pitchAngle = serializer.v3(tweak.pitchAngle);
-        tweak.targetBox = serializer.v4(tweak.targetBox);
+        if (version < 0x37e) {
+            tweak.pitchAngle = serializer.v3(tweak.pitchAngle);
+            tweak.targetBox = serializer.v4(tweak.targetBox);
+        }
+
         tweak.triggerBox = serializer.v4(tweak.triggerBox);
-        tweak.zoomDistance = serializer.f32(tweak.zoomDistance);
+
+        if (subVersion >= 0x1b) {
+            tweak.triggerLayerOffset = serializer.i8(tweak.triggerLayerOffset);
+            tweak.triggerLayerDepth = serializer.i8(tweak.triggerLayerDepth);
+            if (subVersion >= 0x3d)
+                tweak.isCameraZRelative = serializer.bool(tweak.isCameraZRelative);
+        }
+
+        if (version < 0x37e)
+            tweak.zoomDistance = serializer.f32(tweak.zoomDistance);
+
         tweak.positionFactor = serializer.f32(tweak.positionFactor);
 
-        if (version > 0x1f4)
+        if (version >= 0x1f5)
             tweak.photoBoothTimerLength = serializer.i32(tweak.photoBoothTimerLength);
 
         // some 0x13d and 0x176 levels somehow don't serialize this,
@@ -56,16 +81,34 @@ public class PCameraTweak implements Serializable {
             serializer.f32(0);
         }
 
-        if (version > 0x269)
+        if (version >= 0x1ff)
+            tweak.disableZoomMode = serializer.bool(tweak.disableZoomMode);
+
+        if (version >= 0x26a)
             tweak.requireAll = serializer.bool(tweak.requireAll);
 
-        if (version > 0x2b9)
+        if (version >= 0x2ba)
             tweak.motionControllerZone = serializer.bool(tweak.motionControllerZone);
+
+        if (version >= 0x2c4)
+            tweak.behavior = serializer.i32(tweak.behavior);
+
+        if (version >= 0x2f8 && version < 0x37e)
+            serializer.u8(0);
+        
+        if (version >= 0x2eb) {
+            tweak.cutSceneTransitionType = serializer.i8(tweak.cutSceneTransitionType);
+            tweak.cutSceneHoldTime = serializer.i32(tweak.cutSceneHoldTime);
+        }
+
+        if (version >= 0x2eb)
+            tweak.cutSceneSkippable = serializer.bool(tweak.cutSceneSkippable);
+
+        if (serializer.getRevision().getSubVersion() >= 0x9f)
+            tweak.cutSceneUseHoldTime = serializer.i8(tweak.cutSceneUseHoldTime);
             
         return tweak;
     }
-    
-    // TODO: Actually implement
-    @Override public int getAllocatedSize() { return 0; }
 
+    @Override public int getAllocatedSize() { return PCameraTweak.BASE_ALLOCATION_SIZE; }
 }

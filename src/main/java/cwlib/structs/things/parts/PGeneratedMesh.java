@@ -104,7 +104,7 @@ public class PGeneratedMesh implements Serializable {
         if (version >= 0x258)
             mesh.planGUID = serializer.guid(mesh.planGUID);
 
-        if (subVersion >= 0xb)
+        if (subVersion >= 0xfb)
             mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
         else if (version >= 0x27c) {
             if (serializer.isWriting())

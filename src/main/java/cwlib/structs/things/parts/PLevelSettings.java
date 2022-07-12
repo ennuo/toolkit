@@ -35,8 +35,15 @@ public class PLevelSettings extends LevelSettings {
         if (0x152 < version && version < 0x15a)
             serializer.f32(0);
 
-        if (!(version < 0x154 || 0x155 < version))  
+        // 0x154 -> 0x155
+        if (!(version < 0x154 || 0x155 < version)) {
             throw new SerializationException("Unsupported serialization object!");
+            // matrix[0]
+            // matrix[1]
+            // colPick
+            // vignetteTop
+            // vignetteBottom
+        }
 
         settings.backdropAmbience = serializer.str(settings.backdropAmbience);
 

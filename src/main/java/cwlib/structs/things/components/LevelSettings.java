@@ -61,12 +61,14 @@ public class LevelSettings implements Serializable {
             settings.dofNear = serializer.f32(settings.dofNear); // 0x24
         }
 
-        // 0x325 -> 0x330, f32
+        if (version > 0x324 && version < 0x331)
+            serializer.f32(0);
 
         if (version >= 0x326)
             settings.dofFar = serializer.f32(settings.dofFar); // 0x25
 
-        // 0x325 -> 0x330, f32
+        if (version > 0x324 && version < 0x331)
+            serializer.f32(0);
 
         if (version >= 0x331) {
             settings.zEffectAmount = serializer.f32(settings.zEffectAmount);
@@ -77,7 +79,8 @@ public class LevelSettings implements Serializable {
         if (subVersion >= 0x7a) {
             settings.dofNear2 = serializer.f32(settings.dofNear2);
             settings.dofFar2 = serializer.f32(settings.dofFar2);
-            settings.dofFar3 = serializer.f32(settings.dofFar3);
+            if (subVersion >= 0xce)
+                settings.dofFar3 = serializer.f32(settings.dofFar3);
         }
 
         return settings;

@@ -30,10 +30,8 @@ public class PGroup implements Serializable {
         int version = serializer.getRevision().getVersion();
         boolean isWriting = serializer.isWriting();
 
-        if (!(version < 0x18e || version > 0x1b0)) {
+        if (!(version < 0x18e || version > 0x1b0))
             group.things = serializer.array(group.things, Thing.class, true);
-            return group;
-        }
 
         if (version >= 0x18e && version < 0x341) {
             if (isWriting) serializer.getOutput().bool((group.flags & GroupFlags.COPYRIGHT) != 0);
