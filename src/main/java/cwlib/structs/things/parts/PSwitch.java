@@ -3,12 +3,16 @@ package cwlib.structs.things.parts;
 import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.SwitchType;
+import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.profile.DataLabelValue;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.structs.things.components.SwitchOutput;
 import cwlib.structs.things.components.SwitchSignal;
+import cwlib.types.data.NetworkOnlineID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
@@ -22,10 +26,10 @@ public class PSwitch implements Serializable {
     public SwitchOutput[] outputs;
 
     public ResourceDescriptor stickerPlan;
-    @Deprecated public GlobalThingDescriptor stickerThing;
+    @Deprecated public GlobalThingDescriptor refSticker;
 
     public boolean hideInPlayMode;
-    public int type;
+    public SwitchType type = SwitchType.INVALID;
     public Thing referenceThing;
     public SwitchSignal manualActivation;
     public float platformVisualFactor;
@@ -61,6 +65,7 @@ public class PSwitch implements Serializable {
     public byte unspawnedBehavior;
     public boolean playSwitchAudio;
     public byte playerMode;
+    public DataLabelValue value = new DataLabelValue();
     public boolean relativeToSequencer;
     public byte layerRange;
     public boolean breakSound;
@@ -109,7 +114,7 @@ public class PSwitch implements Serializable {
         
         if (version < 0x398 && 0x140 <= version) {
             if (version < 0x160)
-                sw.stickerThing = serializer.struct(sw.stickerThing, GlobalThingDescriptor.class);
+                sw.refSticker = serializer.struct(sw.refSticker, GlobalThingDescriptor.class);
             else
                 sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
         }
@@ -118,11 +123,14 @@ public class PSwitch implements Serializable {
 
         if (version > 0x197) sw.hideInPlayMode = serializer.bool(sw.hideInPlayMode);
         if (version > 0x1a4) {
-            sw.type = serializer.s32(sw.type);
+            sw.type = serializer.enum32(sw.type, true);
             sw.referenceThing = serializer.reference(sw.referenceThing, Thing.class);
             sw.manualActivation = serializer.struct(sw.manualActivation, SwitchSignal.class);
         }
 
+        if (version >= 0x398 && (sw.type == SwitchType.STICKER || (type == SwitchType.POCKET_ITEM && subVersion > 0x10)))
+            sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
+        
         if (version > 0x1a4 && version < 0x368) sw.platformVisualFactor = serializer.f32(sw.platformVisualFactor);
         if (version > 0x1a4 && version < 0x2a0) serializer.f32(0);
 
@@ -161,6 +169,11 @@ public class PSwitch implements Serializable {
             sw.includeTouching = serializer.s32(sw.includeTouching);
         }
 
+        if (subVersion > 0x165 && sw.type == SwitchType.GAME_LIVE_STREAMING_CHOICE) {
+            throw new SerializationException("UNSUPPORTED!");
+            // wstr[4], wstr[5] if subVersion >= 0x187?
+        }
+
         if (version > 0x243) sw.bulletsRequired = serializer.s32(sw.bulletsRequired);
         if (version == 0x244) serializer.i32(0); // ???
         if (version > 0x244) sw.bulletsDetected = serializer.s32(sw.bulletsDetected);
@@ -197,7 +210,7 @@ public class PSwitch implements Serializable {
                 sw.timerAutoCount = serializer.i8(sw.timerAutoCount);
         }
 
-        if (version > 0x2ad)
+        if (version > 0x2ad && subVersion < 0x100)
             sw.teamFilter = serializer.i32(sw.teamFilter);
 
         if (version > 0x2c3) sw.behavior = serializer.i32(sw.behavior);
@@ -225,12 +238,37 @@ public class PSwitch implements Serializable {
         }
         if (version > 0x34f) sw.bulletTypes = serializer.i8(sw.bulletTypes);
         if (version > 0x390) sw.detectUnspawnedPlayers = serializer.bool(sw.detectUnspawnedPlayers);
+        if (subVersion > 0x216)
+            sw.unspawnedBehavior = serializer.i8(sw.unspawnedBehavior);
         if (version > 0x3a4) sw.playSwitchAudio = serializer.bool(sw.playSwitchAudio);
+        if (version > 0x3ec) sw.playerMode = serializer.i8(sw.playerMode);
 
+        if (version > 0x3ee && sw.type == SwitchType.DATA_SAMPLER) {
+            if (sw.value == null) sw.value = new DataLabelValue();
+
+            sw.value.labelIndex = serializer.i32(sw.value.labelIndex);
+            sw.value.creatorID = serializer.struct(sw.value.creatorID, NetworkOnlineID.class);
+            sw.value.labelName = serializer.wstr(sw.value.labelName);
+            sw.value.analogue = serializer.floatarray(sw.value.analogue);
+            sw.value.ternary = serializer.bytearray(sw.value.ternary);
+        }
+
+        if (subVersion > 0x21)
+            sw.relativeToSequencer = serializer.bool(sw.relativeToSequencer);
+        if (subVersion > 0x2f)
+            sw.layerRange = serializer.i8(sw.layerRange);
+        if (subVersion > 0x7a) {
+            sw.breakSound = serializer.bool(sw.breakSound);
+            sw.colorTimer = serializer.i32(sw.colorTimer);
+        }
+
+        if (subVersion > 0x67)
+            sw.isLbp3Switch = serializer.bool(sw.isLbp3Switch);
+        if (subVersion > 0x68)
+            sw.randomNonRepeating = serializer.bool(sw.randomNonRepeating);
+        if (subVersion > 0x102)
+            sw.stickerSwitchMode = serializer.i32(sw.stickerSwitchMode);
         
-        // serializer.log("PSWITCH NOT FINISHED");
-        // System.exit(1);
-
         return sw;
     }
     

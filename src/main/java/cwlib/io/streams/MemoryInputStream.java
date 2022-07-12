@@ -159,6 +159,18 @@ public class MemoryInputStream {
     }
 
     /**
+     * Reads a signed 32-bit integer from the stream, compressed depending on flags.
+     * This function modifies the value written to the stream to fit an unsigned value, prefer i32
+     * @return Signed integer read from the stream
+     */
+    public final int s32() {
+        if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0))
+            return this.i32(true);
+        long v = this.uleb128();
+        return (int) ((v >> 1 ^ -(v & 1)) & 0xFFFFFFFF);
+    }
+
+    /**
      * Reads a long as an unsigned integer from the stream, compressed depending on flags.
      * @param force64 Whether or not to read as a 32-bit integer, regardless of compression flags.
      * @return Unsigned integer read from the stream
@@ -374,23 +386,13 @@ public class MemoryInputStream {
      * Reads a length-prefixed string from the stream.
      * @return String value read from the stream
      */
-    public final String str() {
-        int size = this.i32();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            size /= 2;
-        return this.str(size);
-    }
+    public final String str() { return this.str(this.s32()); }
 
     /**
      * Reads a length-prefixed wide string from the stream.
      * @return String value read from the stream
      */
-    public final String wstr() {
-        int size = this.i32();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            size /= 2;
-        return this.wstr(size);
-    }
+    public final String wstr() { return this.wstr(this.s32()); }
 
     /**
      * Reads a SHA1 hash from the stream.
@@ -437,7 +439,18 @@ public class MemoryInputStream {
      * @return Resolved enum constant
      */
     public final <T extends Enum<T> & ValueEnum<Integer>> T enum32(Class<T> enumeration) {
-        int number = this.i32();
+        return this.enum32(enumeration, false);
+    }
+
+    /**
+     * Reads an 32-bit integer from the stream and resolves the enum value.
+     * @param <T> Type of enum
+     * @param enumeration Enum class
+     * @param signed Whether or not to read a signed value
+     * @return Resolved enum constant
+     */
+    public final <T extends Enum<T> & ValueEnum<Integer>> T enum32(Class<T> enumeration, boolean signed) {
+        int number = (signed) ? this.s32() : this.i32();
         List<T> constants = Arrays.asList(enumeration.getEnumConstants());
         for (T constant : constants)
             if (constant.getValue().equals(number))

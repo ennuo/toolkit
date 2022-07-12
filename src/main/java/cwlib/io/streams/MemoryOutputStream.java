@@ -155,6 +155,18 @@ public class MemoryOutputStream {
     }
 
     /**
+     * Writes a 32-bit signed integer to the stream, compressed depending on flags.
+     * This function modifies the value written to the stream to fit an unsigned value, prefer i32
+     * @param value Signed integer to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream s32(int value) {
+        if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(((long)(value & 0x7fffffff)) << 1 ^ ((long)(value >> 0x1f)));
+        return this.i32(value, true);
+    }
+
+    /**
      * Writes a long as a 32-bit integer to the stream, compressed depending on flags.
      * @param value Integer to write
      * @param force32 Whether or not to write as a 32-bit integer, regardless of compression flags.
@@ -434,10 +446,7 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream str(String value) {
         if (value == null) return this.i32(0);
-        int size = value.length();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            size *= 2;
-        this.i32(size);
+        this.s32(value.length());
         return this.bytes(value.getBytes());
     }
 
@@ -448,10 +457,7 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream wstr(String value) {
         if (value == null) return this.i32(0);
-        int size = value.length();
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0)
-            size *= 2;
-        this.i32(size);
+        this.s32(value.length());
         return this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
     }
 
@@ -501,6 +507,19 @@ public class MemoryOutputStream {
      */
     public final <T extends Enum<T> & ValueEnum<Integer>> MemoryOutputStream enum32(T value) {
         return this.i32(value.getValue().intValue());
+    }
+
+    /**
+     * Writes an 32-bit enum value to the stream.
+     * @param <T> Type of enum
+     * @param value Enum value
+     * @param signed Whether or not to write an s32
+     * @return This output stream
+     */
+    public final <T extends Enum<T> & ValueEnum<Integer>> MemoryOutputStream enum32(T value, boolean signed) {
+        int v = value.getValue().intValue();
+        if (signed) return this.s32(v);
+        return this.i32(v);
     }
 
     /**

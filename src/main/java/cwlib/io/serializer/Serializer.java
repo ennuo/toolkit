@@ -248,25 +248,11 @@ public class Serializer {
      * @return Integer (de)serialized
      */
     public final int s32(int value) {
-        boolean isCompressed = 
-            (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0;
         if (this.isWriting) {
-            if (!isCompressed)
-                this.output.i32(value, true); 
-            else {
-                // Fairly sure this just effectively doubles the value,
-                // but bitwise operations give me a headache, so whatever.
-                this.output.uleb128(((long)(value & 0x7fffffff)) << 1 ^ ((long)(value >> 0x1f)));
-            }
+            this.output.s32(value);
             return value;
         }
-
-        if (isCompressed) {
-            long v = this.input.uleb128();
-            return (int) ((v >> 1 ^ -(v & 1)) & 0xFFFFFFFF);
-        }
-
-        return this.input.i32(true);
+        return this.input.s32();
     }
 
     /**
@@ -764,7 +750,7 @@ public class Serializer {
     }
 
     /**
-     * (De)serializes a 8-bit enum value to/from the stream.
+     * (De)serializes a 32-bit enum value to/from the stream.
      * @param <T> Enum class
      * @param value Enum value
      * @return (De)serialized enum value
@@ -776,6 +762,22 @@ public class Serializer {
             return value;
         }
         return this.input.enum32((Class<T>) value.getClass());
+    }
+
+    /**
+     * (De)serializes a 32-bit enum value to/from the stream.
+     * @param <T> Enum class
+     * @param value Enum value
+     * @param signed Whether or not to (de)serialize s32
+     * @return (De)serialized enum value
+     */
+    @SuppressWarnings("unchecked")
+    public final <T extends Enum<T> & ValueEnum<Integer>> T enum32(T value, boolean signed) {
+        if (this.isWriting) {
+            this.output.enum32(value, signed);
+            return value;
+        }
+        return this.input.enum32((Class<T>) value.getClass(), signed);
     }
 
     /**

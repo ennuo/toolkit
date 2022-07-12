@@ -11,6 +11,7 @@ public class DataLabelValue implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public NetworkOnlineID creatorID;
+    public String labelName;
     public int labelIndex;
     public float[] analogue;
     public byte[] ternary;
