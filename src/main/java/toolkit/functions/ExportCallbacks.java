@@ -104,7 +104,9 @@ public class ExportCallbacks {
                     // entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", "")
                     try {
 
-                    } catch (Exception ex)
+                    } catch (Exception ex) {
+                        
+                    }
 
 
                     mesh = new Resource(data).loadResource(RMesh.class);

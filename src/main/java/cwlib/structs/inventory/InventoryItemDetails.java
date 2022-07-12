@@ -15,6 +15,7 @@ import cwlib.types.data.SHA1;
 import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
+import cwlib.structs.things.parts.PMetadata;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -31,7 +32,7 @@ public class InventoryItemDetails implements Serializable {
     public long dateAdded = new Date().getTime() / 1000;
     public SlotID levelUnlockSlotID = new SlotID();
     public GUID highlightSound;
-    public int colour;
+    public int colour = -1;
     
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType = InventoryObjectSubType.NONE;
@@ -70,6 +71,28 @@ public class InventoryItemDetails implements Serializable {
     public String translatedDescription;
     public String translatedLocation = "";
     public String translatedCategory = "";
+
+    public InventoryItemDetails() {};
+    public InventoryItemDetails(PMetadata metadata) {
+        // if (metadata.nameTranslationTag != null && metadata.nameTranslationTag.endsWith("_NAME"))
+        //     this.translationTag = metadata.nameTranslationTag.split("_NAME")[0]; // LOL
+        
+        this.titleKey = metadata.titleKey;
+        this.descriptionKey = metadata.descriptionKey;
+        this.location = metadata.location;
+        this.category = metadata.category;
+
+        this.locationTag = metadata.locationTag;
+        this.categoryTag = metadata.categoryTag;
+
+        this.primaryIndex = (short) metadata.primaryIndex;
+        this.fluffCost = metadata.fluffCost;
+        this.type = metadata.type;
+        this.subType = metadata.subType;
+        this.icon = metadata.icon;
+        
+        this.allowEmit = metadata.allowEmit;
+    }
 
     @SuppressWarnings("unchecked")
     @Override public InventoryItemDetails serialize(Serializer serializer, Serializable structure) {

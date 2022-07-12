@@ -18,6 +18,7 @@ import toolkit.utilities.ResourceSystem;
  * Represents an object in the game world.
  */
 public class Thing implements Serializable {
+    public static boolean SERIALIZE_WORLD_THING = true;
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public int UID = 1;
@@ -51,8 +52,12 @@ public class Thing implements Serializable {
             serializer.u8(0xAA);
         }
 
-        if (version < 0x1fd)
-            thing.world = serializer.reference(thing.world, Thing.class);
+        if (version < 0x1fd) {
+            if (serializer.isWriting())
+                serializer.reference(SERIALIZE_WORLD_THING ? thing.world : null, Thing.class);
+            else
+                thing.world = serializer.reference(thing.world, Thing.class);
+        }
         if (version < 0x27f) {
             thing.parent = serializer.reference(thing.parent, Thing.class);
             thing.UID = serializer.i32(thing.UID);
@@ -105,14 +110,14 @@ public class Thing implements Serializable {
                 if (version >= 0x18c && index == 0x3d) continue;
                 if (subVersion >= 0x107 && index == 0x3e) continue;
                 else if (index == 0x3e) {
-                    if (this.parts[index] != null) {
+                    if (thing.parts[index] != null) {
                         flags |= (1l << 0x29);
                         lastPart = part;
                     }
                     continue;
                 }
 
-                if (this.parts[index] != null) {
+                if (thing.parts[index] != null) {
                     // Offset due to PCreatorAnim
                     if (subVersion < 0x107 && index > 0x28) index++; 
 
@@ -139,7 +144,7 @@ public class Thing implements Serializable {
 
         for (Part part : parts) {
             serializer.log(part.name() + " [START]");
-            if (!part.serialize(this.parts, partsRevision, flags, serializer)) {
+            if (!part.serialize(thing.parts, partsRevision, flags, serializer)) {
                 serializer.log(part.name() + " FAILED");
                 System.exit(0);
                 throw new SerializationException(part.name() + " failed to serialize!");

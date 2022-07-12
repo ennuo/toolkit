@@ -13,6 +13,7 @@ import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.parts.PMetadata;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
@@ -37,6 +38,20 @@ public class RPlan implements Compressable, Serializable {
      * Compression flags used during the loading of the thing data.
      */
     public byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+
+    public RPlan() {};
+    public RPlan(Revision revision, byte compressionFlags, Thing thing, PMetadata metadata) {
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
+        this.setThing(thing);
+        this.inventoryData = new InventoryItemDetails(metadata);
+    }
+    public RPlan(Revision revision, byte compressionFlags, Thing[] things, PMetadata metadata) {
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
+        this.setThings(things);
+        this.inventoryData = new InventoryItemDetails(metadata);
+    }
 
     @SuppressWarnings("unchecked")
     @Override public RPlan serialize(Serializer serializer, Serializable structure) {
@@ -104,7 +119,7 @@ public class RPlan implements Compressable, Serializable {
 
     public SerializationData build() { return this.build(this.revision, this.compressionFlags); }
     @Override public SerializationData build(Revision revision, byte compressionFlags) {
-        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+        Serializer serializer = new Serializer(this.getAllocatedSize() + 0x8000, revision, compressionFlags);
         serializer.struct(this, RPlan.class);
         for (ResourceDescriptor descriptor : this.dependencyCache)
             serializer.addDependency(descriptor);
@@ -133,9 +148,27 @@ public class RPlan implements Compressable, Serializable {
      * @param things Thing array to set
      */
     public void setThings(Thing[] things) {
-        Serializer serializer = new Serializer(0x8000, this.revision, this.compressionFlags);
+        Serializer serializer = new Serializer(0x800000, this.revision, this.compressionFlags);
         serializer.array(things, Thing.class, true);
         this.thingData = serializer.getBuffer();
+        
+        ResourceDescriptor[] dependencies = serializer.getDependencies();
+        this.dependencyCache.clear();
+        for (ResourceDescriptor dependency : dependencies)
+            this.dependencyCache.add(dependency);
+    }
+
+    public void setThing(Thing thing) {
+        // This is terribly inefficient, but whatever
+        Serializer serializer = new Serializer(0x800000, this.revision, this.compressionFlags);
+        serializer.reference(thing, Thing.class);
+        Thing[] things = serializer.getThings();
+
+        serializer = new Serializer(0x800000, this.revision, this.compressionFlags);   
+        serializer.array(things, Thing.class, true);
+
+        this.thingData = serializer.getBuffer();
+
         ResourceDescriptor[] dependencies = serializer.getDependencies();
         this.dependencyCache.clear();
         for (ResourceDescriptor dependency : dependencies)

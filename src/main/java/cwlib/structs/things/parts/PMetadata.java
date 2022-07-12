@@ -1,7 +1,11 @@
 package cwlib.structs.things.parts;
 
 import cwlib.resources.RTranslationTable;
+
+import java.util.EnumSet;
+
 import cwlib.enums.Branch;
+import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.structs.inventory.PhotoMetadata;
@@ -24,7 +28,8 @@ public class PMetadata implements Serializable {
     
     public int primaryIndex;
     public int fluffCost;
-    public int type, subType;
+    public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
+    public int subType;
     public long creationDate;
     
     public ResourceDescriptor icon;
@@ -54,13 +59,22 @@ public class PMetadata implements Serializable {
             metadata.nameTranslationTag = serializer.str(metadata.nameTranslationTag);
             if (version < 0x159)
                 metadata.descTranslationTag = serializer.str(metadata.descTranslationTag);
+            else if (!serializer.isWriting())
+                metadata.descTranslationTag = metadata.nameTranslationTag + "_DESC";
+            
             metadata.locationTag = serializer.str(metadata.locationTag);
             metadata.categoryTag = serializer.str(metadata.categoryTag);
             if (!serializer.isWriting()) {
-                metadata.titleKey =
+                if (version < 0x159) {
+                    metadata.titleKey =
                         RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag);
-                metadata.descriptionKey =
+                    metadata.descriptionKey =
                         RTranslationTable.makeLamsKeyID(metadata.descTranslationTag);
+                } else {
+                    metadata.titleKey = RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag + "_NAME");
+                    metadata.titleKey = RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag + "_DESC");
+                }
+                
                 metadata.location 
                         = RTranslationTable.makeLamsKeyID(metadata.locationTag);
                 metadata.category 
@@ -74,7 +88,11 @@ public class PMetadata implements Serializable {
 
         if (hasDepreciatedValue) serializer.i32(0); // unknown
         
-        metadata.type = serializer.i32(metadata.type);
+        if (serializer.isWriting())
+            serializer.getOutput().i32(InventoryObjectType.getFlags(metadata.type));
+        else
+            metadata.type = InventoryObjectType.fromFlags(serializer.getInput().i32(), serializer.getRevision());
+        
         metadata.subType = serializer.i32(metadata.subType);
         metadata.creationDate = serializer.u32(metadata.creationDate);
         

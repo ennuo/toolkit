@@ -113,10 +113,6 @@ public class PWorld implements Serializable {
             world.backdropOffsetZAuto = serializer.bool(world.backdropOffsetZAuto);
         if (subVersion >= 0xe2)
             world.overrideBackdropAmbience = serializer.str(world.overrideBackdropAmbience);
-
-        if (subVersion >= 0x3f) {
-            // streaming manager
-        }
         
         if (version < 0x14b) {
             if (serializer.isWriting()) serializer.getOutput().i32(0);
@@ -125,6 +121,10 @@ public class PWorld implements Serializable {
                 for (int i = 0; i < world.materials.length; ++i)
                     world.materials[i] = serializer.resource(null, ResourceType.MATERIAL);
             }
+        }
+
+        if (subVersion >= 0x3f) {
+            if (serializer.i32(0) != 0) throw new SerializationException("Streaming manager not supported!");
         }
 
         world.things = serializer.arraylist(world.things, Thing.class, true);
@@ -299,9 +299,8 @@ public class PWorld implements Serializable {
         if (version >= 0x29c || revision.has(Branch.LEERDAMMER, Revisions.LD_WATER_WAVE))
             world.currWavePos = serializer.f32(world.currWavePos);
 
-        if (0x281 < version && version < 0x287) {
+        if (0x281 < version && version < 0x287)
             throw new SerializationException("Unsupported structure in serialization");
-        }
 
         if (version >= 0x2a3) world.gameMode = serializer.enum32(world.gameMode);
     

@@ -1,6 +1,7 @@
 package cwlib.resources;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cwlib.enums.Branch;
 import cwlib.enums.Part;
@@ -14,6 +15,7 @@ import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
@@ -23,6 +25,7 @@ import cwlib.structs.things.parts.PBody;
 import cwlib.structs.things.parts.PEffector;
 import cwlib.structs.things.parts.PGameplayData;
 import cwlib.structs.things.parts.PLevelSettings;
+import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PScript;
 import cwlib.structs.things.parts.PWorld;
@@ -57,15 +60,13 @@ public class RLevel implements Serializable, Compressable {
         thing.setPart(Part.EFFECTOR, new PEffector());
 
         PScript script = new PScript();
-        script.script = new ResourceDescriptor(19744, ResourceType.SCRIPT);
+        script.instance.script = new ResourceDescriptor(19744, ResourceType.SCRIPT);
 
         thing.setPart(Part.SCRIPT, script);
         thing.setPart(Part.GAMEPLAY_DATA, new PGameplayData());
 
-
         world.things.add(thing);
         // world.things.add(new Thing(1));
-        
 
         this.world = thing;
     }
@@ -115,6 +116,36 @@ public class RLevel implements Serializable, Compressable {
         // adventureData
 
         return level;
+    }
+
+    private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing) {
+        PWorld world = (this.world.getPart(Part.WORLD));
+        if (!things.contains(thing)) things.add(thing);
+        for (Thing worldThing : world.things) {
+            if (worldThing == null || worldThing == thing) continue;
+            if (worldThing.getPart(Part.WORLD) != null || things.contains(worldThing)) continue;
+            if (worldThing.parent == thing || (thing.groupHead != null && (worldThing.groupHead == thing.groupHead)))
+                this.getAllReferences(things, worldThing);
+        }
+        return things;
+    }
+
+    public HashMap<String, RPlan> getPalettes(String name, Revision revision, byte compressionFlags, boolean includeChildren) {
+        HashMap<String, RPlan> plans = new HashMap<>();
+        PWorld world = this.world.getPart(Part.WORLD);
+        Thing.SERIALIZE_WORLD_THING = false;
+        for (Thing thing : world.things) {
+            if (thing == null || thing.getPart(Part.WORLD) != null) continue;
+            PMetadata metadata = thing.getPart(Part.METADATA);
+            if (metadata == null) continue;
+            if (includeChildren) {
+                Thing[] things = this.getAllReferences(new ArrayList<>(), thing).toArray(Thing[]::new);
+                plans.put(name + "_" + thing.UID + ".plan", new RPlan(revision, compressionFlags, things, metadata));
+            } else 
+                plans.put(name + "_" + thing.UID + ".plan", new RPlan(revision, compressionFlags, thing, metadata));
+        }
+        Thing.SERIALIZE_WORLD_THING = true;
+        return plans;
     }
     
     @Override public int getAllocatedSize() { 

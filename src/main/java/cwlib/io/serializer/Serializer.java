@@ -1004,9 +1004,10 @@ public class Serializer {
     
     public Thing[] getThings() {
         ArrayList<Thing> things = new ArrayList<>();
-        for (Object reference : this.referenceObjects.keySet())
+        for (Object reference : this.referenceObjects.keySet()) {
             if (reference instanceof Thing)
                 things.add((Thing) reference);
+        }
         return things.toArray(Thing[]::new);
     }
     

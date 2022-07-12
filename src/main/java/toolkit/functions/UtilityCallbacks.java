@@ -8,6 +8,7 @@ import toolkit.windows.managers.ModManager;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
+import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;
 import cwlib.resources.RMesh;
 import cwlib.io.streams.MemoryInputStream;
@@ -56,7 +57,7 @@ public class UtilityCallbacks {
         Toolkit toolkit = Toolkit.instance;
         File base = FileChooser.openFile("base.farc", "farc", false);
         if (base == null) return;
-        FileArchive archive;
+        Fart archive;
         int index = toolkit.isArchiveLoaded(base);
         if (index != -1) archive = ResourceSystem.getArchives().get(index);
         else archive = new FileArchive(base);
