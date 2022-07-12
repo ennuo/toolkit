@@ -189,6 +189,11 @@ public class RLocalProfile implements Compressable, Serializable {
         if (version > 0x3b5)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
 
+        if (version >= 0x133 && version < 0x1df) {
+            // set of slot ids
+            // ???
+        }
+
         if (version < 0x269 && version > 0x128) {
             // lockStates
         }
@@ -386,6 +391,9 @@ public class RLocalProfile implements Compressable, Serializable {
                 profile.userSettingAdvancedEditMode = serializer.bool(profile.userSettingAdvancedEditMode);
 
             profile.userSettingCollection = serializer.bool(profile.userSettingCollection);
+            
+            if (version == 0x261)
+                serializer.bool(false);
         }
 
         if (version > 0x2d2 || revision.has(Branch.LEERDAMMER, Revisions.LD_THERMOMETER))

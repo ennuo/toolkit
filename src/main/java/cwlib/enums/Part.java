@@ -32,7 +32,7 @@ public enum Part {
     @Deprecated KEYFRAMED_POSITION(0x3b, PartHistory.KEYFRAMED_POSITION, null),
     @Deprecated CAMERA(0x3c, PartHistory.CAMERA, null),
     SCRIPT_NAME(0xC, PartHistory.SCRIPT_NAME, PScriptName.class),
-    CREATURE(0xD, PartHistory.CREATURE, null),
+    CREATURE(0xD, PartHistory.CREATURE, PCreature.class),
     CHECKPOINT(0xE, PartHistory.CHECKPOINT, PCheckpoint.class),
     STICKERS(0xF, PartHistory.STICKERS, PStickers.class),
     DECORATIONS(0x10, PartHistory.DECORATIONS, PDecorations.class),
