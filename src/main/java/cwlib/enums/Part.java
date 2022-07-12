@@ -63,7 +63,7 @@ public enum Part {
     POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, null),
     @Deprecated CREATOR_ANIM(0x3e, PartHistory.CREATOR_ANIM, null),
     TRANSITION(0x29, PartHistory.TRANSITION, null),
-    FADER(0x2a, PartHistory.FADER, null),
+    FADER(0x2a, PartHistory.FADER, PFader.class),
     ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, null),
     WIND_TWEAK(0x2c, PartHistory.WIND_TWEAK, null),
     POWER_UP(0x2d, PartHistory.POWER_UP, null),
