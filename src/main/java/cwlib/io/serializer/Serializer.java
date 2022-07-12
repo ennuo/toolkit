@@ -18,6 +18,7 @@ import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.structs.things.Thing;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -535,6 +536,24 @@ public class Serializer {
     public final GUID guid(GUID value) { return this.guid(value, false); }
 
     /**
+     * (De)serializes a Thing reference to/from the stream.
+     * @param thing Thing to write
+     * @return Thing (de)serialized
+     */
+    public final Thing thing(Thing thing) {
+        return this.reference(thing, Thing.class);
+    }
+
+    /**
+     * (De)serializes an array of Thing references to/from the stream
+     * @param things Things to write
+     * @return Things (de)serialized
+     */
+    public final Thing[] thingarray(Thing[] things) {
+        return this.array(things, Thing.class, true);
+    }
+
+    /**
      * (De)serializes a resource to/from the stream.
      * @param value Resource to write
      * @param type Type of resource
@@ -580,16 +599,18 @@ public class Serializer {
             GUID guid = null;
             SHA1 sha1 = null;
 
-
             if (guidHashFlag == NONE) return null;
             if (guidHashFlag > 0x3 || guidHashFlag < 0x0) throw new SerializationException("Invalid GUID/Hash serialization flag!");
 
-            if ((guidHashFlag & GUID) != 0)
-                guid = this.input.guid();
-            if ((guidHashFlag & HASH) != 0)
-                sha1 = this.input.sha1();
+            if ((guidHashFlag & GUID) != 0) guid = this.input.guid();
+            if ((guidHashFlag & HASH) != 0) sha1 = this.input.sha1();
+            if (guid == null && sha1 == null) return null;
+            if (sha1 != null && sha1.equals(new SHA1())) return null;
+
 
             descriptor = new ResourceDescriptor(guid, sha1, type);
+
+            System.out.println(descriptor);
 
             if (guid != null) descriptor = new ResourceDescriptor(guid, type);
             else descriptor = new ResourceDescriptor(guid, type);
@@ -982,6 +1003,14 @@ public class Serializer {
     }
 
     public int getNextReference() { return this.nextReference++; }
+    
+    public Thing[] getThings() {
+        ArrayList<Thing> things = new ArrayList<>();
+        for (Object reference : this.referenceObjects.keySet())
+            if (reference instanceof Thing)
+                things.add((Thing) reference);
+        return things.toArray(Thing[]::new);
+    }
     
     public final boolean isWriting() { return this.isWriting; }
     public final Revision getRevision() { return this.revision; }

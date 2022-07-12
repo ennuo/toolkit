@@ -436,7 +436,7 @@ public class Revisions {
     // 0x4c44::0x0009
     // 0x4c44:0x000a
     public static final int LD_TEMP_COSTUME = 0xb; // Adds costumePieceVec[COSTUME_TEMP_START] to PCostume
-    public static final int LD_REMOVED_BREATHED = 0xc; // Removes hasBreathedAir from PCreature
+    public static final int LD_REMOVED_HEAD_PIECE = 0xc; // Removes hasBreathedAir from PCreature, or is that headPiece
     public static final int LD_NEWS_TIMESTAMP = 0xd; // Adds lastNewsItemTimestamp to RLocalProfile
     public static final int LD_FAKE_TIMESTAMP = 0xe; // I think this is what this is, probably
     public static final int LD_SUBMERGED = 0xf; // Adds Game.AmountBody/HeadSubmerged to PWorld

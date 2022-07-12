@@ -48,7 +48,7 @@ public enum Part {
     SWITCH(0x19, PartHistory.SWITCH, PSwitch.class),
     SWITCH_KEY(0x1a, PartHistory.SWITCH_KEY, PSwitchKey.class),
     GAMEPLAY_DATA(0x1b, PartHistory.GAMEPLAY_DATA, PGameplayData.class),
-    ENEMY(0x1c, PartHistory.ENEMY, null),
+    ENEMY(0x1c, PartHistory.ENEMY, PEnemy.class),
     GROUP(0x1d, PartHistory.GROUP, PGroup.class),
     PHYSICS_TWEAK(0x1e, PartHistory.PHYSICS_TWEAK, null),
     NPC(0x1f, PartHistory.NPC, null),
