@@ -28,12 +28,17 @@ public class NpcBehavior implements Serializable {
     public int animSet;
     public byte expressionType, expressionLevel;
     public boolean willRecordAudio;
+    public int awarenessRange;
+    public float lookAtSpeed;
+    public boolean showAdvancedOptions;
 
     @SuppressWarnings("unchecked")
     @Override public NpcBehavior serialize(Serializer serializer, Serializable structure) {
         NpcBehavior behavior = (structure == null) ? new NpcBehavior() : (NpcBehavior) structure;
 
         int version = serializer.getRevision().getVersion();
+        int subVersion = serializer.getRevision().getSubVersion();
+
         if (version <= 0x293) return behavior;
 
         behavior.npc = serializer.thing(behavior.npc);
@@ -90,6 +95,13 @@ public class NpcBehavior implements Serializable {
 
         if (version > 0x375)
             behavior.willRecordAudio = serializer.bool(behavior.willRecordAudio);
+
+        if (subVersion > 0xc6)
+            behavior.awarenessRange = serializer.i32(behavior.awarenessRange);
+        if (subVersion > 0x10e)
+            behavior.lookAtSpeed = serializer.f32(behavior.lookAtSpeed);
+        if (subVersion > 0x175)
+            behavior.showAdvancedOptions = serializer.bool(behavior.showAdvancedOptions);
         
         return behavior;
     }
