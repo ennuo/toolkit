@@ -3,7 +3,7 @@ package cwlib.structs.things.parts;
 import cwlib.enums.SwitchKeyType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.things.components.SwitchSignal;
+import cwlib.structs.things.components.switches.SwitchSignal;
 
 public class PSwitchKey implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;

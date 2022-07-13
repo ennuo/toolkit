@@ -8,7 +8,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
-import cwlib.structs.things.components.SwitchSignal;
+import cwlib.structs.things.components.switches.SwitchSignal;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
@@ -182,6 +182,6 @@ public class PEmitter implements Serializable {
         
         return emitter;
     }
-    
+
     @Override public int getAllocatedSize() { return PEmitter.BASE_ALLOCATION_SIZE; }
 }

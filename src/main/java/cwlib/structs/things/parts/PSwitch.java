@@ -12,8 +12,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.profile.DataLabelValue;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
-import cwlib.structs.things.components.SwitchOutput;
-import cwlib.structs.things.components.SwitchSignal;
+import cwlib.structs.things.components.switches.SwitchOutput;
+import cwlib.structs.things.components.switches.SwitchSignal;
 import cwlib.types.data.NetworkOnlineID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -107,6 +107,7 @@ public class PSwitch implements Serializable {
         
         sw.behaviorOld = serializer.s32(sw.behaviorOld);
 
+        serializer.log("outputs");
         if (version < 0x329) {
             if (serializer.isWriting()) {
                 SwitchOutput output = (sw.outputs != null && sw.outputs.length != 0) ? sw.outputs[0] : new SwitchOutput();
@@ -125,6 +126,7 @@ public class PSwitch implements Serializable {
         
         if (0x13f < version && version < 0x1a5) serializer.s32(0);
 
+        serializer.log("Hide in play mode");
         if (version > 0x197) sw.hideInPlayMode = serializer.bool(sw.hideInPlayMode);
         if (version > 0x1a4) {
             sw.type = serializer.enum32(sw.type, true);

@@ -3,8 +3,8 @@ package cwlib.structs.things.parts;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.components.SwitchSignal;
 import cwlib.structs.things.components.npc.NpcBehavior;
+import cwlib.structs.things.components.switches.SwitchSignal;
 
 public class PSwitchInput implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x4;

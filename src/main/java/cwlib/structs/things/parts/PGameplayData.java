@@ -14,7 +14,8 @@ public class PGameplayData implements Serializable {
     public int fluffCost = 100000;
     public EggLink eggLink;
     public SlotID keyLink;
-    public int treasureType, treasureCount = 1;
+    public int treasureType;
+    public short treasureCount = 1;
 
     @SuppressWarnings("unchecked")
     @Override public PGameplayData serialize(Serializer serializer, Serializable structure) {
@@ -24,19 +25,19 @@ public class PGameplayData implements Serializable {
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
-        if (subVersion >= 0xef)
+        if (subVersion >= 0xef && version > 0x2d0)
             data.gameplayType = serializer.enum32(data.gameplayType);
         
         data.fluffCost = serializer.s32(data.fluffCost);
         data.eggLink = serializer.reference(data.eggLink, EggLink.class);
         data.keyLink = serializer.reference(data.keyLink, SlotID.class);
 
-        if (subVersion <= 0xed && version >= 0x2d1)
+        if (version >= 0x2d1 && subVersion < 0xef)
             data.gameplayType = serializer.enum32(data.gameplayType);
 
         if (subVersion >= 0xf3) {
             data.treasureType = serializer.i32(data.treasureType);
-            data.treasureCount = serializer.i32(data.treasureCount);
+            data.treasureCount = serializer.i16(data.treasureCount);
         }
 
         return data;

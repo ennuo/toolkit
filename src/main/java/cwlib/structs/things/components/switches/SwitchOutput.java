@@ -1,4 +1,4 @@
-package cwlib.structs.things.components;
+package cwlib.structs.things.components.switches;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -8,7 +8,7 @@ public class SwitchOutput implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public SwitchSignal activation;
-    public Thing[] targetList;
+    public SwitchTarget[] targetList;
     public String userDefinedName;
 
     @SuppressWarnings("unchecked")
@@ -18,7 +18,24 @@ public class SwitchOutput implements Serializable {
         int version = serializer.getRevision().getVersion();
 
         output.activation = serializer.struct(output.activation, SwitchSignal.class);
-        output.targetList = serializer.array(output.targetList, Thing.class, true);
+
+        if (version > 0x326)
+            output.targetList = serializer.array(output.targetList, SwitchTarget.class);
+        else {
+            if (serializer.isWriting()) {
+                if (output.targetList == null || output.targetList.length == 0) serializer.i32(0);
+                else {
+                    serializer.i32(output.targetList.length);
+                    for (SwitchTarget target : output.targetList)
+                        serializer.thing(target.thing);
+                }
+            } else {
+                output.targetList = new SwitchTarget[serializer.getInput().i32()];
+                for (int i = 0; i < output.targetList.length; ++i)
+                    output.targetList[i] = new SwitchTarget(serializer.thing(null));
+            }
+        }
+        
         if (version >= 0x34d)
             output.userDefinedName = serializer.wstr(output.userDefinedName);
 

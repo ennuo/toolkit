@@ -1,4 +1,4 @@
-package cwlib.structs.things.components;
+package cwlib.structs.things.components.switches;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
