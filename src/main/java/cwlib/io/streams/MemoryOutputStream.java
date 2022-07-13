@@ -506,6 +506,7 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final <T extends Enum<T> & ValueEnum<Integer>> MemoryOutputStream enum32(T value) {
+        if (value == null) return this.i32(0);
         return this.i32(value.getValue().intValue());
     }
 
@@ -517,6 +518,7 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final <T extends Enum<T> & ValueEnum<Integer>> MemoryOutputStream enum32(T value, boolean signed) {
+        if (value == null) return this.i32(0);
         int v = value.getValue().intValue();
         if (signed) return this.s32(v);
         return this.i32(v);
