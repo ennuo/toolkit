@@ -9,11 +9,14 @@ import cwlib.enums.SwitchType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.profile.DataLabelValue;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.structs.things.components.switches.SwitchOutput;
 import cwlib.structs.things.components.switches.SwitchSignal;
+import cwlib.structs.things.components.switches.SwitchTarget;
 import cwlib.types.data.NetworkOnlineID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -108,12 +111,23 @@ public class PSwitch implements Serializable {
         sw.behaviorOld = serializer.s32(sw.behaviorOld);
 
         if (version < 0x329) {
+            // I would just use SwitchOutput, but ternary
+            // doesn't exist in this struct, despite SwitchSignal having
+            // it added in 0x310
             if (serializer.isWriting()) {
+                MemoryOutputStream stream = serializer.getOutput();
                 SwitchOutput output = (sw.outputs != null && sw.outputs.length != 0) ? sw.outputs[0] : new SwitchOutput();
-                serializer.struct(output, SwitchOutput.class);
+                if (version > 0x2a2) stream.f32(output.activation.activation);
+                serializer.array(output.targetList, SwitchTarget.class);
+            } else {
+                MemoryInputStream stream = serializer.getInput();
+                SwitchOutput output = new SwitchOutput();
+                output.activation.activation = stream.f32();
+                if (version > 0x2a2)
+                    output.activation.player = serializer.i32(output.activation.player);
+                output.targetList = serializer.array(null, SwitchTarget.class);
+                sw.outputs = new SwitchOutput[] { output };
             }
-            else sw.outputs = new SwitchOutput[] { serializer.struct(null, SwitchOutput.class) };
-
         } else sw.outputs = serializer.array(sw.outputs, SwitchOutput.class, true);
         
         if (version < 0x398 && 0x140 <= version) {
@@ -171,6 +185,8 @@ public class PSwitch implements Serializable {
         if (version > 0x23d) {
             sw.angleRange = serializer.f32(sw.angleRange);
             sw.includeTouching = serializer.s32(sw.includeTouching);
+            if (version >= 0x398 && sw.type == SwitchType.MICROCHIP && sw.includeTouching == 1)
+                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
         }
 
         if (subVersion > 0x165 && sw.type == SwitchType.GAME_LIVE_STREAMING_CHOICE) {
@@ -195,10 +211,10 @@ public class PSwitch implements Serializable {
         if (version > 0x272 && version < 0x369)
             sw.updateFrame = serializer.i32(sw.updateFrame);
         if (version > 0x272)
-            sw.inputList = serializer.array(sw.inputList, Thing.class);
+            sw.inputList = serializer.thingarray(sw.inputList);
 
         if (version > 0x276 && version < 0x327)
-            sw.portThing = serializer.reference(sw.portThing, Thing.class);
+            sw.portThing = serializer.thing(sw.portThing);
 
         if (version > 0x283)
             sw.includeRigidConnectors = serializer.bool(sw.includeRigidConnectors);
