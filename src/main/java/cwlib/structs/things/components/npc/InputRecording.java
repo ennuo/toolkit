@@ -29,7 +29,7 @@ public class InputRecording implements Serializable {
         if (version > 0x28f)
             recording.offsetBuffer = serializer.intvector(recording.offsetBuffer);
         if (version > 0x2a5)
-            recording.absoluteExpressionBuffer = serializer.intarray(recording.absoluteExpressionBuffer);
+            recording.absoluteExpressionBuffer = serializer.intvector(recording.absoluteExpressionBuffer);
 
         if (version > 0x2dd) {
             recording.startWorldTransform = serializer.m44(recording.startWorldTransform);

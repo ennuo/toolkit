@@ -46,7 +46,8 @@ public class PNpc implements Serializable {
             serializer.thing(null);
         }
 
-        npc.soundRecording = serializer.bytearray(npc.soundRecording);
+        if (serializer.getRevision().getSubVersion() < 0x118)
+            npc.soundRecording = serializer.bytearray(npc.soundRecording);
         npc.soundRecordingDataNbytes = serializer.intvector(npc.soundRecordingDataNbytes);
         npc.soundRecordingPacket = serializer.i32(npc.soundRecordingPacket);
         npc.soundRecordingPacketOffset = serializer.i32(npc.soundRecordingPacketOffset);
