@@ -5,6 +5,8 @@ import org.joml.Vector4f;
 
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.things.components.CameraNode;
+import de.javagl.jgltf.impl.v1.Camera;
 
 public class PCameraTweak implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
@@ -27,8 +29,17 @@ public class PCameraTweak implements Serializable {
     public int behavior;
     public byte cutSceneTransitionType;
     public int cutSceneHoldTime;
-    public boolean cutSceneSkippable;
-    public byte cutSceneUseHoldTime;
+    public boolean cutSceneSkippable, cutSceneUseHoldTime;
+    public byte cutSceneTimeSinceUsed;
+    public int cutSceneTransitionTime;
+    public int cutSceneColour;
+    public boolean cutSceneMovieMode;
+    public float cutSceneDepthOfField, cutSceneFog, cutSceneFOV, cutSceneShake;
+    public boolean fadeAudio, oldStyleCameraZone;
+    public boolean cutSceneTrackPlayer, cutSceneSendsSignalOnCancelled, cutSceneWasActiveLastFrame;
+    public CameraNode[] nodes;
+    public float frontDOF, sackTrackDOF;
+    public boolean allowSmoothZTransition;
 
     @SuppressWarnings("unchecked")
     @Override public PCameraTweak serialize(Serializer serializer, Serializable structure) {
@@ -105,7 +116,58 @@ public class PCameraTweak implements Serializable {
             tweak.cutSceneSkippable = serializer.bool(tweak.cutSceneSkippable);
 
         if (serializer.getRevision().getSubVersion() >= 0x9f)
-            tweak.cutSceneUseHoldTime = serializer.i8(tweak.cutSceneUseHoldTime);
+            tweak.cutSceneUseHoldTime = serializer.bool(tweak.cutSceneUseHoldTime);
+
+        if (version > 0x2ea && version < 0x2f1) {
+            serializer.wstr(null);
+            serializer.s32(0);
+        }
+
+        if (version > 0x2ed) {
+            tweak.cutSceneTimeSinceUsed = serializer.i8(tweak.cutSceneTimeSinceUsed);
+            tweak.cutSceneTransitionTime = serializer.i32(tweak.cutSceneTransitionTime);
+            if (version < 0x35a)
+                serializer.bool(false);
+        }
+
+        if (version > 0x359)
+            tweak.cutSceneColour = serializer.i32(tweak.cutSceneColour);
+        
+        if (version > 0x2ed)
+            tweak.cutSceneMovieMode = serializer.bool(tweak.cutSceneMovieMode);
+        
+        if (version > 0x2f7) {
+            tweak.cutSceneDepthOfField = serializer.f32(tweak.cutSceneDepthOfField);
+            tweak.cutSceneFog = serializer.f32(tweak.cutSceneFog);
+        }
+
+        if (version > 0x2f8)
+            tweak.cutSceneFOV = serializer.f32(tweak.cutSceneFOV);
+
+        if (version > 0x315)
+            tweak.cutSceneShake = serializer.f32(tweak.cutSceneShake);
+        
+        if (version > 0x318)
+            tweak.fadeAudio = serializer.bool(tweak.fadeAudio);
+        if (version > 0x33e)
+            tweak.oldStyleCameraZone = serializer.bool(tweak.oldStyleCameraZone);
+
+        if (version > 0x369)
+            tweak.cutSceneTrackPlayer = serializer.bool(tweak.cutSceneTrackPlayer);
+        if (version > 0x395)
+            tweak.cutSceneSendsSignalOnCancelled = serializer.bool(tweak.cutSceneSendsSignalOnCancelled);
+        if (version > 0x396)
+            tweak.cutSceneWasActiveLastFrame = serializer.bool(tweak.cutSceneWasActiveLastFrame);
+        
+        if (version > 0x37d) 
+            tweak.nodes = serializer.array(tweak.nodes, CameraNode.class);
+        
+        if (subVersion > 0x7d)
+            tweak.frontDOF = serializer.f32(tweak.frontDOF);
+        if (subVersion > 0x79)
+            tweak.sackTrackDOF = serializer.f32(tweak.sackTrackDOF);
+        if (subVersion > 0x7f)
+            tweak.allowSmoothZTransition = serializer.bool(tweak.allowSmoothZTransition);
             
         return tweak;
     }
