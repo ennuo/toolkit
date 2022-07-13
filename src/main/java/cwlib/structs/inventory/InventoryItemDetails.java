@@ -277,8 +277,8 @@ public class InventoryItemDetails implements Serializable {
             details.flags = serializer.i8(details.flags);
 
         if (serializer.getRevision().has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || head > 0x2ba) {
-            details.titleKey = serializer.u32(details.titleKey);
-            details.descriptionKey = serializer.u32(details.descriptionKey);
+            details.titleKey = serializer.uleb128(details.titleKey);
+            details.descriptionKey = serializer.uleb128(details.descriptionKey);
         } else 
             details.translationTag = serializer.str(details.translationTag);
 

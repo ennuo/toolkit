@@ -107,7 +107,6 @@ public class PSwitch implements Serializable {
         
         sw.behaviorOld = serializer.s32(sw.behaviorOld);
 
-        serializer.log("outputs");
         if (version < 0x329) {
             if (serializer.isWriting()) {
                 SwitchOutput output = (sw.outputs != null && sw.outputs.length != 0) ? sw.outputs[0] : new SwitchOutput();
@@ -125,8 +124,7 @@ public class PSwitch implements Serializable {
         }
         
         if (0x13f < version && version < 0x1a5) serializer.s32(0);
-
-        serializer.log("Hide in play mode");
+        
         if (version > 0x197) sw.hideInPlayMode = serializer.bool(sw.hideInPlayMode);
         if (version > 0x1a4) {
             sw.type = serializer.enum32(sw.type, true);

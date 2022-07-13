@@ -85,7 +85,7 @@ public class RPlan implements Compressable, Serializable {
         plan.thingData = serializer.bytearray(plan.thingData);
         if (head >= Revisions.PLAN_DETAILS && !plan.isUsedForStreaming) {
             plan.inventoryData = serializer.struct(plan.inventoryData, InventoryItemDetails.class);
-            if (revision.has(Branch.LEERDAMMER, Revisions.LAMS_KEYS) || head >= Revisions.LAMS_KEYS) {
+            if (revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || head >= Revisions.LAMS_KEYS) {
                 plan.inventoryData.location = serializer.u32(plan.inventoryData.location);
                 plan.inventoryData.category = serializer.u32(plan.inventoryData.category);
             } else {
