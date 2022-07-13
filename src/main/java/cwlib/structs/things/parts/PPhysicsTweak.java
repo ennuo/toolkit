@@ -63,7 +63,7 @@ public class PPhysicsTweak implements Serializable {
 
         if (version < 0x281)
             serializer.f32(0);
-
+        
         if (version > 0x280)
             tweak.tweakDampening = serializer.v3(tweak.tweakDampening);
         tweak.input = serializer.v3(tweak.input);
@@ -93,6 +93,11 @@ public class PPhysicsTweak implements Serializable {
         }
 
         tweak.localSpace = serializer.bool(tweak.localSpace);
+
+        if (!serializer.isWriting() && version < 0x38a && tweak.velRange != 0.0f) {
+            tweak.accelStrength = tweak.accelStrength / tweak.velRange;
+            tweak.decelStrength = tweak.decelStrength / tweak.velRange;
+        }
 
         if (version > 0x278)
             tweak.configuration = serializer.i32(tweak.configuration);
@@ -154,6 +159,7 @@ public class PPhysicsTweak implements Serializable {
             tweak.zPhase = serializer.i8(tweak.zPhase);
 
         if (version > 0x3b8 && tweak.configuration == 0xd) {
+            // Thing recordingPlayer
             throw new SerializationException("UNSUPPORTED!");
         }
 
