@@ -15,7 +15,7 @@ public class RegionOverride implements Serializable {
     public int region;
     public ResourceDescriptor materialPlan;
     public ResourceDescriptor material;
-    public Vector3f uvScale;
+    public Vector3f uvScale = new Vector3f(10.0f, 10.0f, 10.0f);
     public int color;
     public byte brightness;
 
