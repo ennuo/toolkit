@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -158,9 +159,19 @@ public class PPhysicsTweak implements Serializable {
         if (subVersion > 0xf6)
             tweak.zPhase = serializer.i8(tweak.zPhase);
 
+        // move recording, again will figure out the fields later
         if (version > 0x3b8 && tweak.configuration == 0xd) {
-            // Thing recordingPlayer
-            throw new SerializationException("UNSUPPORTED!");
+            serializer.resource(null, ResourceType.THING_RECORDING);
+            serializer.f32(0);
+            if (version < 0x3c4) serializer.u8(0);
+            serializer.u8(0);
+            serializer.u8(0);
+            serializer.v3(null);
+            serializer.u8(0);
+            serializer.m44(null);
+            serializer.f32(0);
+            if (version > 0x3c4)
+                serializer.u8(0);
         }
 
         if (subVersion >= 0x1 && subVersion < 0x17) {
@@ -181,8 +192,19 @@ public class PPhysicsTweak implements Serializable {
             serializer.u8(0);
         }
 
-        if (tweak.configuration == 0xe) {
-            throw new SerializationException("UNSUPPORTED!");
+        // attract-o-gel, ill figure out the fields later
+        if (tweak.configuration == 0xe && version > 0x3e3) {
+            serializer.f32(0);
+            serializer.i32(0);
+            serializer.f32(0);
+            serializer.f32(0);
+            serializer.i32(0);
+            serializer.f32(0);
+            serializer.f32(0);
+            serializer.u8(0);
+            serializer.u8(0);
+            serializer.u8(0);
+            serializer.u8(0);
         }
 
         if (subVersion > 0x56) {
