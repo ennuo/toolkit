@@ -48,7 +48,7 @@ public enum Part {
     GAMEPLAY_DATA(0x1b, PartHistory.GAMEPLAY_DATA, PGameplayData.class),
     ENEMY(0x1c, PartHistory.ENEMY, PEnemy.class),
     GROUP(0x1d, PartHistory.GROUP, PGroup.class),
-    PHYSICS_TWEAK(0x1e, PartHistory.PHYSICS_TWEAK, null),
+    PHYSICS_TWEAK(0x1e, PartHistory.PHYSICS_TWEAK, PPhysicsTweak.class),
     NPC(0x1f, PartHistory.NPC, PNpc.class),
     SWITCH_INPUT(0x20, PartHistory.SWITCH_INPUT, PSwitchInput.class),
     MICROCHIP(0x21, PartHistory.MICROCHIP, PMicrochip.class),

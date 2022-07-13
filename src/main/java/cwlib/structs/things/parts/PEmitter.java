@@ -7,6 +7,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.EmittedObjectSource;
 import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.structs.things.components.switches.SwitchSignal;
 import cwlib.types.data.ResourceDescriptor;
@@ -40,7 +41,7 @@ public class PEmitter implements Serializable {
     public int behavior;
     public byte effectCreate, effectDestroy;
     public boolean ignoreParentsVelocity;
-    public Thing emittedObjectSource;
+    public EmittedObjectSource emittedObjectSource;
     public boolean editorEmitter;
     public boolean isLimboFlippedForGunEmitter;
     public float theFuckingZOffset;
@@ -149,8 +150,8 @@ public class PEmitter implements Serializable {
         if (subVersion > 0x64)
             emitter.ignoreParentsVelocity = serializer.bool(emitter.ignoreParentsVelocity); // what the hell is happening here
 
-        if (version >= 0x340)
-            emitter.emittedObjectSource = serializer.thing(emitter.emittedObjectSource);
+        if (version >= 0x340) 
+            emitter.emittedObjectSource = serializer.reference(emitter.emittedObjectSource, EmittedObjectSource.class);
 
         if (version >= 0x361 && subVersion < 0x64)
             emitter.editorEmitter = serializer.bool(emitter.editorEmitter);
