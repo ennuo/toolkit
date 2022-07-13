@@ -166,7 +166,7 @@ public enum Part {
         if (version >= PartHistory.CREATOR_ANIM) {
             if (this == Part.CREATOR_ANIM)
                 return ((1L << 0x29) & flags) != 0;
-            if (index > 0x28) index++;
+            if (((head >> 0x10) < 0x107) && index > 0x28) index++;
         }
         
         return version >= this.version
