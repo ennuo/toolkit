@@ -15,10 +15,26 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PCreature implements Serializable {
-    public static class SpringData {
+    public static class SpringData implements Serializable {
+        public static final int BASE_ALLOCATION_SIZE = 0x30;
+
         public Thing springThing;
         public int springTimer;
         public Vector3f springDirection, springThingPosition;
+
+        @SuppressWarnings("unchecked")
+        @Override public SpringData serialize(Serializer serializer, Serializable structure) {
+            SpringData data = (structure == null) ? new SpringData() : (SpringData) structure;
+
+            data.springThing = serializer.thing(data.springThing);
+            data.springTimer = serializer.i32(data.springTimer);
+            data.springDirection = serializer.v3(data.springDirection);
+            data.springThingPosition = serializer.v3(data.springThingPosition);
+
+            return data;
+        }
+
+        @Override public int getAllocatedSize() { return SpringData.BASE_ALLOCATION_SIZE; }
     }
 
     public ResourceDescriptor config;
@@ -91,7 +107,7 @@ public class PCreature implements Serializable {
     public float flyingLegScale;
     public Vector4f flyingVels;
     public boolean flyingFlapLockout, flyingFallLockout, flyingInWind, flyingThrustLatched;
-    public int glidingTime;
+    public short glidingTime;
     public byte springState;
     public boolean springHasSprung;
     public SpringData currentSpringData;
@@ -329,6 +345,42 @@ public class PCreature implements Serializable {
 
         if (version >= 0x3c0)
             creature.whipSim = serializer.thing(creature.whipSim);
+
+        if (subVersion >= 0xaa)
+            creature.alternateFormWorld = serializer.thing(creature.alternateFormWorld);
+
+        if (subVersion >= 0xd7)
+            creature.hookHatState = serializer.i32(creature.hookHatState);
+
+        if (subVersion >= 0xdf)
+            creature.hookHatBogey = serializer.thing(creature.hookHatBogey);
+        
+        if (subVersion >= 0x196) {
+            creature.flyingState = serializer.i32(creature.flyingState);
+            creature.flyingTimer = serializer.i32(creature.flyingTimer);
+            creature.flyingFlumpFrame = serializer.i32(creature.flyingFlumpFrame);
+            creature.flyingImpulseFrame = serializer.i32(creature.flyingImpulseFrame);
+            creature.flyingFlapButtonTimer = serializer.i32(creature.flyingFlapButtonTimer);
+            creature.flyingBrakeTimer = serializer.i32(creature.flyingBrakeTimer);
+            creature.flyingGrabFallTimer = serializer.i32(creature.flyingGrabFallTimer);
+            creature.flyingLegScale = serializer.f32(creature.flyingLegScale);
+            creature.flyingVels = serializer.v4(creature.flyingVels);
+            creature.flyingFlapLockout = serializer.bool(creature.flyingFlapLockout);
+            creature.flyingFallLockout = serializer.bool(creature.flyingFallLockout);
+            creature.flyingInWind = serializer.bool(creature.flyingInWind);
+            creature.flyingThrustLatched = serializer.bool(creature.flyingThrustLatched);
+            creature.glidingTime = serializer.i16(creature.glidingTime);
+        }
+
+        if (subVersion >= 0x20c) {
+            creature.springState = serializer.i8(creature.springState);
+            creature.springHasSprung = serializer.bool(creature.springHasSprung);
+            creature.currentSpringData = serializer.reference(creature.currentSpringData, SpringData.class);
+            creature.springPower = serializer.i8(creature.springPower);
+            creature.springSeparateForces = serializer.bool(creature.springSeparateForces);
+            creature.springForce = serializer.i8(creature.springForce);
+            creature.springStateTimer = serializer.i8(creature.springStateTimer);
+        }
 
         return creature;
     }
