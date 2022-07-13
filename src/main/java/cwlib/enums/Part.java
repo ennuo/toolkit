@@ -170,7 +170,7 @@ public enum Part {
         }
         
         return version >= this.version
-            && ((1L << index) & flags) != 0;
+            && (((1L << index) & flags) != 0);
     }
 
     /**

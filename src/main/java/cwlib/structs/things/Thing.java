@@ -12,6 +12,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PJoint;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
+import cwlib.util.Bytes;
 import toolkit.utilities.ResourceSystem;
 
 /**
@@ -19,6 +20,8 @@ import toolkit.utilities.ResourceSystem;
  */
 public class Thing implements Serializable {
     public static boolean SERIALIZE_WORLD_THING = true;
+    public static int MAX_PARTS_REVISION = PartHistory.STREAMING_HINT;
+
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public int UID = 1;
@@ -129,6 +132,11 @@ public class Thing implements Serializable {
             partsRevision = (lastPart == null) ? 0 : lastPart.getVersion();
         }
 
+        if (serializer.isWriting()) {
+            if (partsRevision > Thing.MAX_PARTS_REVISION)
+                partsRevision = Thing.MAX_PARTS_REVISION;
+        }
+        
         partsRevision = serializer.s32(partsRevision);
         if (isCompressed) {
             // serializer.log("FLAGS");
@@ -151,6 +159,8 @@ public class Thing implements Serializable {
             }
             serializer.log(part.name() + " [END]");
         }
+
+        serializer.log("THING " + Bytes.toHex(thing.UID) + " [END]");
         
         return thing;
     }

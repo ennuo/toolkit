@@ -117,7 +117,8 @@ public class PSwitch implements Serializable {
             if (serializer.isWriting()) {
                 MemoryOutputStream stream = serializer.getOutput();
                 SwitchOutput output = (sw.outputs != null && sw.outputs.length != 0) ? sw.outputs[0] : new SwitchOutput();
-                if (version > 0x2a2) stream.f32(output.activation.activation);
+                serializer.f32(output.activation.activation);
+                if (version > 0x2a2) stream.i32(output.activation.player);
                 serializer.array(output.targetList, SwitchTarget.class);
             } else {
                 MemoryInputStream stream = serializer.getInput();
