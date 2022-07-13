@@ -310,7 +310,7 @@ public class Resource {
                     stream.i16(revision.getBranchRevision());
                 }
 
-                if (head >= 0x297 || (head == 0x272 && revision.getBranchID() == Branch.LEERDAMMER.getID()))
+                if (head >= 0x297 || (revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES)))
                     stream.i8(data.getCompressionFlags());
 
                 if (preferCompressed)

@@ -599,7 +599,8 @@ public class Serializer {
             if (guid != null) descriptor = new ResourceDescriptor(guid, type);
             else descriptor = new ResourceDescriptor(guid, type);
             
-            this.dependencies.add(descriptor);
+            if (!(isDescriptor && type == ResourceType.PLAN))
+                this.dependencies.add(descriptor);
             return descriptor;
         }
 
@@ -617,7 +618,8 @@ public class Serializer {
             if ((flags & HASH) != 0)
                 this.output.sha1(value.getSHA1());
 
-            this.dependencies.add(value);
+            if (!(isDescriptor && type == ResourceType.PLAN))
+                this.dependencies.add(value);
         } else this.i8(NONE);
 
         return value;
