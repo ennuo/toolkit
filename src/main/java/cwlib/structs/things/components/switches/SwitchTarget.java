@@ -18,7 +18,8 @@ public class SwitchTarget implements Serializable {
         SwitchTarget target = (structure == null) ? new SwitchTarget() : (SwitchTarget) structure;
 
         target.thing = serializer.thing(target.thing);
-        target.port = serializer.i32(target.port);
+        if (serializer.getRevision().getVersion() > 0x326)
+            target.port = serializer.i32(target.port);
         
         return target;
     }
