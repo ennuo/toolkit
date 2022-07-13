@@ -19,11 +19,17 @@ public class RMaterial implements Compressable, Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public float traction = 1.0f, density = 20.0f;
-    public float restitution = 0.3f, slidingFriction = 0.8f, rollingFriction = 1.8f;
+    public byte field000, field001;
+    public float restitution = 0.3f, slidingFriction = 0.8f, field002, rollingFriction = 1.8f;
+    public byte field003, field004, field005, field006, field007;
     public AudioMaterial soundEnum = AudioMaterial.NONE;
     public boolean grabbable = false;
+    public byte field008, field009;
     public float gravityMultiplier = 1.0f, airResistanceMultiplier = 1.0f;
-    public boolean limb, shiftGrip;
+    public float field010;
+    public boolean limb;
+    public byte field011;
+    public boolean shiftGrip;
     public int collideType = CollideType.NORMAL, collideIgnore = CollideType.NONE;
     public boolean dissolvable, explodable, cuttableByExplosion = true, breakable;
     public float breakMinVel, breakMinForce;
@@ -39,29 +45,54 @@ public class RMaterial implements Compressable, Serializable {
         RMaterial material = (structure == null) ? new RMaterial() : (RMaterial) structure;
 
         int head = serializer.getRevision().getVersion();
-        if (head < 0x13c)
-            throw new SerializationException("RMaterial serialization below r316 is not supported.");
-
+        
         material.traction = serializer.f32(material.traction);
         material.density = serializer.f32(material.density);
-        material.restitution = serializer.f32(material.restitution);
+
+        if (head < 0x13c) {
+            material.field000 = serializer.i8(material.field000);
+            material.field001 = serializer.i8(material.field001);
+        }
+
+        // if (head >= 0x292)
+            material.restitution = serializer.f32(material.restitution);
+        // else
+        //     serializer.f32(0); // Is this supposed to be restitution still?
+        
         material.slidingFriction = serializer.f32(material.slidingFriction);
+
+        if (head < 0x13c)
+            material.field002 = serializer.f32(material.field002);
+
         material.rollingFriction = serializer.f32(material.rollingFriction);
         
+        if (head < 0x13c) {
+            material.field003 = serializer.i8(material.field003);
+            material.field004 = serializer.i8(material.field004);
+            material.field005 = serializer.i8(material.field005);
+            material.field006 = serializer.i8(material.field006);
+            material.field007 = serializer.i8(material.field007);
+        }
+
         material.soundEnum = AudioMaterial.fromValue(serializer.i32(material.soundEnum.getValue()));
 
         material.grabbable = serializer.bool(material.grabbable);
+
+        if (head < 0x13c) {
+            material.field008 = serializer.i8(material.field008);
+            material.field009 = serializer.i8(material.field009);
+        }
 
         material.gravityMultiplier = serializer.f32(material.gravityMultiplier);
         material.airResistanceMultiplier = serializer.f32(material.airResistanceMultiplier);
 
         if (head < 0x167)
-            serializer.f32(0); // Unknown value
+            material.field010 = serializer.f32(material.field010); // breakResistance?
         
         material.limb = serializer.bool(material.limb);
 
         if (head < 0x1d3)
-            serializer.bool(false); // Unknown value
+            material.field011 = serializer.i8(material.field011); // creativeZone?
         
         material.shiftGrip = serializer.bool(material.shiftGrip);
 
@@ -99,7 +130,7 @@ public class RMaterial implements Compressable, Serializable {
         return material;
     }
 
-    @Override public int getAllocatedSize() { return RMaterial.BASE_ALLOCATION_SIZE; }
+    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
 
     @Override public SerializationData build(Revision revision, byte compressionFlags) {
         Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
