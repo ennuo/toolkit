@@ -52,7 +52,7 @@ public enum Part {
     NPC(0x1f, PartHistory.NPC, PNpc.class),
     SWITCH_INPUT(0x20, PartHistory.SWITCH_INPUT, PSwitchInput.class),
     MICROCHIP(0x21, PartHistory.MICROCHIP, PMicrochip.class),
-    MATERIAL_TWEAK(0x22, PartHistory.MATERIAL_TWEAK, null),
+    MATERIAL_TWEAK(0x22, PartHistory.MATERIAL_TWEAK, PMaterialTweak.class),
     MATERIAL_OVERRIDE(0x23, PartHistory.MATERIAL_OVERRIDE, PMaterialOverride.class),
     INSTRUMENT(0x24, PartHistory.INSTRUMENT, PInstrument.class),
     SEQUENCER(0x25, PartHistory.SEQUENCER, PSequencer.class),
