@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import org.joml.Vector4f;
 
+import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SwitchBehavior;
 import cwlib.enums.SwitchLogicType;
@@ -81,6 +82,7 @@ public class PSwitch implements Serializable {
     public int stickerSwitchMode;
 
     /* Vita */
+    public byte impactSensorMode;
     public int switchTouchType;
     public byte cursorScreenArea, cursorInteractionType, cursorTouchPanels, cursorTouchIndex;
     public byte flags;
@@ -165,6 +167,9 @@ public class PSwitch implements Serializable {
 
         if (version > 0x1a4) sw.activationHoldTime = serializer.s32(sw.activationHoldTime);
         if (version > 0x1a4) sw.requireAll = serializer.bool(sw.requireAll);
+
+        if (revision.has(Branch.DOUBLE11, 0x2a))
+            sw.impactSensorMode = serializer.i8(sw.impactSensorMode);
 
         if (version > 0x1fa && version < 0x327) {
             // connectorPos
