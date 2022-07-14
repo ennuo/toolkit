@@ -53,10 +53,14 @@ public final class Revision {
     public boolean isLBP3() { return this.head >> 0x10 != 0; }
 
     public boolean isLeerdammer() { return this.is(Branch.LEERDAMMER); }
-    public boolean isVita() { return this.is(Branch.DOUBLE11); }
+    public boolean isVita() { 
+        int version = this.getVersion();
+        return this.branchID == Branch.DOUBLE11.getID() && version >= 0x3c1 && version <= 0x3e2;
+    }
     public boolean isToolkit() { return this.is(Branch.MIZUKI); }
 
     public boolean is(Branch branch) {
+        if (branch == Branch.DOUBLE11) return this.isVita();
         return this.branchID == branch.getID() && this.head == branch.getHead();
     }
 

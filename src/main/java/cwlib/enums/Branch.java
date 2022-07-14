@@ -8,7 +8,9 @@ public enum Branch {
     LEERDAMMER(Revisions.LD_HEAD, 0x4c44, Revisions.LD_MAX),
 
     /**
-     * LittleBigPlanet Vita branched revision
+     * LittleBigPlanet Vita branched revision, Vita is weird,
+     * the final branch revision is 0x3e2, but it can go as early
+     * as 0x3c1 in earlier branch revisions.
      * Tag: D1
      */
     DOUBLE11(Revisions.D1_HEAD, 0x4431, Revisions.D1_MAX),
