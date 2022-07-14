@@ -1,8 +1,11 @@
 package cwlib.structs.things.components;
 
+import cwlib.enums.Branch;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.types.data.Revision;
+
 import org.joml.Matrix4f;
 
 public class Decoration implements Serializable {
@@ -23,13 +26,15 @@ public class Decoration implements Serializable {
     public boolean isQuest = false;
     public int playModeFrame;
     public int planGUID;
+    public float zBias; // Vita
     
     @SuppressWarnings("unchecked")
     @Override public Decoration serialize(Serializer serializer, Serializable structure) {
         Decoration decoration = (structure == null) ? new Decoration() : (Decoration) structure;
         
-        int version = serializer.getRevision().getVersion();
-        int subVersion = serializer.getRevision().getSubVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
         decoration.renderMesh = serializer.reference(decoration.renderMesh, PRenderMesh.class);
         
@@ -60,6 +65,9 @@ public class Decoration implements Serializable {
 
         if (version >= 0x25b)
             decoration.planGUID = serializer.i32(decoration.planGUID);
+
+        if (revision.has(Branch.DOUBLE11, 0x7c))
+            decoration.zBias = serializer.f32(decoration.zBias);
         
         return decoration;
     }

@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import java.util.ArrayList;
 
+import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
@@ -14,6 +15,7 @@ public class PLevelSettings extends LevelSettings {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public ArrayList<LevelSettings> presets = new ArrayList<>();
+    public boolean nonLinearFog;
     public String backdropAmbience;
     public ResourceDescriptor backdropMesh;
     public int backgroundRepeatFlags;
@@ -34,6 +36,9 @@ public class PLevelSettings extends LevelSettings {
 
         if (0x152 < version && version < 0x15a)
             serializer.f32(0);
+
+        if (revision.has(Branch.DOUBLE11, 0x78))
+            settings.nonLinearFog = serializer.bool(settings.nonLinearFog);
 
         // 0x154 -> 0x155
         if (!(version < 0x154 || 0x155 < version)) {

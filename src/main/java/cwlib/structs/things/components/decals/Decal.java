@@ -9,6 +9,7 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 
 /**
  * Represents a sticker on an object.
@@ -64,13 +65,16 @@ public class Decal implements Serializable {
      */
     public ResourceDescriptor plan;
 
-    public Vector4f localHitPoint; // Vita
+    /* Vita */
+    public Vector4f localHitPoint;
+    public boolean dontWantGammaCorrection;
 
     @SuppressWarnings("unchecked")
     @Override public Decal serialize(Serializer serializer, Serializable structure) {
         Decal decal = (structure == null) ? new Decal() : (Decal) structure;
 
-        int version = serializer.getRevision().getVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
 
         decal.texture = serializer.resource(decal.texture, ResourceType.TEXTURE);
         decal.u = serializer.f32(decal.u);
@@ -116,8 +120,10 @@ public class Decal implements Serializable {
             }
         }
 
-        if (serializer.getRevision().has(Branch.DOUBLE11, 0x3f))
+        if (revision.has(Branch.DOUBLE11, 0x3f))
             decal.localHitPoint = serializer.v4(decal.localHitPoint);
+        if (revision.has(Branch.DOUBLE11, 0x7e))
+            decal.dontWantGammaCorrection = serializer.bool(decal.dontWantGammaCorrection);
         
         return decal;
     }

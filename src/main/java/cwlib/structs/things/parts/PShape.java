@@ -110,6 +110,7 @@ public class PShape implements Serializable {
     public boolean invisibleTouch;
     public byte bouncePadBehavior;
     public float zBiasVita;
+    public boolean touchWhenInvisible;
 
     @SuppressWarnings("unchecked")
     @Override public PShape serialize(Serializer serializer, Serializable structure) {
@@ -257,6 +258,8 @@ public class PShape implements Serializable {
                 shape.bouncePadBehavior = serializer.i8(shape.bouncePadBehavior);
             if (vita >= 0x5f)
                 shape.zBiasVita = serializer.f32(shape.zBiasVita);
+            if (vita >= 0x7a)
+                shape.touchWhenInvisible = serializer.bool(shape.touchWhenInvisible);
         }
         
         if (subVersion >= 0x42 && subVersion < 0xc6)
