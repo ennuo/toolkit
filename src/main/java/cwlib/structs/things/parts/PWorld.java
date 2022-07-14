@@ -92,6 +92,7 @@ public class PWorld implements Serializable {
 
     /* Vita Fields */
 
+    public boolean nonLinearFog;
     public EggLink[] bronzeRewards, silverRewards, goldRewards;
     public KeyLink[] bronzeUnlocks, silverUnlocks, goldUnlocks;
     public byte bronzeTrophyConditionType, silverTrophyConditionType, goldTrophyConditionType;
@@ -194,6 +195,8 @@ public class PWorld implements Serializable {
                 world.fogFactor = serializer.f32(world.fogFactor);
                 world.fogTintFactor = serializer.f32(world.fogTintFactor);
                 world.darknessFactor = serializer.f32(world.darknessFactor);
+                if (revision.has(Branch.DOUBLE11, 0x78))
+                    world.nonLinearFog = serializer.bool(world.nonLinearFog);
             }
         }
 
@@ -322,12 +325,13 @@ public class PWorld implements Serializable {
         if (revision.has(Branch.DOUBLE11, 0x2d)) {
             world.waterColor = serializer.s32(world.waterColor);
             world.waterBrightness = serializer.f32(world.waterBrightness);
-        }
-        
-        if (version >= 0x289 || revision.isLeerdammer()) {
+        } else if (version >= 0x289 || revision.isLeerdammer()) {
             world.waterTint = serializer.f32(world.waterTint);
             world.fromWaterTintColor = serializer.v4(world.fromWaterTintColor);
             world.targetWaterTint = serializer.f32(world.targetWaterTint);
+        }
+        
+        if (version >= 0x289 || revision.isLeerdammer()) {
             world.waterMurkiness = serializer.f32(world.waterMurkiness);
             world.fromWaterMurkiness = serializer.f32(world.fromWaterMurkiness);
             world.targetWaterMurkiness = serializer.f32(world.targetWaterMurkiness);
