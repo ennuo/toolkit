@@ -34,7 +34,8 @@ public class Thing implements Serializable {
     public boolean isStamping;
     public GUID planGUID;
     public boolean hidden;
-    public byte flags, extraFlags;
+    public short flags;
+    public byte extraFlags;
 
     private Serializable[] parts = new Serializable[0x3f];
 
@@ -92,8 +93,12 @@ public class Thing implements Serializable {
         } else {
             if (version >= 0x254)
                 thing.planGUID = serializer.guid(thing.planGUID);
-            if (version >= 0x341)
-                thing.flags = serializer.i8(thing.flags);
+            if (version >= 0x341) {
+                if (revision.has(Branch.DOUBLE11, 0x62))
+                    thing.flags = serializer.i16(thing.flags);
+                else
+                    thing.flags = serializer.i8((byte) thing.flags);
+            }
             if (subVersion >= 0x110)
                 thing.extraFlags = serializer.i8(thing.extraFlags);
         }
