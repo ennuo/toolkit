@@ -26,7 +26,7 @@ public class PlanBackporter {
         if (args.length == 4)
             branchDescriptor = (int) Strings.getLong(args[3]);
         
-        if (head <= 0x38b)
+        if (head <= 0x3e2)
             Thing.MAX_PARTS_REVISION = PartHistory.CONTROLINATOR;
         if (head <= 0x33a)
             Thing.MAX_PARTS_REVISION = PartHistory.MATERIAL_OVERRIDE;
