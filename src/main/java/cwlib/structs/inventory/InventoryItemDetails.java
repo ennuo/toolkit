@@ -187,7 +187,9 @@ public class InventoryItemDetails implements Serializable {
                 details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
             }
 
-            if (head > 0x181)
+            // 0x17a < revision && revision < 0x182
+            // 0x181 < revision ???
+            if (head > 0x17a)
                 details.photoData = serializer.reference(details.photoData, InventoryItemPhotoData.class);
 
             if (head > 0x176) {
@@ -277,8 +279,8 @@ public class InventoryItemDetails implements Serializable {
             details.flags = serializer.i8(details.flags);
 
         if (serializer.getRevision().has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || head > 0x2ba) {
-            details.titleKey = serializer.uleb128(details.titleKey);
-            details.descriptionKey = serializer.uleb128(details.descriptionKey);
+            details.titleKey = serializer.u32(details.titleKey);
+            details.descriptionKey = serializer.u32(details.descriptionKey);
         } else 
             details.translationTag = serializer.str(details.translationTag);
 
@@ -293,6 +295,9 @@ public class InventoryItemDetails implements Serializable {
         details.icon = serializer.resource(details.icon, ResourceType.TEXTURE, true);
         details.photoData = serializer.reference(details.photoData, InventoryItemPhotoData.class);
         details.eyetoyData = serializer.reference(details.eyetoyData, EyetoyData.class);
+
+        if (head > 0x358)
+            serializer.u8(0);
         
         if (!serializer.isWriting())
             details.updateTranslations();

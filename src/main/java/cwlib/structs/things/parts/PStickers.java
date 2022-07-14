@@ -21,7 +21,7 @@ public class PStickers implements Serializable {
     /**
      * Decals on specific costume pieces.
      */
-    public Decal[][] costumeDecals;
+    public Decal[][] costumeDecals = new Decal[14][];
 
     /**
      * Paint control data, depreciated.

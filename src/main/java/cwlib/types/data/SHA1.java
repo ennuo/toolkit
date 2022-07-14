@@ -8,6 +8,8 @@ import cwlib.util.Crypto;
  * represent a SHA1 hash.
  */
 public final class SHA1 {
+    public static final SHA1 EMPTY = new SHA1();
+    
     private final byte[] hashBytes;
     private final String hashString;
     

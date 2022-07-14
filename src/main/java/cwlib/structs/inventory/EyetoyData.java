@@ -19,7 +19,7 @@ public class EyetoyData implements Serializable {
     @Override public EyetoyData serialize(Serializer serializer, Serializable structure) {
         EyetoyData eyetoy = (structure == null) ? new EyetoyData() : (EyetoyData) structure;
         
-        if (serializer.getRevision().getVersion() <= 0x15d)
+        if (serializer.getRevision().getVersion() < 0x15e)
             return eyetoy;
 
         eyetoy.frame = serializer.resource(eyetoy.frame, ResourceType.TEXTURE);
