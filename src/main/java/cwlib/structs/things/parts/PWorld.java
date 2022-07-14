@@ -152,6 +152,7 @@ public class PWorld implements Serializable {
         }
 
         world.things = serializer.arraylist(world.things, Thing.class, true);
+        serializer.log("END OF WORLD THINGS");
 
         world.maxVel = serializer.f32(world.maxVel);
         world.maxAVel = serializer.f32(world.maxAVel);
