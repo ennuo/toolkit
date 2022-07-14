@@ -99,6 +99,7 @@ public class PCreature implements Serializable {
     public byte capeExtraMaxVelocityCap;
     public int behavior, effectDestroy = 6;
     public Thing whipSim, alternateFormWorld;
+    public int shootAtTouch; // vita
     public int hookHatState;
     public Thing hookHatBogey;
     public int flyingState, flyingTimer, flyingFlumpFrame,
@@ -345,6 +346,13 @@ public class PCreature implements Serializable {
 
         if (version >= 0x3c0)
             creature.whipSim = serializer.thing(creature.whipSim);
+
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+            if (vita < 0x53) serializer.u8(0);
+            if (vita >= 0x53)
+                creature.shootAtTouch = serializer.i32(creature.shootAtTouch);
+        }
 
         if (subVersion >= 0xaa)
             creature.alternateFormWorld = serializer.thing(creature.alternateFormWorld);

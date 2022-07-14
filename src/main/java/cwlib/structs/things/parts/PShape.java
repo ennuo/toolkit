@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import cwlib.enums.AudioMaterial;
+import cwlib.enums.Branch;
 import cwlib.enums.LethalType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShapeFlags;
@@ -105,10 +106,10 @@ public class PShape implements Serializable {
 
     /* Vita fields */
 
-    @SuppressWarnings("unused") public byte touchability;
-    @SuppressWarnings("unused") public boolean invisibleTouch;
-    @SuppressWarnings("unused") public byte bouncePadBehavior;
-    @SuppressWarnings("unused") public boolean touchWhenInvisible;
+    public byte touchability;
+    public boolean invisibleTouch;
+    public byte bouncePadBehavior;
+    public float zBiasVita;
 
     @SuppressWarnings("unchecked")
     @Override public PShape serialize(Serializer serializer, Serializable structure) {
@@ -238,13 +239,26 @@ public class PShape implements Serializable {
             shape.colorOffOpacity = serializer.i8(shape.colorOffOpacity);
         }
 
+        // head > 0x3c0
+        if (revision.has(Branch.DOUBLE11, 0x5))
+            shape.touchability = serializer.i8(shape.touchability);
+
         if (subVersion >= 0x12c)
             shape.colorShininess = serializer.i8(shape.colorShininess);
 
         if (version >= 0x3e2)
             shape.canCollect = serializer.bool(shape.canCollect);
 
-
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+            if (vita >= 0x26)
+                shape.invisibleTouch = serializer.bool(shape.invisibleTouch);
+            if (vita >= 0x34)
+                shape.bouncePadBehavior = serializer.i8(shape.bouncePadBehavior);
+            if (vita >= 0x5f)
+                shape.zBiasVita = serializer.f32(shape.zBiasVita);
+        }
+        
         if (subVersion >= 0x42 && subVersion < 0xc6)
             serializer.u8(0);
 

@@ -5,6 +5,7 @@ import org.joml.Matrix4f;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
 
 public class PControlinator implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
@@ -20,12 +21,18 @@ public class PControlinator implements Serializable {
     public Matrix4f parentBoneOffset;
     public byte playerMode, layerRange;
 
+    /* Vita */
+    public float tiltMax, tiltMin;
+    public int remotePlayer;
+    public boolean playAudio;
+
     @SuppressWarnings("unchecked")
     @Override public PControlinator serialize(Serializer serializer, Serializable structure) {
         PControlinator dc = (structure == null) ? new PControlinator() : (PControlinator) structure;
 
-        int version = serializer.getRevision().getVersion();
-        int subVersion = serializer.getRevision().getSubVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
         
         dc.attachedPlayer = serializer.thing(dc.attachedPlayer);
         dc.lastAttachedPlayer = serializer.thing(dc.lastAttachedPlayer);
@@ -46,6 +53,18 @@ public class PControlinator implements Serializable {
             dc.killRiderOnCreatureDeath = serializer.bool(dc.killRiderOnCreatureDeath);
         
         dc.padSwitch = serializer.thing(dc.padSwitch);
+
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+            if (vita >= 0xd) // 0x3c0
+                dc.tiltMax = serializer.f32(dc.tiltMax);
+            if (vita >= 0xe) // 0x3c0
+                dc.tiltMin = serializer.f32(dc.tiltMin);
+            if (vita >= 0x1d) // 0x3d4
+                dc.remotePlayer = serializer.i32(dc.remotePlayer);
+            if (vita >= 0x51) // 0x3e1
+                dc.playAudio = serializer.bool(dc.playAudio);
+        }
 
         if (subVersion > 0x4b) {
             dc.parentBoneIndex = serializer.i32(dc.parentBoneIndex);

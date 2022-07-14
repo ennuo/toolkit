@@ -1,9 +1,11 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.Branch;
 import cwlib.enums.TriggerType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
 
 public class PTrigger implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
@@ -22,8 +24,9 @@ public class PTrigger implements Serializable {
     @Override public PTrigger serialize(Serializer serializer, Serializable structure) {
         PTrigger trigger = (structure == null) ? new PTrigger() : (PTrigger) structure;
         
-        int version = serializer.getRevision().getVersion();
-        int subVersion = serializer.getRevision().getSubVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
         trigger.triggerType = serializer.enum8(trigger.triggerType);
         trigger.inThings = serializer.array(trigger.inThings, Thing.class, true);
@@ -44,7 +47,7 @@ public class PTrigger implements Serializable {
         if (version >= 0x322)
             trigger.zOffset = serializer.f32(trigger.zOffset);
 
-        if (subVersion >= 0x90)
+        if (subVersion >= 0x90 || revision.has(Branch.DOUBLE11, 0x30))
             trigger.scoreValue = serializer.s32(trigger.scoreValue);
         
         return trigger;

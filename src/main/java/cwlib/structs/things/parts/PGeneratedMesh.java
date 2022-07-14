@@ -122,8 +122,11 @@ public class PGeneratedMesh implements Serializable {
         }
 
         if (revision.isVita()) {
-            mesh.uvMode = serializer.i32(mesh.uvMode);
-            mesh.textureScale = serializer.f32(mesh.textureScale);
+            int vita = revision.getBranchRevision();
+            if (vita >= 0x6b) 
+                mesh.uvMode = serializer.i32(mesh.uvMode);
+            if (vita >= 0x76) 
+                mesh.textureScale = serializer.f32(mesh.textureScale);
         }
 
         if (subVersion >= 0x34)

@@ -3,6 +3,7 @@ package cwlib.structs.things.components.npc;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import cwlib.enums.Branch;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -17,6 +18,7 @@ public class InputRecording implements Serializable {
     public Vector3f startFootPos;
     public Vector3f[] startVelocities;
     public boolean recordingContainsMoveData;
+    public boolean recordingContainsVitaData; // Vita, perhaps obviously
 
     @SuppressWarnings("unchecked")
     @Override public InputRecording serialize(Serializer serializer, Serializable structure) {
@@ -59,6 +61,9 @@ public class InputRecording implements Serializable {
 
         if (version > 0x3c4)
             recording.recordingContainsMoveData = serializer.bool(recording.recordingContainsMoveData);
+
+        if (serializer.getRevision().has(Branch.DOUBLE11, 0x3a))
+            recording.recordingContainsVitaData = serializer.bool(recording.recordingContainsVitaData);
         
         return recording;
     }

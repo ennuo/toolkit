@@ -4,6 +4,7 @@ import cwlib.enums.EnemyPart;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
 
 import org.joml.Vector3f;
 
@@ -21,11 +22,16 @@ public class PEnemy implements Serializable {
     public int smokeColor;
     public float smokeBrightness;
 
+    /* Vita */
+    public boolean touchSensitive;
+    public int touchType;
+
     @SuppressWarnings("unchecked")
     @Override public PEnemy serialize(Serializer serializer, Serializable structure) {
         PEnemy enemy = (structure == null) ? new PEnemy() : (PEnemy) structure;
         
-        int version = serializer.getRevision().getVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
 
         if (version >= 0x15d)
             enemy.partType = serializer.enum32(enemy.partType, true);
@@ -74,6 +80,14 @@ public class PEnemy implements Serializable {
         if (version >= 0x39a)
             enemy.smokeBrightness = serializer.f32(enemy.smokeBrightness);
 
+        if (revision.isVita()) { // 0x3c0
+            int vita = revision.getBranchRevision();
+            if (vita >= 0x2)
+                enemy.touchSensitive = serializer.bool(enemy.touchSensitive);
+            if (vita >= 0x3)
+                enemy.touchType = serializer.i32(enemy.touchType);
+        }
+        
         return enemy;
     }
 

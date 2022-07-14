@@ -80,6 +80,16 @@ public class PSwitch implements Serializable {
     public boolean isLbp3Switch, randomNonRepeating;
     public int stickerSwitchMode;
 
+    /* Vita */
+    public int switchTouchType;
+    public byte cursorScreenArea, cursorInteractionType, cursorTouchPanels, cursorTouchIndex;
+    public byte flags;
+    public int outputAndOr;
+    public byte includeSameChipTags;
+    public int glowFrontCol, glowBackCol, glowActiveCol;
+    public byte playerFilter;
+
+
     @SuppressWarnings("unchecked")
     @Override public PSwitch serialize(Serializer serializer, Serializable structure) {
         PSwitch sw = (structure == null) ? new PSwitch() : (PSwitch) structure;
@@ -262,6 +272,63 @@ public class PSwitch implements Serializable {
         if (subVersion > 0x216)
             sw.unspawnedBehavior = serializer.i8(sw.unspawnedBehavior);
         if (version > 0x3a4) sw.playSwitchAudio = serializer.bool(sw.playSwitchAudio);
+
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+
+            if (vita >= 0x1) // > 0x3c0
+                sw.switchTouchType = serializer.i32(sw.switchTouchType);
+            
+            if (vita >= 0x6 && vita < 0x36) // > 0x3c0
+                serializer.u8(0);
+            
+            if (vita >= 0x9 && vita < 0x2c) // > 0x3c0
+                sw.cursorScreenArea = (byte) serializer.u32(sw.cursorScreenArea);
+            else if (vita >= 0x2c)
+                sw.cursorScreenArea = serializer.i8(sw.cursorScreenArea);
+
+            if (vita >= 0xb) // > 0x3c0
+                sw.cursorInteractionType = serializer.i8(sw.cursorInteractionType);
+            if (vita >= 0xc) // > 0x3c0
+                sw.cursorTouchPanels = serializer.i8(sw.cursorTouchPanels);
+            if (vita >= 0x23) // > 0x3c0
+                sw.cursorTouchIndex = serializer.i8(sw.cursorTouchIndex);
+
+            if (vita < 0x36) { // > 0x3c0
+                if (vita >= 0x23) serializer.u8(0);
+                if (vita >= 0x13) serializer.u8(0);
+                if (vita >= 0x7) serializer.u8(0);
+                if (vita >= 0x15) serializer.u8(0);
+                if (vita >= 0x24) serializer.u8(0);
+            } // Most of these should correspond to a value in sw.flags
+
+            if (vita >= 0x36)
+                sw.flags = serializer.i8(sw.flags);
+            if (vita >= 0x2b)
+                sw.outputAndOr = serializer.s32(sw.outputAndOr);
+            
+            if (vita >= 0x2b && vita < 0x36) 
+                serializer.u8(0);
+
+            // data sampler, although 0x2f shouldn't be the switch type?
+            if (vita >= 0x45 && sw.type.getValue() == 0x2f)
+                throw new SerializationException("UNSUPPORTED!");
+
+            if (vita >= 0x38 && vita < 0x41) 
+                serializer.u8(0); // if equal to 0, includeSameChipTags is 1
+            
+            if (vita >= 0x41)
+                sw.includeSameChipTags = serializer.i8(sw.includeSameChipTags);
+            if (vita >= 0x43) {
+                sw.glowFrontCol = serializer.i32(sw.glowFrontCol);
+                sw.glowBackCol = serializer.i32(sw.glowBackCol);
+                sw.glowActiveCol = serializer.i32(sw.glowActiveCol);
+            }
+
+            if (vita >= 0x54)
+                sw.playerFilter = serializer.i8(sw.playerFilter);
+        }
+        
         if (version > 0x3ec) sw.playerMode = serializer.i8(sw.playerMode);
 
         if (version > 0x3ee && sw.type == SwitchType.DATA_SAMPLER) {

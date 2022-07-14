@@ -6,7 +6,6 @@ import org.joml.Vector4f;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.CameraNode;
-import de.javagl.jgltf.impl.v1.Camera;
 
 public class PCameraTweak implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;

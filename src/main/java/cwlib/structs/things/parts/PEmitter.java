@@ -49,6 +49,10 @@ public class PEmitter implements Serializable {
     public boolean soundEnabled;
     public boolean emitByReferenceInPlayMode, emitToNearestRearLayer;
 
+    /* Vita */
+
+    public byte emitNode, cleanUpOnDestroyed;
+
     @SuppressWarnings("unchecked")
     @Override public PEmitter serialize(Serializer serializer, Serializable structure) {
         PEmitter emitter = (structure == null) ? new PEmitter() : (PEmitter) structure;
@@ -163,8 +167,18 @@ public class PEmitter implements Serializable {
         if (subVersion > 0x64)
             emitter.isLimboFlippedForGunEmitter = serializer.bool(emitter.isLimboFlippedForGunEmitter); // my god
 
+        // they renamed this field to backupZOffset in Vita, not fans of swears? :fearful:
         if (version >= 0x3ae)
             emitter.theFuckingZOffset = serializer.f32(emitter.theFuckingZOffset);
+
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+            if (vita >= 0xf) 
+                emitter.emitNode = serializer.i8(emitter.emitNode);
+            if (vita >= 0x2f)
+                emitter.cleanUpOnDestroyed = serializer.i8(emitter.cleanUpOnDestroyed);
+        }
+        
         if (subVersion >= 0x18e)
             emitter.justUseTheFuckingZOffset = serializer.bool(emitter.justUseTheFuckingZOffset);
         

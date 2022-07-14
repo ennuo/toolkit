@@ -1,5 +1,8 @@
 package cwlib.structs.things.components.decals;
 
+import org.joml.Vector4f;
+
+import cwlib.enums.Branch;
 import cwlib.enums.DecalType;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
@@ -61,6 +64,8 @@ public class Decal implements Serializable {
      */
     public ResourceDescriptor plan;
 
+    public Vector4f localHitPoint; // Vita
+
     @SuppressWarnings("unchecked")
     @Override public Decal serialize(Serializer serializer, Serializable structure) {
         Decal decal = (structure == null) ? new Decal() : (Decal) structure;
@@ -111,6 +116,9 @@ public class Decal implements Serializable {
             }
         }
 
+        if (serializer.getRevision().has(Branch.DOUBLE11, 0x3f))
+            decal.localHitPoint = serializer.v4(decal.localHitPoint);
+        
         return decal;
     }
 

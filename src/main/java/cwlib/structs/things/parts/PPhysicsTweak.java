@@ -5,6 +5,7 @@ import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.switches.SwitchSignal;
+import cwlib.types.data.Revision;
 
 import org.joml.Vector3f;
 
@@ -40,20 +41,24 @@ public class PPhysicsTweak implements Serializable {
     public int zBehavior;
     public float lastKnownActivation;
     public boolean waitingToMove;
-    @Deprecated public int usePanel, followType;
-    @Deprecated public float followerDeceleration;
-    @Deprecated public byte playerFilter;
+
     public byte zPhase;
     public short gridSnap, gridStrength;
     public float gridGoalW;
     public Vector3f gridGoal;
 
+    /* Vita */
+    public int usePanel, followType;
+    public float followerDeceleration;
+    public byte playerFilter;
+
     @SuppressWarnings("unchecked")
     @Override public PPhysicsTweak serialize(Serializer serializer, Serializable structure) {
         PPhysicsTweak tweak = (structure == null) ? new PPhysicsTweak() : (PPhysicsTweak) structure;
 
-        int version = serializer.getRevision().getVersion();
-        int subVersion = serializer.getRevision().getSubVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
         if (version < 0x2c4) 
             tweak.activation = serializer.f32(tweak.activation);
@@ -173,6 +178,20 @@ public class PPhysicsTweak implements Serializable {
             if (version > 0x3c4)
                 serializer.u8(0);
         }
+
+        if (revision.isVita()) { 
+            int vita = revision.getBranchRevision();
+            if (vita >= 0x11) // 0x3c0
+                tweak.usePanel = serializer.i32(tweak.usePanel);
+            if (vita >= 0x11 && vita < 0x4b) serializer.u8(0); // 0x3c0
+            if (vita >= 0x1f) // 0x3d4
+                tweak.followType = serializer.i32(tweak.followType);
+            if (vita >= 0x4b)
+                tweak.followerDeceleration = serializer.f32(tweak.followerDeceleration);
+            if (vita >= 0x55)
+                tweak.playerFilter = serializer.i8(tweak.playerFilter);
+        }
+        
 
         if (subVersion >= 0x1 && subVersion < 0x17) {
             serializer.i32(0);

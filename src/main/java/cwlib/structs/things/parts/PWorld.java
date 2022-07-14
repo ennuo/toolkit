@@ -61,9 +61,11 @@ public class PWorld implements Serializable {
     public float waterMurkiness, fromWaterMurkiness, targetWaterMurkiness;
     public float waterBits = 1.0f, fromWaterBits = 1.0f, targetWaterBits = 1.0f;
     public boolean waterDrainSoundsEnabled = true, currWaterDrainSoundsEnabled = true, waterCausticsEnabled = true, currWaterCausticsEnabled = true;
+    
     public int waterMainColor = -1090453761, fromWaterMainColor = -1090453761, targetWaterMainColor = -1090453761;
     public int waterHintColorOne = -33554177, fromWaterHintColorOne = -33554177, targetWaterHintColorOne = -33554177;
     public int waterHintColorTwo = 16662783, fromWaterHintColorTwo = 16662783, targetWaterHintColorTwo = 16662783;
+
     public boolean backdropEnabled = true, currBackdropEnabled = true;
     public float currWavePos = 0.0186706f;
     public GameMode gameMode = GameMode.NONE, gameModeRequested = GameMode.NONE;
@@ -78,6 +80,7 @@ public class PWorld implements Serializable {
     public boolean singlePlayer;
     public int minPlayers = 1, maxPlayers = 4;
     public boolean moveRecommended, fixInvalidInOutMoverContacts, continueMusic;
+
     public Thing[] broadcastMicroChipEntries;
     public int manualJumpDown;
     public Thing[] deferredDestroys;
@@ -87,6 +90,26 @@ public class PWorld implements Serializable {
     public String progressBoardLevelLinkStartPoint;
     public boolean isLBP3World;
 
+    /* Vita Fields */
+
+    public EggLink[] bronzeRewards, silverRewards, goldRewards;
+    public KeyLink[] bronzeUnlocks, silverUnlocks, goldUnlocks;
+    public byte bronzeTrophyConditionType, silverTrophyConditionType, goldTrophyConditionType;
+    public int scoreRequiredForBronzeTrophy, scoreRequiredForSilverTrophy, scoreRequiredForGoldTrophy;
+    public float timeRequiredForBronzeTrophy, timeRequiredForSilverTrophy, timeRequiredForGoldTrophy;
+    public int livesLostRequiredForBronzeTrophy, livesLostRequiredForSilverTrophy, livesLostRequiredForGoldTrophy;
+
+    public boolean enableAcing, enableGoldTrophy, enableSilverTrophy, enableBronzeTrophy;
+    public boolean enforceMinMaxPlayers;
+    
+    public int waterColor;
+    public float waterBrightness;
+
+    public int globalTouchCursor;
+
+    public boolean portraitMode, sharedScreen, disableHUD, disableShadows, flipBackground;
+    public boolean mpSeparateScreen;
+    
     public PWorld() {
         this.currGlobalSettingsBlendFactors = new float[12];
         this.globalSettingsThingUIDs = new int[12];
@@ -187,6 +210,50 @@ public class PWorld implements Serializable {
             world.aceUnlocks = serializer.array(world.aceUnlocks, KeyLink.class);
         }
 
+        if (revision.isVita()) {
+
+            if (revision.has(Branch.DOUBLE11, 0x22) && revision.before(Branch.DOUBLE11, 0x25)) {
+                serializer.array(null, EggLink.class); // unlocks
+                serializer.array(null, EggLink.class);  // rewards
+                serializer.s32(0); // timeRequired
+            }
+
+            if (revision.has(Branch.DOUBLE11, 0x25)) {
+                world.goldRewards = serializer.array(world.goldRewards, EggLink.class);
+                world.goldUnlocks = serializer.array(world.goldUnlocks, KeyLink.class);
+                world.silverRewards = serializer.array(world.silverRewards, EggLink.class);
+                world.silverUnlocks = serializer.array(world.silverUnlocks, KeyLink.class);
+                world.bronzeRewards = serializer.array(world.bronzeRewards, EggLink.class);
+                world.bronzeUnlocks = serializer.array(world.bronzeUnlocks, KeyLink.class);
+
+                world.goldTrophyConditionType = serializer.i8(world.goldTrophyConditionType);
+                world.silverTrophyConditionType = serializer.i8(world.silverTrophyConditionType);
+                world.bronzeTrophyConditionType = serializer.i8(world.bronzeTrophyConditionType);
+
+                world.scoreRequiredForGoldTrophy = serializer.s32(world.scoreRequiredForGoldTrophy);
+                world.timeRequiredForGoldTrophy = serializer.f32(world.timeRequiredForGoldTrophy);
+                world.livesLostRequiredForGoldTrophy = serializer.s32(world.livesLostRequiredForGoldTrophy);
+
+                world.scoreRequiredForSilverTrophy = serializer.s32(world.scoreRequiredForSilverTrophy);
+                world.timeRequiredForSilverTrophy = serializer.f32(world.timeRequiredForSilverTrophy);
+                world.livesLostRequiredForSilverTrophy = serializer.s32(world.livesLostRequiredForSilverTrophy);
+
+                world.scoreRequiredForBronzeTrophy = serializer.s32(world.scoreRequiredForBronzeTrophy);
+                world.timeRequiredForBronzeTrophy = serializer.f32(world.timeRequiredForBronzeTrophy);
+                world.livesLostRequiredForBronzeTrophy = serializer.s32(world.livesLostRequiredForBronzeTrophy);
+            }
+
+            if (revision.has(Branch.DOUBLE11, 0x3d)) {
+                world.enableAcing = serializer.bool(world.enableAcing);
+                world.enableGoldTrophy = serializer.bool(world.enableGoldTrophy);
+                world.enableSilverTrophy = serializer.bool(world.enableSilverTrophy);
+                world.enableBronzeTrophy = serializer.bool(world.enableBronzeTrophy);
+            }
+
+            if (revision.has(Branch.DOUBLE11, 0x4c))
+                world.enforceMinMaxPlayers = serializer.bool(world.enforceMinMaxPlayers);
+        }
+
         if (0x16e < version && version < 0x1bf) {
             serializer.i32(0);
             serializer.i32(0);
@@ -252,6 +319,11 @@ public class PWorld implements Serializable {
                 world.globalSettingsThingPriority = serializer.intarray(world.globalSettingsThingPriority);
         }
 
+        if (revision.has(Branch.DOUBLE11, 0x2d)) {
+            world.waterColor = serializer.s32(world.waterColor);
+            world.waterBrightness = serializer.f32(world.waterBrightness);
+        }
+        
         if (version >= 0x289 || revision.isLeerdammer()) {
             world.waterTint = serializer.f32(world.waterTint);
             world.fromWaterTintColor = serializer.v4(world.fromWaterTintColor);
@@ -342,10 +414,35 @@ public class PWorld implements Serializable {
                 throw new SerializationException("move cursors not supported!");
         }
 
+        // version > 0x3c0, rather than 0x3e1 for some reason
+        if (revision.has(Branch.DOUBLE11, 0x8))
+            world.globalTouchCursor = serializer.i32(world.globalTouchCursor);
+        if (revision.has(Branch.DOUBLE11, 0xa) && revision.before(Branch.DOUBLE11, 0x28)) 
+            world.sharedScreen = serializer.bool(world.sharedScreen);
+        
         if (version >= 0x3d0) {
             world.minPlayers = serializer.u8(world.minPlayers);
             world.maxPlayers = serializer.u8(world.maxPlayers);
             world.moveRecommended = serializer.bool(world.moveRecommended);
+        }
+
+        if (revision.isVita()) {
+            int vita = revision.getBranchRevision();
+
+            // version > 0x3d4, rathern than 0x3e1 for some reason
+            if (vita >= 0x18) 
+                world.portraitMode = serializer.bool(world.portraitMode);
+
+            if (vita >= 0x28 && vita < 0x47) {
+                if (serializer.u8(0) > 1 && !serializer.isWriting())
+                    world.sharedScreen = true;
+            }
+            
+            if (vita >= 0x47) world.sharedScreen = serializer.bool(world.sharedScreen);
+            if (vita >= 0x39) world.disableHUD = serializer.bool(world.disableHUD);
+            if (vita >= 0x52) world.disableShadows = serializer.bool(world.disableShadows);
+            if (vita >= 0x3b) world.flipBackground = serializer.bool(world.flipBackground); 
+            if (vita >= 0x4f) world.mpSeparateScreen = serializer.bool(world.mpSeparateScreen);
         }
 
         if (version >= 0x3dd)

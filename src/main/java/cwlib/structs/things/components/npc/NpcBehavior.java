@@ -2,9 +2,11 @@ package cwlib.structs.things.components.npc;
 
 import org.joml.Vector3f;
 
+import cwlib.enums.Branch;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
 
 public class NpcBehavior implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
@@ -28,16 +30,20 @@ public class NpcBehavior implements Serializable {
     public int animSet;
     public byte expressionType, expressionLevel;
     public boolean willRecordAudio;
+    public byte multiJumpLevel; // Vita 
     public int awarenessRange;
     public float lookAtSpeed;
     public boolean showAdvancedOptions;
+
+
 
     @SuppressWarnings("unchecked")
     @Override public NpcBehavior serialize(Serializer serializer, Serializable structure) {
         NpcBehavior behavior = (structure == null) ? new NpcBehavior() : (NpcBehavior) structure;
 
-        int version = serializer.getRevision().getVersion();
-        int subVersion = serializer.getRevision().getSubVersion();
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
         if (version <= 0x293) return behavior;
 
@@ -95,6 +101,9 @@ public class NpcBehavior implements Serializable {
 
         if (version > 0x375)
             behavior.willRecordAudio = serializer.bool(behavior.willRecordAudio);
+        
+        if (revision.has(Branch.DOUBLE11, 0x16)) // 0x3d4
+            behavior.multiJumpLevel = serializer.i8(behavior.multiJumpLevel);
 
         if (subVersion > 0xc6)
             behavior.awarenessRange = serializer.i32(behavior.awarenessRange);
