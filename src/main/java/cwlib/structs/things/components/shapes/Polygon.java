@@ -66,15 +66,18 @@ public class Polygon implements Serializable {
                     for (Vector3f vertex : polygon.vertices)
                         stream.v2(new Vector2f(vertex.x, vertex.y));
             }
-            else stream.i32(0);
+            else {
+                stream.i32(0);
+                stream.bool(false);
+            }
             polygon.loops = serializer.intvector(polygon.loops);
             return polygon;
         }
 
         MemoryInputStream stream = serializer.getInput();
         polygon.vertices = new Vector3f[stream.i32()];
+        polygon.requiresZ = stream.bool();
         if (polygon.vertices.length != 0) {
-            polygon.requiresZ = stream.bool();
             for (int i = 0; i < polygon.vertices.length; ++i) {
                 Vector3f vertex = null;
                 if (polygon.requiresZ)
