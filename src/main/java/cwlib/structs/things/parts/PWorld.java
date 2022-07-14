@@ -20,6 +20,7 @@ import cwlib.structs.things.components.world.CutsceneCameraManager;
 import cwlib.structs.things.components.world.EditorSelection;
 import cwlib.structs.things.components.world.GlobalAudioSettings;
 import cwlib.structs.things.components.world.GlobalSettings;
+import cwlib.structs.things.components.world.MoveCursor;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
@@ -76,7 +77,7 @@ public class PWorld implements Serializable {
     public boolean subLevel, scoreLocked;
     public int debugTimeInLevel;
     public boolean useEvenNewerCheckpointCode;
-    // move cursors
+    public MoveCursor[] moveCursors;
     public boolean singlePlayer;
     public int minPlayers = 1, maxPlayers = 4;
     public boolean moveRecommended, fixInvalidInOutMoverContacts, continueMusic;
@@ -413,11 +414,10 @@ public class PWorld implements Serializable {
         if (version >= 0x3ac)
             world.useEvenNewerCheckpointCode = serializer.bool(world.useEvenNewerCheckpointCode);
 
-        if (version >= 0x3bd) {
-            int size = serializer.i32(0);
-            if (size != 0)
-                throw new SerializationException("move cursors not supported!");
-        }
+        serializer.log("MOVE CURSORS");
+        if (version >= 0x3bd)
+            world.moveCursors = serializer.array(world.moveCursors, MoveCursor.class);
+        serializer.log("END CURSORS");
 
         // version > 0x3c0, rather than 0x3e1 for some reason
         if (revision.has(Branch.DOUBLE11, 0x8))
@@ -442,12 +442,17 @@ public class PWorld implements Serializable {
                 if (serializer.u8(0) > 1 && !serializer.isWriting())
                     world.sharedScreen = true;
             }
+
+            if (version >= 0x3dd)
+                world.fixInvalidInOutMoverContacts = serializer.bool(world.fixInvalidInOutMoverContacts);
             
             if (vita >= 0x47) world.sharedScreen = serializer.bool(world.sharedScreen);
             if (vita >= 0x39) world.disableHUD = serializer.bool(world.disableHUD);
             if (vita >= 0x52) world.disableShadows = serializer.bool(world.disableShadows);
             if (vita >= 0x3b) world.flipBackground = serializer.bool(world.flipBackground); 
             if (vita >= 0x4f) world.mpSeparateScreen = serializer.bool(world.mpSeparateScreen);
+
+            return world;
         }
 
         if (version >= 0x3dd)
@@ -459,7 +464,7 @@ public class PWorld implements Serializable {
         if (subVersion >= 0x2f)
             world.broadcastMicroChipEntries = serializer.array(world.broadcastMicroChipEntries, Thing.class, true);
 
-        if (subVersion >= 5d)
+        if (subVersion >= 0x5d)
             world.manualJumpDown = serializer.i32(world.manualJumpDown);
 
         if (subVersion >= 0xe5)
