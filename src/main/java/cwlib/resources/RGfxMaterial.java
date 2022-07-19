@@ -1,7 +1,11 @@
 package cwlib.resources;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import cwlib.enums.BoxType;
 import cwlib.enums.Branch;
+import cwlib.enums.CacheFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
@@ -52,7 +56,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     public byte fuzzLightingScale = 127;
     public byte iridesenceRoughness;
 
-    public transient int[] blobOffsets; 
+    public transient byte[][] shaders;
     public transient byte[] code;
 
     public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
@@ -117,17 +121,44 @@ public class RGfxMaterial implements Serializable, Compressable {
         int sourceOffsets = gmat.getBlobOffsetCount(revision);
         if (serializer.isWriting()) {
             MemoryOutputStream stream = serializer.getOutput();
-            for (int i = 0; i  < sourceOffsets; ++i)
-                stream.i32(gmat.blobOffsets[i]);
-            stream.bytearray(gmat.code);
+            int offset = 0;
+            for (int i = 0; i < sourceOffsets; ++i) {
+                byte[] shader = gmat.shaders[i];
+                if (version >= 0x34f)
+                    offset += shader.length;
+                stream.i32(offset);
+                if (version < 0x34f)
+                    offset += shader.length;
+            }
+            if (this.code != null) offset += this.code.length;
+            stream.i32(offset);
+            for (byte[] shader : gmat.shaders) stream.bytes(shader);
+            if (this.code != null)
+                stream.bytes(this.code);
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 serializer.resource(gmat.textures[i], ResourceType.TEXTURE);
         } else {
             MemoryInputStream stream = serializer.getInput();
-            gmat.blobOffsets  = new int[sourceOffsets];
+            int[] blobOffsets  = new int[sourceOffsets];
             for (int i = 0; i < sourceOffsets; ++i)
-                gmat.blobOffsets[i] = stream.i32();
-            gmat.code = stream.bytearray();
+                blobOffsets[i] = stream.i32();
+            byte[] code = stream.bytearray();
+
+            gmat.shaders = new byte[sourceOffsets][];
+            if (version < 0x34f) {
+                for (int i = 1; i < sourceOffsets; ++i)
+                    gmat.shaders[i - 1] = Arrays.copyOfRange(code, blobOffsets[i - 1], blobOffsets[i]);
+                gmat.shaders[sourceOffsets - 1] = Arrays.copyOfRange(code, blobOffsets[sourceOffsets - 1], code.length);
+            } else {
+                int offset = 0;
+                for (int i = 0; i < sourceOffsets; ++i) {
+                    gmat.shaders[i] = Arrays.copyOfRange(code, offset, blobOffsets[i]);
+                    offset += gmat.shaders[i].length;
+                }
+                if (offset != code.length)
+                    gmat.code = Arrays.copyOfRange(code, offset, code.length);
+            }
+
             gmat.textures = new ResourceDescriptor[MAX_TEXTURES];
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 gmat.textures[i] = serializer.resource(null, ResourceType.TEXTURE);
@@ -170,7 +201,11 @@ public class RGfxMaterial implements Serializable, Compressable {
 
     @Override public int getAllocatedSize() {
         int size = BASE_ALLOCATION_SIZE;
-        if (this.code != null) size += this.code.length;
+        if (this.shaders != null) 
+            for (byte[] shader : this.shaders)
+                size += shader.length;
+        if (this.code != null)
+            size += this.code.length;
         if (this.boxes != null)
             for (MaterialBox box : this.boxes)
                 size += box.getAllocatedSize();
@@ -240,6 +275,34 @@ public class RGfxMaterial implements Serializable, Compressable {
                 return i;
         }
         return -1;
+    }
+
+    public int getBoxIndex(MaterialBox box) {
+        for (int i = 0; i < this.boxes.length; ++i)
+            if (box == this.boxes[i]) return i;
+        return -1;
+    }
+
+    public MaterialBox[] getBoxesConnected(MaterialBox box) { return this.getBoxesConnected(this.getBoxIndex(box)); }
+    public MaterialBox[] getBoxesConnected(int box) {
+        ArrayList<MaterialBox> boxes = new ArrayList<>();
+        for (MaterialWire wire : this.wires) {
+            if (wire.boxTo == box)
+                boxes.add(this.boxes[wire.boxFrom]);
+        }
+        return boxes.toArray(MaterialBox[]::new);
+    }
+    
+    public MaterialBox getBoxConnectedToPort(MaterialBox box, int port) {
+        return this.getBoxConnectedToPort(this.getBoxIndex(box), port);
+    }
+    
+    public MaterialBox getBoxConnectedToPort(int box, int port) {
+        for (MaterialWire wire : this.wires) {
+            if (wire.boxTo == box && wire.portTo == port)
+                return this.boxes[wire.boxFrom];
+        }
+        return null;
     }
 
     public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes[wire.boxFrom]; }

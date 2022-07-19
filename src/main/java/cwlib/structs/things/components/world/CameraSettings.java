@@ -19,6 +19,12 @@ public class CameraSettings implements Serializable {
         settings.zoomDelayMultiplier = serializer.f32(settings.zoomDelayMultiplier);
         settings.zoomSpeedMultiplier = serializer.f32(settings.zoomSpeedMultiplier);
 
+        int subVersion = serializer.getRevision().getSubVersion();
+        if (subVersion > 0x36) {
+            settings.defaultPitchMultiplier = serializer.f32(settings.defaultPitchMultiplier);
+            settings.maximumPitchMultiplier = serializer.f32(settings.maximumPitchMultiplier);
+        }
+        
         return settings;
     }
 

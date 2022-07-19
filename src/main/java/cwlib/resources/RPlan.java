@@ -139,7 +139,9 @@ public class RPlan implements Compressable, Serializable {
      */
     public Thing[] getThings() {
         Serializer serializer = new Serializer(this.thingData, this.revision, this.compressionFlags);
-        return serializer.array(null, Thing.class, true);
+        Thing[] things = serializer.array(null, Thing.class, true);
+        serializer.log("END");
+        return things;
     }
 
     /**

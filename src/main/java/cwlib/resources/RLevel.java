@@ -15,12 +15,10 @@ import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.components.script.InstanceLayout;
 import cwlib.structs.things.parts.PBody;
 import cwlib.structs.things.parts.PEffector;
 import cwlib.structs.things.parts.PGameplayData;
@@ -115,6 +113,8 @@ public class RLevel implements Serializable, Compressable {
         // dceUuid
         // adventureData
 
+        serializer.log("END PARSE");
+        
         return level;
     }
 

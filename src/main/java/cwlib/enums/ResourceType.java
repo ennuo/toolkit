@@ -9,6 +9,7 @@ import cwlib.resources.RBigProfile;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RInstrument;
 import cwlib.resources.RJoint;
+import cwlib.resources.RLevel;
 import cwlib.resources.RLocalProfile;
 import cwlib.resources.RMaterial;
 import cwlib.resources.RMesh;
@@ -34,7 +35,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     GUID_SUBSTITUTION("GSB", 6, "guid_subst/", ".gsub"),
     GFX_MATERIAL("GMT", 7, RGfxMaterial.class, "gfx_materials/", ".gmat"),
     SPU_ELF(null, 8, "spu/", ".sbu"),
-    LEVEL("LVL", 9, "levels/", ".bin"),
+    LEVEL("LVL", 9, RLevel.class, "levels/", ".bin"),
     FILENAME(null, 10, "text/", ".txt"), // Could be anything really, but generally will refer to either FSB or BIK
     SCRIPT("FSH", 11, "scripts/", ".ff"),
     SETTINGS_CHARACTER("CHA", 12, "character_settings/", ".cha"),

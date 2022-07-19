@@ -186,6 +186,7 @@ public class RLocalProfile implements Compressable, Serializable {
 
         profile.inventory = serializer.arraylist(profile.inventory, InventoryItem.class);
         profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
+
         if (version > 0x3b5)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
 
@@ -612,7 +613,7 @@ public class RLocalProfile implements Compressable, Serializable {
         InventoryItemDetails details = plan.inventoryData;
         details.dateAdded = (new Date().getTime() / 1000);
         
-        if (details.icon == null)
+    if (details.icon == null)
             details.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
 
         if (table != null) {

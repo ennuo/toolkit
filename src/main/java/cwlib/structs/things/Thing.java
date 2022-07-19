@@ -159,7 +159,6 @@ public class Thing implements Serializable {
             serializer.log(part.name() + " [START]");
             if (!part.serialize(thing.parts, partsRevision, flags, serializer)) {
                 serializer.log(part.name() + " FAILED");
-                System.exit(0);
                 throw new SerializationException(part.name() + " failed to serialize!");
             }
             serializer.log(part.name() + " [END]");

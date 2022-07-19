@@ -222,7 +222,7 @@ public class RMesh implements Compressable, Serializable {
     /**
      * Which character this mesh is for.
      */
-    private SkeletonType skeletonType;
+    private SkeletonType skeletonType = SkeletonType.SACKBOY;
 
     /* Creates an empty mesh, used for serialization. */
     public RMesh() {};
@@ -403,7 +403,8 @@ public class RMesh implements Compressable, Serializable {
         mesh.regionIDsToHide = serializer.intvector(mesh.regionIDsToHide);
         
         mesh.costumeCategoriesUsed = serializer.i32(mesh.costumeCategoriesUsed);
-        mesh.hairMorphs = serializer.enum32(mesh.hairMorphs);
+        if (version >= 0x141)
+            mesh.hairMorphs = serializer.enum32(mesh.hairMorphs);
         mesh.bevelVertexCount = serializer.i32(mesh.bevelVertexCount);
         mesh.implicitBevelSprings = serializer.bool(mesh.implicitBevelSprings);
 
@@ -420,6 +421,8 @@ public class RMesh implements Compressable, Serializable {
 
         if (subVersion >= Revisions.MESH_SKELETON_TYPE)
             mesh.skeletonType = serializer.enum8(mesh.skeletonType);
+
+        serializer.log("end of stream");
         
         return mesh;
     }
@@ -464,7 +467,7 @@ public class RMesh implements Compressable, Serializable {
     }
 
     @Override public SerializationData build(Revision revision, byte compressionFlags) {
-        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+        Serializer serializer = new Serializer(this.getAllocatedSize() + 0x8000, revision, compressionFlags);
         serializer.struct(this, RMesh.class);
         return new SerializationData(
             serializer.getBuffer(), 

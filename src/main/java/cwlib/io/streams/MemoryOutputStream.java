@@ -162,7 +162,7 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream s32(int value) {
         if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
-            return this.uleb128(((long)(value & 0x7fffffff)) << 1 ^ ((long)(value >> 0x1f)));
+            return this.uleb128(((value & 0x7fffffff)) << 1 ^ ((value >> 0x1f)));
         return this.i32(value, true);
     }
 
@@ -240,16 +240,10 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final MemoryOutputStream uleb128(long value) {
-        value = value & 0xFFFFFFFFFFFFFFFFl;
-        if (value == -1 || value == Long.MAX_VALUE) {
-            this.bytes(new byte[] { -1, -1, -1, -1, 0xF }); // 0xFFFFFF0F
-            return this;
-        }
-        if (value == 0) return this.u8(0);
         while (true) {
-            byte b = (byte) (value & 0x7fl);
-            value >>>= 7l;
-            if (value > 0l) b |= 128l;
+            byte b = (byte) (value & 0x7f);
+            value >>>= 7;
+            if (value > 0l) b |= 128;
             this.i8(b);
             if (value == 0) break;
         }
@@ -496,6 +490,7 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final <T extends Enum<T> & ValueEnum<Byte>> MemoryOutputStream enum8(T value) {
+        if (value == null) return this.u8(0);
         return this.i8(value.getValue().byteValue());
     }
 

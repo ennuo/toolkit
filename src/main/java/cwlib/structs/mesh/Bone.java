@@ -48,7 +48,7 @@ public class Bone extends AnimBone {
         bone.name = serializer.str(bone.name, MAX_BONE_NAME_LENGTH);
         bone.flags = serializer.i32(bone.flags);
 
-        super.serialize(serializer, structure);
+        super.serialize(serializer, bone);
         
         bone.skinPoseMatrix = serializer.m44(bone.skinPoseMatrix);
         bone.invSkinPoseMatrix = serializer.m44(bone.invSkinPoseMatrix);

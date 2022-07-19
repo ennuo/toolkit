@@ -5,6 +5,7 @@ import cwlib.ex.SerializationException;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.Bytes;
+import cwlib.util.FileIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class FileArchive extends Fart {
         byte[] fatTable = null;
 
         if (!this.file.exists())
-            throw new SerializationException("FARC specified doesn't exist!");
+            FileIO.write(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x46, 0x41, 0x52, 0x43 }, this.file.getAbsolutePath());
 
         try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
             if (archive.length() < 0x8) {

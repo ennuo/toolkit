@@ -32,6 +32,7 @@ public class RTexture {
         }
 
         int magic = Bytes.toIntegerBE(data);
+        this.data = data;
         switch (magic) {
             case 0xffd8ffe0:
             case 0x89504e47:

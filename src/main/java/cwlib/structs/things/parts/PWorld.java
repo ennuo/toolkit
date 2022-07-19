@@ -413,11 +413,9 @@ public class PWorld implements Serializable {
 
         if (version >= 0x3ac)
             world.useEvenNewerCheckpointCode = serializer.bool(world.useEvenNewerCheckpointCode);
-
-        serializer.log("MOVE CURSORS");
+        
         if (version >= 0x3bd)
             world.moveCursors = serializer.array(world.moveCursors, MoveCursor.class);
-        serializer.log("END CURSORS");
 
         // version > 0x3c0, rather than 0x3e1 for some reason
         if (revision.has(Branch.DOUBLE11, 0x8))
