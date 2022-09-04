@@ -30,6 +30,11 @@ public class SaveArchive extends Fart {
     private Revision gameRevision = new Revision(0x272, 0x4c44, 0x0017);
     
     /**
+     * Local user index that owns this save.
+     */
+    private int localUserID;
+
+    /**
      * Key used for keeping track of the
      * "primary" resource for the save.
      * RBigProfile in bigfarts,
@@ -87,7 +92,8 @@ public class SaveArchive extends Fart {
      */
     public SaveArchive(Revision gameRevision, int revision) {
         super(null, ArchiveType.SAVE);
-        if (revision <= 3 || revision > 5)
+        // FAR1 is considered FARC
+        if (revision < 2 || revision > 5)
             throw new IllegalArgumentException("Invalid revision!");
         if (revision == 5)
             this.isLittleEndian = true;
@@ -107,6 +113,7 @@ public class SaveArchive extends Fart {
 
     private SaveArchive(byte[] data, File file) {
         super(file, ArchiveType.SAVE);
+        this.isLittleEndian = true;
 
         if (file != null && !file.exists())
             throw new SerializationException("Save archive specified doesn't exist!");
@@ -141,20 +148,23 @@ public class SaveArchive extends Fart {
             stream.setLittleEndian(false);
         }
 
-        if (this.archiveRevision < 4)
-            throw new SerializationException("Only SaveArchive revision >=4 is currently supported!");
+        // FAR3 added HASHINATE
+        if (this.archiveRevision > 2) {
+            if (this.archiveRevision == 5)
+                stream.seek(0x20, SeekMode.End);
+            else
+                stream.seek(0x1c, SeekMode.End);
+            this.hashinate = stream.sha1();
+        }
 
-        if (this.archiveRevision == 5)
-            stream.seek(0x20, SeekMode.End);
-        else
-            stream.seek(0x1c, SeekMode.End);
-        
-        this.hashinate = stream.sha1();
-
-        this.fatOffset = stream.getLength() - 0x8 - 0x14 - (entryCount * 0x1c);
+        this.fatOffset = stream.getLength() - 0x8 - (entryCount * 0x1c);
+        if (this.archiveRevision > 2) this.fatOffset -= 0x14;
         if (this.archiveRevision == 5) this.fatOffset -= 4;
 
-        int saveKeySize = 0x84;
+        int saveKeySize = 0x80;
+        // FAR4 added BRANCH DESCRIPTION
+        if (this.archiveRevision > 3)
+            saveKeySize += 0x4;
         if (this.archiveRevision == 5)
             saveKeySize += (0x8 + (0x4 * fragments));
         int saveKeyOffset = (int) (this.fatOffset - saveKeySize);
@@ -168,7 +178,10 @@ public class SaveArchive extends Fart {
 
         if (this.isLittleEndian) stream.setLittleEndian(true);
 
-        this.gameRevision = new Revision(stream.i32(), stream.i32());
+        if (this.archiveRevision > 3)
+            this.gameRevision = new Revision(stream.i32(), stream.i32());
+        else
+            this.gameRevision = new Revision(stream.i32());
 
         if (this.archiveRevision == 5) {
             this.ID = stream.i32();
@@ -178,7 +191,7 @@ public class SaveArchive extends Fart {
                 this.fragmentIDs[i] = stream.i32();
         }
 
-        stream.i32(); // compression flags? nothing at all?
+        this.localUserID = stream.i32();
 
         stream.seek(0x4 * 0xA); // deprecated1 int[10]
         this.key.setCopied(stream.i32() == 1); // Boolean is padded
@@ -223,7 +236,9 @@ public class SaveArchive extends Fart {
      * @return Save key buffer
      */
     private byte[] generateSaveKey() {
-        int saveKeySize = 0x84;
+        int saveKeySize = 0x80;
+        if (this.archiveRevision > 3)
+            saveKeySize += 0x4;
         if (this.archiveRevision == 5)
             saveKeySize += (0x8 + (0x4 * this.fragmentIDs.length));
 
@@ -236,7 +251,8 @@ public class SaveArchive extends Fart {
             ((int)this.gameRevision.getBranchRevision());
         
         keyStream.i32(this.gameRevision.getHead());
-        keyStream.i32(branch);
+        if (this.archiveRevision > 3)
+            keyStream.i32(branch);
         
         if (this.archiveRevision == 5) {
             keyStream.i32(this.ID);
@@ -245,7 +261,7 @@ public class SaveArchive extends Fart {
                 keyStream.i32(fragment);
         }
 
-        keyStream.i32(1); // No idea, it's always 1
+        keyStream.i32(this.localUserID);
         keyStream.pad(0x4 * 0xa); // deprecated1 int[10]
         keyStream.i32(this.key.getCopied() ? 1 : 0);
         keyStream.i32(this.key.getRootType().getValue());
@@ -346,7 +362,8 @@ public class SaveArchive extends Fart {
             pad = 4 - modulo;
         
         // Some additional padding in case of alignment issues.
-        size += (saveKey.length + fat.length + 0x1c + pad);
+        size += (saveKey.length + fat.length + 0x8 + pad);
+        if (this.archiveRevision > 2) size += 0x14;
         if (this.archiveRevision == 5) size += 4;
 
         // Start building the archive
@@ -362,8 +379,10 @@ public class SaveArchive extends Fart {
         stream.bytes(fat);
 
         int hashinateOffset = stream.getOffset();
-        // Pad out the hashinate, we need to actually generate it.
-        stream.pad(0x14);
+        if (this.archiveRevision > 2) {
+            // Pad out the hashinate, we need to actually generate it.
+            stream.pad(0x14);
+        }
 
         if (this.archiveRevision == 5)
             stream.bytes(Bytes.toBytesLE(this.fragmentIDs.length));
@@ -371,11 +390,14 @@ public class SaveArchive extends Fart {
         stream.str("FAR", 0x3);
         stream.u8(this.archiveRevision + '0');
 
-        // Compute hash and write it to the buffer
         byte[] archive = stream.getBuffer();
-        this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
-        System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
 
+        // Compute hash and write it to the buffer
+        if (this.archiveRevision > 2) {
+            this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
+            System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
+        }
+        
         // Update state of the archive in memory.
         this.entries = entries;
         this.queue.clear();
