@@ -104,6 +104,7 @@ public enum Part {
 
     public int getIndex() { return this.index; }
     public int getVersion() { return this.version; }
+    public Class<?> getSerializable() { return this.serializable; }
 
     /**
      * Prepares a name used when serializating
@@ -114,17 +115,16 @@ public enum Part {
         String name = this.name().toLowerCase();
         String[] words = name.split("_");
 
-        for (int i = 1; i < words.length; ++i) {
+        for (int i = 0; i < words.length; ++i) {
             String word = words[i];
-            char c = word.charAt(0);
-            words[i] = word.replace(c, Character.toUpperCase(c));
+            words[i] = Character.toUpperCase(word.charAt(0)) + word.substring(1);
         }
 
-        name = String.join("", words);
+        name = "P" + String.join("", words);
 
         /* Switch is a reserved keyword */
-        if (name == "switch")
-            name = "switchBase";
+        // if (name == "switch")
+        //     name = "switchBase";
         
         return name;
     }

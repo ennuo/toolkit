@@ -18,10 +18,15 @@ public class Matrix4fSerializer implements JsonSerializer<Matrix4f>, JsonDeseria
         JsonArray array = je.getAsJsonArray();
         if (array.size() != 16)
             throw new JsonParseException("Matrix4f serializable object must have 16 elements!");
-        FloatBuffer BUFFER = FloatBuffer.allocate(16);
-        for (JsonElement element : array)
-            BUFFER.put(element.getAsFloat());
-        return new Matrix4f(BUFFER);
+        
+        float[] values = new float[16];
+        for (int i = 0; i < 16; ++i)
+            values[i] = array.get(i).getAsFloat();
+
+        Matrix4f matrix = new Matrix4f();
+        matrix.set(values);
+
+        return matrix;
     }
 
     @Override public JsonElement serialize(Matrix4f matrix, Type type, JsonSerializationContext jsc) {

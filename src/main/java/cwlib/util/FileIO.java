@@ -17,14 +17,14 @@ import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 public class FileIO {
-    public static String getResourceFileAsString(String fileName) throws IOException {
+    public static String getResourceFileAsString(String fileName) {
         ResourceSystem.println("FileIO", "Reading " + fileName + " from class path");
         try (InputStream is = Toolkit.class.getResourceAsStream(fileName)) {
             if (is == null) return null;
             try (InputStreamReader isr = new InputStreamReader(is); BufferedReader reader = new BufferedReader(isr)) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
-        }
+        } catch (Exception ex) { return null; }
     }
 
     public static boolean write(byte[] data, String path) {

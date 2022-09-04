@@ -1,6 +1,7 @@
 package cwlib.io.gson;
 
 import java.lang.reflect.Type;
+import java.rmi.server.UID;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -21,9 +22,28 @@ public class ThingSerializer implements JsonSerializer<Thing>, JsonDeserializer<
 
     @Override public Thing deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {
         if (je.isJsonPrimitive())
-            return GsonUtils.THINGS.get(je.getAsNumber());
+            return GsonUtils.THINGS.get(je.getAsInt());
+        JsonObject object = je.getAsJsonObject();
+        int UID = object.get("UID").getAsInt();
+        Thing thing = new Thing(UID);
+        GsonUtils.THINGS.put(UID, thing);
+
+        if (object.has("world"))
+            thing.world = jdc.deserialize(object.get("world"), Thing.class);
+        if (object.has("planGUID"))
+            thing.planGUID = jdc.deserialize(object.get("planGUID"), GUID.class);
+        if (object.has("parent"))
+            thing.parent = jdc.deserialize(object.get("parent"), Thing.class);
+        if (object.has("group"))
+            thing.groupHead = jdc.deserialize(object.get("group"), Thing.class);
+
+        for (Part part : Part.values()) {
+            JsonElement element = object.get(part.getNameForReflection());
+            if (element != null)
+                thing.setPart(part, jdc.deserialize(element, part.getSerializable()));
+        }
         
-        return jdc.deserialize(je, Thing.class);
+        return thing;
     }
 
     @Override public JsonElement serialize(Thing thing, Type type, JsonSerializationContext jsc) {
@@ -34,21 +54,34 @@ public class ThingSerializer implements JsonSerializer<Thing>, JsonDeserializer<
 
         JsonObject object = new JsonObject();
 
+        int version = GsonUtils.REVISION.getVersion();
+
         object.addProperty("UID", thing.UID);
-        object.add("planGUID", jsc.serialize(thing.planGUID));
+
+        if (version < 0x1fd)
+            object.add("world", jsc.serialize(thing.world));
+        
+        if (version >= 0x254)
+            object.add("planGUID", jsc.serialize(thing.planGUID));
 
         object.add("parent", jsc.serialize(thing.parent));
         object.add("group", jsc.serialize(thing.groupHead));
 
-        JsonObject parts = new JsonObject();
         for (Part part : Part.values()) {
-            System.out.println(part);
             Object component = thing.getPart(part);
             if (component != null)
-                parts.add(part.getNameForReflection(), jsc.serialize(component));
+                object.add(part.getNameForReflection(), jsc.serialize(component));
         }
 
-        object.add("parts", parts);
+        // JsonObject parts = new JsonObject();
+        // for (Part part : Part.values()) {
+        //     // System.out.println(part);
+        //     Object component = thing.getPart(part);
+        //     if (component != null)
+        //         parts.add(part.getNameForReflection(), jsc.serialize(component));
+        // }
+
+        // object.add("parts", parts);
 
 
         return object;
