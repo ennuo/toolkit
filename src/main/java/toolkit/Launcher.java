@@ -29,9 +29,8 @@ public class Launcher {
                     return;
                 }
             }
-
-            System.err.println("Invalid arguments!");
-            return;
+            
+            // If argument isn't a switcher, pass it to Toolkit::run
         }
 
         // If no switcher is provided, use Toolkit GUI.
