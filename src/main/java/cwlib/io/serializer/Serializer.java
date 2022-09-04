@@ -935,7 +935,6 @@ public class Serializer {
                     output[i] = clazz.cast(Serializable.serialize(this, null, clazz));
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             throw new SerializationException("There was an error (de)serializing an array!");
         }
         return output;
