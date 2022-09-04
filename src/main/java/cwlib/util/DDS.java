@@ -1,5 +1,6 @@
 package cwlib.util;
 
+import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.texture.CellGcmTexture;
 
@@ -33,6 +34,23 @@ public class DDS {
      * @return Generated DDS header.
      */
     public static byte[] getDDSHeader(CellGcmTexture texture) {
+        return DDS.getDDSHeader(
+            texture.getFormat(), 
+            texture.getWidth(), 
+            texture.getHeight(), 
+            texture.getMipCount()
+        );
+    }
+
+    /**
+     * Generates a DDS header.
+     * @param format DDS format for PS3
+     * @param width Width of texture
+     * @param height Height of texture
+     * @param mips Mip level count
+     * @return Generated DDS header
+     */
+    public static byte[] getDDSHeader(CellGcmEnumForGtf format, int width, int height, int mips) {
         // For details on the DDS header structure, see:
         // https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
         
@@ -41,18 +59,18 @@ public class DDS {
 
         header.str("DDS ", 4);
         header.u32(0x7C); // dwSize
-        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((texture.getMipCount() != 0) ? DDS.DDS_HEADER_FLAGS_MIPMAP : 0));
-        header.u32(texture.getHeight());
-        header.u32(texture.getWidth());
+        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((mips != 0) ? DDS.DDS_HEADER_FLAGS_MIPMAP : 0));
+        header.u32(height);
+        header.u32(width);
         header.u32(0); // dwPitchOrLinearSize
         header.u32(0); // dwDepth
-        header.u32(texture.getMipCount());
+        header.u32(mips);
         for (int i = 0; i < 11; ++i)
             header.u32(0); // dwReserved[11]
         
         // DDS_PIXELFORMAT
         int[] pixelFormat = null;
-        switch (texture.getFormat()) {
+        switch (format) {
             case B8: pixelFormat = DDS.DDSPF_B8; break;
             case A1R5G5B5: pixelFormat = DDS.DDSPF_A1R5G5B5; break;
             case A4R4G4B4: pixelFormat = DDS.DDSPF_A4R4G4B4; break;
@@ -67,7 +85,7 @@ public class DDS {
             header.u32(value);
         
         int surfaceFlags = DDS.DDS_SURFACE_FLAGS_TEXTURE;
-        if (texture.getMipCount() != 0) surfaceFlags |= DDS.DDS_SURFACE_FLAGS_MIPMAP;
+        if (mips != 0) surfaceFlags |= DDS.DDS_SURFACE_FLAGS_MIPMAP;
         header.u32(surfaceFlags);
         
         header.u32(0);

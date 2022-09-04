@@ -1,6 +1,5 @@
 package cwlib.util;
 
-import cwlib.resources.RTexture;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream;
 import gr.zdimensions.jsquish.Squish;
@@ -17,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+
+import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.external.DDSReader;
 import toolkit.windows.Toolkit;
 
@@ -87,25 +88,28 @@ public class Images {
         int originalWidth = width, originalHeight = height;
         
         Squish.CompressionType type = Squish.CompressionType.DXT1;
-        int format = 0x86;
+        CellGcmEnumForGtf format = CellGcmEnumForGtf.DXT1;
         if (image.getColorModel().hasAlpha()) {
-            format = 0x88;
+            format = CellGcmEnumForGtf.DXT5;
             type = Squish.CompressionType.DXT5;
         }
 
         image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, height);
-        byte[] DDS = Squish.compressImage(getRGBA(image), width, height, null, type);
+        byte[] dds = Squish.compressImage(getRGBA(image), width, height, null, type);
         int mipCount = 0;
         while (true) {
             width = toNearest(width - 1);
             height = toNearest(height - 1);
             image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
-            DDS = Bytes.combine(DDS, Squish.compressImage(getRGBA(image), width, height, null, type));
+            dds = Bytes.combine(dds, Squish.compressImage(getRGBA(image), width, height, null, type));
             mipCount += 1;
             if (width == 1|| height == 1) break;
         }
         
-        return Bytes.combine(RTexture.getDDSHeader(format, originalWidth, originalHeight, mipCount), DDS);
+        return Bytes.combine(
+            DDS.getDDSHeader(format, originalWidth, originalHeight, mipCount), 
+            dds
+        );
     }
 
     public static byte[] toTEX(BufferedImage image) {
