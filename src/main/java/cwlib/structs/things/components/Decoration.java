@@ -5,6 +5,7 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 
 import org.joml.Matrix4f;
@@ -12,10 +13,10 @@ import org.joml.Matrix4f;
 public class Decoration implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
-    PRenderMesh renderMesh;
-    Matrix4f offset = new Matrix4f().identity();
-    int parentBone = -1;
-    int parentTriVert = -1;
+    public PRenderMesh renderMesh;
+    public Matrix4f offset = new Matrix4f().identity();
+    public int parentBone = -1;
+    public int parentTriVert = -1;
     public float baryU, baryV;
     public float decorationAngle;
     public int onCostumePiece = -1;
@@ -26,7 +27,7 @@ public class Decoration implements Serializable {
     @GsonRevision(lbp3=true,min=0xc4) public boolean hasShadow = true;
     @GsonRevision(lbp3=true,min=0x16c) public boolean isQuest = false;
     @GsonRevision(min=0x215) public int playModeFrame;
-    @GsonRevision(min=0x25b) public int planGUID;
+    @GsonRevision(min=0x25b) public GUID planGUID;
     @GsonRevision(branch=0x4431, min=0x7c) public float zBias; // Vita
     
     @SuppressWarnings("unchecked")
@@ -65,7 +66,7 @@ public class Decoration implements Serializable {
             decoration.playModeFrame = serializer.i32(decoration.playModeFrame);
 
         if (version >= 0x25b)
-            decoration.planGUID = serializer.i32(decoration.planGUID);
+            decoration.planGUID = serializer.guid(decoration.planGUID);
 
         if (revision.has(Branch.DOUBLE11, 0x7c))
             decoration.zBias = serializer.f32(decoration.zBias);
