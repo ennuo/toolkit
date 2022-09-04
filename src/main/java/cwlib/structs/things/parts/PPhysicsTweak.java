@@ -118,13 +118,15 @@ public class PPhysicsTweak implements Serializable {
             tweak.name = serializer.wstr(tweak.name);
 
         if (version < 0x3e8) {
-            if (version >= 0x2ae)
-                tweak.teamFilter = serializer.i32(tweak.teamFilter);
+            if (version > 0x2ad)
+                tweak.teamFilter = serializer.u8(tweak.teamFilter);
         } else {
-            if (subVersion < 0x132 && version >= 0x2ae)
-                tweak.teamFilter = serializer.i32(tweak.teamFilter);
-            tweak.followerPlayerMode = serializer.i32(tweak.followerPlayerMode);   
+            if (subVersion < 0x132)
+                tweak.teamFilter = serializer.u8(tweak.teamFilter);
+            else
+                tweak.followerPlayerMode = serializer.i32(tweak.followerPlayerMode);   
         }
+
 
         if (version > 0x2c5)
             tweak.behavior = serializer.i32(tweak.behavior);
@@ -189,7 +191,6 @@ public class PPhysicsTweak implements Serializable {
             if (vita >= 0x55)
                 tweak.playerFilter = serializer.i8(tweak.playerFilter);
         }
-        
 
         if (subVersion >= 0x1 && subVersion < 0x17) {
             serializer.i32(0);
