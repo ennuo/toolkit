@@ -145,7 +145,7 @@ public class RMesh implements Compressable, Serializable {
     /**
      * How this mesh will get rendered.
      */
-    private PrimitiveType primitiveType = PrimitiveType.GL_TRIANGLES;
+    private PrimitiveType primitiveType = PrimitiveType.GL_TRIANGLE_STRIP;
     
     private SoftbodyClusterData softbodyCluster;
     private SoftbodySpring[] softbodySprings;
@@ -160,10 +160,10 @@ public class RMesh implements Compressable, Serializable {
      */
     private float[] mass;
 
-    private ImplicitEllipsoid[] implicitEllipsoids;
-    private Matrix4f[] clusterImplicitEllipsoids;
-    private ImplicitEllipsoid[] insideImplicitEllipsoids;
-    private ImplicitPlane[] implicitPlanes;
+    private ImplicitEllipsoid[] implicitEllipsoids = new ImplicitEllipsoid[0];
+    private Matrix4f[] clusterImplicitEllipsoids = new Matrix4f[0];
+    private ImplicitEllipsoid[] insideImplicitEllipsoids = new ImplicitEllipsoid[0];
+    private ImplicitPlane[] implicitPlanes = new ImplicitPlane[0];
 
     /**
      * Settings for how this mesh's softbody physics behave.
@@ -227,6 +227,19 @@ public class RMesh implements Compressable, Serializable {
     /* Creates an empty mesh, used for serialization. */
     public RMesh() {};
 
+    public RMesh(byte[][] streams, byte[] attributes, byte[] indices, Bone[] bones) {
+        // We're not using triangle strips, we're using triangle lists,
+        // so treat the indices buffer as such.
+        this.primitiveType = PrimitiveType.GL_TRIANGLES;
+        if (indices != null) {
+            if (indices.length % 0x6 != 0)
+                throw new IllegalArgumentException("Indices buffer must be divisible by 0x6 since it contains triangle data!");
+            this.numTris = indices.length / 0x6;
+            this.numIndices = indices.length / 0x2;
+        }
+        this.init(streams, attributes, indices, bones);
+    }
+
     /**
      * Creates a new mesh from raw streams.
      * NOTE: Edge indices are not included.
@@ -236,7 +249,14 @@ public class RMesh implements Compressable, Serializable {
      * @param indices Face indices stream
      * @param bones Skeleton of this mesh
      */
-    public RMesh(byte[][] streams, byte[] attributes, byte[] indices, Bone[] bones) {
+    public RMesh(byte[][] streams, byte[] attributes, byte[] indices, Bone[] bones, int numIndices, int numEdgeIndices, int numTris) {
+        this.numIndices = numIndices;
+        this.numEdgeIndices = numEdgeIndices;
+        this.numTris = numTris;
+        this.init(streams, attributes, indices, bones);
+    }
+
+    private void init(byte[][] streams, byte[] attributes, byte[] indices, Bone[] bones) {
         // Just return an empty mesh if the streams are null or empty,
         // it's effectively as such anyway.
         if (streams == null || streams.length == 0) return;
@@ -256,6 +276,7 @@ public class RMesh implements Compressable, Serializable {
         }
 
         this.streams = streams;
+        this.streamCount = streams.length;
         this.numVerts = size / 0x10;
 
         // This won't be used if the mesh doesn't have softbody
@@ -281,16 +302,6 @@ public class RMesh implements Compressable, Serializable {
             this.attributeCount = attributes.length / attributeSize;
         }
         this.attributes = attributes;
-
-        // We're not using triangle strips, we're using triangle lists,
-        // so treat the indices buffer as such.
-        this.primitiveType = PrimitiveType.GL_TRIANGLES;
-        if (indices != null) {
-            if (indices.length % 0x6 != 0)
-                throw new IllegalArgumentException("Indices buffer must be divisible by 0x6 since it contains triangle data!");
-            this.numTris = indices.length / 0x6;
-            this.numIndices = indices.length / 0x2;
-        }
         this.indices = indices;
 
         // Initialize the mirror arrays if the bones aren't null.
