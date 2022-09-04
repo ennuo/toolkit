@@ -11,7 +11,7 @@ import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
 
-public class CgCompiler {
+public class CgAssembler {
     public static long[] getBytecode(byte[] cgb) {
         int count = ((cgb[0x8] & 0xFF) << 8 | (cgb[0x9] & 0xFF)) / 0x10;
         int offset = 0x20;
@@ -120,7 +120,7 @@ public class CgCompiler {
         int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
         flags |= MATERIAL_FLAGS;
         shader = String.format("#define FLAGS %d\n%s", flags, shader);
-        return NVCompiler.getShader(shader, !legacy);
+        return GfxAssembler.getShader(shader, !legacy);
     }
 
     public static byte[] compileLegacy(String template, RGfxMaterial gmat) {

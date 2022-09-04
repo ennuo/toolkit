@@ -16,7 +16,7 @@ import cwlib.util.FileIO;
 import toolkit.configurations.Config;
 import toolkit.utilities.ResourceSystem;
 
-public class NVCompiler {
+public class GfxAssembler {
     public static String BRDF = FileIO.getResourceFileAsString("/brdf.cg");
     public static HashMap<MaterialBox, String> LOOKUP = new HashMap<>();
 
@@ -287,10 +287,10 @@ public class NVCompiler {
 
     public static byte[] compile(RGfxMaterial material) {
         try {
-            String normal = NVCompiler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS);
-            String color = NVCompiler.generateBRDF(material, GfxFlags.LEGACY);
-            String decal = NVCompiler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.DECALS);
-            String water = NVCompiler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.WATER_TWEAKS);
+            String normal = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS);
+            String color = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY);
+            String decal = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.DECALS);
+            String water = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.WATER_TWEAKS);
     
             byte[] normalShader = getShader(normal);
             byte[] colorShader = getShader(color);

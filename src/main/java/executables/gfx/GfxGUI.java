@@ -12,7 +12,7 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
-import executables.gfx.NVCompiler.GfxFlags;
+import executables.gfx.GfxAssembler.GfxFlags;
 import executables.gfx.dialogues.ErrorDialogue;
 import executables.gfx.dialogues.TextureDialogue;
 
@@ -69,7 +69,7 @@ public class GfxGUI extends javax.swing.JFrame {
         Config.instance.profiles.add(new Profile());
         Config.instance.currentProfile = 0;
         
-        NVCompiler.USE_ENV_VARIABLES = true;
+        GfxAssembler.USE_ENV_VARIABLES = true;
         
         if (!System.getProperty("os.name").toLowerCase().contains("win"))
             JOptionPane.showMessageDialog(this, "This program is only functional on Windows!", "Error", JOptionPane.WARNING_MESSAGE);
@@ -160,7 +160,7 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         try {
-            String shader = NVCompiler.generateBRDF(this.gmat, -1);
+            String shader = GfxAssembler.generateBRDF(this.gmat, -1);
             this.normal = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS));
             this.color = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY));
             this.decal = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.DECALS));
@@ -749,21 +749,21 @@ public class GfxGUI extends javax.swing.JFrame {
         
         
         byte[] normal = null;
-        try { normal = NVCompiler.getShader(this.fixupEnvVar(this.normal)); }
+        try { normal = GfxAssembler.getShader(this.fixupEnvVar(this.normal)); }
         catch (Exception ex) { 
             new ErrorDialogue(this, true, "An error occurred while compiling normal shader.", ex.getMessage());
             return;
         }
         
         byte[] color = null;
-        try { color = NVCompiler.getShader(this.fixupEnvVar(this.color)); }
+        try { color = GfxAssembler.getShader(this.fixupEnvVar(this.color)); }
         catch (Exception ex) { 
             new ErrorDialogue(this, true, "An error occurred while compiling color shader.", ex.getMessage());
             return;
         }
         
         byte[] decal = null;
-        try { decal = NVCompiler.getShader(this.fixupEnvVar(this.decal)); }
+        try { decal = GfxAssembler.getShader(this.fixupEnvVar(this.decal)); }
         catch (Exception ex) { 
             new ErrorDialogue(this, true, "An error occurred while compiling decal shader.", ex.getMessage());
             return;
@@ -771,7 +771,7 @@ public class GfxGUI extends javax.swing.JFrame {
         
         
         byte[] color1 = null;
-        try { color1 = NVCompiler.getShader(this.fixupEnvVar(this.color1)); }
+        try { color1 = GfxAssembler.getShader(this.fixupEnvVar(this.color1)); }
         catch (Exception ex) { 
             new ErrorDialogue(this, true, "An error occurred while compiling alt. color shader, this is probably Aidan's fault.", ex.getMessage());
             return;
