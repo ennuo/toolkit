@@ -69,7 +69,13 @@ public abstract class FileEntry {
         this.size = size;
         this.sha1 = sha1;
 
-        this.node = ResourceSystem.GUI_MODE ? source.addNode(this) : null;
+        if (ResourceSystem.GUI_MODE) {
+            boolean isHidden =  this.path.endsWith(".farc") || 
+                                this.path.endsWith(".edat") || 
+                                this.path.endsWith(".sdat") || 
+                                this.path.equals("");
+            this.node = isHidden ? null : source.addNode(this);
+        } else this.node = null;
     }
     
     public FileData getSource() { return this.source; }
