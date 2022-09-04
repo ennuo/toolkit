@@ -44,6 +44,8 @@ public class ScriptObject implements Serializable {
 
         serializer.log("" + object.type);
         switch (object.type) {
+            case NULL: object.value = null; break;
+            case AUDIOHANDLE: object.value = null; break;
             case ARRAY_S32: object.value = serializer.intvector((int[]) object.value); break;
             case ARRAY_F32: object.value = serializer.floatarray((float[]) object.value); break;
             // case INSTANCE: object.value = serializer.reference((PScript) object.value, PScript.class); break;
