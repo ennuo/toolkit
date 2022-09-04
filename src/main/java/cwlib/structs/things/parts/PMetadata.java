@@ -11,6 +11,7 @@ import cwlib.enums.Revisions;
 import cwlib.structs.inventory.PhotoMetadata;
 import cwlib.structs.things.components.Value;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -18,15 +19,20 @@ import cwlib.types.data.Revision;
 public class PMetadata implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x160;
 
+    @GsonRevision(branch=0, max=0x296)
+    @GsonRevision(branch=0x4c44, max=1)
     @Deprecated public Value value = new Value();
 
-    public String nameTranslationTag, descTranslationTag;
-    public String locationTag, categoryTag;
+    @GsonRevision(branch=0, max=0x2ba)
+    @GsonRevision(branch=0x4c44, max=0x7)
+    public String nameTranslationTag, locationTag, categoryTag;
+    @GsonRevision(max=0x158) public String descTranslationTag;
     
-    public long titleKey, descriptionKey;
-    public long location, category;
+    @GsonRevision(min=0x2bb)
+    @GsonRevision(branch=0x4c44, min=0x8)
+    public long titleKey, descriptionKey, location, category;
     
-    public int primaryIndex;
+    @GsonRevision(min=0x195) public int primaryIndex;
     public int fluffCost;
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType;
@@ -35,8 +41,8 @@ public class PMetadata implements Serializable {
     public ResourceDescriptor icon;
     public PhotoMetadata photoMetadata;
     
-    public boolean referencable;
-    public boolean allowEmit;
+    @GsonRevision(min=0x15f) public boolean referencable;
+    @GsonRevision(min=0x205) public boolean allowEmit;
     
     @SuppressWarnings("unchecked")
     @Override public PMetadata serialize(Serializer serializer, Serializable structure) {

@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
@@ -13,6 +14,8 @@ public class EyetoyData implements Serializable {
     public ResourceDescriptor frame, alphaMask;
     public Matrix4f colorCorrection = new Matrix4f().identity();
     public ColorCorrection colorCorrectionSrc = new ColorCorrection();
+
+    @GsonRevision(min=0x3a0)
     public ResourceDescriptor outline;
 
     @SuppressWarnings("unchecked")

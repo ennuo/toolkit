@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
@@ -12,28 +13,54 @@ import org.joml.Vector4f;
 public class PSpriteLight implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xD0;
 
-    public Vector4f color, colorOff;
-    public float multiplier = 1.8f, multiplierOff = 0.0f;
+    public Vector4f color;
+
+    @GsonRevision(min=0x2fd)
+    public Vector4f colorOff;
+
+    public float multiplier = 1.8f;
+
+    @GsonRevision(min=0x30a)
+    public float multiplierOff = 0.0f;
+
     public float glowRadius = 20.0f;
     public float farDist = 2.3f;
     public float sourceSize = 0.28f;
     ResourceDescriptor falloffTexture;
     public Thing lookAt;
     public boolean spotlight;
-    @Deprecated public boolean enableFogShadows = true;
-    @Deprecated public boolean enableFog = true;
+    
+    @GsonRevision(max=0x336)
+    @Deprecated public boolean enableFogShadows = true, enableFog = true;
+
+    @GsonRevision(min=0x139)
     public float fogAmount = 0.6f;
+
+    @GsonRevision(min=0x13a, max=0x2c3)
     @Deprecated public float onDest = 1.0f;
-    public float onSpeed = 1.0f;
-    public float offSpeed = 1.0f;
-    public float flickerProb;
-    public float flickerAmount;
+
+    @GsonRevision(min=0x13a)
+    public float onSpeed = 1.0f, offSpeed = 1.0f, flickerProb, flickerAmount;
+
+    @GsonRevision(min=0x2c4)
     public int behavior;
-    public boolean highBeam, tracker;
+
+    @GsonRevision(lbp3=true,min=0x113)
+    public boolean highBeam;
+
+    @GsonRevision(lbp3=true,min=0x146)
+    public boolean tracker;
+
+    @GsonRevision(lbp3=true,min=0x14a)
     public byte trackerType;
+
+    @GsonRevision(lbp3=true,min=0x151)
     public float causticStrength, causticWidth;
-    public float trackingLimit, trackingAccel, trackingSpeed;
-    public float movementInput, lightingInput;
+
+    @GsonRevision(lbp3=true,min=0x16f)
+    public float trackingLimit, trackingAccel, trackingSpeed, movementInput, lightingInput;
+
+    @GsonRevision(lbp3=true,min=0x16f)
     public Vector3f beamDir, azimuth;
     
     @SuppressWarnings("unchecked")

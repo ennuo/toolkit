@@ -1,6 +1,7 @@
 package cwlib.structs.things.components.world;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
@@ -11,6 +12,8 @@ public class CutsceneCameraManager implements Serializable {
     public Thing currentCutSceneCamera;
     public int timeInCurrentCamera, endCountdown;
     public float transitionStage;
+    
+    @GsonRevision(min=0x3a0)
     public boolean currentCameraTweaking;
 
     @SuppressWarnings("unchecked")

@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import cwlib.enums.Branch;
 import cwlib.enums.TriggerType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
@@ -13,11 +14,24 @@ public class PTrigger implements Serializable {
     public TriggerType triggerType = TriggerType.RADIUS;
     public Thing[] inThings;
     public float radiusMultiplier;
+
+    @GsonRevision(min=0x2a, lbp3=true)
     public byte zRangeHundreds;
+
+    @GsonRevision(min=0x1d5)
     public boolean allZLayers;
+
+
+    @GsonRevision(min=0x19b)
     public float hysteresisMultiplier;
+    @GsonRevision(min=0x19b)
     public boolean enabled;
+
+    @GsonRevision(min=0x322)
     public float zOffset;
+
+    @GsonRevision(min=0x30, branch=0x4431)
+    @GsonRevision(min=0x90, lbp3=true)
     public int scoreValue;
     
     @SuppressWarnings("unchecked")

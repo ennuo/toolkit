@@ -2,6 +2,7 @@ package cwlib.structs.things.components;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.types.data.ResourceDescriptor;
@@ -9,12 +10,15 @@ import cwlib.types.data.ResourceDescriptor;
 public class EggLink implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
+    @GsonRevision(max=0x15f)
     @Deprecated public GlobalThingDescriptor item;
+
+    @GsonRevision(min=0x160, max=0x196)
     @Deprecated public InventoryItemDetails details;
 
-    public ResourceDescriptor plan;
-    public boolean shareable = true;
-    public ResourceDescriptor painting;
+    @GsonRevision(min=0x160) public ResourceDescriptor plan;
+    @GsonRevision(min=0x23c) public boolean shareable = true;
+    @GsonRevision(min=0x3e1) public ResourceDescriptor painting;
 
     @SuppressWarnings("unchecked")
     @Override public EggLink serialize(Serializer serializer, Serializable structure) {

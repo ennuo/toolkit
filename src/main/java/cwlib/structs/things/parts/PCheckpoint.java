@@ -4,6 +4,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
@@ -13,26 +14,55 @@ public class PCheckpoint implements Serializable {
 
     public byte activeFlags;
     public int activationFrame;
-    public int spawnsLeft, maxSpawnsLeft;
+
+    @GsonRevision(min=0x1a7)
+    public int spawnsLeft;
+    @GsonRevision(min=0x1c6)
+    public int maxSpawnsLeft;
+    @GsonRevision(min=0x1eb)
     public boolean instanceInfiniteSpawns;
+
+    @GsonRevision(min=0x1f3)
     public Thing[] spawningList;
+    @GsonRevision(min=0x1f3)
     public int spawningDelay;
+    @GsonRevision(min=0x1fa)
     public int lifeMultiplier;
 
+    @GsonRevision(min=0x2ae)
     public int teamFilter;
 
+    @GsonRevision(lbp3=true,min=0x88)
     public int creatureToSpawnAs;
+    @GsonRevision(lbp3=true,min=0xcb)
     public boolean isStartPoint;
+    @GsonRevision(lbp3=true,min=0xd5)
     public boolean linkVisibleOnPlanet;
+    @GsonRevision(lbp3=true,min=0xcb)
     public String name;
 
+    @GsonRevision(lbp3=true,min=0xe4)
     public int unk1;
+    @GsonRevision(lbp3=true,min=0xd1)
     public String unk2;
     
+    @GsonRevision(lbp3=true,min=0x101)
     public int checkpointType, teamFlags;
-    public boolean enableAudio, continueMusic;
+
+    @GsonRevision(branch=0x4431,min=80)
+    @GsonRevision(lbp3=true,min=0x15a)
+    public boolean enableAudio;
+
+    @GsonRevision(lbp3=true,min=0x191)
+    public boolean continueMusic;
+
+    @GsonRevision(lbp3=true,min=0x199)
     public int creatureToChangeBackTo;
-    public boolean changeBackGate, persistLives;
+    @GsonRevision(lbp3=true,min=0x199)
+    public boolean changeBackGate;
+    
+    @GsonRevision(lbp3=true,min=0x19b)
+    public boolean persistLives;
 
     @SuppressWarnings("unchecked")
     @Override public PCheckpoint serialize(Serializer serializer, Serializable structure) {

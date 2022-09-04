@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.CameraNode;
 
@@ -11,33 +12,97 @@ public class PCameraTweak implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
     public static boolean ENABLE_IMPROPER_LOADING = false;
 
+    @GsonRevision(max=0x37d)
     @Deprecated public Vector3f pitchAngle;
+    @GsonRevision(max=0x37d)
     @Deprecated public Vector4f targetBox;
 
     public Vector4f triggerBox;
 
+    @GsonRevision(lbp3=true,min=0x1b)
     public byte triggerLayerOffset, triggerLayerDepth;
+    @GsonRevision(lbp3=true,min=0x3d)
     public boolean isCameraZRelative;
 
+    @GsonRevision(max=0x37d)
     @Deprecated public float zoomDistance;
 
     public float positionFactor;
-    public int photoBoothTimerLength, cameraType;
-    public float activationLimit;
-    public boolean disableZoomMode, requireAll = true, motionControllerZone;
+
+    @GsonRevision(min=0x1f5)
+    public int photoBoothTimerLength;
+    public int cameraType;
+
+    @GsonRevision(min=0x197, max=0x2c3)
+    @Deprecated public float activationLimit;
+
+    @GsonRevision(min=0x1ff)
+    public boolean disableZoomMode;
+
+    @GsonRevision(min=0x26a)
+    public boolean requireAll = true;
+
+    @GsonRevision(min=0x2ba)
+    public boolean motionControllerZone;
+
+    @GsonRevision(min=0x2c4)
     public int behavior;
+
+    @GsonRevision(min=0x2eb)
     public byte cutSceneTransitionType;
+    @GsonRevision(min=0x2eb)
     public int cutSceneHoldTime;
-    public boolean cutSceneSkippable, cutSceneUseHoldTime;
+
+    @GsonRevision(min=0x2eb)
+    public boolean cutSceneSkippable;
+    
+    @GsonRevision(lbp3=true,min=0x9f)
+    public boolean cutSceneUseHoldTime;
+
+    @GsonRevision(min=0x2ee)
     public byte cutSceneTimeSinceUsed;
+    @GsonRevision(min=0x2ee)
     public int cutSceneTransitionTime;
+
+    @GsonRevision(min=0x35a)
     public int cutSceneColour;
+
+    @GsonRevision(min=0x2ee)
     public boolean cutSceneMovieMode;
-    public float cutSceneDepthOfField, cutSceneFog, cutSceneFOV, cutSceneShake;
-    public boolean fadeAudio, oldStyleCameraZone;
-    public boolean cutSceneTrackPlayer, cutSceneSendsSignalOnCancelled, cutSceneWasActiveLastFrame;
+
+
+    @GsonRevision(min=0x2f8)
+    public float cutSceneDepthOfField, cutSceneFog;
+
+    @GsonRevision(min=0x2f9)
+    public float cutSceneFOV;
+    @GsonRevision(min=0x316)
+    public float cutSceneShake;
+
+    @GsonRevision(min=0x319)
+    public boolean fadeAudio;
+    @GsonRevision(min=0x33f)
+    public boolean oldStyleCameraZone;
+
+    @GsonRevision(min=0x36a)
+    public boolean cutSceneTrackPlayer;
+
+    @GsonRevision(min=0x396)
+    public boolean cutSceneSendsSignalOnCancelled;
+
+    @GsonRevision(min=0x397)
+    public boolean cutSceneWasActiveLastFrame;
+
+    @GsonRevision(min=0x37e)
     public CameraNode[] nodes;
-    public float frontDOF, sackTrackDOF;
+
+    @GsonRevision(lbp3=true,min=0x7e)
+    public float frontDOF;
+
+    @GsonRevision(lbp3=true,min=0x7a)
+    public float sackTrackDOF;
+
+    @GsonRevision(lbp3=true,min=0x80)
     public boolean allowSmoothZTransition;
 
     @SuppressWarnings("unchecked")
@@ -76,7 +141,7 @@ public class PCameraTweak implements Serializable {
             if (!serializer.isWriting())
                 serializer.log("ADD CAMERA TYPE HERE", 1);
         } else {
-            if (version < 0x1d7) 
+            if (version < 0x1d7)
                 tweak.cameraType = serializer.u8(tweak.cameraType);
             else
                 tweak.cameraType = serializer.s32(tweak.cameraType);

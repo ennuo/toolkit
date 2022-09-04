@@ -1,6 +1,7 @@
 package cwlib.structs.things.components.switches;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class SwitchOutput implements Serializable {
@@ -8,6 +9,8 @@ public class SwitchOutput implements Serializable {
 
     public SwitchSignal activation = new SwitchSignal();
     public SwitchTarget[] targetList;
+
+    @GsonRevision(min=0x34d)
     public String userDefinedName;
 
     @SuppressWarnings("unchecked")

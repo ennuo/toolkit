@@ -13,6 +13,7 @@ import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.level.CachedInventoryData;
@@ -31,19 +32,21 @@ import cwlib.structs.things.parts.PWorld;
 public class RLevel implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
 
-    public SHA1[] crossPlayVitaDependencyHashes;
+    @GsonRevision(min=0x3e6) public SHA1[] crossPlayVitaDependencyHashes;
 
     public Thing world;
-    public PlayerRecord playerRecord = new PlayerRecord();
+    
+    @GsonRevision(min=0x214) public PlayerRecord playerRecord = new PlayerRecord();
 
-    public ArrayList<InventoryItem> tutorialInventory = new ArrayList<>();
-    public ArrayList<CachedInventoryData> tutorialInventoryData = new ArrayList<>();
-    public boolean tutorialInventoryActive;
-    public boolean copiedFromSomeoneElse;
+    @GsonRevision(min=0x348) public ArrayList<InventoryItem> tutorialInventory = new ArrayList<>();
+    @GsonRevision(min=0x35d) public ArrayList<CachedInventoryData> tutorialInventoryData = new ArrayList<>();
+    @GsonRevision(min=0x39c) public boolean tutorialInventoryActive;
+    @GsonRevision(min=0x3b1) public boolean copiedFromSomeoneElse;
 
     // Vita
-    public GUID musicGUID;
-    public GUID musicSettingsGUID;
+    @GsonRevision(branch=0x4431, min=0x70)
+    public GUID musicGUID, musicSettingsGUID;
+    @GsonRevision(branch=0x4431, min=0x70)
     public float[] musicStemVolumes;
 
     public RLevel() {

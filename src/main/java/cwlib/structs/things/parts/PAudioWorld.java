@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.PlayMode;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 
@@ -12,25 +13,33 @@ public class PAudioWorld implements Serializable {
     public float initialVolume, initialPitch, initialParam1;
     public float maxFalloff, impactTolerance;
 
-    public boolean triggerByFalloff = true;
-    public boolean triggerByImpact;
-    public boolean triggerBySwitch;
+    @GsonRevision(max=0x2c3)
+    public boolean triggerByFalloff = true, triggerByImpact, triggerBySwitch;
+    @GsonRevision(min=0x1ad, max=0x2c3)
     public boolean triggerByDestroy;
 
+    @GsonRevision(min=0x2c4)
     public PlayMode playMode = PlayMode.TRIGGER_BY_FALLOFF;
 
     public boolean paramAffectVol;
     public boolean paramAffectPitch;
     public boolean paramAffectParam;
 
+    @GsonRevision(min=0x165)
     public boolean isLocal;
+    @GsonRevision(min=0x198)
     public boolean hideInPlayMode;
 
+    @GsonRevision(min=0x2c4)
     public int behavior;
     
+    @GsonRevision(min=0x380)
     public GUID soundNames;
+    @GsonRevision(min=0x165)
     public int meshColor;
+    @GsonRevision(lbp3=true,min=0x178)
     public int categoryGUID;
+    @GsonRevision(lbp3=true,min=0x191)
     public boolean activatedLastFrame;
 
     @SuppressWarnings("unchecked")

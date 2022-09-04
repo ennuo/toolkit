@@ -5,6 +5,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.types.data.GUID;
@@ -30,6 +31,7 @@ public class InventoryItem implements Serializable {
     /**
      * Cache of GUID for this item.
      */
+    @GsonRevision(min=262,lbp3=true)
     public GUID guid;
 
     /**
@@ -40,6 +42,7 @@ public class InventoryItem implements Serializable {
     /**
      * Tutorial related data, see ETutorialLevels
      */
+    @GsonRevision(max=875)
     public int tutorialLevel, tutorialVideo;
 
     /**
@@ -51,6 +54,7 @@ public class InventoryItem implements Serializable {
     /**
      * Index of user defined category in the string table.
      */
+    @GsonRevision(min=842)
     public int userCategoryIndex;
 
     @SuppressWarnings("unchecked")

@@ -6,6 +6,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.types.data.ResourceDescriptor;
@@ -14,11 +15,17 @@ import cwlib.types.data.Revision;
 public class PLevelSettings extends LevelSettings {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
+    @GsonRevision(min=0x153)
     public ArrayList<LevelSettings> presets = new ArrayList<>();
+
+    @GsonRevision(branch=0x4431,min=0x78)
     public boolean nonLinearFog;
     public String backdropAmbience;
+    @GsonRevision(min=0x2f3)
     public ResourceDescriptor backdropMesh;
+    @GsonRevision(min=0xaf,lbp3=true)
     public int backgroundRepeatFlags;
+    @GsonRevision(min=0xaf,lbp3=true)
     public float backgroundSkyHeight;
 
     @SuppressWarnings("unchecked")

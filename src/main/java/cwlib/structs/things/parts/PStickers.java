@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.decals.Decal;
 import cwlib.structs.things.components.decals.PaintControlPoint;
@@ -26,11 +27,13 @@ public class PStickers implements Serializable {
     /**
      * Paint control data, depreciated.
      */
+    @GsonRevision(min=0x158, max=0x3ba)
     public PaintControlPoint[] paintControl;
 
     /**
      * Eyetoy related information for decal placed.
      */
+    @GsonRevision(min=0x15d)
     public EyetoyData[] eyetoyData;
 
     @SuppressWarnings("unchecked")

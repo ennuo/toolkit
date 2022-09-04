@@ -49,8 +49,24 @@ public class NpcBehavior implements Serializable {
 
         behavior.npc = serializer.thing(behavior.npc);
         behavior.targetThing = serializer.thing(behavior.targetThing);
+        // ENpcBehaviourType
+        // 0 = PATROL
+        // 1 = FOLLOW
+        // 2 = FLEE
+        // 3 = IDLE
+        // 4 = ACT
+        // 5 = WAYPOINT
         behavior.type = serializer.s32(behavior.type);
+
         behavior.attributes = serializer.i32(behavior.attributes);
+        // ATTRIBUTES
+        // 0x0 = NONE
+        // 0x1 = CAN_CHANGE_HEIGHT
+        // 0x2 = CAN_JUMP
+        // 0x4 = CAN_CHANGE_LAYER
+        // 0x8 = UNUSED
+        // 0x10 = HOSTILE
+        
         behavior.maxMoveSpeed = serializer.f32(behavior.maxMoveSpeed);
         behavior.maxWaitTime = serializer.s32(behavior.maxWaitTime);
 

@@ -5,6 +5,8 @@ import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonResourceType;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.EmittedObjectSource;
@@ -16,42 +18,105 @@ import cwlib.types.data.Revision;
 public class PEmitter implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x120;
 
-    public Vector3f posVel;
+    @GsonRevision(max=0x367)
+    @Deprecated public Vector3f posVel;
+
     public float angVel;
     public int frequency, phase, lifetime;
+
+    @GsonRevision(min=0x2fe)
     public boolean recycleEmittedObjects;
 
+    @GsonRevision(max=0x15f)
     @Deprecated public GlobalThingDescriptor thing;
+
+    @GsonResourceType(ResourceType.PLAN)
+    @GsonRevision(min=0x160)
     public ResourceDescriptor plan;
 
-    public int maxEmitted, maxEmittedAtOnce = 1000;
+    public int maxEmitted;
+
+    @GsonRevision(min=0x1c8)
+    public int maxEmittedAtOnce = 1000;
+
     public float speedScaleStartFrame, speedScaleDeltaFrames;
     public SwitchSignal speedScale;
+
+    @GsonRevision(max=0x2c3)
     public float lastUpdateFrame;
+
+    @GsonRevision(min=0x137,max=0x313)
     public Vector4f worldOffset;
-    public float worldRotation, worldRotationForEditorEmitters;
+    @GsonRevision(min=0x137,max=0x313)
+    public float worldRotation;
+
+    @GsonRevision(min=0x38e)
+    public float worldRotationForEditorEmitters;
+
+    @GsonRevision(min=0x137)
     public float emitScale, linearVel;
+
+    @GsonRevision(min=0x137,max=0x313)
     public Thing parentThing;
+
+    @GsonRevision(min=0x13f)
     public int currentEmitted;
+
+    @GsonRevision(min=0x144)
     public boolean emitFlip;
+
+    @GsonRevision(min=0x1ce)
     public Vector4f parentRelativeOffset;
+    @GsonRevision(min=0x1ce)
     public float parentRelativeRotation;
+    @GsonRevision(min=0x1ce)
     public float worldZ, zOffset, emitFrontZ, emitBackZ;
-    public boolean hideInPlayMode, modScaleActive;
+
+    @GsonRevision(min=0x226)
+    public boolean hideInPlayMode;
+
+
+    @GsonRevision(min=0x230, max=0x2c3)
+    @Deprecated public boolean modScaleActive;
+
+    @GsonRevision(min=0x2c4)
     public int behavior;
+
+    @GsonRevision(min=0x308)
     public byte effectCreate, effectDestroy;
+
+    @GsonRevision(min=0x32e)
     public boolean ignoreParentsVelocity;
+
+    @GsonRevision(min=0x340)
     public EmittedObjectSource emittedObjectSource;
+
+    @GsonRevision(min=0x361)
     public boolean editorEmitter;
+
+    @GsonRevision(min=0x38d)
     public boolean isLimboFlippedForGunEmitter;
+
+    @GsonRevision(min=0x3ae)
     public float theFuckingZOffset;
+
+    @GsonRevision(lbp3=true, min=0x18e)
     public boolean justUseTheFuckingZOffset;
+
+    @GsonRevision(lbp3=true, min=0x31)
     public boolean soundEnabled;
-    public boolean emitByReferenceInPlayMode, emitToNearestRearLayer;
+
+    @GsonRevision(lbp3=true, min=0x64)
+    public boolean emitByReferenceInPlayMode;
+    
+    @GsonRevision(lbp3=true, min=0x76)
+    public boolean emitToNearestRearLayer;
 
     /* Vita */
-
-    public byte emitNode, cleanUpOnDestroyed;
+    @GsonRevision(branch=0x4431, min=0xf)
+    public byte emitNode;
+    @GsonRevision(branch=0x4431, min=0x2f)
+    public byte cleanUpOnDestroyed;
 
     @SuppressWarnings("unchecked")
     @Override public PEmitter serialize(Serializer serializer, Serializable structure) {

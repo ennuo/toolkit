@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.SwitchKeyType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.switches.SwitchSignal;
 
@@ -9,11 +10,14 @@ public class PSwitchKey implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public int colorIndex;
-    public String name;
-    public boolean hideInPlayMode;
-    public boolean isDummy;
+    @GsonRevision(min=0x2dc) public String name;
 
+    @GsonRevision(min=0x1bc) public boolean hideInPlayMode;
+    @GsonRevision(lbp3=true,min=0x132) public boolean isDummy;
+
+    @GsonRevision(min=0x2a0, max=0x2c3)
     @Deprecated public SwitchSignal isActive;
+    @GsonRevision(min=0x27d, max=0x2db)
     @Deprecated public SwitchKeyType type = SwitchKeyType.MAGNETIC;
     
     @SuppressWarnings("unchecked")

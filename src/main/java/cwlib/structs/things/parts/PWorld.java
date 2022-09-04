@@ -10,6 +10,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.Thing;
@@ -25,92 +26,136 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PWorld implements Serializable {
-    public ResourceDescriptor[] materials;
-    public float backdropOffsetX, backdropOffsetY, backdropOffsetZ;
-    public boolean backdropOffsetZAuto;
-    public String overrideBackdropAmbience;
+    @GsonRevision(max=0x14a) public ResourceDescriptor[] materials;
+    @GsonRevision(lbp3=true,min=0x6d) public float backdropOffsetX, backdropOffsetY, backdropOffsetZ;
+    @GsonRevision(lbp3=true,min=0x70) public boolean backdropOffsetZAuto;
+    @GsonRevision(lbp3=true,min=0xe2) public String overrideBackdropAmbience;
     public ArrayList<Thing> things = new ArrayList<>();
     public float maxVel = 100.0f, maxAVel = 1.0f;
-    public int frame, simFrame, frameLevelStarted, thingUIDCounter = 2, randy;
+    public int frame;
+    @GsonRevision(min=0x2e2) public int simFrame;
+    @GsonRevision(min=0x377) public int frameLevelStarted;
+    @GsonRevision(max=0x32c) public int randy;
+    public int thingUIDCounter = 2;
     public EditorSelection[] selections;
     public Thing backdrop, backdropNew;
     public float backdropTimer;
-    public int lbp2NightDaySwapped = 1;
-    public boolean isPaused;
-    public float lightingFactor = 1.0f, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
-    public EggLink[] completeRewards, collectRewards, aceRewards;
-    public boolean areRewardsShareable = true;
-    public SlotID scoreboardLevelLinkSlot;
-    public KeyLink[] completeUnlocks, collectUnlocks, aceUnlocks;
-    public int deathCount, maxNumPlayers = 1;
-    public Thing[] dissolvingThings, oldDissolvingThings;
-    public boolean isTutorialLevel, everSpawned;
-    public int spawnFailureCount;
-    public GlobalSettings targetGlobalSettings = new GlobalSettings(), fromGlobalSettings = new GlobalSettings();
-    @Deprecated public float globalSettingsBlendFactor;
-    public boolean hasLevelLightingBeenSetup;
-    @Deprecated public int globalSettingsThingUID;
-    public CameraSettings cameraSettings = new CameraSettings();
-    public float waterLevel, fromWaterLevel, targetWaterLevel;
-    public float waterWaveMagnitude, fromWaterWaveMagnitude, targetWaterWaveMagnitude;
-    public float gravity = 1.0f, fromGravity = 1.0f, targetGravity = 1.0f;
-    public float[] currGlobalSettingsBlendFactors;
-    public int[] globalSettingsThingUIDs, globalSettingsThingPriority;
-    public float waterTint;
-    public Vector4f fromWaterTintColor = new Vector4f(0.47451f, 0.898039f, 0.909804f, 0.125f);
-    public float targetWaterTint;
-    public float waterMurkiness, fromWaterMurkiness, targetWaterMurkiness;
-    public float waterBits = 1.0f, fromWaterBits = 1.0f, targetWaterBits = 1.0f;
-    public boolean waterDrainSoundsEnabled = true, currWaterDrainSoundsEnabled = true, waterCausticsEnabled = true, currWaterCausticsEnabled = true;
+    @GsonRevision(min=0x3a3) public int lbp2NightDaySwapped = 1;
+    @GsonRevision(min=0x14a) public boolean isPaused;
+    @GsonRevision(min=0x152) public float lightingFactor = 1.0f, colorCorrectionFactor;
+    @GsonRevision(min=0x196) public float fogFactor, fogTintFactor, darknessFactor;
+    @GsonRevision(min=0x16f) public EggLink[] completeRewards, collectRewards, aceRewards;
+    @GsonRevision(min=0x208) public boolean areRewardsShareable = true;
+    @GsonRevision(min=0x35e) public SlotID scoreboardLevelLinkSlot;
+    @GsonRevision(min=0x16f) public KeyLink[] completeUnlocks, collectUnlocks, aceUnlocks;
+    @GsonRevision(min=0x1c2, max=0x36d) public int deathCount;
+    @GsonRevision(min=0x1c4) public int maxNumPlayers = 1;
+    @GsonRevision(min=0x1db) public Thing[] dissolvingThings, oldDissolvingThings;
+    @GsonRevision(min=0x1de, max=0x344) public boolean isTutorialLevel;
+    @GsonRevision(min=0x22e) public boolean everSpawned;
+    @GsonRevision(min=0x22e) public int spawnFailureCount;
+    @GsonRevision(min=0x25a) public GlobalSettings targetGlobalSettings = new GlobalSettings(), fromGlobalSettings = new GlobalSettings();
+    @Deprecated @GsonRevision(min=0x25a) public float globalSettingsBlendFactor;
+    @GsonRevision(min=0x25a) public boolean hasLevelLightingBeenSetup;
+    @GsonRevision(min=0x25a) @Deprecated public int globalSettingsThingUID;
+    @GsonRevision(min=0x370) public CameraSettings cameraSettings = new CameraSettings();
+    @GsonRevision(min=0x26f) public float waterLevel, targetWaterLevel;
+    @GsonRevision(min=0x278)
+    @GsonRevision(min=0x4, branch=0x4c44)
+    public float fromWaterLevel;
+    @GsonRevision(min=0x270) public float waterWaveMagnitude, fromWaterWaveMagnitude, targetWaterWaveMagnitude;
+    @GsonRevision(min=0x26f) public float gravity = 1.0f, fromGravity = 1.0f, targetGravity = 1.0f;
+    @GsonRevision(min=0x26f) public float[] currGlobalSettingsBlendFactors;
+    @GsonRevision(min=0x26f) public int[] globalSettingsThingUIDs;
+    @GsonRevision(min=0x270) public int[] globalSettingsThingPriority;
     
+    @GsonRevision(min=0x289)
+    @GsonRevision(branch=0x4c44)
+    public float waterTint, targetWaterTint;
+
+    @GsonRevision(min=0x289)
+    @GsonRevision(branch=0x4c44)
+    public Vector4f fromWaterTintColor = new Vector4f(0.47451f, 0.898039f, 0.909804f, 0.125f);
+
+    @GsonRevision(min=0x289)
+    @GsonRevision(branch=0x4c44)
+    public float waterMurkiness, fromWaterMurkiness, targetWaterMurkiness;
+
+    @GsonRevision(min=0x2b4)
+    @GsonRevision(branch=0x4c44, min=0x7)
+    public float waterBits = 1.0f, fromWaterBits = 1.0f, targetWaterBits = 1.0f;
+
+    @GsonRevision(min=0x34e) public boolean waterDrainSoundsEnabled = true, currWaterDrainSoundsEnabled = true;
+    @GsonRevision(lbp3=true,min=0xe8) public boolean waterCausticsEnabled = true, currWaterCausticsEnabled = true;
+    
+    @GsonRevision(lbp3=true,min=0xf8)
     public int waterMainColor = -1090453761, fromWaterMainColor = -1090453761, targetWaterMainColor = -1090453761;
+    @GsonRevision(lbp3=true,min=0xf8)
     public int waterHintColorOne = -33554177, fromWaterHintColorOne = -33554177, targetWaterHintColorOne = -33554177;
+    @GsonRevision(lbp3=true,min=0xf8)
     public int waterHintColorTwo = 16662783, fromWaterHintColorTwo = 16662783, targetWaterHintColorTwo = 16662783;
 
-    public boolean backdropEnabled = true, currBackdropEnabled = true;
-    public float currWavePos = 0.0186706f;
-    public GameMode gameMode = GameMode.NONE, gameModeRequested = GameMode.NONE;
-    public int nextSackbotPlayerNumber = -2;
-    public CutsceneCameraManager cutsceneCameraManager = new CutsceneCameraManager();
-    public GlobalAudioSettings globalAudioSettings = new GlobalAudioSettings();
-    public ResourceDescriptor backdropPlan, backdropNewPlan;
-    public boolean subLevel, scoreLocked;
-    public int debugTimeInLevel;
-    public boolean useEvenNewerCheckpointCode;
-    public MoveCursor[] moveCursors;
-    public boolean singlePlayer;
-    public int minPlayers = 1, maxPlayers = 4;
-    public boolean moveRecommended, fixInvalidInOutMoverContacts, continueMusic;
+    @GsonRevision(lbp3=true,min=0x182) public boolean backdropEnabled = true, currBackdropEnabled = true;
 
-    public Thing[] broadcastMicroChipEntries;
-    public int manualJumpDown;
-    public Thing[] deferredDestroys;
-    public float globalDofFront, globalDofBack, globalDofSackTrack;
-    public boolean enableSackpocket, showQuestLog;
-    public SlotID scoreboardUnlockLevelSlot;
-    public String progressBoardLevelLinkStartPoint;
-    public boolean isLBP3World;
+    @GsonRevision(min=0x29c)
+    @GsonRevision(min=0x4, branch=0x4c44)
+    public float currWavePos = 0.0186706f;
+
+
+    @GsonRevision(min=0x2a3) public GameMode gameMode = GameMode.NONE;
+    @GsonRevision(lbp3=true,min=0x218) public GameMode gameModeRequested = GameMode.NONE;
+
+    @GsonRevision(min=0x2b0) public int nextSackbotPlayerNumber = -2;
+    @GsonRevision(min=0x2ee) public CutsceneCameraManager cutsceneCameraManager = new CutsceneCameraManager();
+    @GsonRevision(min=0x30c) public GlobalAudioSettings globalAudioSettings = new GlobalAudioSettings();
+    @GsonRevision(min=0x321) public ResourceDescriptor backdropPlan, backdropNewPlan;
+    @GsonRevision(min=0x352) public boolean subLevel;
+    @GsonRevision(min=0x38a) public boolean scoreLocked;
+    @GsonRevision(min=0x3ac) public int debugTimeInLevel;
+    @GsonRevision(min=0x3ac) public boolean useEvenNewerCheckpointCode;
+    @GsonRevision(min=0x3bd) public MoveCursor[] moveCursors;
+    
+    // public boolean singlePlayer;
+    @GsonRevision(min=0x3d0) public int minPlayers = 1, maxPlayers = 4;
+    @GsonRevision(min=0x3d0) public boolean moveRecommended;
+    @GsonRevision(min=0x3dd) public boolean fixInvalidInOutMoverContacts;
+    @GsonRevision(min=0x3f1) public boolean continueMusic;
+
+    @GsonRevision(lbp3=true,min=0x2f) public Thing[] broadcastMicroChipEntries;
+    @GsonRevision(lbp3=true,min=0x5d) public int manualJumpDown;
+    @GsonRevision(lbp3=true,min=0xe5) public Thing[] deferredDestroys;
+    @GsonRevision(lbp3=true,min=0xcf) public float globalDofFront, globalDofBack, globalDofSackTrack;
+    @GsonRevision(lbp3=true,min=0xda) public boolean enableSackpocket;
+    @GsonRevision(lbp3=true,min=0x170) public boolean showQuestLog;
+    @GsonRevision(lbp3=true,min=0x11d) public SlotID scoreboardUnlockLevelSlot;
+    @GsonRevision(lbp3=true,min=0x154) public String progressBoardLevelLinkStartPoint;
+    @GsonRevision(lbp3=true,min=0x15e) public boolean isLBP3World;
 
     /* Vita Fields */
 
-    public boolean nonLinearFog;
-    public EggLink[] bronzeRewards, silverRewards, goldRewards;
-    public KeyLink[] bronzeUnlocks, silverUnlocks, goldUnlocks;
-    public byte bronzeTrophyConditionType, silverTrophyConditionType, goldTrophyConditionType;
-    public int scoreRequiredForBronzeTrophy, scoreRequiredForSilverTrophy, scoreRequiredForGoldTrophy;
-    public float timeRequiredForBronzeTrophy, timeRequiredForSilverTrophy, timeRequiredForGoldTrophy;
-    public int livesLostRequiredForBronzeTrophy, livesLostRequiredForSilverTrophy, livesLostRequiredForGoldTrophy;
+    @GsonRevision(branch=0x4431,min=0x78) public boolean nonLinearFog;
+    @GsonRevision(branch=0x4431,min=0x25) public EggLink[] bronzeRewards, silverRewards, goldRewards;
+    @GsonRevision(branch=0x4431,min=0x25) public KeyLink[] bronzeUnlocks, silverUnlocks, goldUnlocks;
+    @GsonRevision(branch=0x4431,min=0x25) public byte bronzeTrophyConditionType, silverTrophyConditionType, goldTrophyConditionType;
+    @GsonRevision(branch=0x4431,min=0x25) public int scoreRequiredForBronzeTrophy, scoreRequiredForSilverTrophy, scoreRequiredForGoldTrophy;
+    @GsonRevision(branch=0x4431,min=0x25) public float timeRequiredForBronzeTrophy, timeRequiredForSilverTrophy, timeRequiredForGoldTrophy;
+    @GsonRevision(branch=0x4431,min=0x25) public int livesLostRequiredForBronzeTrophy, livesLostRequiredForSilverTrophy, livesLostRequiredForGoldTrophy;
 
-    public boolean enableAcing, enableGoldTrophy, enableSilverTrophy, enableBronzeTrophy;
-    public boolean enforceMinMaxPlayers;
+    @GsonRevision(branch=0x4431,min=0x3d) public boolean enableAcing, enableGoldTrophy, enableSilverTrophy, enableBronzeTrophy;
+    @GsonRevision(branch=0x4431,min=0x4c) public boolean enforceMinMaxPlayers;
     
-    public int waterColor;
-    public float waterBrightness;
+    @GsonRevision(branch=0x4431,min=0x2d) public int waterColor;
+    @GsonRevision(branch=0x4431,min=0x2d) public float waterBrightness;
 
-    public int globalTouchCursor;
+    @GsonRevision(branch=0x4431,min=0x8) public int globalTouchCursor;
 
-    public boolean portraitMode, sharedScreen, disableHUD, disableShadows, flipBackground;
-    public boolean mpSeparateScreen;
+
+    @GsonRevision(branch=0x4431,min=0x18) public boolean portraitMode; 
+    @GsonRevision(branch=0x4431,min=0x47) public boolean sharedScreen;
+    @GsonRevision(branch=0x4431,min=0x39) public boolean disableHUD;
+    @GsonRevision(branch=0x4431,min=0x52) public boolean disableShadows;
+    @GsonRevision(branch=0x4431,min=0x3b) public boolean flipBackground;
+    @GsonRevision(branch=0x4431,min=0x4f) public boolean mpSeparateScreen;
     
     public PWorld() {
         this.currGlobalSettingsBlendFactors = new float[12];

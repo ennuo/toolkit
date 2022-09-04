@@ -1,13 +1,16 @@
 package cwlib.structs.things.components.switches;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class SwitchSignal implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 
     public float activation;
+    @GsonRevision(min=0x310)
     public int ternary;
+    @GsonRevision(min=0x2a3)
     public int player = -1;
 
     public SwitchSignal() {}

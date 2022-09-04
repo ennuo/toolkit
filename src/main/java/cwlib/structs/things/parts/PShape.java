@@ -9,6 +9,7 @@ import cwlib.enums.LethalType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShapeFlags;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -38,11 +39,11 @@ public class PShape implements Serializable {
     /**
      * Old physical properties of this shape.
      */
-    public ResourceDescriptor oldMaterial;
+    @GsonRevision(min=0x15c) public ResourceDescriptor oldMaterial;
 
     public float thickness = 90.0f;
 
-    public float massDepth = 1.0f;
+    @GsonRevision(min=0x227) public float massDepth = 1.0f;
 
     /**
      * RGBA color of the shape.
@@ -52,65 +53,60 @@ public class PShape implements Serializable {
     /**
      * Brightness of the color of the shape.
      */
-    public float brightness;
+    @GsonRevision(min=0x301) public float brightness;
 
     public float bevelSize = 10.0f;
 
-    public Matrix4f COM =  new Matrix4f().identity();
+    public transient Matrix4f COM =  new Matrix4f().identity();
 
-    public int behavior;
+    @GsonRevision(min=0x303) public int behavior;
 
-    public int colorOff;
-    public float brightnessOff;
+    @GsonRevision(min=0x303) public int colorOff;
+    @GsonRevision(min=0x303) public float brightnessOff;
 
-    public byte interactPlayMode, interactEditMode;
+    @GsonRevision(max=0x306) public byte interactPlayMode, interactEditMode;
 
     public LethalType lethalType = LethalType.NOT;
 
 
     public AudioMaterial soundEnumOverride = AudioMaterial.NONE;
-    public byte playerNumberColor;
-
+    @GsonRevision(min=0x2a3) public byte playerNumberColor;
+    
     public short flags = ShapeFlags.DEFAULT_FLAGS;
 
-    public ContactCache contactCache = new ContactCache();
+    @GsonRevision(min=0x307) public ContactCache contactCache = new ContactCache();
 
-    public byte stickiness;
+    @GsonRevision(min=0x3bd) public byte stickiness, grabbability, grabFilter;
 
-    public byte grabbability;
-    public byte grabFilter;
+    @GsonRevision(min=0x3c1) public byte colorOpacity, colorOffOpacity;
 
-    public byte colorOpacity;
-    public byte colorOffOpacity;
-    public byte colorShininess;
+    @GsonRevision(lbp3=true,min=0x12c) public byte colorShininess;
 
-    public boolean canCollect;
-    public boolean ghosty;
+    @GsonRevision(min=0x3e2) public boolean canCollect;
+    @GsonRevision(lbp3=true,min=0x42) public boolean ghosty;
 
-    public boolean defaultClimbable;
-    public boolean currentlyClimbable;
+    @GsonRevision(lbp3=true,min=0x186) public boolean defaultClimbable;
+    @GsonRevision(lbp3=true,min=0x4b) public boolean currentlyClimbable;
 
-    public boolean headDucking;
-    public boolean isLBP2Shape;
-    public boolean isStatic;
-    public boolean collidableSackboy;
+    @GsonRevision(lbp3=true,min=0x63) public boolean headDucking;
+    @GsonRevision(lbp3=true,min=0x82) public boolean isLBP2Shape;
+    @GsonRevision(lbp3=true,min=0x8a) public boolean isStatic;
+    @GsonRevision(lbp3=true,min=0xe6) public boolean collidableSackboy;
 
-    public boolean partOfPowerUp;
-    public boolean cameraExcluderIsSticky;
+    @GsonRevision(lbp3=true,min=0x11a) public boolean partOfPowerUp, cameraExcluderIsSticky;
 
-    public boolean ethereal;
-    public byte zBias;
+    @GsonRevision(lbp3=true,min=0x19a) public boolean ethereal;
+    @GsonRevision(lbp3=true,min=0x149) public byte zBias;
 
-    public byte fireDensity;
-    public byte fireLifetime;
+    @GsonRevision(lbp3=true,min=0x14c) public byte fireDensity, fireLifetime;
 
     /* Vita fields */
 
-    public byte touchability;
-    public boolean invisibleTouch;
-    public byte bouncePadBehavior;
-    public float zBiasVita;
-    public boolean touchWhenInvisible;
+    @GsonRevision(branch=0x4431, min=0x5) public byte touchability;
+    @GsonRevision(branch=0x4431, min=0x26) public boolean invisibleTouch;
+    @GsonRevision(branch=0x4431, min=0x34) public byte bouncePadBehavior;
+    @GsonRevision(branch=0x4431, min=0x5f) public float zBiasVita;
+    @GsonRevision(branch=0x4431, min=0x7a) public boolean touchWhenInvisible;
 
     @SuppressWarnings("unchecked")
     @Override public PShape serialize(Serializer serializer, Serializable structure) {

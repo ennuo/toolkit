@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
@@ -18,16 +19,27 @@ public class LevelSettings implements Serializable {
     public Vector4f fogColor = new Vector4f(-0.3f, -0.5f, -0.7f, 1.0f);
     public float fogNear = 200f, fogFar = 15000f;
     public Vector4f rimColor = new Vector4f(0.45f, 0.3f, 0.15f, 1.5f);
+    @GsonRevision(min=0x138)
     public Vector4f rimColor2 = new Vector4f(0.3f, 0.4f, 0.5f, 1.0f);
 
+    @GsonRevision(min=0x325)
     public float bakedShadowAmount, bakedShadowBlur = 0.1f;
+    @GsonRevision(min=0x325)
     public float bakedAOBias, bakedAOScale = 1.0f;
+    @GsonRevision(min=0x325)
     public float dynamicAOAmount = 0.4f;
-    public float dofNear = 4000f, dofFar = 50000f;
+    @GsonRevision(min=0x325)
+    public float dofNear = 4000f;
+    @GsonRevision(min=0x326)
+    public float dofFar = 50000f;
 
+    @GsonRevision(min=0x331)
     public float zEffectAmount = 0f, zEffectBright = 0f, zEffectContrast = 0.333f;
 
-    public float dofNear2 = -7500f, dofFar2 = -3500f, dofFar3 = -100000f;
+    @GsonRevision(lbp3=true,min=0x7a)
+    public float dofNear2 = -7500f, dofFar2 = -3500f;
+    @GsonRevision(lbp3=true,min=0xce)
+    public float dofFar3 = -100000f;
 
     @SuppressWarnings("unchecked")
     @Override public LevelSettings serialize(Serializer serializer, Serializable structure) {

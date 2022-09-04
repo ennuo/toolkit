@@ -2,6 +2,7 @@ package cwlib.structs.things.components;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -15,10 +16,8 @@ public class CostumePiece implements Serializable {
     public int categoriesUsed;
     public byte[] morphParamRemap;
     public Primitive[] primitives;
-    public ResourceDescriptor plan;
-
-
-
+    @GsonRevision(min=0x19a) public ResourceDescriptor plan;
+    
     @SuppressWarnings("unchecked")
     @Override public CostumePiece serialize(Serializer serializer, Serializable structure) {
         CostumePiece costume = (structure == null) ? new CostumePiece() : (CostumePiece) structure;

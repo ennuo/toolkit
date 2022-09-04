@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -28,6 +29,7 @@ public class Polygon implements Serializable {
     /**
      * Whether or not this polygon needs the Z vertex.
      */
+    @GsonRevision(min=0x341)
     public boolean requiresZ = false;
 
     /**

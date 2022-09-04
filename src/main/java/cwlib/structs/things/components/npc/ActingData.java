@@ -2,6 +2,7 @@ package cwlib.structs.things.components.npc;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
@@ -9,14 +10,15 @@ import cwlib.types.data.ResourceDescriptor;
 public class ActingData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x120;
 
-    public int state;
-    public Thing recordingNpc;
-    public InputRecording recording = new InputRecording();
-    public Thing recordingPlayer;
-    public int currentFrame, recordingCountdown;
-    public ResourceDescriptor VoIPRecording;
-    public boolean transformOnRestart;
-    public byte previousState;
+    @GsonRevision(min=0x2da) public int state;
+    @GsonRevision(min=0x2da) public Thing recordingNpc;
+    @GsonRevision(min=0x296) public InputRecording recording = new InputRecording();
+    @GsonRevision(min=0x296) public Thing recordingPlayer;
+    @GsonRevision(min=0x296) public int currentFrame;
+    @GsonRevision(min=0x2a6) public int recordingCountdown;
+    @GsonRevision(min=0x33e)  public ResourceDescriptor VoIPRecording;
+    @GsonRevision(lbp3=true, min=0xb6) public boolean transformOnRestart;
+    @GsonRevision(lbp3=true, min=0xbd) public byte previousState;
 
     @SuppressWarnings("unchecked")
     @Override public ActingData serialize(Serializer serializer, Serializable structure) {

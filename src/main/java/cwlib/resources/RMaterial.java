@@ -4,9 +4,9 @@ import cwlib.enums.AudioMaterial;
 import cwlib.enums.CollideType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
-import cwlib.ex.SerializationException;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
@@ -19,26 +19,43 @@ public class RMaterial implements Compressable, Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public float traction = 1.0f, density = 20.0f;
+    @GsonRevision(max=0x13b)
     public byte field000, field001;
-    public float restitution = 0.3f, slidingFriction = 0.8f, field002, rollingFriction = 1.8f;
+    public float restitution = 0.3f, slidingFriction = 0.8f;
+    @GsonRevision(max=0x13b)
+    public float field002;
+    public float rollingFriction = 1.8f;
+    @GsonRevision(max=0x13b)
     public byte field003, field004, field005, field006, field007;
     public AudioMaterial soundEnum = AudioMaterial.NONE;
     public boolean grabbable = false;
+    @GsonRevision(max=0x13b)
     public byte field008, field009;
     public float gravityMultiplier = 1.0f, airResistanceMultiplier = 1.0f;
+    @GsonRevision(max=0x167)
     public float field010;
     public boolean limb;
+    @GsonRevision(max=0x1d3)
     public byte field011;
     public boolean shiftGrip;
     public int collideType = CollideType.NORMAL, collideIgnore = CollideType.NONE;
-    public boolean dissolvable, explodable, cuttableByExplosion = true, breakable;
+    public boolean dissolvable, explodable, cuttableByExplosion = true;
+    @GsonRevision(min=0x167)
+    public boolean breakable;
+    @GsonRevision(min=0x167)
     public float breakMinVel, breakMinForce;
-    public float explosionMinRadius, explosionMaxRadius;
-    public float explosionMaxVel, explosionMaxAngVel;
+    @GsonRevision(min=0x167)
+    public float explosionMinRadius, explosionMaxRadius, explosionMaxVel;
+    @GsonRevision(min=0x168)
+    public float explosionMaxAngVel;
+    @GsonRevision(min=0x167)
     public float explosionMaxForce;
+    @GsonRevision(min=0x13c)
     public float maxForce = Float.NaN;
-    public boolean bullet, circuitBoard;
-    public boolean disableCSG;
+    @GsonRevision(min=0x244)
+    public boolean bullet;
+    @GsonRevision(min=0x27b)
+    public boolean circuitBoard, disableCSG;
 
     @SuppressWarnings("unchecked")
     @Override public RMaterial serialize(Serializer serializer, Serializable structure) {

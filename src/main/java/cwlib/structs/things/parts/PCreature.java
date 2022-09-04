@@ -8,6 +8,8 @@ import cwlib.enums.Branch;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonResourceType;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.structs.things.Thing;
@@ -37,83 +39,259 @@ public class PCreature implements Serializable {
         @Override public int getAllocatedSize() { return SpringData.BASE_ALLOCATION_SIZE; }
     }
 
+    // ECreatureGunType
+    // PAINT 0
+    // RAY 1
+    // CUSTOM 2
+
+    // EDirectControlMode
+    // NONE 0
+    // FRONT  1
+    // SIDE 2
+    // MOTION_CONTROLLER 3
+
+    // EEnemyMoveDirection
+    // LEFT_FIRST 0
+    // RIGHT_FIRST 1
+    // LEFT_ONLY 2 
+    // RIGHT_ONLY 3
+    // NONE 4
+
+    // EEnemyPlayerAwareness
+    // NONE 0
+    // ATTRACT 1
+    // REPULSE 2
+
+    // EZEvent
+    // NOTHING 0
+    // WALK 1
+    // AIR 2
+    // JUMP_DOWN 3
+    // WALK_TO_GRAB 4
+    // WALK_BLOCKED 5
+    // WALK_SCARED 6
+    // AIR_BLOCKED 7
+    // JUMP_DOWN_BLOCKED 8
+
+    // EZMode
+    // AUTO 0
+    // MANUAL 1
+    // HYBRID 2
+
+
+
+    @GsonResourceType(ResourceType.SETTINGS_CHARACTER)
     public ResourceDescriptor config;
+    
     public int jumpFrame;
     public float groundDistance;
     public Vector3f groundNormal;
     public Thing grabJoint, jumpingOff;
-    public int state, subState, stateTimer;
+    public int state;
+    @GsonRevision(lbp3=true,min=0x132)
+    public int subState;
+    public int stateTimer;
     public float speedModifier, jumpModifier, strengthModifier;
     public int zMode, playerAwareness, moveDirection;
     public Vector3f forceThatSmashedCreature;
     public int crushFrames;
     public float awarenessRadius;
+
+    @GsonRevision(min=0x1df)
     public int airTime;
+
+    @GsonRevision(min=0x354)
     public int[] bouncepadThingUIDs, grabbedThingUIDs;
+
+    @GsonRevision(min=0x221)
     public boolean haveNotTouchedGroundSinceUsingJetpack;
+
+    @GsonRevision(min=0x15d)
     public Thing[] legList, lifeSourceList;
+    @GsonRevision(min=0x15d)
     public Thing lifeCreature, aiCreature;
+
+    @GsonRevision(min=0x163)
     public int jumpInterval, jumpIntervalPhase;
+
+    @GsonRevision(min=0x169)
     public boolean meshDirty;
+
+    @GsonRevision(min=0x166)
     public Thing[] eyeList, brainAiList, brainLifeList;
+
+    @GsonRevision(min=0x19c)
     public boolean reactToLethal;
+
+    @GsonRevision(min=0x1a9)
     public Matrix4f oldAnimMatrix;
+    @GsonRevision(min=0x1a9)
     public float animOffset;
-    public Vector3f groundNormalRaw, groundNormalSmooth;
-    public float bodyAdjustApplied, switchScale;
+
+    @GsonRevision(min=0x1fc)
+    public Vector3f groundNormalRaw;
+    @GsonRevision(min=0x212)
+    public Vector3f groundNormalSmooth;
+
+    @GsonRevision(min=0x212)
+    public float bodyAdjustApplied;
+
+    @GsonRevision(min=0x240,max=0x2c3)
+    @Deprecated public float switchScale;
+
+    @GsonRevision(min=0x243)
     public Vector3f gunDirAndDashVec;
+    @GsonRevision(lbp3=true,min=0x19e)
     public int gunDirAndDashVecW;
+
+    @GsonRevision(min=0x246)
     public Thing resourceThing;
-    public int gunFireFrame, bulletCount, bulletImmuneTimer;
-    public Thing bulletEmitter0, bulletEmitter1;
-    public int bulletPosIndex, maxBulletCount;
+
+    @GsonRevision(min=0x247)
+    public int gunFireFrame;
+
+    @GsonRevision(min=0x248)
+    public int bulletCount;
+
+    @GsonRevision(min=0x24a)
+    public int bulletImmuneTimer;
+
+    @GsonRevision(min=0x24d)
+    public Thing bulletEmitter0;
+
+    @GsonRevision(min=0x3a2)
+    public Thing bulletEmitter1;
+
+    @GsonRevision(min=0x24e)
+    public int bulletPosIndex;
+
+    @GsonRevision(min=0x24f)
+    public int maxBulletCount;
+
+    @GsonRevision(min=0x24f)
     public float ammoFillFactor;
+
+    @GsonRevision(min=0x252)
     public boolean gunDirPrecisionMode;
+
+
+    @GsonRevision(min=0x320)
     public int fireRate;
+    @GsonRevision(min=0x320)
     public float gunAccuracy;
+    @GsonRevision(min=0x320)
     public Vector3f bulletEmitOffset;
+    @GsonRevision(min=0x320)
     public float bulletEmitRotation;
+    @GsonRevision(min=0x320)
     public Thing gunThing, gunTrigger;
-    public int lastGunTriggerUID, airTimeLeft;
+    @GsonRevision(min=0x320)
+    public int lastGunTriggerUID;
+
+    @GsonRevision(min=0x272)
+    public int airTimeLeft;
+
+    @GsonRevision(min=0x2c9)
+    @GsonRevision(branch=0x4c44,min=15)
     public float amountBodySubmerged, amountHeadSubmerged;
+
+    @GsonRevision(min=0x289)
+    @GsonRevision(branch=0x4c44,min=0)
     public boolean hasScubaGear;
+
+    @GsonRevision(min=0x289,max=0x2c7)
+    @GsonRevision(branch=0x4c44,max=11)
     @Deprecated public ResourceDescriptor headPiece;
+
+    @GsonRevision(min=0x289)
+    @GsonRevision(branch=0x4c44,min=0)
     public boolean outOfWaterJumpBoost;
+
+    @GsonRevision(min=0x2a9)
     public ResourceDescriptor handPiece;
+
+    @GsonRevision(min=0x273)
     public Thing head, toolTetherJoint;
+    @GsonRevision(min=0x273)
     public float toolTetherWidth;
+    @GsonRevision(min=0x273)
     public Thing jetpack;
+    @GsonRevision(min=0x273)
     public int wallJumpDir;
+    @GsonRevision(min=0x273)
     public Vector3f wallJumpPos;
+    @GsonRevision(min=0x273)
     public Vector3f[] bootContactForceList;
+    @GsonRevision(min=0x273)
     public int gunType;
+    @GsonRevision(min=0x273)
     public boolean wallJumpMat;
+
+    @GsonRevision(min=0x29e,max=0x335)
     @Deprecated public Thing lastDirectControlPrompt;
+    @GsonRevision(min=0x2e5)
     public Thing directControlPrompt;
+
+    @GsonRevision(min=0x29e,max=0x335)
     @Deprecated public Vector3f smoothedDirectControlStick;
+    @GsonRevision(min=0x29e,max=0x335)
     @Deprecated public short directControlAnimFrame;
+    @GsonRevision(min=0x29e,max=0x335)
     @Deprecated public byte directControlAnimState;
+    @GsonRevision(min=0x29f,max=0x2c0)
     @Deprecated public byte directControlMode;
+
+    @GsonRevision(min=0x2a5)
     public int responsiblePlayer, responsibleFramesLeft;
+    @GsonRevision(min=0x32c)
     public boolean canDropPowerup;
-    public byte capeExtraMaxVelocityCap;
-    public int behavior, effectDestroy = 6;
-    public Thing whipSim, alternateFormWorld;
+
+    public byte capeExtraMaxVelocityCap; // ???
+
+    @GsonRevision(min=0x35a)
+    public int behavior;
+
+    @GsonRevision(min=0x373)
+    public int effectDestroy = 6;
+
+    @GsonRevision(min=0x3c0)
+    public Thing whipSim;
+
+    @GsonRevision(branch=0x4431,min=0x53)
     public int shootAtTouch; // vita
+
+    @GsonRevision(lbp3=true,min=0xaa)
+    public Thing alternateFormWorld;
+
+    @GsonRevision(lbp3=true,min=0xd6)
     public int hookHatState;
+    @GsonRevision(lbp3=true,min=0xdf)
     public Thing hookHatBogey;
+
+    @GsonRevision(lbp3=true,min=0x196)
     public int flyingState, flyingTimer, flyingFlumpFrame,
     flyingImpulseFrame, flyingFlapButtonTimer, flyingBrakeTimer,
     flyingGrabFallTimer;
+    @GsonRevision(lbp3=true,min=0x196)
     public float flyingLegScale;
+    @GsonRevision(lbp3=true,min=0x196)
     public Vector4f flyingVels;
+    @GsonRevision(lbp3=true,min=0x196)
     public boolean flyingFlapLockout, flyingFallLockout, flyingInWind, flyingThrustLatched;
+    @GsonRevision(lbp3=true,min=0x196)
     public short glidingTime;
+
+    @GsonRevision(lbp3=true,min=0x20c)
     public byte springState;
+    @GsonRevision(lbp3=true,min=0x20c)
     public boolean springHasSprung;
+    @GsonRevision(lbp3=true,min=0x20c)
     public SpringData currentSpringData;
+    @GsonRevision(lbp3=true,min=0x20c)
     public byte springPower;
+    @GsonRevision(lbp3=true,min=0x20c)
     public boolean springSeparateForces;
+    @GsonRevision(lbp3=true,min=0x20c)
     public byte springForce, springStateTimer;
 
     @SuppressWarnings("unchecked")
@@ -173,6 +351,8 @@ public class PCreature implements Serializable {
 
         creature.forceThatSmashedCreature = serializer.v3(creature.forceThatSmashedCreature);
         creature.crushFrames = serializer.i32(creature.crushFrames);
+
+        // serializer.i32(0); // THIS IS NOT SUPPOSED TO BE HERE, REMOVE REMOVE
 
         creature.awarenessRadius = serializer.f32(creature.awarenessRadius);
 

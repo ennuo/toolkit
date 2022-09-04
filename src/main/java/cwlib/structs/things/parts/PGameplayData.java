@@ -5,17 +5,18 @@ import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.components.EggLink;
 import cwlib.enums.GameplayPartType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class PGameplayData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
-    public GameplayPartType gameplayType = GameplayPartType.UNDEFINED;
+    @GsonRevision(min=0x2d1) public GameplayPartType gameplayType = GameplayPartType.UNDEFINED;
     public int fluffCost = 100000;
     public EggLink eggLink;
     public SlotID keyLink;
-    public int treasureType;
-    public short treasureCount = 1;
+    @GsonRevision(lbp3=true,min=0xf3) public int treasureType;
+    @GsonRevision(lbp3=true,min=0xf3) public short treasureCount = 1;
 
     @SuppressWarnings("unchecked")
     @Override public PGameplayData serialize(Serializer serializer, Serializable structure) {

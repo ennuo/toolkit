@@ -8,6 +8,7 @@ import cwlib.enums.CacheFlags;
 import cwlib.enums.Revisions;
 import cwlib.enums.TextureType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
@@ -15,11 +16,11 @@ public class CachedShader implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public short flags = CacheFlags.NONE;
-    public boolean swizzled = false;
+    @GsonRevision(min=4,branch=0x4d5a) public boolean swizzled = false;
     public Vector3f color = new Vector3f(1.0f, 1.0f, 1.0f);
     public Vector2f scale = new Vector2f(1.0f, 1.0f);
     public byte[] lookup = new byte[TextureType.MAX];
-    public String path;
+    @GsonRevision(min=3,branch=0x4d5a) public String path;
     public byte[] shader;
     
     @SuppressWarnings("unchecked")

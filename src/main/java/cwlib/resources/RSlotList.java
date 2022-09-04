@@ -11,6 +11,7 @@ import cwlib.types.data.Revision;
 import cwlib.structs.slot.Slot;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 
@@ -18,6 +19,7 @@ public class RSlotList implements Serializable, Compressable, Iterable<Slot> {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
 
     private ArrayList<Slot> slots = new ArrayList<>();
+    @GsonRevision(min=950)
     public boolean fromProductionBuild = true;
 
     public RSlotList() {}

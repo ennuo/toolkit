@@ -401,7 +401,7 @@ public class MemoryOutputStream {
         }
 
         for (int i = 0; i < 16; ++i)
-            if (((flags >>> i) & 1) != 0)
+            if ((flags & (1 << i)) != 0)
                 this.f32(values[i]);
         
         return this;

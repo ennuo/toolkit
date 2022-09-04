@@ -5,6 +5,8 @@ import org.joml.Vector4f;
 import cwlib.enums.ResourceType;
 import cwlib.enums.VisibilityFlags;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonResourceType;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -21,12 +23,14 @@ public class PGeneratedMesh implements Serializable {
     /**
      * The material used to render this mesh.
      */
+    @GsonResourceType(ResourceType.GFX_MATERIAL)
     public ResourceDescriptor gfxMaterial = 
         new ResourceDescriptor(11166, ResourceType.GFX_MATERIAL);
 
     /**
      * The bevel used with this mesh.
      */
+    @GsonResourceType(ResourceType.BEVEL)
     public ResourceDescriptor bevel;
 
     /**
@@ -38,56 +42,67 @@ public class PGeneratedMesh implements Serializable {
     /**
      * The plan this generated mesh came from.
      */
+    @GsonRevision(min=0x258)
     public GUID planGUID;
 
     /**
      * Flags controlling the visibility of this mesh.
      */
+    @GsonRevision(min=0x27c)
     public byte visibilityFlags = VisibilityFlags.PLAY_MODE | VisibilityFlags.EDIT_MODE;
 
     /**
      * Speed of this material's animation,
      * animations are defined in the RGfxMaterial.
      */
+    @GsonRevision(min=0x305)
     public float textureAnimationSpeed = 1.0f;
 
     /**
      * The speed of this material's animation when it's off,
      * animations are defined in the RGfxMaterial.
      */
+    @GsonRevision(min=0x305)
     public float textureAnimationSpeedOff = 1.0f;
 
 
     /* Vita texture parameters */
+    @GsonRevision(branch=0x4431,min=0x6b)
     public int uvMode;
+    @GsonRevision(branch=0x4431,min=0x76,max=0x76)
     public float textureScale;
 
     /**
      * Indicates that this material should have no bevel.
      */
+    @GsonRevision(lbp3=true,min=0x34)
     public boolean noBevel;
 
     /**
      * Whether or not this material has been sharded.
      */
+    @GsonRevision(lbp3=true,min=0x97)
     public boolean sharded;
 
     /**
      * Whether or not the sides should be rendered(?)
      */
+    @GsonRevision(lbp3=true,min=0x13d)
     public boolean includeSides = true;
 
-
+    @GsonRevision(lbp3=true,min=0x155)
     public byte slideImpactDamping;
 
     /**
      * Speed the player moves when steering on a slide.
      */
+    @GsonRevision(lbp3=true,min=0x13d)
     public byte slideSteer;
 
     /**
      * Speed the player descends down this slide.
      */
+    @GsonRevision(lbp3=true,min=0x13d)
     public byte slideSpeed;
 
     @SuppressWarnings("unchecked")

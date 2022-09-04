@@ -4,6 +4,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.enums.SkeletonType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.CullBone;
@@ -15,6 +16,8 @@ public class Skeleton implements Serializable {
     public short[] mirror;
     public byte[] mirrorType;
     public CullBone[] cullBones;
+    
+    @GsonRevision(max=1,branch=0x4d5a)
     @Deprecated private SkeletonType type;
 
     @SuppressWarnings("unchecked")

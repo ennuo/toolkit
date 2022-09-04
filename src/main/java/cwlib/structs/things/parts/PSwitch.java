@@ -9,6 +9,7 @@ import cwlib.enums.SwitchLogicType;
 import cwlib.enums.SwitchType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -24,72 +25,86 @@ import cwlib.types.data.Revision;
 
 public class PSwitch implements Serializable {
     public boolean inverted;
-    public float radius, minRadius;
+    public float radius;
+    @GsonRevision(min=0x382) public float minRadius;
     public int colorIndex;
-    public String name;
-    public boolean crappyOldLbp1Switch;
+    @GsonRevision(min=0x2dc) public String name;
+    @GsonRevision(min=0x38f) public boolean crappyOldLbp1Switch;
     public int behaviorOld;
     public SwitchOutput[] outputs;
 
+    @GsonRevision(min=0x160)
     public ResourceDescriptor stickerPlan;
+    @GsonRevision(min=0x140,max=0x15f)
     @Deprecated public GlobalThingDescriptor refSticker;
 
-    public boolean hideInPlayMode;
-    public SwitchType type = SwitchType.INVALID;
-    public Thing referenceThing;
-    public SwitchSignal manualActivation;
-    public float platformVisualFactor;
-    public float oldActivation;
-    public int activationHoldTime;
-    public boolean requireAll;
-    public Vector4f[] connectorPos;
-    public boolean[] connectorGrabbed;
-    public Vector4f portPosOffset, looseConnectorPos, looseConnectorBaseOffset;
-    public boolean looseConnectorGrabbed;
-    public float angleRange;
-    public int includeTouching;
-    public int bulletsRequired, bulletsDetected, bulletPlayerNumber, bulletRefreshTime;
-    public boolean resetWhenFull, hideConnectors;
-    public SwitchLogicType logicType = SwitchLogicType.AND;
-    public int updateFrame;
-    @Deprecated public Thing[] inputList;
-    public Thing portThing;
-    public boolean includeRigidConnectors;
-    public Vector4f customPortOffset, customConnectorOffset;
-    public float timerCount;
-    public byte timerAutoCount;
-    public int teamFilter;
-    public SwitchBehavior behavior = SwitchBehavior.OFF_ON;
-    public int randomBehavior, randomPattern;
-    public int randomOnTimeMin, randomOnTimeMax;
-    public int randomOffTimeMin, randomOffTimeMax;
-    public int randomPhaseOn, randomPhaseTime;
-    public boolean retardedOldJoint;
-    public int keySensorMode;
-    public int userDefinedColour;
-    public boolean wiresVisible;
-    public byte bulletTypes;
-    public boolean detectUnspawnedPlayers;
-    public byte unspawnedBehavior;
-    public boolean playSwitchAudio;
-    public byte playerMode;
-    public DataLabelValue value = new DataLabelValue();
-    public boolean relativeToSequencer;
-    public byte layerRange;
-    public boolean breakSound;
-    public int colorTimer;
-    public boolean isLbp3Switch, randomNonRepeating;
-    public int stickerSwitchMode;
+    @GsonRevision(min=0x198) public boolean hideInPlayMode;
+    @GsonRevision(min=0x1a5) public SwitchType type = SwitchType.INVALID;
+    @GsonRevision(min=0x1a5) public Thing referenceThing;
+    @GsonRevision(min=0x1a5) public SwitchSignal manualActivation;
+    @GsonRevision(min=0x1a5, max=0x367) public float platformVisualFactor;
+    @GsonRevision(min=0x1a5, max=0x2bf) public float oldActivation;
+    @GsonRevision(min=0x1a5) public int activationHoldTime;
+    @GsonRevision(min=0x1a5) public boolean requireAll;
+    @GsonRevision(min=0x1fb,max=0x326) public Vector4f[] connectorPos;
+    @GsonRevision(min=0x1fb,max=0x326) public boolean[] connectorGrabbed;
+    @GsonRevision(min=0x1fb,max=0x326) public Vector4f portPosOffset, looseConnectorPos, looseConnectorBaseOffset;
+    @GsonRevision(min=0x1fb,max=0x326) public boolean looseConnectorGrabbed;
+    @GsonRevision(min=0x23e) public float angleRange;
+    @GsonRevision(min=0x23e) public int includeTouching;
+    @GsonRevision(min=0x244) public int bulletsRequired;
+    @GsonRevision(min=0x245) public int bulletsDetected;
+    @GsonRevision(min=0x246,max=0x397) public int bulletPlayerNumber;
+    @GsonRevision(min=0x249) public int bulletRefreshTime;
+    @GsonRevision(min=0x2f5) public boolean resetWhenFull;
+    @GsonRevision(min=0x24b, max=0x326) public boolean hideConnectors;
+    @GsonRevision(min=0x273,max=0x397) public SwitchLogicType logicType = SwitchLogicType.AND;
+    @GsonRevision(min=0x273,max=0x368) public int updateFrame;
+    @GsonRevision(min=0x273) @Deprecated public Thing[] inputList;
+    @GsonRevision(min=0x277,max=0x326) public Thing portThing;
+    @GsonRevision(min=0x284) public boolean includeRigidConnectors;
+    @GsonRevision(min=0x285,max=0x326) public Vector4f customPortOffset, customConnectorOffset;
+    @GsonRevision(min=0x28d) public float timerCount;
+    @GsonRevision(min=0x28d,max=0x2c3) public byte timerAutoCount;
+
+    // @GsonRevision(lbp3=true,max=0x9f)
+    @GsonRevision(min=0x2ae) public int teamFilter;
+
+    @GsonRevision(min=0x2c4) public SwitchBehavior behavior = SwitchBehavior.OFF_ON;
+    @GsonRevision(min=0x2c4) public int randomBehavior, randomPattern;
+    @GsonRevision(min=0x2c4) public int randomOnTimeMin, randomOnTimeMax;
+    @GsonRevision(min=0x2c4) public int randomOffTimeMin, randomOffTimeMax;
+    @GsonRevision(min=0x2c4,max=0x3ac) public int randomPhaseOn, randomPhaseTime;
+    @GsonRevision(min=0x2c4) public boolean retardedOldJoint;
+    @GsonRevision(min=0x310) public int keySensorMode;
+    @GsonRevision(min=0x34d) public int userDefinedColour;
+    @GsonRevision(min=0x34d) public boolean wiresVisible;
+    @GsonRevision(min=0x350) public byte bulletTypes;
+    @GsonRevision(min=0x391) public boolean detectUnspawnedPlayers;
+    @GsonRevision(lbp3=true,min=0x217) public byte unspawnedBehavior;
+    @GsonRevision(min=0x3a5) public boolean playSwitchAudio;
+    @GsonRevision(min=0x3ed) public byte playerMode;
+    @GsonRevision(min=0x3ef) public DataLabelValue value = new DataLabelValue();
+    @GsonRevision(lbp3=true,min=0x22) public boolean relativeToSequencer;
+    @GsonRevision(lbp3=true,min=0x30) public byte layerRange;
+    @GsonRevision(lbp3=true,min=0x7b) public boolean breakSound;
+    @GsonRevision(lbp3=true,min=0x7b) public int colorTimer;
+    @GsonRevision(lbp3=true,min=0x68) public boolean isLbp3Switch;
+    @GsonRevision(lbp3=true,min=0x69) public boolean randomNonRepeating;
+    @GsonRevision(lbp3=true,min=0x103) public int stickerSwitchMode;
 
     /* Vita */
-    public byte impactSensorMode;
-    public int switchTouchType;
-    public byte cursorScreenArea, cursorInteractionType, cursorTouchPanels, cursorTouchIndex;
-    public byte flags;
-    public int outputAndOr;
-    public byte includeSameChipTags;
-    public int glowFrontCol, glowBackCol, glowActiveCol;
-    public byte playerFilter;
+    @GsonRevision(branch=0x4431,min=0x2a) public byte impactSensorMode;
+    @GsonRevision(branch=0x4431,min=0x1) public int switchTouchType;
+    @GsonRevision(branch=0x4431,min=0x9) public byte cursorScreenArea;
+    @GsonRevision(branch=0x4431,min=0xb) public byte cursorInteractionType;
+    @GsonRevision(branch=0x4431,min=0xc) public byte cursorTouchPanels;
+    @GsonRevision(branch=0x4431,min=0x23) public byte cursorTouchIndex;
+    @GsonRevision(branch=0x4431,min=0x36) public byte flags;
+    @GsonRevision(branch=0x4431,min=0x2b) public int outputAndOr;
+    @GsonRevision(branch=0x4431,min=0x41) public byte includeSameChipTags;
+    @GsonRevision(branch=0x4431,min=0x43) public int glowFrontCol, glowBackCol, glowActiveCol;
+    @GsonRevision(branch=0x4431,min=0x54) public byte playerFilter;
 
 
     @SuppressWarnings("unchecked")
@@ -163,7 +178,7 @@ public class PSwitch implements Serializable {
             sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
         
         if (version > 0x1a4 && version < 0x368) sw.platformVisualFactor = serializer.f32(sw.platformVisualFactor);
-        if (version > 0x1a4 && version < 0x2a0) serializer.f32(0);
+        if (version > 0x1a4 && version < 0x2a0) sw.oldActivation = serializer.f32(sw.oldActivation);
 
         if (version > 0x1a4) sw.activationHoldTime = serializer.s32(sw.activationHoldTime);
         if (version > 0x1a4) sw.requireAll = serializer.bool(sw.requireAll);

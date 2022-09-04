@@ -8,6 +8,7 @@ import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.custom.CachedShader;
@@ -16,7 +17,9 @@ import cwlib.types.data.Revision;
 public class RShaderCache implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
 
+    @GsonRevision(min=2,branch=0x4d5a)
     private boolean orbis;
+    
     private ArrayList<CachedShader> shaders = new ArrayList<>();
 
     public RShaderCache() { this.orbis = false; };

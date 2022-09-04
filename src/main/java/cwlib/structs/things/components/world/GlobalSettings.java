@@ -2,12 +2,15 @@ package cwlib.structs.things.components.world;
 
 import cwlib.enums.Branch;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class GlobalSettings implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x14;
 
     public float lightingFactor = 1.0f, colorCorrectionFactor, fogFactor, fogTintFactor, darknessFactor;
+    
+    @GsonRevision(branch=0x4431, min=0x78)
     public boolean nonLinearFog; // Vita
     
     @SuppressWarnings("unchecked")

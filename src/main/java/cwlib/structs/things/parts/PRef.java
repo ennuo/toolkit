@@ -2,6 +2,7 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
@@ -9,12 +10,20 @@ import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.ResourceDescriptor;
 
 public class PRef implements Serializable {
+    @GsonRevision(max=0x15f)
     @Deprecated public GlobalThingDescriptor thing;
+    
+    @GsonRevision(min=0x160)
     public ResourceDescriptor plan;
 
     public int oldLifetime;
+    
+    @GsonRevision(min=0x1c9)
     public int oldAliveFrames;
+
     public boolean childrenSelectable;
+
+    @GsonRevision(min=0x13d)
     public boolean stripChildren;
 
     @SuppressWarnings("unchecked")

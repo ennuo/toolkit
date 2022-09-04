@@ -2,6 +2,7 @@ package cwlib.structs.things.components;
 
 import cwlib.enums.Branch;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.Revision;
@@ -20,13 +21,13 @@ public class Decoration implements Serializable {
     public int onCostumePiece = -1;
     public int earthDecoration = -1;
     public float decorationScale = 1.0f;
-    public short placedBy = -1;
+    @GsonRevision(min=0x214) public short placedBy = -1;
     public boolean reversed;
-    public boolean hasShadow = true;
-    public boolean isQuest = false;
-    public int playModeFrame;
-    public int planGUID;
-    public float zBias; // Vita
+    @GsonRevision(lbp3=true,min=0xc4) public boolean hasShadow = true;
+    @GsonRevision(lbp3=true,min=0x16c) public boolean isQuest = false;
+    @GsonRevision(min=0x215) public int playModeFrame;
+    @GsonRevision(min=0x25b) public int planGUID;
+    @GsonRevision(branch=0x4431, min=0x7c) public float zBias; // Vita
     
     @SuppressWarnings("unchecked")
     @Override public Decoration serialize(Serializer serializer, Serializable structure) {

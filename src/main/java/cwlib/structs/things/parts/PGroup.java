@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import cwlib.enums.GroupFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.NetworkPlayerID;
@@ -14,13 +15,23 @@ import cwlib.types.data.ResourceDescriptor;
 public class PGroup implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
-    @Deprecated public Thing[] things;
+    @Deprecated public transient Thing[] things;
 
+    @GsonRevision(min=0x25e)
     public ResourceDescriptor planDescriptor;
+
+    @GsonRevision(min=0x18e)
     public NetworkPlayerID creator = new NetworkPlayerID();
+
+    @GsonRevision(min=0x267)
     public Thing emitter;
+
+    @GsonRevision(min=0x267)
     public int lifetime, aliveFrames;
+
     public int flags;
+
+    @GsonRevision(min=0x30f,max=340)
     @Deprecated public boolean mainSelectableObject;
 
     @SuppressWarnings("unchecked")

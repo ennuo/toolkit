@@ -6,6 +6,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.DecalType;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -35,38 +36,50 @@ public class Decal implements Serializable {
     /**
      * Color tint of this decal (RGB565).
      */
-    public short color;
+    @GsonRevision(min=0x14e)
+    public short color = (short) 0xad55;
 
     /**
      * Type of decal
      */
+    @GsonRevision(min=0x158)
     public DecalType type = DecalType.STICKER;
 
     /* No idea what this is actually used for, probably a reference to the thing containing the PMetaData for this sticker? */
-    public short metadataIndex, numMetadata;
+    @GsonRevision(min=0x158)
+    public short metadataIndex = -1;
+    
+    @GsonRevision(min=0x158,max=0x3ba) 
+    public short numMetadata;
 
     /**
      * Player that placed this decal.
      */
-    public short placedBy;
+    @GsonRevision(min=0x214)
+    public short placedBy = -1;
 
     /**
      * Number of frames that have passed in play mode.
      */
+    @GsonRevision(min=0x215)
     public int playModeFrame;
 
     /**
      * If this decal has a scorch mark on it.
      */
+    @GsonRevision(min=0x219)
     public boolean scorchMark;
 
     /**
      * The plan that this decal came from.
      */
+    @GsonRevision(min=0x25b)
     public ResourceDescriptor plan;
 
     /* Vita */
+    @GsonRevision(branch=0x4431, min=0x3f)
     public Vector4f localHitPoint;
+    @GsonRevision(branch=0x4431, min=0x7e)
     public boolean dontWantGammaCorrection;
 
     @SuppressWarnings("unchecked")
@@ -84,9 +97,24 @@ public class Decal implements Serializable {
         decal.yvecu = serializer.f32(decal.yvecu);
         decal.yvecv = serializer.f32(decal.yvecv);
 
-        if (version >= 0x14e && version < 0x25c) 
-            serializer.i32(0); // u32 color
-
+        if (version >= 0x14e && version < 0x25c) {
+            if (serializer.isWriting()) {
+                serializer.getOutput().i32(
+                    (((decal.color & 0xffff) << 5) & 0xfc00) |
+                    ((decal.color & 0xffff) << 8 & 0xf80000) |
+                    ((decal.color & 0x1f) << 3) |
+                    0xff000000
+                );
+            } else {
+                int color = serializer.getInput().i32();
+                decal.color = (short) (
+                    (((color >>> 10) & 0x3f) << 5) | 
+                    (((color >>> 0x13) & 0x1f) << 0xb) | 
+                    ((color >>> 3) & 0x1f)
+                );
+            }
+        }
+        
         if (version >= 0x260)
             decal.color = serializer.i16(decal.color);
         

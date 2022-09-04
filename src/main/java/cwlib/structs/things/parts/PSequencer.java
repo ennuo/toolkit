@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
@@ -8,15 +9,35 @@ public class PSequencer implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public float tempo, swing, echoFeedback, echoTime, echoMix;
+
+    @GsonRevision(min=0x371)
     public int reverbSettings;
+
+    @GsonRevision(min=0x36f)
     public boolean loop;
+
     public float startPoint;
     public int numChannels;
     private float[] volume = new float[6];
+
+    @GsonRevision(min=0x36a)
     public float playHead;
-    public boolean isPlaying, musicSequencer, animationSequencer;
+    @GsonRevision(min=0x36a)
+    public boolean isPlaying;
+
+    @GsonRevision(min=0x36d)
+    public boolean musicSequencer;
+
+    @GsonRevision(lbp3=true,min=0x29)
+    public boolean animationSequencer;
+
+    @GsonRevision(min=0x372)
     public int behavior;
+
+    @GsonRevision(min=0x3a1)
     public int triggerPlayer;
+
+    @GsonRevision(min=0x3a1)
     public Thing previewThing;
 
     @SuppressWarnings("unchecked")

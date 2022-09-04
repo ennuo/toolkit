@@ -8,6 +8,12 @@ public enum GameMode implements ValueEnum<Integer> {
     CUTSCENE(2),
     TEAM_VERSUS(3);
 
+    // old enum
+    // normal 0
+    // competitive 1
+    // teams 2
+    // social 3
+
     private final int value;
     private GameMode(int value) {
         this.value = value;

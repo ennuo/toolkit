@@ -6,6 +6,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.ShadowType;
 import cwlib.enums.VisibilityFlags;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
@@ -25,6 +26,7 @@ public class PRenderMesh implements Serializable {
     public boolean RTTEnable;
     public byte visibilityFlags = VisibilityFlags.PLAY_MODE | VisibilityFlags.EDIT_MODE;
     public float poppetRenderScale = 1.0f;
+    @GsonRevision(min=0x1f6,max=0x34c)
     public float parentDistanceFront, parentDistanceSide;
     
     @SuppressWarnings("unchecked")

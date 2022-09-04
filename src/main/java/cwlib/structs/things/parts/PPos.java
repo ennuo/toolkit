@@ -1,10 +1,14 @@
 package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
+import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
 import org.joml.Matrix4f;
+
+import com.google.gson.annotations.JsonAdapter;
 
 /**
  * This part represents a Thing's
@@ -16,9 +20,21 @@ public class PPos implements Serializable {
 
     public Thing thingOfWhichIAmABone;
     public int animHash;
+    
+    @GsonRevision(max=0x340) 
+    @JsonAdapter(TranslationSerializer.class)
     public Matrix4f localPosition;
+
+    @JsonAdapter(TranslationSerializer.class) 
     public Matrix4f worldPosition;
 
+    // Matrix4
+    // Vector4 mCol0
+    // Vector4 mCol1
+    // Vector4 mCol2
+    // Vector4 mCol3
+
+    
     @SuppressWarnings("unchecked")
     @Override public PPos serialize(Serializer serializer, Serializable structure) {
         PPos pos = (structure == null) ? new PPos() : (PPos) structure;
@@ -32,7 +48,7 @@ public class PPos implements Serializable {
             pos.localPosition = serializer.m44(pos.localPosition);
 
         pos.worldPosition = serializer.m44(pos.worldPosition);
-        if (version >= 0x340 && !serializer.isWriting())
+        if (pos.localPosition == null)
             pos.localPosition = pos.worldPosition;
 
         // Unknown value, depreciated very early

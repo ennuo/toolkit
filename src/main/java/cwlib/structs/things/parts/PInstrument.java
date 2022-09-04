@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.instrument.Note;
 import cwlib.types.data.ResourceDescriptor;
@@ -12,11 +13,19 @@ public class PInstrument implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public ResourceDescriptor instrument;
+
+    @GsonRevision(min=0x35b)
     public String name;
+    
     public int color, loops = 1, key, scale;
     public float level = 1.0f, pan = 0.5f, echoSend, reverbSend;
+
+    @GsonRevision(min=0x389)
     public short scrollX, scrollY, cursorX, cursorY;
+
     public ArrayList<Note> notes = new ArrayList<>();
+
+    @GsonRevision(min=0x379)
     public ResourceDescriptor icon;
     
     @SuppressWarnings("unchecked")

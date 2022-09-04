@@ -17,6 +17,7 @@ import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 import java.util.Date;
@@ -25,52 +26,82 @@ import java.util.EnumSet;
 public class InventoryItemDetails implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xB0;
     
+    @GsonRevision(branch=0, max=0x2ba)
+    @GsonRevision(branch=0x4c44, max=0x7)
     public String translationTag = "";
-    public String categoryTag = "";
-    public String locationTag = "";
     
+    @GsonRevision(min=0x222)
     public long dateAdded = new Date().getTime() / 1000;
+
+    @GsonRevision(min=0x177)
     public SlotID levelUnlockSlotID = new SlotID();
+
+    @GsonRevision(min=0x14f)
     public GUID highlightSound;
+
+    @GsonRevision(min=0x157)
     public int colour = -1;
     
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType = InventoryObjectSubType.NONE;
     
+    @GsonRevision(min=0x2bb)
+    @GsonRevision(branch=0x4c44, min=0x8)
     public long titleKey, descriptionKey;
     
+    @GsonRevision(min=0x1ab)
     public UserCreatedDetails userCreatedDetails;
     
+    @GsonRevision(min=0x1b1)
     public CreationHistory creationHistory;
+
     public ResourceDescriptor icon;
     
+    @GsonRevision(min=0x17b)
     public InventoryItemPhotoData photoData;
+    @GsonRevision(min=0x162)
     public EyetoyData eyetoyData;
     
     public short locationIndex = -1, categoryIndex = -1;
+    @GsonRevision(min=0x195)
     public short primaryIndex;
-    public int lastUsed;
-    public int numUses;
+
+    @GsonRevision(min=0x1c1,max=0x37c)
+    public int lastUsed, numUses;
+
+    @GsonRevision(min=0x233,max=0x37c)
     public int fluffCost;
     
+    @GsonRevision(min=0x205,max=0x37c)
     public boolean allowEmit;
+    @GsonRevision(min=0x223,max=0x37c)
     public boolean shareable;
+    @GsonRevision(min=0x182,max=0x37c)
     public boolean copyright;
     
+    @GsonRevision(min=0x182)
     public NetworkPlayerID creator;
     
+    @GsonRevision(min=0x197)
     public ToolType toolType = ToolType.NONE;
+    @GsonRevision(min=0x335)
     public byte flags;
     
+    @GsonRevision(branch=0x4431,min=125)
     public boolean makeSizeProportional = true;
     
-    public long location;
-    public long category;
+    @GsonRevision(min=0x2bb)
+    @GsonRevision(branch=0x4c44, min=0x8)
+    public long location, category;
+
+    @GsonRevision(branch=0, max=0x2ba)
+    @GsonRevision(branch=0x4c44, max=0x7)
+    public String categoryTag = "", locationTag = "";
     
-    public String translatedTitle = "";
-    public String translatedDescription;
-    public String translatedLocation = "";
-    public String translatedCategory = "";
+    public transient String translatedTitle = "";
+    public transient String translatedDescription;
+    public transient String translatedLocation = "";
+    public transient String translatedCategory = "";
 
     public InventoryItemDetails() {};
     public InventoryItemDetails(PMetadata metadata) {

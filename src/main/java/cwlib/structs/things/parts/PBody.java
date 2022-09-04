@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.structs.things.Thing;
@@ -28,11 +29,13 @@ public class PBody implements Serializable {
     /**
      * The state of this object
      */
+    @GsonRevision(min=0x147)
     public int frozen = 1;
 
     /**
      * The player that's currently editing this thing(?)
      */
+    @GsonRevision(min=0x22c)
     public Thing editingPlayer;
 
     @SuppressWarnings("unchecked")

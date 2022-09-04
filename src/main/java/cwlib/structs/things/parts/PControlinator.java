@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import org.joml.Matrix4f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
@@ -15,16 +16,21 @@ public class PControlinator implements Serializable {
     public float radius;
     public boolean sideMode;
     public int remoteControlState;
-    public boolean disablePoppetControls, autoDock, overrideSackbot, killRiderOnCreatureDeath;
+    public boolean disablePoppetControls, autoDock, overrideSackbot;
+    @GsonRevision(lbp3=true,min=0x6f) public boolean killRiderOnCreatureDeath;
     public Thing padSwitch;
-    public int parentBoneIndex;
-    public Matrix4f parentBoneOffset;
-    public byte playerMode, layerRange;
+
+    @GsonRevision(lbp3=true,min=0x4c) public int parentBoneIndex;
+    @GsonRevision(lbp3=true,min=0x4c) public Matrix4f parentBoneOffset;
+
+    @GsonRevision(min=0x3ed) public byte playerMode;
+    @GsonRevision(lbp3=true,min=0x18a) public byte layerRange;
 
     /* Vita */
-    public float tiltMax, tiltMin;
-    public int remotePlayer;
-    public boolean playAudio;
+    @GsonRevision(min=0xd, branch=0x4431) public float tiltMax;
+    @GsonRevision(min=0xe, branch=0x4431) public float tiltMin;
+    @GsonRevision(min=0x1d, branch=0x4431) public int remotePlayer;
+    @GsonRevision(min=0x51, branch=0x4431) public boolean playAudio;
 
     @SuppressWarnings("unchecked")
     @Override public PControlinator serialize(Serializer serializer, Serializable structure) {

@@ -2,6 +2,7 @@ package cwlib.structs.inventory;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
@@ -10,6 +11,7 @@ public class InventoryItemPhotoData implements Serializable {
 
     public ResourceDescriptor icon, sticker;
     private PhotoMetadata photoMetadata = new PhotoMetadata();
+    @GsonRevision(min=0x3c8)
     public ResourceDescriptor painting;
 
     @SuppressWarnings("unchecked")

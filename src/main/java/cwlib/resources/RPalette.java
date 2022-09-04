@@ -7,6 +7,7 @@ import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryOutputStream;
@@ -23,6 +24,8 @@ public class RPalette implements Serializable, Compressable {
 
     public ArrayList<ResourceDescriptor> planList = new ArrayList<>();
     public int location, description;
+
+    @GsonRevision(min=803)
     public ResourceDescriptor[] convertedPlans;
     
     @SuppressWarnings("unchecked")

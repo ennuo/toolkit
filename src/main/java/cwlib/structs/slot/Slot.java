@@ -11,6 +11,7 @@ import cwlib.enums.LevelType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkOnlineID;
@@ -23,64 +24,68 @@ public class Slot implements Serializable {
     
     public SlotID id = new SlotID();
     public ResourceDescriptor root;
-    public ResourceDescriptor adventure;
+    @GsonRevision(lbp3=true,min=325) public ResourceDescriptor adventure;
     public ResourceDescriptor icon;
     public Vector4f location = new Vector4f().zero();
     public NetworkOnlineID authorID;
-    public String authorName;
-    public String translationTag;
+    @GsonRevision(min=0x13b) public String authorName;
+    @GsonRevision(min=0x183) public String translationTag;
     public String name;
     public String description;
     public SlotID primaryLinkLevel = new SlotID();
-    public SlotID group = new SlotID();
+    @GsonRevision(min=0x134) public SlotID group = new SlotID();
     public boolean initiallyLocked;
-    public boolean shareable;
-    public GUID backgroundGUID;
-    public LevelType developerLevelType = LevelType.MAIN_PATH;
-    public GameProgressionStatus gameProgressionState = GameProgressionStatus.NEW_GAME;
+    @GsonRevision(min=0x238) public boolean shareable;
+    @GsonRevision(min=0x238) public GUID backgroundGUID;
+    @GsonRevision(min=0x1df) public LevelType developerLevelType = LevelType.MAIN_PATH;
+    @GsonRevision(min=0x1b9,max=0x36b) public GameProgressionStatus gameProgressionState = GameProgressionStatus.NEW_GAME;
 
     /* LBP2 fields */
 
-    public ResourceDescriptor planetDecorations;
-    public Label[] labels;
-    public Collectabubble[] collectabubblesRequired;
-    public Collectabubble[] collectabubblesContained;
-    public boolean isSubLevel;
-    public byte minPlayers = 1, maxPlayers = 4;
-    public boolean moveRecommended, crossCompatible;
-    public boolean showOnPlanet = true;
-    public byte livesOverride;
+    @GsonRevision(min=0x333) public ResourceDescriptor planetDecorations;
+    @GsonRevision(min=0x33c) public Label[] labels;
+    @GsonRevision(min=0x2ea) public Collectabubble[] collectabubblesRequired;
+    @GsonRevision(min=0x2f4) public Collectabubble[] collectabubblesContained;
+    @GsonRevision(min=0x352) public boolean isSubLevel;
+    @GsonRevision(min=0x3d0) public byte minPlayers = 1, maxPlayers = 4;
+    @GsonRevision(min=0x3d0) public boolean moveRecommended;
+    @GsonRevision(min=0x3e9) public boolean crossCompatible;
+    @GsonRevision(min=0x3d0) public boolean showOnPlanet = true;
+    @GsonRevision(min=0x3d0) public byte livesOverride;
 
     /* LBP3 fields */
+    @GsonRevision(branch=0x4431,min=76)
+    @GsonRevision(lbp3=true,min=533) 
     public boolean enforceMinMaxPlayers;
-    public GameMode gameMode = GameMode.NONE;
-    public boolean isGameKit;
-    public String entranceName;
-    public SlotID originalSlotID = new SlotID();
-    public byte customBadgeSize = 1;
-    public String localPath;
-    public String thumbPath;
+
+    @GsonRevision(lbp3=true,min=18) public GameMode gameMode = GameMode.NONE;
+    @GsonRevision(lbp3=true,min=210)  public boolean isGameKit;
+    @GsonRevision(lbp3=true,min=283) public String entranceName;
+    @GsonRevision(lbp3=true,min=283) public SlotID originalSlotID = new SlotID();
+    @GsonRevision(lbp3=true,min=339) public byte customBadgeSize = 1;
+    @GsonRevision(lbp3=true,min=402) public String localPath;
+    @GsonRevision(lbp3=true,min=518) public String thumbPath;
 
     /* Vita fields */
-    public boolean acingEnabled = true;
-    public int[] customRewardEnabled;
-    public String[] rewardConditionDescription;
-    public int[] customRewardCondition;
-    public float[] amountNeededCustomReward;
-    public String[] customRewardDescription;
+    @GsonRevision(branch=0x4431,min=61)public boolean acingEnabled = true;
+    @GsonRevision(branch=0x4431,min=61) public int[] customRewardEnabled;
+    @GsonRevision(branch=0x4431,min=61) public String[] rewardConditionDescription;
+    @GsonRevision(branch=0x4431,min=61) public int[] customRewardCondition;
+    @GsonRevision(branch=0x4431,min=61) public float[] amountNeededCustomReward;
+    @GsonRevision(branch=0x4431,min=61) public String[] customRewardDescription;
 
-    public boolean containsCollectabubbles;
-    public boolean sameScreenGame;
-    public int sizeOfResources;
-    public int sizeOfSubLevels;
+    @GsonRevision(branch=0x4431,min=94) public boolean containsCollectabubbles;
+    @GsonRevision(branch=0x4431,min=77) public boolean sameScreenGame;
+    @GsonRevision(branch=0x4431,min=93) public int sizeOfResources;
+    @GsonRevision(branch=0x4431,min=93) public int sizeOfSubLevels;
 
-    public SlotID[] subLevels;
-    public ResourceDescriptor slotList;
-    public short revision;
+    @GsonRevision(branch=0x4431,min=93) public SlotID[] subLevels;
+    @GsonRevision(branch=0x4431,min=93) public ResourceDescriptor slotList;
+    @GsonRevision(branch=0x4431,min=128) public short revision;
 
     // Server specific data
-    public int gameVersion;
-    public SHA1[] resources;
+    public transient int gameVersion;
+    public transient SHA1[] resources;
     
     @SuppressWarnings("unchecked")
     @Override public Slot serialize(Serializer serializer, Serializable structure) {

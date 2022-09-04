@@ -1,13 +1,16 @@
 package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class PTagSynchroniser implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public int type, colorIndex;
-    public String name;
+
+    @GsonRevision(min=0x2dc) public String name;
+    
     public float radius, minRadius, scaleX, scaleY;
     public boolean useLayers, visible;
     

@@ -5,6 +5,7 @@ import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -24,25 +25,74 @@ public class PJoint implements Serializable {
     public Vector4f boneLengths;
     public int type;
     public float strength;
+
+    @GsonRevision(min=0x18d)
     public boolean stiff;
+    @GsonRevision(min=0x18d)
     public Vector3f slideDir;
+    
     public int animationPattern;
     public float animationRange, animationTime,
     animationPhase, animationSpeed, animationPause;
     public float aAngleOffset, bAngleOffset;
     public float modStartFrames, modDeltaFrames, modScale;
-    public boolean modDriven;
-    public byte interactPlayMode, interactEditMode;
+
+    @GsonRevision(max=0x2c3)
+    @Deprecated public boolean modDriven;
+
+    @GsonRevision(max=0x306)
+    @Deprecated public byte interactPlayMode, interactEditMode;
+    
     public float renderScale;
+
+    @GsonRevision(min=0x16a)
     public int jointSoundEnum;
+    
+    @GsonRevision(min=0x21d)
     public float tweakTargetMaxLength, tweakTargetMinLength;
+
+    @GsonRevision(min=0x21f)
     public boolean currentlyEditing;
-    public boolean modScaleActive, hideInPlayMode;
+
+    @GsonRevision(min=0x230,max=0x2c3)
+    @Deprecated public boolean modScaleActive;
+    
+    @GsonRevision(min=0x25d)
+    public boolean hideInPlayMode;
+
+    @GsonRevision(min=0x2c4)
     public int behaviour;
+
+    @GsonRevision(lbp3=true,min=0xed)
     public Vector3f[] railKnotVector;
+
+    @GsonRevision(lbp3=true,min=0x197)
     public byte railInteractions;
+
+    @GsonRevision(lbp3=true,min=0x19f)
     public boolean canBeTweakedByPoppetPowerup, createdByPoppetPowerup;
+
+    @GsonRevision(lbp3=true,min=0x1a4)
     public boolean oldJointOutputBehavior;
+
+    // EJointPattern
+    // WAVE 0
+    // FORWARDS 1
+    // FLIPPER 2
+
+    // EJointType
+    // LEGACY 0
+    // ELASTIC 1
+    // SPRING 2
+    // CHAIN 3
+    // PISTON 4
+    // STRING 5
+    // ROD 6
+    // (START OF ANGULAR)
+    // BOLT 7
+    // SPRING_ANGULAR 8
+    // MOTOR 9
+    // QUANTIZED 10
 
     @SuppressWarnings("unchecked")
     @Override public PJoint serialize(Serializer serializer, Serializable structure) {

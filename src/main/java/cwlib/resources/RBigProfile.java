@@ -11,6 +11,7 @@ import cwlib.enums.SerializationType;
 import cwlib.enums.SlotType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -39,8 +40,11 @@ public class RBigProfile implements Compressable, Serializable {
      */
     public ArrayList<InventoryItem> inventory = new ArrayList<>();
     
+    @GsonRevision(min=0x3eb)
     public ArrayList<SHA1> vitaCrossDependencyHashes = new ArrayList<>();
 
+    @GsonRevision(min=0x3ef)
+    @GsonRevision(branch=0x4431, min=0x2e)
     public ArrayList<DataLabel> creatorDataLabels = new ArrayList<>();
 
     /**
@@ -51,6 +55,7 @@ public class RBigProfile implements Compressable, Serializable {
     /**
      * Whether or not this profile was from a production build.
      */
+    @GsonRevision(min=0x3b6)
     public boolean fromProductionBuild = true;
 
     /**
@@ -59,18 +64,23 @@ public class RBigProfile implements Compressable, Serializable {
     public HashMap<SlotID, Slot> myMoonSlots = new HashMap<>();
 
     /* Near nonsense, don't even remember what it was used for. */
-    public ArrayList<Challenge> nearMyChallengeDataLog = new ArrayList<>();
-    public ArrayList<Challenge> nearMyChallengeDataOpen = new ArrayList<>();
+    @GsonRevision(branch=0x4431, min=0x57)
+    public ArrayList<Challenge> nearMyChallengeDataLog = new ArrayList<>(), nearMyChallengeDataOpen = new ArrayList<>();
+    
+    @GsonRevision(branch=0x4431, min=0x59)
     public ArrayList<Treasure> nearMyTreasureLog = new ArrayList<>();
 
     /**
      * List of slots that a user has downloaded in LittleBigPlanet Vita.
      */
+    
+    @GsonRevision(branch=0x4431, min=0x5a)
     public ArrayList<SlotID> downloadedSlots = new ArrayList<>();
 
     /**
      * Locally stored planet decorations in LittleBigPlanet Vita.
      */
+    @GsonRevision(branch=0x4431, min=0x7b)
     public ResourceDescriptor planetDecorations;
 
     @SuppressWarnings("unchecked")

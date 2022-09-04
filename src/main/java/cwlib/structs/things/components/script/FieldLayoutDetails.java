@@ -7,6 +7,7 @@ import cwlib.enums.MachineType;
 import cwlib.enums.ModifierType;
 import cwlib.enums.ScriptObjectType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class FieldLayoutDetails implements Serializable {
@@ -15,7 +16,10 @@ public class FieldLayoutDetails implements Serializable {
     public String name;
     public EnumSet<ModifierType> modifiers = EnumSet.noneOf(ModifierType.class);;
     public MachineType machineType = MachineType.VOID;
+
+    @GsonRevision(min=0x145)
     public BuiltinType fishType = BuiltinType.VOID;
+    
     public byte dimensionCount;
     public MachineType arrayBaseMachineType = MachineType.VOID;
     public int instanceOffset;

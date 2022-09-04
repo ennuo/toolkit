@@ -5,6 +5,7 @@ import java.util.Date;
 import cwlib.enums.ContentsType;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
@@ -45,6 +46,7 @@ public class Pack implements Serializable {
     /**
      * Whether or not this pack is compatible with Vita/LBP2 cross-buy.
      */
+    @GsonRevision(branch=0x4431)
     public boolean crossBuyCompatible = false;
 
     @SuppressWarnings("unchecked")

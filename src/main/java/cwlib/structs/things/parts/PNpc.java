@@ -63,6 +63,10 @@ public class PNpc implements Serializable {
             npc.recordingBehavior = serializer.reference(npc.recordingBehavior, NpcBehavior.class);
 
         if (version > 0x2ac) {
+            // ENpcFlags
+            // IS_JUMPING 1
+            // IS_HOSTILE 2
+            // IS_PAUSED 4
             npc.flags = serializer.i32(npc.flags);
             if (version < 0x2ce)
                 serializer.s32(0); // jumpBackoff

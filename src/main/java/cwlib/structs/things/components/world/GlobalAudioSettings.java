@@ -1,6 +1,7 @@
 package cwlib.structs.things.components.world;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class GlobalAudioSettings implements Serializable {
@@ -8,9 +9,17 @@ public class GlobalAudioSettings implements Serializable {
 
     public int reverb;
     public float musicVolume = 1, sfxVolume = 1, backgroundVolume = 1, dialogueVolume = 1;
-    public float sfxReverbSend, dialogueReverbSend, musicReverbSend;
-    public float sfxFilterLP, dialogueFilterLP, musicFilterLP;
+    
+    @GsonRevision(min=0x342) 
+    public float sfxReverbSend, dialogueReverbSend;
+    
+    @GsonRevision(min=0x347)
+    public float musicReverbSend, sfxFilterLP, dialogueFilterLP, musicFilterLP;
+    
+    @GsonRevision(lbp3=true,min=0xd8)
     public float sfxFilterHP, dialogueFilterHP, musicFilterHP;
+
+    @GsonRevision(lbp3=true,min=0xe2)
     public String ambianceTrack;
     
     @SuppressWarnings("unchecked")
@@ -39,8 +48,8 @@ public class GlobalAudioSettings implements Serializable {
             settings.musicReverbSend = serializer.f32(settings.musicReverbSend);
 
             settings.sfxFilterLP = serializer.f32(settings.sfxFilterLP);
-            settings.dialogueFilterLP = serializer.f32(settings.sfxFilterLP);
-            settings.musicFilterLP = serializer.f32(settings.sfxFilterLP);
+            settings.dialogueFilterLP = serializer.f32(settings.dialogueFilterLP);
+            settings.musicFilterLP = serializer.f32(settings.musicFilterLP);
         }
 
         if (subVersion >= 0xd8) {

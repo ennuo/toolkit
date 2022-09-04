@@ -1,6 +1,7 @@
 package cwlib.structs.things.components.shapes;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class ContactCache implements Serializable {
@@ -8,6 +9,7 @@ public class ContactCache implements Serializable {
 
     public Contact[] contacts;
     public boolean contactsSorted;
+    @GsonRevision(lbp3=true,max=0x46)
     public boolean cacheDirtyButRecomputed;
 
     @SuppressWarnings("unchecked")
