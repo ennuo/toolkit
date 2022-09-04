@@ -11,6 +11,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.enums.ShadowCastMode;
+import cwlib.enums.TextureWrap;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
@@ -40,7 +41,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     public float alphaTestLevel = 0.5f;
     public byte alphaLayer, alphaMode;
     public ShadowCastMode shadowCastMode = ShadowCastMode.ON;
-    public float bumpLevel = 1.0f, cosinePower = 1.0f;
+    public float bumpLevel = 0.2f, cosinePower = 1.0f;
     public float reflectionBlur = 1.0f, refractiveIndex = 0.01f;
 
     public float refractiveFresnelFalloffPower = 1.0f;
@@ -61,8 +62,8 @@ public class RGfxMaterial implements Serializable, Compressable {
 
     public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
 
-    public byte[] wrapS = { 1, 1, 1, 1, 1, 1, 1, 1 };
-    public byte[] wrapT = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    public TextureWrap[] wrapS;
+    public TextureWrap[] wrapT;
 
     public MaterialBox[] boxes;
     public MaterialWire[] wires;
@@ -80,6 +81,15 @@ public class RGfxMaterial implements Serializable, Compressable {
     public byte[] conditionalTexLookups = new byte[PERF_DATA];
     public byte[] unconditionalTexLookups = new byte[PERF_DATA];
     public byte[] nonDependentTexLookups = new byte[PERF_DATA];
+
+    public RGfxMaterial() {
+        this.wrapS = new TextureWrap[MAX_TEXTURES];
+        this.wrapT = new TextureWrap[MAX_TEXTURES];
+        for (int i = 0; i < 8; ++i) {
+            this.wrapS[i] = TextureWrap.WRAP;
+            this.wrapT[i] = TextureWrap.WRAP;
+        }
+    }
 
     @SuppressWarnings("unchecked")
     @Override public RGfxMaterial serialize(Serializer serializer, Serializable structure) {
@@ -164,8 +174,8 @@ public class RGfxMaterial implements Serializable, Compressable {
                 gmat.textures[i] = serializer.resource(null, ResourceType.TEXTURE);
         }
 
-        gmat.wrapS = serializer.bytearray(gmat.wrapS);
-        gmat.wrapT = serializer.bytearray(gmat.wrapT);
+        gmat.wrapS = serializer.enumarray(gmat.wrapS, TextureWrap.class);
+        gmat.wrapT = serializer.enumarray(gmat.wrapT, TextureWrap.class);
         gmat.boxes = serializer.array(gmat.boxes, MaterialBox.class);
         gmat.wires = serializer.array(gmat.wires, MaterialWire.class);
 

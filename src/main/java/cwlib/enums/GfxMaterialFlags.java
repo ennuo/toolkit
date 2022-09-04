@@ -10,6 +10,13 @@ public final class GfxMaterialFlags {
     public static final int RECEIVE_SHADOWS = 0x100;
     public static final int RECEIVE_SUN = 0x200;
     public static final int RECEIVE_SPRITELIGHTS = 0x400;
+    public static final int ALPHA_CLIP = 0x800; // If this flag is set in LBP2, if color_out.w == 0, the pixel will be discarded.
+
+
+    // DEFAULT = 1800
+    // DEFAULT_TWO_SIDED = 1801
+    // DEFAULT_ALPHA_CLIP = 3848
+    // DEFAULT_ALPHA_CLIP_TWO_SIDED = 3849
     
     public static final int DEFAULT = 
         MAX_PRIORITY | RECEIVE_SHADOWS | RECEIVE_SUN | RECEIVE_SPRITELIGHTS;
