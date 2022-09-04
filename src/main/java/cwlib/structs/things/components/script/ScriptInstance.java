@@ -5,12 +5,16 @@ import java.util.Arrays;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
+import cwlib.enums.BuiltinType;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.util.FileIO;
+import cwlib.util.GsonUtils;
 
 public class ScriptInstance implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
@@ -50,7 +54,11 @@ public class ScriptInstance implements Serializable {
                 switch (field.machineType) {
                     case BOOL: field.value = serializer.bool(writing ? (boolean) field.value : false); break;
                     case CHAR: field.value = serializer.i8(writing ? (byte) field.value : 0); break;
-                    case S32: field.value = serializer.i32(writing ? (int) field.value : 0); break;
+                    case S32: 
+                        field.value = serializer.i32(writing ? (int) field.value : 0); 
+                        if (serializer.isWriting() && field.fishType == BuiltinType.GUID && ((int)field.value) != 0)
+                            serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILENAME));
+                        break;
                     case F32: field.value = serializer.f32(writing ? (float) field.value : 0); break;
                     case V4: field.value = serializer.v4((Vector4f) field.value); break;
                     case M44: field.value = serializer.m44((Matrix4f) field.value); break;
