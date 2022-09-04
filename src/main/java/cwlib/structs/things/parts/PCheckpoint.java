@@ -2,7 +2,6 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
-import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;

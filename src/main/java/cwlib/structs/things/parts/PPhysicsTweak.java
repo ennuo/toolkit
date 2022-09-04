@@ -1,10 +1,8 @@
 package cwlib.structs.things.parts;
 
 import cwlib.enums.ResourceType;
-import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.things.components.switches.SwitchSignal;
 import cwlib.types.data.Revision;
 
 import org.joml.Vector3f;

@@ -6,7 +6,6 @@ import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.parts.PScript;
 import cwlib.types.data.ResourceDescriptor;
 
 public class ScriptObject implements Serializable {

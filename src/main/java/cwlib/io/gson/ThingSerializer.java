@@ -1,7 +1,6 @@
 package cwlib.io.gson;
 
 import java.lang.reflect.Type;
-import java.rmi.server.UID;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

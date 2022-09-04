@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import cwlib.enums.BoxType;
 import cwlib.enums.Branch;
-import cwlib.enums.CacheFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;

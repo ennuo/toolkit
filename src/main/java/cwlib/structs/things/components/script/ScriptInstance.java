@@ -13,8 +13,6 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.FileIO;
-import cwlib.util.GsonUtils;
 
 public class ScriptInstance implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;

@@ -23,7 +23,6 @@ import cwlib.util.Bytes;
 import cwlib.util.Compressor;
 import cwlib.util.Crypto;
 
-import java.util.Arrays;
 import java.util.HashSet;
 
 public class Resource {

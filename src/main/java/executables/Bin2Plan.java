@@ -1,15 +1,12 @@
 package executables;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 
 import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.types.Resource;
 import cwlib.util.FileIO;
-import cwlib.util.GsonUtils;
 import toolkit.utilities.ResourceSystem;
 
 public class Bin2Plan {

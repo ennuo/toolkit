@@ -16,7 +16,6 @@ import cwlib.enums.ScriptObjectType;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.script.ScriptInstance;
 import cwlib.structs.things.components.script.ScriptObject;
-import cwlib.structs.things.parts.PScript;
 import cwlib.types.data.ResourceDescriptor;
 
 public class ScriptObjectSerializer implements JsonSerializer<ScriptObject>, JsonDeserializer<ScriptObject> {

@@ -15,7 +15,6 @@ import cwlib.enums.ResourceType;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
-import cwlib.util.GsonUtils;
 
 public class ResourceSerializer implements JsonSerializer<ResourceDescriptor>, JsonDeserializer<ResourceDescriptor> {
     @Override public ResourceDescriptor deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {

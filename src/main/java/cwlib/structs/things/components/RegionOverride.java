@@ -1,7 +1,5 @@
 package cwlib.structs.things.components;
 
-import javax.swing.plaf.synth.Region;
-
 import org.joml.Vector3f;
 
 import cwlib.enums.ResourceType;
