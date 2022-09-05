@@ -19,7 +19,7 @@ public class PYellowHead implements Serializable {
 
     @GsonRevision(max=0x3d9)
     public Vector4f[] sensorHistory;
-
+    @GsonRevision(max=0x3d9)
     public int newestSense;
 
     @GsonRevision(min=0x16b)
@@ -83,23 +83,19 @@ public class PYellowHead implements Serializable {
         if (version < 0x161) serializer.bool(false);
         if (version == 0x170) serializer.bool(false);
 
-
-        if (version < 0x17f || (version > 0x184 && version < 0x192) || version > 0x1b5) {
+        if (version < 0x17f || (version > 0x184 && version < 0x192) || version > 0x1b5)
             player.poppet = serializer.reference(player.poppet, Poppet.class);
-            serializer.log("POPPET_INSTANCE");
-            //System.exit(1);
-        }
 
-        if (subVersion > 0xc && subVersion <= 0x65) {
-            // figure this out later
-        }
-
+        if (subVersion >= 0xc && subVersion < 0x66)
+            throw new SerializationException("Unknown serialization object in PYellowHead!");
+        
         if (version < 0x3da) 
             player.sensorHistory = serializer.vectorarray(player.sensorHistory);
 
         if (version < 0x203) serializer.f32(0.0f);
 
-        player.newestSense = serializer.i32(player.newestSense);
+        if (version < 0x3da)
+            player.newestSense = serializer.i32(player.newestSense);
 
         if (version >= 0x146 && version < 0x16b)
             serializer.i32(0);
@@ -128,16 +124,17 @@ public class PYellowHead implements Serializable {
             player.editJetpack = serializer.bool(player.editJetpack);
 
         if (version > 0x272) {
-            player.recording = serializer.bool(player.recording);
+            if (version < 0x2df)
+                player.recording = serializer.bool(player.recording);
             player.recordee = serializer.thing(player.recordee);
         }
 
         if (version > 0x359)
             player.lastTimeSlappedAPlayer = serializer.i32(player.lastTimeSlappedAPlayer);
 
-        if (subVersion > 0x83 && subVersion <= 0x8a) {
-            // figure this out later
-        }
+        if (subVersion >= 0x83 && subVersion < 0x8b) serializer.u8(0);
+        if (subVersion >= 0x88 && subVersion < 0xa3)
+            throw new SerializationException("Unknown serialization object in PYellowHead!");
 
         if (subVersion > 0xa5)
             player.animSetKey = serializer.i32(player.animSetKey);

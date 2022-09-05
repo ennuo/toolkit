@@ -1,13 +1,10 @@
 package cwlib.structs.things.components.poppet;
 
-import org.joml.Vector4f;
-
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
-import cwlib.structs.inventory.EyetoyData;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.types.data.ResourceDescriptor;
 
 public class DecorationInfo implements Serializable {
@@ -18,7 +15,12 @@ public class DecorationInfo implements Serializable {
     public Thing lastDecoratedThing;
     public ResourceDescriptor decoration;
     public float scale;
-    public boolean reversed, stamping;
+    public boolean reversed;
+    
+    @GsonRevision(min=0x148)
+    public boolean stamping;
+
+    @GsonRevision(min=0x178)
     public ResourceDescriptor plan;
 
     @SuppressWarnings("unchecked")

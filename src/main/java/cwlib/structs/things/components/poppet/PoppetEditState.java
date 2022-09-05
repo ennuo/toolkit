@@ -4,43 +4,56 @@ import org.joml.Vector3f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
-import cwlib.types.data.ResourceDescriptor;
 
 public class PoppetEditState implements Serializable {
     public static int BASE_ALLOCATION_SIZE = 0x20;
 
     public ObjectState[] editObjectList;
-    public int backZ;
-    public int frontZ;
+
+    @GsonRevision(max=0x2bf) 
+    public int backZ, frontZ;
+
     public Thing[] frozenList;
     public float lerpFactor;
     public StickerInfo sticker = new StickerInfo();
     public DecorationInfo decoration = new DecorationInfo();
+
+    @GsonRevision(min=0x1b6)
     public Thing cursorDummy;
+    @GsonRevision(min=0x148)
     public Thing placementDummy;
+    @GsonRevision(min=0x200)
     public PlacementBodyState[] placementBodyState;
+
+    @GsonRevision(min=0x148)
     public Thing[] pauseList;
+
+    @GsonRevision(min=0x1dd)
     public Vector3f vertexCursor;
+
+    @GsonRevision(min=0x148)
     public float decorativeThingAngle;
-    public Thing switchConnectorRef;
-    public Thing switchConnector;
-    public Vector3f[] overridePolygon;
-    public int[] overrideLoops;
+
+    @GsonRevision(min=0x148)
+    public Thing switchConnectorRef, switchConnector;
+
+    @GsonRevision(min=0x186)
     public float decorativeThingScale;
-    public int overrideBack, overrideFront;
-    public float overrideScale;
-    public float overrideAngle;
-    public ResourceDescriptor overrideGfxMaterial;
-    public ResourceDescriptor overrideBevel;
-    public ResourceDescriptor overridePhysicsMaterial;
-    public int overrideSoundEnumOverride;
-    public float overrideBevelSize;
-    public ResourceDescriptor overrideMaterialPlan;
+
+    @GsonRevision(min=0x148)
+    public PoppetShapeOverride overrideShape = new PoppetShapeOverride();
+    @GsonRevision(min=0x1b6)
+    public PoppetMaterialOverride overrideMaterial = new PoppetMaterialOverride();
+
+    @GsonRevision(min=0x26c)
     public int lastGridMoveFrame;
-    public int lastGridRotateFrame;
-    public int lastGridScaleFrame;
+    @GsonRevision(min=0x26c, max=0x2c1)
+    public int lastGridRotateFrame, lastGridScaleFrame;
+
+    @GsonRevision(min=0x27e)
     public int switchConnectorUID;
 
     @SuppressWarnings("unchecked")
@@ -88,31 +101,29 @@ public class PoppetEditState implements Serializable {
         if (version > 0x147) {
             if (version < 0x190)
                 serializer.bool(false);
-            if (!serializer.isWriting()) state.overridePolygon = new Vector3f[serializer.getInput().i32()];
+            if (state.overrideShape == null)
+                state.overrideShape = new PoppetShapeOverride();
+            if (!serializer.isWriting()) state.overrideShape.polygon = new Vector3f[serializer.getInput().i32()];
             else {
-                if (state.overridePolygon == null)
-                    state.overridePolygon = new Vector3f[0];
-                serializer.getOutput().i32(state.overridePolygon.length);
+                if (state.overrideShape.polygon == null)
+                    state.overrideShape.polygon = new Vector3f[0];
+                serializer.getOutput().i32(state.overrideShape.polygon.length);
             }
-            for (int i = 0; i < state.overridePolygon.length; ++i)
-                state.overridePolygon[i] = serializer.v3(state.overridePolygon[i]);
-            state.overrideLoops = serializer.intvector(state.overrideLoops);
+            for (int i = 0; i < state.overrideShape.polygon.length; ++i)
+                state.overrideShape.polygon[i] = serializer.v3(state.overrideShape.polygon[i]);
+            state.overrideShape.loops = serializer.intvector(state.overrideShape.loops);
         }
         
         if (version > 0x185)
             state.decorativeThingScale = serializer.f32(state.decorativeThingScale);
 
         if (version > 0x1b5) {
-            state.overrideBack = serializer.s32(state.overrideBack);
-            state.overrideFront = serializer.s32(state.overrideFront);
-            state.overrideScale = serializer.f32(state.overrideScale);
-            state.overrideAngle = serializer.f32(state.overrideAngle);
-            state.overrideGfxMaterial = serializer.resource(state.overrideGfxMaterial, ResourceType.GFX_MATERIAL);
-            state.overrideBevel = serializer.resource(state.overrideBevel, ResourceType.BEVEL);
-            state.overridePhysicsMaterial = serializer.resource(state.overridePhysicsMaterial, ResourceType.MATERIAL);
-            state.overrideSoundEnumOverride = serializer.i32(state.overrideSoundEnumOverride);
-            state.overrideBevelSize = serializer.f32(state.overrideBevelSize);
-            state.overrideMaterialPlan = serializer.resource(state.overrideMaterialPlan, ResourceType.PLAN, true);
+            state.overrideShape.back = serializer.s32(state.overrideShape.back);
+            state.overrideShape.front = serializer.s32(state.overrideShape.front);
+            state.overrideShape.scale = serializer.f32(state.overrideShape.scale);
+            state.overrideShape.angle = serializer.f32(state.overrideShape.angle);
+
+            state.overrideMaterial = serializer.struct(state.overrideMaterial, PoppetMaterialOverride.class);
         }
 
         if (version > 0x26b) {

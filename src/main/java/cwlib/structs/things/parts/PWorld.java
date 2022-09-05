@@ -115,7 +115,7 @@ public class PWorld implements Serializable {
     @GsonRevision(min=0x3ac) public boolean useEvenNewerCheckpointCode;
     @GsonRevision(min=0x3bd) public MoveCursor[] moveCursors;
     
-    // public boolean singlePlayer;
+    @GsonRevision(min=0x215) public boolean singlePlayer;
     @GsonRevision(min=0x3d0) public int minPlayers = 1, maxPlayers = 4;
     @GsonRevision(min=0x3d0) public boolean moveRecommended;
     @GsonRevision(min=0x3dd) public boolean fixInvalidInOutMoverContacts;
@@ -414,6 +414,9 @@ public class PWorld implements Serializable {
             world.targetWaterHintColorTwo = serializer.i32(world.targetWaterHintColorTwo);
         }
 
+        if (subVersion >= 0xf8 && subVersion < 0x189)
+            serializer.bool(false);
+
         if (subVersion >= 0x182) {
             world.backdropEnabled = serializer.bool(world.backdropEnabled);
             world.currBackdropEnabled = serializer.bool(world.currBackdropEnabled);
@@ -467,6 +470,9 @@ public class PWorld implements Serializable {
             world.globalTouchCursor = serializer.i32(world.globalTouchCursor);
         if (revision.has(Branch.DOUBLE11, 0xa) && revision.before(Branch.DOUBLE11, 0x28)) 
             world.sharedScreen = serializer.bool(world.sharedScreen);
+
+        if (subVersion > 0x215)
+            world.singlePlayer = serializer.bool(world.singlePlayer);
         
         if (version >= 0x3d0) {
             world.minPlayers = serializer.u8(world.minPlayers);
@@ -509,6 +515,23 @@ public class PWorld implements Serializable {
 
         if (subVersion >= 0x5d)
             world.manualJumpDown = serializer.i32(world.manualJumpDown);
+
+
+
+        if (subVersion >= 0x98 && subVersion < 0xe5)
+            throw new SerializationException("Unsupported objects in PWorld serialization!");
+
+        // if (subVersion >= 0x98 && subVersion < 0xe5) {
+
+        // }
+
+        // if (subVersion >= 0xc3 && subVersion < 0xe5) {
+
+        // }
+
+        // if (subVersion >= 0x98 && subVersion < 0xe5) {
+
+        // }
 
         if (subVersion >= 0xe5)
             world.deferredDestroys = serializer.array(world.deferredDestroys, Thing.class, true);

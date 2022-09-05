@@ -4,9 +4,9 @@ import org.joml.Vector4f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.EyetoyData;
-import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.types.data.ResourceDescriptor;
 
 public class StickerInfo implements Serializable {
@@ -19,7 +19,11 @@ public class StickerInfo implements Serializable {
     public boolean reversed;
     public Vector4f offset;
     public boolean stamping;
+
+    @GsonRevision(min=0x160)
     public ResourceDescriptor plan;
+
+    @GsonRevision(min=0x24c)
     public EyetoyData eyetoyData = new EyetoyData();
 
     @SuppressWarnings("unchecked")

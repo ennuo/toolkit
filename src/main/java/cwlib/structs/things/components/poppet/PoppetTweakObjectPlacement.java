@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
@@ -15,7 +16,9 @@ public class PoppetTweakObjectPlacement implements Serializable {
     public Thing[] objectList;
     public Matrix4f startMatrix;
 
+    @GsonRevision(max=0x15f)
     @Deprecated public GlobalThingDescriptor thing;
+    @GsonRevision(min=0x160)
     public ResourceDescriptor plan;
 
     public Thing proxyObject;
@@ -27,9 +30,8 @@ public class PoppetTweakObjectPlacement implements Serializable {
     public float rotate;
     public float scale;
 
-    public int lastGridMoveFrame;
-    public int lastGridRotateFrame;
-    public int lastGridScaleFrame;
+    @GsonRevision(min=0x26c)
+    public int lastGridMoveFrame, lastGridRotateFrame, lastGridScaleFrame;
 
 
     @SuppressWarnings("unchecked")

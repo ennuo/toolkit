@@ -1,6 +1,7 @@
 package cwlib.structs.things.components.poppet;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
@@ -10,6 +11,8 @@ public class ObjectState implements Serializable {
     public Thing thing;
     public int backZ;
     public int frontZ;
+
+    @GsonRevision(min=0x2bd)
     public int flags;
 
     @SuppressWarnings("unchecked")

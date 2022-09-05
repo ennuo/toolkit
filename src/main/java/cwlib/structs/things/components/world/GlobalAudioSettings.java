@@ -29,8 +29,6 @@ public class GlobalAudioSettings implements Serializable {
         int version = serializer.getRevision().getVersion();
         int subVersion = serializer.getRevision().getSubVersion();
 
-        // 0x2ef
-
         settings.reverb = serializer.s32(settings.reverb);
         if (version < 0x347)
             serializer.f32(0);
