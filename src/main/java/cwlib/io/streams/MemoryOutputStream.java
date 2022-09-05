@@ -77,6 +77,18 @@ public class MemoryOutputStream {
     }
 
     /**
+     * Writes an array of booleans to the stream.
+     * @param values Boolean array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream boolarray(boolean[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (boolean value : values)
+            this.bool(value);
+        return this;
+    }
+    /**
      * Writes a byte to the stream.
      * @param value Byte to write
      * @return This output stream
@@ -375,6 +387,19 @@ public class MemoryOutputStream {
         this.f32(value.y);
         this.f32(value.z);
         this.f32(value.w);
+        return this;
+    }
+
+    /**
+     * Writes an array of 4-dimensional 32-bit floating point vectors to the stream.
+     * @param values Vector array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream vectorarray(Vector4f[] values) {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (Vector4f value : values)
+            this.v4(value);
         return this;
     }
 

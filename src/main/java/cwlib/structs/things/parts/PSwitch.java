@@ -187,16 +187,8 @@ public class PSwitch implements Serializable {
             sw.impactSensorMode = serializer.i8(sw.impactSensorMode);
 
         if (version > 0x1fa && version < 0x327) {
-            // connectorPos
-            if (!serializer.isWriting()) sw.connectorPos = new Vector4f[serializer.getInput().i32()];
-            else {
-                if (sw.connectorPos == null)
-                    sw.connectorPos = new Vector4f[0];
-                serializer.getOutput().i32(sw.connectorPos.length);
-            }
-            for (int i = 0; i < sw.connectorPos.length; ++i)
-                sw.connectorPos[i] = serializer.v4(sw.connectorPos[i]);
-
+            sw.connectorPos = serializer.vectorarray(sw.connectorPos);
+            
             // connectorGrabbed
             if (!serializer.isWriting()) sw.connectorGrabbed = new boolean[serializer.getInput().i32()];
             else {

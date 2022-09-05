@@ -246,7 +246,7 @@ public class PCreature implements Serializable {
     @GsonRevision(min=0x32c)
     public boolean canDropPowerup;
 
-    public byte capeExtraMaxVelocityCap; // ???
+    public byte capeExtraMaxVelocityCap;
 
     @GsonRevision(min=0x35a)
     public int behavior;
@@ -347,12 +347,14 @@ public class PCreature implements Serializable {
         creature.playerAwareness = serializer.s32(creature.playerAwareness);
         creature.moveDirection = serializer.s32(creature.moveDirection);
 
-        if (version < 0x1f0) serializer.f32(0);
+        if (version < 0x15d) serializer.u8(0);
+        if (version < 0x1f0) {
+            serializer.i32(0); // Some array of actual thing pointers, should be 0 length
+            serializer.f32(0);
+        }
 
         creature.forceThatSmashedCreature = serializer.v3(creature.forceThatSmashedCreature);
         creature.crushFrames = serializer.i32(creature.crushFrames);
-
-        // serializer.i32(0); // THIS IS NOT SUPPOSED TO BE HERE, REMOVE REMOVE
 
         creature.awarenessRadius = serializer.f32(creature.awarenessRadius);
 
@@ -368,6 +370,10 @@ public class PCreature implements Serializable {
 
         if (version >= 0x15d) {
             creature.legList = serializer.thingarray(creature.legList);
+            if (version < 0x166) {
+                serializer.thingarray(null);
+                serializer.thingarray(null);
+            }
             creature.lifeSourceList = serializer.thingarray(creature.lifeSourceList);
             creature.lifeCreature = serializer.thing(creature.lifeCreature);
             creature.aiCreature = serializer.thing(creature.aiCreature);
@@ -517,6 +523,9 @@ public class PCreature implements Serializable {
 
         if (version >= 0x32c)
             creature.canDropPowerup = serializer.bool(creature.canDropPowerup);
+
+        if (version >= 0x3f0)
+            creature.capeExtraMaxVelocityCap = serializer.i8(creature.capeExtraMaxVelocityCap);
         
         if (version >= 0x35a)
             creature.behavior = serializer.i32(creature.behavior);

@@ -112,9 +112,9 @@ public class ResourceSystem {
     public static FileEntry get(GUID guid) {
         if (ResourceSystem.getDatabases().size() == 0) return null;
 
-        // Prefer current database
+        // Prefer current database, can be null if not in GUI mode
         FileData current = ResourceSystem.selectedDatabase;
-        if (current.getType().hasGUIDs()) {
+        if (current != null && current.getType().hasGUIDs()) {
             FileEntry entry = current.get(guid);
             if (entry != null)
                 return entry;

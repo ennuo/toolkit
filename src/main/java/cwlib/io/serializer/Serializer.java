@@ -147,6 +147,20 @@ public class Serializer {
         }
         return this.input.bool();
     }
+    
+    /**
+     * (De)serializes a boolean array to/from the stream.
+     * @param values Boolean array to write
+     * @return Boolean array (de)serialized
+     */
+    public final boolean[] boolarray(boolean[] values) {
+        if (this.isWriting) {
+            this.output.boolarray(values);
+            return values;
+        }
+        return this.input.boolarray();
+    }
+
 
     /**
      * (De)serializes a padded boolean to/from the stream.
@@ -433,6 +447,19 @@ public class Serializer {
             return value;
         }
         return this.input.v4();
+    }
+
+    /**
+     * (De)serializes an array of 4-dimensional floating point vectors to/from the stream.
+     * @param values Vector array to write
+     * @return Vector array (de)serialized
+     */
+    public final Vector4f[] vectorarray(Vector4f[] values) {
+        if (this.isWriting) {
+            this.output.vectorarray(values);
+            return values;
+        }
+        return this.input.vectorarray();
     }
 
     /**

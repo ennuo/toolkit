@@ -80,6 +80,7 @@ public class PEnemy implements Serializable {
             serializer.thing(null);
             serializer.thing(null);
             serializer.thing(null);
+            serializer.thing(null);
             serializer.i32(0);
             serializer.thing(null);
             serializer.thing(null);

@@ -1,5 +1,7 @@
 package cwlib.structs.things.components.script;
 
+import org.joml.Vector4f;
+
 import cwlib.enums.ResourceType;
 import cwlib.enums.ScriptObjectType;
 import cwlib.ex.SerializationException;
@@ -44,10 +46,10 @@ public class ScriptObject implements Serializable {
         serializer.log("" + object.type);
         switch (object.type) {
             case NULL: object.value = null; break;
-            case AUDIOHANDLE: object.value = null; break;
+            case ARRAY_BOOL: object.value = serializer.boolarray((boolean[]) object.value); break;
             case ARRAY_S32: object.value = serializer.intvector((int[]) object.value); break;
             case ARRAY_F32: object.value = serializer.floatarray((float[]) object.value); break;
-            // case INSTANCE: object.value = serializer.reference((PScript) object.value, PScript.class); break;
+            case ARRAY_VECTOR4: object.value = serializer.vectorarray((Vector4f[]) object.value); break;
             case STRINGW: object.value = serializer.wstr((String) object.value); break;
             case STRINGA: object.value = serializer.str((String) object.value); break;
             case RESOURCE: {
@@ -66,6 +68,8 @@ public class ScriptObject implements Serializable {
 
                 break;
             }
+            // case INSTANCE: object.value = serializer.reference((PScript) object.value, PScript.class); break;
+            case AUDIOHANDLE: object.value = null; break;
             case ARRAY_SAFE_PTR: object.value = serializer.array((Thing[]) object.value, Thing.class, true); break;
             case ARRAY_OBJECT_REF: {
                 Object[] array = (Object[]) object.value;

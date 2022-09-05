@@ -106,6 +106,18 @@ public class MemoryInputStream {
     public final boolean bool() { return (this.i8() != 0); }
 
     /**
+     * Reads an array of booleans from the stream.
+     * @return Boolean array read from the stream
+     */
+    public final boolean[] boolarray() {
+        int count = this.i32();
+        boolean[] elements = new boolean[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.bool();
+        return elements;
+    }
+
+    /**
      * Reads a byte from the stream.
      * @return Byte read from the stream
      */
@@ -341,6 +353,18 @@ public class MemoryInputStream {
      * @return Vector4f read from the stream
      */
     public final Vector4f v4() { return new Vector4f(this.f32(), this.f32(), this.f32(), this.f32()); }
+
+    /**
+     * Reads an array of 4-dimensional floating point vectors from the stream.
+     * @return Vector array read from the stream
+     */
+    public final Vector4f[] vectorarray() {
+        int count = this.i32();
+        Vector4f[] elements = new Vector4f[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.v4();
+        return elements;
+    }
 
     /**
      * Reads a Matrix4x4 from the stream, compressed depending on flags.

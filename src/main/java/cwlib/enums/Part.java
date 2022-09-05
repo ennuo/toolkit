@@ -18,7 +18,7 @@ public enum Part {
     TRIGGER(0x5, PartHistory.TRIGGER, PTrigger.class),
     @Deprecated TRIGGER_EFFECTOR(0x36, PartHistory.TRIGGER_EFFECTOR, null),
     @Deprecated PAINT(0x37, PartHistory.PAINT, null),
-    YELLOWHEAD(0x6, PartHistory.YELLOWHEAD, null),
+    YELLOWHEAD(0x6, PartHistory.YELLOWHEAD, PYellowHead.class),
     AUDIO_WORLD(0x7, PartHistory.AUDIO_WORLD, PAudioWorld.class),
     ANIMATION(0x8, PartHistory.ANIMATION, PAnimation.class),
     GENERATED_MESH(0x9, PartHistory.GENERATED_MESH, PGeneratedMesh.class),
