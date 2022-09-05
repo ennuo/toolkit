@@ -17,6 +17,43 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PCreature implements Serializable {
+    public static class WhipSim implements Serializable {
+        public static final int BASE_ALLOCATION_SIZE = 0xB0;
+
+        public Thing creatureThing;
+        @Deprecated public Matrix4f baseHandleMatrix;
+        public Vector3f prevDir, currDir;
+        public int stateTimer, state;
+        public Thing attachedThing;
+        public Vector3f attachedLocalPos, attachedLocalNormal;
+        public float attachedLocalAngle, attachedScale;
+        public boolean playedFailToFireSound;
+        public float attachedZOffset;
+
+        @SuppressWarnings("unchecked")
+        @Override public WhipSim serialize(Serializer serializer, Serializable structure) {
+            WhipSim sim = (structure == null) ? new WhipSim() : (WhipSim) structure;
+
+            sim.creatureThing = serializer.thing(sim.creatureThing);
+            sim.baseHandleMatrix = serializer.m44(sim.baseHandleMatrix);
+            sim.prevDir = serializer.v3(sim.prevDir);
+            sim.currDir = serializer.v3(sim.currDir);
+            sim.stateTimer = serializer.i32(sim.stateTimer);
+            sim.state = serializer.i32(sim.state);
+            sim.attachedThing = serializer.thing(sim.attachedThing);
+            sim.attachedLocalPos = serializer.v3(sim.attachedLocalPos);
+            sim.attachedLocalNormal = serializer.v3(sim.attachedLocalNormal);
+            sim.attachedLocalAngle = serializer.f32(sim.attachedLocalAngle);
+            sim.attachedScale = serializer.f32(sim.attachedScale);
+            sim.playedFailToFireSound = serializer.bool(sim.playedFailToFireSound);
+            sim.attachedZOffset = serializer.f32(sim.attachedZOffset);
+
+            return sim;
+        }
+
+        @Override public int getAllocatedSize() { return WhipSim.BASE_ALLOCATION_SIZE; }
+    }
+
     public static class SpringData implements Serializable {
         public static final int BASE_ALLOCATION_SIZE = 0x30;
 
@@ -255,7 +292,7 @@ public class PCreature implements Serializable {
     public int effectDestroy = 6;
 
     @GsonRevision(min=0x3c0)
-    public Thing whipSim;
+    public WhipSim whipSim;
 
     @GsonRevision(branch=0x4431,min=0x53)
     public int shootAtTouch; // vita
@@ -361,8 +398,8 @@ public class PCreature implements Serializable {
         if (version >= 0x1df)
             creature.airTime = serializer.i32(creature.airTime);
         if (version >= 0x354) {
-            creature.bouncepadThingUIDs = serializer.intarray(creature.bouncepadThingUIDs);
-            creature.grabbedThingUIDs = serializer.intarray(creature.grabbedThingUIDs);
+            creature.bouncepadThingUIDs = serializer.intvector(creature.bouncepadThingUIDs);
+            creature.grabbedThingUIDs = serializer.intvector(creature.grabbedThingUIDs);
         }
 
         if (version >= 0x221)
@@ -534,7 +571,7 @@ public class PCreature implements Serializable {
             creature.effectDestroy = serializer.i32(creature.effectDestroy);
 
         if (version >= 0x3c0)
-            creature.whipSim = serializer.thing(creature.whipSim);
+            creature.whipSim = serializer.reference(creature.whipSim, WhipSim.class);
 
         if (revision.isVita()) {
             int vita = revision.getBranchRevision();
