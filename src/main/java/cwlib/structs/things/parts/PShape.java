@@ -173,7 +173,7 @@ public class PShape implements Serializable {
         }
 
         if (version <= 0x345)
-            shape.lethalType = serializer.enum32(shape.lethalType);
+            shape.lethalType = serializer.enum32(shape.lethalType, true);
         else {
             if (serializer.isWriting()) serializer.getOutput().i16(shape.lethalType.getValue().shortValue());
             else shape.lethalType = LethalType.fromValue(serializer.getInput().u16());

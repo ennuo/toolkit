@@ -65,7 +65,9 @@ public class Jsoninator {
 
         System.out.println("[MODE] RESOURCE -> JSON");
 
-        WrappedResource wrapper = new WrappedResource(new Resource(input.getAbsolutePath()));
+        Resource resource = new Resource(input.getAbsolutePath());
+        GsonUtils.REVISION = resource.getRevision();
+        WrappedResource wrapper = new WrappedResource(resource);
         FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), output.getAbsolutePath());
     }
 }

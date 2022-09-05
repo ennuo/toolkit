@@ -5,6 +5,7 @@ import org.joml.Vector4f;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.poppet.Poppet;
@@ -15,20 +16,45 @@ public class PYellowHead implements Serializable {
     public float legacyToolTetherWidth;
     public int playerNumber;
     public Poppet poppet;
+
+    @GsonRevision(max=0x3d9)
     public Vector4f[] sensorHistory;
+
     public int newestSense;
+
+    @GsonRevision(min=0x16b)
     public boolean requestedSuicide;
+
     public Thing legacyJetpack;
+
+    @GsonRevision(min=0x194)
     public float onScreenCounter;
+
+    @GsonRevision(min=0x1d1)
     public byte onScreenStatus;
+
+    @GsonRevision(min=0x1d4)
     public boolean editJetpack;
+
+    @GsonRevision(min=0x273)
     public boolean recording;
+
+    @GsonRevision(min=0x273)
     public Thing recordee;
 
+    @GsonRevision(min=0x35a)
     public int lastTimeSlappedAPlayer;
+
+    @GsonRevision(min=0xa6,lbp3=true)
     public int animSetKey;
+
+    @GsonRevision(min=0xd3,lbp3=true)
     public boolean monstrousHeadScale;
-    public int creatureToSpawnAs;
+
+    @GsonRevision(min=0x12b,lbp3=true)
+    public int creatureToSpawnAs; 
+
+    @GsonRevision(min=0x12b,lbp3=true)
     public boolean spawnAsAlternateForm;
 
 

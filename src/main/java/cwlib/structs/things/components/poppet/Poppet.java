@@ -67,12 +67,12 @@ public class Poppet implements Serializable {
 
         if (version > 0x184 && version < 0x1dd)
             serializer.v3(null);
-
+        
         if (version > 0x1dc) {
             if (version < 0x232) serializer.bool(false);
             poppet.marqueeSelectOrigin = serializer.v3(poppet.marqueeSelectOrigin);
             poppet.marqueeSelectList = serializer.thingarray(poppet.marqueeSelectList);
-        }
+        } 
 
         if (version > 0x217) {
             poppet.floodFillGfxMaterial = serializer.resource(poppet.floodFillGfxMaterial, ResourceType.GFX_MATERIAL);
@@ -85,8 +85,34 @@ public class Poppet implements Serializable {
 
         if (version < 0x1b8 || version > 0x1e1) {
             if (version < 0x1ba || version > 0x1e1) {
-                if (version < 0x232) return poppet;
+                // raycast
+                if (version >= 0x232) {
+                    serializer.v4(null); // hitpoint
+                    serializer.v4(null); // normal
+                    serializer.f32(0); // bary u
+                    serializer.f32(0); // bary v
+                    serializer.i32(0); // tri index
+                    serializer.thing(null); // hitthing
+                    serializer.thing(null); // refthing
+                    serializer.s32(-1); // oncostumepiece
+                    serializer.i32(0); // decorationidx
+                    serializer.bool(false); // switchconnector
+                }
+
+                if (version >= 0x232)
+                    serializer.i32(0); // danger mode
+
+                // inventory
+                if (version >= 0x236) {
+                    serializer.i32(0);
+                    serializer.v3(null);
+                    if (version >= 0x23a)
+                        serializer.v3(null);
+                }
+
+                return poppet;
             }
+            serializer.i32(0);
         } else serializer.i32(0);
 
 

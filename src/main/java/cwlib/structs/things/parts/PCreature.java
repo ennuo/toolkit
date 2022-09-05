@@ -179,7 +179,7 @@ public class PCreature implements Serializable {
     @GsonRevision(min=0x243)
     public Vector3f gunDirAndDashVec;
     @GsonRevision(lbp3=true,min=0x19e)
-    public int gunDirAndDashVecW;
+    public float gunDirAndDashVecW;
 
     @GsonRevision(min=0x246)
     public Thing resourceThing;
@@ -283,6 +283,7 @@ public class PCreature implements Serializable {
     @GsonRevision(min=0x32c)
     public boolean canDropPowerup;
 
+    @GsonRevision(min=0x3f0)
     public byte capeExtraMaxVelocityCap;
 
     @GsonRevision(min=0x35a)
@@ -459,7 +460,7 @@ public class PCreature implements Serializable {
         if (version >= 0x243)
             creature.gunDirAndDashVec = serializer.v3(creature.gunDirAndDashVec);
         if (subVersion >= 0x19e)
-            creature.gunDirAndDashVecW = serializer.i32(creature.gunDirAndDashVecW);
+            creature.gunDirAndDashVecW = serializer.f32(creature.gunDirAndDashVecW);
         
         if (version >= 0x246)
             creature.resourceThing = serializer.thing(creature.resourceThing);
@@ -517,6 +518,7 @@ public class PCreature implements Serializable {
             creature.head = serializer.thing(creature.head);
             creature.toolTetherJoint = serializer.thing(creature.toolTetherJoint);
             creature.toolTetherWidth = serializer.f32(creature.toolTetherWidth);
+            serializer.log("balls");
             creature.jetpack = serializer.thing(creature.jetpack);
             creature.wallJumpDir = serializer.i32(creature.wallJumpDir);
             creature.wallJumpPos = serializer.v3(creature.wallJumpPos);

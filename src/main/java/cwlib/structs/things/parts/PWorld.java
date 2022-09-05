@@ -459,7 +459,7 @@ public class PWorld implements Serializable {
         if (version >= 0x3ac)
             world.useEvenNewerCheckpointCode = serializer.bool(world.useEvenNewerCheckpointCode);
         
-        if (version >= 0x3bd)
+        if (version >= 0x3bd && subVersion <= 0x117)
             world.moveCursors = serializer.array(world.moveCursors, MoveCursor.class);
 
         // version > 0x3c0, rather than 0x3e1 for some reason

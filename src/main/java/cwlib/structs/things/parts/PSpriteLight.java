@@ -13,7 +13,7 @@ import org.joml.Vector4f;
 public class PSpriteLight implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xD0;
 
-    public Vector4f color;
+    public Vector4f color = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     @GsonRevision(min=0x2fd)
     public Vector4f colorOff;
@@ -58,7 +58,10 @@ public class PSpriteLight implements Serializable {
     public float causticStrength, causticWidth;
 
     @GsonRevision(lbp3=true,min=0x16f)
-    public float trackingLimit, trackingAccel, trackingSpeed, movementInput, lightingInput;
+    public float trackingLimit, trackingAccel, trackingSpeed;
+    
+    @GsonRevision(lbp3=true,min=0x16f)
+    public int movementInput, lightingInput;
 
     @GsonRevision(lbp3=true,min=0x16f)
     public Vector3f beamDir, azimuth;
@@ -123,8 +126,8 @@ public class PSpriteLight implements Serializable {
             spriteLight.trackingLimit = serializer.f32(spriteLight.trackingLimit);
             spriteLight.trackingAccel = serializer.f32(spriteLight.trackingAccel);
             spriteLight.trackingSpeed = serializer.f32(spriteLight.trackingSpeed);
-            spriteLight.movementInput = serializer.f32(spriteLight.movementInput);
-            spriteLight.lightingInput = serializer.f32(spriteLight.movementInput);
+            spriteLight.movementInput = serializer.s32(spriteLight.movementInput);
+            spriteLight.lightingInput = serializer.s32(spriteLight.movementInput);
 
             spriteLight.beamDir = serializer.v3(spriteLight.beamDir);
             spriteLight.azimuth = serializer.v3(spriteLight.azimuth);
