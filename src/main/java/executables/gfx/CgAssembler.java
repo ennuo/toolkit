@@ -119,50 +119,27 @@ public class CgAssembler {
     public static byte[] compileShaderVariant(String shader, int index, boolean legacy) {
         int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
         flags |= MATERIAL_FLAGS;
-        shader = String.format("#define FLAGS %d\n%s", flags, shader);
+        shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
         return GfxAssembler.getShader(shader, !legacy);
     }
 
-    public static byte[] compileLegacy(String template, RGfxMaterial gmat) {
-        byte[][] shaders = new byte[4][];
-        for (int i = 0; i < 4; ++i)
-            shaders[i] = compileShaderVariant(template, i, true);
-        gmat.shaders = shaders;
-        gmat.code = null;
-        byte[] data =
-            Resource.compress(gmat.build(new Revision(0x272, 0x4c44, 0x0017), CompressionFlags.USE_ALL_COMPRESSION));
-        return data;
-    }
-
-    public static byte[] compile(String template, RGfxMaterial gmat) {
-        byte[][] shaders = new byte[10][];
-
+    public static void compile(String template, RGfxMaterial gmat, boolean cgb) {
         HashSet<Long> pool = new HashSet<>();
-        int actualLength = 0;
-        for (int i = 0; i < shaders.length; ++i) {
-            shaders[i] = compileShaderVariant(template, i, false);
-            long[] code = getBytecode(shaders[i]);
-            actualLength += code.length;
+        for (int i = 0; i < gmat.shaders.length; ++i) {
+            gmat.shaders[i] = compileShaderVariant(template, i, !cgb);
+            long[] code = getBytecode(gmat.shaders[i]);
             for (long c : code)
                 pool.add(c);
         }
         ArrayList<Long> code = new ArrayList<>(pool);
         code.sort((l, r) -> Long.compareUnsigned(l, r));
 
-        System.out.println("Actual: " + actualLength);
-        System.out.println("Shared: " + code.size());
-
-        for (int i = 0; i < shaders.length; ++i)
-            shaders[i] = convert(shaders[i], code);
-
-        gmat.shaders = shaders;
-        MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);
-        for (long c : code) stream.i64(c);
-        gmat.code = stream.getBuffer();
-
-        byte[] data =
-            Resource.compress(gmat.build(new Revision(0x3a3), CompressionFlags.USE_ALL_COMPRESSION));
-
-        return data;
+        if (cgb) {
+            for (int i = 0; i < gmat.shaders.length; ++i)
+                gmat.shaders[i] = convert(gmat.shaders[i], code);
+            MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);
+            for (long c : code) stream.i64(c);
+                gmat.code = stream.getBuffer();
+        } else gmat.code = null;
     }
 }

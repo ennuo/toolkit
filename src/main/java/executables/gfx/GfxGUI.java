@@ -13,6 +13,7 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 import executables.gfx.GfxAssembler.GfxFlags;
+import executables.gfx.GfxAssembler.OutputPort;
 import executables.gfx.dialogues.ErrorDialogue;
 import executables.gfx.dialogues.TextureDialogue;
 
@@ -53,10 +54,7 @@ public class GfxGUI extends javax.swing.JFrame {
     
     private DefaultListModel textureModel = new DefaultListModel();
     
-    private String normal;
-    private String color;
-    private String decal;
-    private String color1;
+    private String brdf;
     
     private GfxGUI() {
         this.initComponents();
@@ -70,6 +68,8 @@ public class GfxGUI extends javax.swing.JFrame {
         Config.instance.currentProfile = 0;
         
         GfxAssembler.USE_ENV_VARIABLES = true;
+        
+        this.getRootPane().setDefaultButton(this.compileButton);
         
         if (!System.getProperty("os.name").toLowerCase().contains("win"))
             JOptionPane.showMessageDialog(this, "This program is only functional on Windows!", "Error", JOptionPane.WARNING_MESSAGE);
@@ -85,15 +85,9 @@ public class GfxGUI extends javax.swing.JFrame {
         for (int i = 0; i < 8; ++i)
             this.textureModel.addElement(new TextureEntry(i));
         
-        this.normal = null;
-        this.color = null;
-        this.decal = null;
-        this.color1 = null;
+        this.brdf = null;
         
-        this.normalShaderPathLabel.setText("Please select a CG source file!");
-        this.colorShaderPathLabel.setText("Please select a CG source file!");
-        this.decalShaderPathLabel.setText("Please select a CG source file!");
-        
+        this.brdfShaderPathLabel.setText("Please select a CG source file!");
         
         this.update();
     }
@@ -109,6 +103,7 @@ public class GfxGUI extends javax.swing.JFrame {
         this.wireCheckbox.setSelected((this.gmat.flags & GfxMaterialFlags.WIRE) != 0);
         this.furryCheckbox.setSelected((this.gmat.flags & GfxMaterialFlags.FURRY) != 0);
         this.twoSidedCheckbox.setSelected((this.gmat.flags & GfxMaterialFlags.TWO_SIDED) != 0);
+        this.alphaClipCheckbox.setSelected((this.gmat.flags & GfxMaterialFlags.ALPHA_CLIP) != 0);
         
         // Update properties
         this.alphaTestLevelSpinner.setValue(this.gmat.alphaTestLevel);
@@ -118,6 +113,7 @@ public class GfxGUI extends javax.swing.JFrame {
         this.cosinePowerSpinner.setValue(this.gmat.cosinePower);
         this.reflectionBlurSpinner.setValue(this.gmat.reflectionBlur);
         this.refractiveIndexSpinner.setValue(this.gmat.refractiveIndex);
+        this.alphaModeCombo.setSelectedIndex(this.gmat.alphaMode & 0xff);
     }
     
     private void load() {
@@ -160,27 +156,21 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         try {
-            String shader = GfxAssembler.generateBRDF(this.gmat, -1);
-            this.normal = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS));
-            this.color = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY));
-            this.decal = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.DECALS));
-            this.color1 = shader.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.WATER_TWEAKS));
+            this.brdf = GfxAssembler.generateBRDF(this.gmat, -1);
             
-            this.normalShaderPathLabel.setText(name + ".normal.cg");
-            this.colorShaderPathLabel.setText(name + ".color.cg");
-            this.decalShaderPathLabel.setText(name + ".decal.cg");
-            
+            this.brdfShaderPathLabel.setText(name + ".cg");
+
             if (JOptionPane.showConfirmDialog(this, "Do you want to save generated shader?", "Shader Dump", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 File dest = FileChooser.openFile(name + ".cg", "cg", true);
                 if (dest != null)
-                    FileIO.write(shader.getBytes(), dest.getAbsolutePath());
+                    FileIO.write(this.brdf.getBytes(), dest.getAbsolutePath());
             }
+
+            if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+                this.gmat.flags |= GfxMaterialFlags.ALPHA_CLIP;
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Invalid shader graph configuration! Can't generate shaders.", "Error", JOptionPane.WARNING_MESSAGE);
-            this.normal = null;
-            this.color = null;
-            this.decal = null;
-            this.color1 = null;
+            JOptionPane.showMessageDialog(this, "Invalid shader graph configuration! Can't generate shader.", "Error", JOptionPane.WARNING_MESSAGE);
+            this.brdf = null;
         }
         
         this.update();
@@ -200,6 +190,7 @@ public class GfxGUI extends javax.swing.JFrame {
         wireCheckbox = new javax.swing.JCheckBox();
         furryCheckbox = new javax.swing.JCheckBox();
         twoSidedCheckbox = new javax.swing.JCheckBox();
+        alphaClipCheckbox = new javax.swing.JCheckBox();
         propertiesContainer = new javax.swing.JPanel();
         propertiesLabel = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -216,17 +207,15 @@ public class GfxGUI extends javax.swing.JFrame {
         reflectionBlurSpinner = new javax.swing.JSpinner();
         jLabel10 = new javax.swing.JLabel();
         refractiveIndexSpinner = new javax.swing.JSpinner();
+        jLabel11 = new javax.swing.JLabel();
+        alphaModeCombo = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        openNormalButton = new javax.swing.JButton();
-        openColorButton = new javax.swing.JButton();
-        openDecalButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        normalShaderPathLabel = new javax.swing.JLabel();
-        colorShaderPathLabel = new javax.swing.JLabel();
-        decalShaderPathLabel = new javax.swing.JLabel();
+        openBRDFButton = new javax.swing.JButton();
+        shaderLabel = new javax.swing.JLabel();
+        brdfShaderPathLabel = new javax.swing.JLabel();
+        gameLabel = new javax.swing.JLabel();
+        gameComboBox = new javax.swing.JComboBox<>();
         compileButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -296,6 +285,12 @@ public class GfxGUI extends javax.swing.JFrame {
         twoSidedCheckbox.setMinimumSize(new java.awt.Dimension(90, 20));
         twoSidedCheckbox.setPreferredSize(new java.awt.Dimension(90, 20));
 
+        alphaClipCheckbox.setText("Alpha Clip");
+        alphaClipCheckbox.setEnabled(false);
+        alphaClipCheckbox.setMaximumSize(new java.awt.Dimension(140, 20));
+        alphaClipCheckbox.setMinimumSize(new java.awt.Dimension(140, 20));
+        alphaClipCheckbox.setPreferredSize(new java.awt.Dimension(140, 20));
+
         javax.swing.GroupLayout gmatFlagsContainerLayout = new javax.swing.GroupLayout(gmatFlagsContainer);
         gmatFlagsContainer.setLayout(gmatFlagsContainerLayout);
         gmatFlagsContainerLayout.setHorizontalGroup(
@@ -321,7 +316,8 @@ public class GfxGUI extends javax.swing.JFrame {
                         .addGap(5, 5, 5)
                         .addComponent(noInstanceTextureCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(5, 5, 5)
-                        .addComponent(twoSidedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(twoSidedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(alphaClipCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gmatFlagsContainerLayout.setVerticalGroup(
@@ -344,6 +340,8 @@ public class GfxGUI extends javax.swing.JFrame {
                     .addComponent(receiveSpritelightCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(noInstanceTextureCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(twoSidedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
+                .addComponent(alphaClipCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -396,6 +394,11 @@ public class GfxGUI extends javax.swing.JFrame {
 
         refractiveIndexSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
+        jLabel11.setText("Alpha Mode:");
+
+        alphaModeCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DISABLE", "ALPHA_BLEND", "ADDITIVE", "ADDITIVE_NO_ALPHA", "PREMULTIPLIED_ALPHA" }));
+        alphaModeCombo.setEnabled(false);
+
         javax.swing.GroupLayout propertiesContainerLayout = new javax.swing.GroupLayout(propertiesContainer);
         propertiesContainer.setLayout(propertiesContainerLayout);
         propertiesContainerLayout.setHorizontalGroup(
@@ -403,23 +406,29 @@ public class GfxGUI extends javax.swing.JFrame {
             .addGroup(propertiesContainerLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(propertiesLabel)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
-                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(refractiveIndexSpinner)
-                    .addComponent(alphaTestLevelSpinner)
-                    .addComponent(alphaLayerSpinner)
-                    .addComponent(shadowCastComboBox, 0, 116, Short.MAX_VALUE)
-                    .addComponent(bumpLevelSpinner)
-                    .addComponent(cosinePowerSpinner)
-                    .addComponent(reflectionBlurSpinner))
+                    .addGroup(propertiesContainerLayout.createSequentialGroup()
+                        .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(propertiesLabel)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(5, 5, 5)
+                        .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(refractiveIndexSpinner)
+                            .addComponent(alphaTestLevelSpinner)
+                            .addComponent(alphaLayerSpinner)
+                            .addComponent(shadowCastComboBox, 0, 127, Short.MAX_VALUE)
+                            .addComponent(bumpLevelSpinner)
+                            .addComponent(cosinePowerSpinner)
+                            .addComponent(reflectionBlurSpinner)))
+                    .addGroup(propertiesContainerLayout.createSequentialGroup()
+                        .addComponent(jLabel11)
+                        .addGap(27, 27, 27)
+                        .addComponent(alphaModeCombo, 0, 1, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         propertiesContainerLayout.setVerticalGroup(
@@ -455,55 +464,38 @@ public class GfxGUI extends javax.swing.JFrame {
                 .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(refractiveIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(alphaModeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel2.setText("Shaders:");
 
-        openNormalButton.setText("Open");
-        openNormalButton.addActionListener(new java.awt.event.ActionListener() {
+        openBRDFButton.setText("Open");
+        openBRDFButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openNormalButtonActionPerformed(evt);
+                openBRDFButtonActionPerformed(evt);
             }
         });
 
-        openColorButton.setText("Open");
-        openColorButton.addActionListener(new java.awt.event.ActionListener() {
+        shaderLabel.setText("Shader:");
+        shaderLabel.setMaximumSize(new java.awt.Dimension(50, 16));
+        shaderLabel.setMinimumSize(new java.awt.Dimension(50, 16));
+        shaderLabel.setPreferredSize(new java.awt.Dimension(50, 16));
+
+        brdfShaderPathLabel.setText("Please select a CG source file!");
+        brdfShaderPathLabel.setFocusable(false);
+
+        gameLabel.setText("Game:");
+
+        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1", "LBP2" }));
+        gameComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openColorButtonActionPerformed(evt);
+                gameComboBoxActionPerformed(evt);
             }
         });
-
-        openDecalButton.setText("Open");
-        openDecalButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDecalButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText("Normal:");
-        jLabel1.setMaximumSize(new java.awt.Dimension(50, 16));
-        jLabel1.setMinimumSize(new java.awt.Dimension(50, 16));
-        jLabel1.setPreferredSize(new java.awt.Dimension(50, 16));
-
-        jLabel11.setText("Color:");
-        jLabel11.setMaximumSize(new java.awt.Dimension(50, 16));
-        jLabel11.setMinimumSize(new java.awt.Dimension(50, 16));
-        jLabel11.setPreferredSize(new java.awt.Dimension(50, 16));
-
-        jLabel13.setText("Decal:");
-        jLabel13.setMaximumSize(new java.awt.Dimension(50, 16));
-        jLabel13.setMinimumSize(new java.awt.Dimension(50, 16));
-        jLabel13.setPreferredSize(new java.awt.Dimension(50, 16));
-
-        normalShaderPathLabel.setText("Please select a CG source file!");
-        normalShaderPathLabel.setFocusable(false);
-
-        colorShaderPathLabel.setText("Please select a CG source file!");
-        colorShaderPathLabel.setFocusable(false);
-
-        decalShaderPathLabel.setText("Please select a CG source file!");
-        decalShaderPathLabel.setFocusable(false);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -512,27 +504,18 @@ public class GfxGUI extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(gameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(openNormalButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(normalShaderPathLabel))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(openColorButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(colorShaderPathLabel))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(openDecalButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(decalShaderPathLabel)))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(openBRDFButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(shaderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(brdfShaderPathLabel))
+                            .addComponent(jLabel2)
+                            .addComponent(gameLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -542,20 +525,14 @@ public class GfxGUI extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openNormalButton)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(normalShaderPathLabel))
+                    .addComponent(openBRDFButton)
+                    .addComponent(shaderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(brdfShaderPathLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openColorButton)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(colorShaderPathLabel))
+                .addComponent(gameLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openDecalButton)
-                    .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(decalShaderPathLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(gameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         compileButton.setText("Compile");
@@ -597,7 +574,7 @@ public class GfxGUI extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel12)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(editTextureButton, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
+                    .addComponent(editTextureButton, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -662,14 +639,14 @@ public class GfxGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(gmatFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(propertiesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(propertiesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(compileButton)
                     .addComponent(closeButton)
@@ -704,9 +681,6 @@ public class GfxGUI extends javax.swing.JFrame {
         shader = shader.replaceAll("ENV.REFLECTION_BLUR", String.format("%f", ((float) this.alphaTestLevelSpinner.getValue()) - 1.0f));
         shader = shader.replaceAll("ENV.REFRACTIVE_INDEX", String.format("%f", (float) this.refractiveIndexSpinner.getValue()));
         return shader;
-
-        // BUMP1 - 0.5 + BUMP2
-        // (s2 - 0.5) + s3
     }
     
     
@@ -721,10 +695,12 @@ public class GfxGUI extends javax.swing.JFrame {
             return;
         }
         
-        if (this.normal == null || this.color == null || this.decal == null || this.color1 == null) {
-            JOptionPane.showMessageDialog(this, "A shader is missing! Can't compile!", "Error", JOptionPane.WARNING_MESSAGE);
+        if (this.brdf == null) {
+            JOptionPane.showMessageDialog(this, "BRDF shader is missing! Can't compile!", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        
+        boolean isLBP2 = this.gameComboBox.getSelectedIndex() == 1;
         
         int flags = 0;
         if (this.receiveShadowCheckbox.isSelected()) flags |= GfxMaterialFlags.RECEIVE_SHADOWS;
@@ -736,6 +712,9 @@ public class GfxGUI extends javax.swing.JFrame {
         if (this.wireCheckbox.isSelected()) flags |= GfxMaterialFlags.WIRE;
         if (this.furryCheckbox.isSelected()) flags |= GfxMaterialFlags.FURRY;
         if (this.twoSidedCheckbox.isSelected()) flags |= GfxMaterialFlags.TWO_SIDED;
+        if (isLBP2) {
+            if (this.alphaClipCheckbox.isSelected()) flags |= GfxMaterialFlags.ALPHA_CLIP;
+        }
         
         this.gmat.flags = flags;
         
@@ -746,39 +725,15 @@ public class GfxGUI extends javax.swing.JFrame {
         this.gmat.cosinePower = (float) this.cosinePowerSpinner.getValue();
         this.gmat.reflectionBlur = (float) this.reflectionBlurSpinner.getValue();
         this.gmat.refractiveIndex = (float) this.refractiveIndexSpinner.getValue();
+        if (isLBP2)
+            this.gmat.alphaMode = (byte) this.alphaModeCombo.getSelectedIndex();
         
-        
-        byte[] normal = null;
-        try { normal = GfxAssembler.getShader(this.fixupEnvVar(this.normal)); }
-        catch (Exception ex) { 
-            new ErrorDialogue(this, true, "An error occurred while compiling normal shader.", ex.getMessage());
+        this.gmat.shaders = new byte[isLBP2 ? 10 : 4][];
+        try { CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, isLBP2); }
+        catch (Exception ex) {
+            new ErrorDialogue(this, true, "An error occurred while compiling BRDF shader.", ex.getMessage());
             return;
         }
-        
-        byte[] color = null;
-        try { color = GfxAssembler.getShader(this.fixupEnvVar(this.color)); }
-        catch (Exception ex) { 
-            new ErrorDialogue(this, true, "An error occurred while compiling color shader.", ex.getMessage());
-            return;
-        }
-        
-        byte[] decal = null;
-        try { decal = GfxAssembler.getShader(this.fixupEnvVar(this.decal)); }
-        catch (Exception ex) { 
-            new ErrorDialogue(this, true, "An error occurred while compiling decal shader.", ex.getMessage());
-            return;
-        }
-        
-        
-        byte[] color1 = null;
-        try { color1 = GfxAssembler.getShader(this.fixupEnvVar(this.color1)); }
-        catch (Exception ex) { 
-            new ErrorDialogue(this, true, "An error occurred while compiling alt. color shader, this is probably Aidan's fault.", ex.getMessage());
-            return;
-        }
-        
-        gmat.shaders = new byte[][] { normal, color, decal, color1 };
-        gmat.code = null;
         
         gmat.textures = new ResourceDescriptor[8];
         gmat.wrapS = new TextureWrap[8];
@@ -790,7 +745,11 @@ public class GfxGUI extends javax.swing.JFrame {
             gmat.wrapT[i] = entry.wrapT;
         }
         
-        byte[] resource = Resource.compress(gmat.build(new Revision(0x272, 0x4c44, 0x0017), CompressionFlags.USE_ALL_COMPRESSION));
+        Revision revision;
+        if (isLBP2) revision = new Revision(0x393);
+        else revision = new Revision(0x272, 0x4c44, 0x0013);
+        
+        byte[] resource = Resource.compress(gmat.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
         File file = FileChooser.openFile("export.gmat", "gmat", true);
         if (file == null) return;
         if (FileIO.write(resource, file.getAbsolutePath()))
@@ -806,42 +765,21 @@ public class GfxGUI extends javax.swing.JFrame {
         new TextureDialogue(this, entry);
     }//GEN-LAST:event_editTextureButtonActionPerformed
 
-    private void openNormalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openNormalButtonActionPerformed
+    private void openBRDFButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBRDFButtonActionPerformed
         File file = FileChooser.openFile("normal.cg", "cg", false);
         if (file == null || !file.exists()) return;
         String data = FileIO.readString(Path.of(file.getAbsolutePath()));
         if (data == null) return;
-        this.normal = data.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS));
-        this.normalShaderPathLabel.setText(file.getName());
-    }//GEN-LAST:event_openNormalButtonActionPerformed
+        this.brdf = data;
+        this.brdfShaderPathLabel.setText(file.getName());
+    }//GEN-LAST:event_openBRDFButtonActionPerformed
 
-    private void openColorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openColorButtonActionPerformed
-        File file = FileChooser.openFile("color.cg", "cg", false);
-        if (file == null || !file.exists()) return;
-        String data = FileIO.readString(Path.of(file.getAbsolutePath()));
-        if (data == null) return;
-
-        this.color = data.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY));
-        
-        String color1 = data;
-        color1 = color1.replace("0.00078125f", "0.003125f");
-        color1 = color1.replace("0.00138889f", "0.00555556f");
-        color1 = color1.replace("0.000195313f", "0.00078125f");
-        color1 = color1.replace("0.0498047f", "0.199219f");
-        this.color1 = color1.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.WATER_TWEAKS));
-        
-        
-        this.colorShaderPathLabel.setText(file.getName());
-    }//GEN-LAST:event_openColorButtonActionPerformed
-
-    private void openDecalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDecalButtonActionPerformed
-        File file = FileChooser.openFile("decal.cg", "cg", false);
-        if (file == null || !file.exists()) return;
-        String data = FileIO.readString(Path.of(file.getAbsolutePath()));
-        if (data == null) return;
-        this.decal = data.replace("ENV.COMPILE_FLAGS", "" + (GfxFlags.LEGACY | GfxFlags.DECALS));
-        this.decalShaderPathLabel.setText(file.getName());
-    }//GEN-LAST:event_openDecalButtonActionPerformed
+    private void gameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gameComboBoxActionPerformed
+        int index = this.gameComboBox.getSelectedIndex();
+        boolean isLBP2 = index == 1;
+        this.alphaClipCheckbox.setEnabled(isLBP2);
+        this.alphaModeCombo.setEnabled(isLBP2);
+    }//GEN-LAST:event_gameComboBoxActionPerformed
 
     public static void main(String args[]) {
         LafManager.install(new DarculaTheme());
@@ -853,25 +791,26 @@ public class GfxGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox alphaClipCheckbox;
     private javax.swing.JSpinner alphaLayerSpinner;
+    private javax.swing.JComboBox<String> alphaModeCombo;
     private javax.swing.JSpinner alphaTestLevelSpinner;
+    private javax.swing.JLabel brdfShaderPathLabel;
     private javax.swing.JSpinner bumpLevelSpinner;
     private javax.swing.JButton closeButton;
-    private javax.swing.JLabel colorShaderPathLabel;
     private javax.swing.JButton compileButton;
     private javax.swing.JSpinner cosinePowerSpinner;
-    private javax.swing.JLabel decalShaderPathLabel;
     private javax.swing.JButton editTextureButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JCheckBox furryCheckbox;
+    private javax.swing.JComboBox<String> gameComboBox;
+    private javax.swing.JLabel gameLabel;
     private javax.swing.JPanel gmatFlagsContainer;
     private javax.swing.JLabel gmatFlagsLabel;
     private javax.swing.JMenuItem importMenuItem;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -886,10 +825,7 @@ public class GfxGUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox maxPriorityCheckbox;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JCheckBox noInstanceTextureCheckbox;
-    private javax.swing.JLabel normalShaderPathLabel;
-    private javax.swing.JButton openColorButton;
-    private javax.swing.JButton openDecalButton;
-    private javax.swing.JButton openNormalButton;
+    private javax.swing.JButton openBRDFButton;
     private javax.swing.JPanel propertiesContainer;
     private javax.swing.JLabel propertiesLabel;
     private javax.swing.JCheckBox receiveShadowCheckbox;
@@ -898,6 +834,7 @@ public class GfxGUI extends javax.swing.JFrame {
     private javax.swing.JSpinner reflectionBlurSpinner;
     private javax.swing.JSpinner refractiveIndexSpinner;
     private javax.swing.JMenuItem resetMenuItem;
+    private javax.swing.JLabel shaderLabel;
     private javax.swing.JComboBox<ShadowCastMode> shadowCastComboBox;
     private javax.swing.JCheckBox squishyCheckbox;
     private javax.swing.JList<String> textureList;

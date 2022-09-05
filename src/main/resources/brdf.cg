@@ -583,6 +583,10 @@ void main(
     
     float fogcc = ((dot(color, float3(0.3, 0.6, 0.1)) + fogccparams.y) * fogccparams.x) + 1.0;
     float3 fog = (fogcc * fogcol.xyz) - color;
+    
+    #if (PROPERTIES & ALPHA)
+        if (DoAlphaTest(iUV, iColor)) illumination = 0.0;
+    #endif
 
     color_out = half4(
         color + (factor * fog),
