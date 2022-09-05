@@ -113,7 +113,6 @@ public class SaveArchive extends Fart {
 
     private SaveArchive(byte[] data, File file) {
         super(file, ArchiveType.SAVE);
-        this.isLittleEndian = true;
 
         if (file != null && !file.exists())
             throw new SerializationException("Save archive specified doesn't exist!");
