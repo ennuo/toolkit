@@ -10,8 +10,8 @@ import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;
-import cwlib.resources.RMesh;
-import cwlib.io.streams.MemoryInputStream;
+import cwlib.types.databases.FileDB;
+import cwlib.types.databases.FileDBRow;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
@@ -108,40 +108,57 @@ public class UtilityCallbacks {
     }
     
     public static void generateFileDBDiff() {                                             
-        File base = FileChooser.openFile("blurayguids.map", "map", false);
-        if (base == null) return;
-
-        FileDB baseDB = new FileDB(base);
-        if (baseDB == null) {
-            System.err.println("Why is the FileDB null?!");
+        File baseFile = FileChooser.openFile("blurayguids.map", "map", false);
+        if (baseFile == null) return;
+        
+        FileDB base = null;
+        try { base = new FileDB(baseFile); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    Toolkit.instance,
+                    String.format("Failed to load base database (%s). Are you sure it's valid?", baseFile.getName()),
+                    "An error occurred",
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
+        
+        File updateFile = FileChooser.openFile("blurayguids.map", "map", false);
+        if (updateFile == null) return;
 
-        File update = FileChooser.openFile("blurayguids.map", "map", false);
-        if (update == null) return;
-
-        FileDB updateDB = new FileDB(update);
-        if (updateDB == null) {
-            System.err.println("Why is the FileDB null?!");
+        FileDB update = null;
+        try { update = new FileDB(updateFile); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    Toolkit.instance,
+                    String.format("Failed to load patch database (%s). Are you sure it's valid?", updateFile.getName()),
+                    "An error occurred",
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
-
-        MemoryOutputStream output = new MemoryOutputStream(updateDB.entries.size() * 0x100);
-        for (FileEntry entry: updateDB.entries) {
-            FileEntry baseEntry = baseDB.find(entry.GUID);
-            if (baseEntry == null)
-                output.str("[+] " + entry.path + " " + Bytes.toHex(entry.size) + " " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
-            else if (baseEntry.size != entry.size) {
-                output.str("[U] " + entry.path + " " + Bytes.toHex(baseEntry.size) + " -> " + Bytes.toHex(entry.size) + " " + baseEntry.hash.toString() + " -> " + entry.hash.toString() + " " + Bytes.toHex(entry.GUID) + '\n');
+        
+        StringBuilder builder = new StringBuilder(update.getEntryCount() * 255);
+        for (FileDBRow row : update) {
+            FileDBRow existing = base.get(row.getGUID());
+            if (existing == null)
+                builder.append(String.format("[+] path=%s size=%s sha1=%s guid=%s\n", row.getPath(), row.getSize(), row.getSHA1(), row.getGUID()));
+            else {
+                builder.append(String.format(
+                        "[~] path=%s->%s size=%s->%s sha1=%s->%s guid=%s->%s\n",
+                        existing.getPath(), row.getPath(),
+                        existing.getSize(), row.getSize(),
+                        existing.getSHA1(), row.getSHA1(),
+                        existing.getGUID(), row.getGUID()
+                ));
             }
-
         }
-        output.shrink();
+        
 
-        File out = FileChooser.openFile("diff.txt", "txt", true);
-        if (out == null) return;
+        File destination = FileChooser.openFile("diff.txt", "txt", true);
+        if (destination == null) return;
 
-        FileIO.write(output.buffer, out.getAbsolutePath());
+        FileIO.write(builder.toString().getBytes(), destination.getAbsolutePath());
     }
     
     public static void installMod() {                                                  
