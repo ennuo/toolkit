@@ -9,10 +9,8 @@ import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
-import cwlib.structs.profile.InventoryItem;
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
-import cwlib.structs.slot.Slot;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
@@ -20,15 +18,12 @@ import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
-import cwlib.types.save.BigSave;
-import cwlib.types.save.SaveEntry;
 
 import java.awt.Color;
 import java.io.File;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 public class DatabaseCallbacks {
     public static void loadFileDB(File file) {
@@ -222,72 +217,45 @@ public class DatabaseCallbacks {
         Toolkit.instance.updateWorkspace();
     }
     
-    public static void duplicateItem() {                                                 
-        FileEntry entry = ResourceSystem.getSelected().getEntry();
-        
-        String path = (String) JOptionPane.showInputDialog(Toolkit.instance, "Duplicate", entry.path);
+    public static void duplicateItem() {                          
+        FileData database = ResourceSystem.getSelectedDatabase();
+        if (!database.getType().hasGUIDs()) return;
+        FileEntry source = ResourceSystem.getSelected().getEntry();
+
+        String path = JOptionPane.showInputDialog(Toolkit.instance, "Duplicate", source.getPath());
         if (path == null) return;
 
-        JTree tree = Toolkit.instance.getCurrentTree();
-
-        FileData db = Toolkit.instance.getCurrentDB();
-        FileEntry duplicate = new FileEntry(entry);
-        duplicate.path = path;
+        long nextGUID = database.getNextGUID().getValue();
+        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        if (input == null) return;
+        input = input.replaceAll("\\s", "");
         
-        long nextGUID = db.lastGUID + 1;
-        
-        String GUID = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
-        if (GUID == null) return;
-        
-        long parsedGUID = Strings.getLong(GUID);
-        if (parsedGUID == -1) {
+        GUID guid = Strings.getGUID(input);
+        if (guid == null) {
             System.err.println("You inputted an invalid GUID!");
             return;
         }
-        
-        boolean alreadyExists = false;
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)
-            alreadyExists = ((Mod) db).find(parsedGUID) != null;
-        else alreadyExists = ((FileDB) db).find(parsedGUID) != null;
-        
-        if (alreadyExists) {
+
+        if (database.get(guid) != null) {
             System.err.println("This GUID already exists!");
             return;
         }
         
-        if (parsedGUID > nextGUID) db.lastGUID = parsedGUID;
-        else if (parsedGUID == nextGUID) db.lastGUID++;
-        
-        duplicate.GUID = parsedGUID;
-
-        if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MOD)
-            ((Mod)db).add(duplicate);
+        FileEntry entry = null;
+        if (database instanceof FileDB)
+            entry = ((FileDB)database).newFileDBRow(path, guid);
         else
-            ((FileDB)db).add(duplicate);
+            entry = ((Mod)database).add(path, null, guid);
+        entry.setDetails(source);
         
-        TreePath treePath = new TreePath(db.addNode(duplicate).getPath());
-
-        byte[] data = ResourceSystem.extract(entry.GUID);
-        if (data != null) {
-            Resource resource = new Resource(data);
-            if (resource.type == ResourceType.PLAN) {
-                RPlan.removePlanDescriptors(resource, entry.GUID);
-                data = resource.compressToResource();
-                ResourceSystem.add(data);
-                duplicate.hash = SHA1.fromBuffer(data);
-            }
-        }
-
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-
+        database.setHasChanges();
+        ResourceSystem.reloadModel(database);
+        Toolkit.instance.updateWorkspace();
+        
+        TreePath treePath = new TreePath(entry.getNode().getPath());
+        JTree tree = database.getTree();
         tree.setSelectionPath(treePath);
         tree.scrollPathToVisible(treePath);
-
-        Toolkit.instance.updateWorkspace();
-
-        System.out.println("Duplicated entry!");
-        System.out.println(entry.getPath() + " -> " + duplicate.getPath());
     }
     
     public static void delete() {      

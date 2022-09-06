@@ -494,17 +494,6 @@
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                       </AuxValues>
                     </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="loadSavedata">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Savedata (PREVIEW)"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadSavedataActionPerformed"/>
-                      </Events>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="loadSavedata.setVisible(false);"/>
-                      </AuxValues>
-                    </MenuItem>
                   </SubComponents>
                 </Menu>
                 <MenuItem class="javax.swing.JMenuItem" name="loadMod">
@@ -702,16 +691,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editProfileItemsActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="addKey">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Add Key"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addKeyActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
