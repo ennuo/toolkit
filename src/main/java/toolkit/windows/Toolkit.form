@@ -768,22 +768,6 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDiffActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="scanRawData">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Scan Raw Data"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanRawDataActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="scanFileArchive">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Scan File Archive"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanFileArchiveActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="fileArchiveIntegrityCheck">
               <Properties>
                 <Property name="text" type="java.lang.String" value="File Archive Integrity Check"/>

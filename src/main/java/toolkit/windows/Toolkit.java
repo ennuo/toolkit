@@ -523,6 +523,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadArchive = new javax.swing.JMenuItem();
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
+        loadSavedata = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         manageProfile = new javax.swing.JMenuItem();
@@ -549,6 +550,8 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         editProfileSlots = new javax.swing.JMenuItem();
         editProfileItems = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        addKey = new javax.swing.JMenuItem();
         modMenu = new javax.swing.JMenu();
         openModMetadata = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
@@ -556,8 +559,6 @@ public class Toolkit extends javax.swing.JFrame {
         decompressResource = new javax.swing.JMenuItem();
         dumpSep = new javax.swing.JPopupMenu.Separator();
         generateDiff = new javax.swing.JMenuItem();
-        scanRawData = new javax.swing.JMenuItem();
-        scanFileArchive = new javax.swing.JMenuItem();
         fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
         collectionD = new javax.swing.JMenu();
         collectorPresets = new javax.swing.JMenu();
@@ -1246,6 +1247,15 @@ public class Toolkit extends javax.swing.JFrame {
         });
         savedataMenu.add(loadBigProfile);
 
+        loadSavedata.setText("Savedata (PREVIEW)");
+        loadSavedata.setVisible(false);
+        loadSavedata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadSavedataActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadSavedata);
+
         loadGroupMenu.add(savedataMenu);
 
         loadMod.setText("Mod");
@@ -1405,6 +1415,15 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         ProfileMenu.add(editProfileItems);
+        ProfileMenu.add(jSeparator2);
+
+        addKey.setText("Add Key");
+        addKey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addKeyActionPerformed(evt);
+            }
+        });
+        ProfileMenu.add(addKey);
 
         toolkitMenu.add(ProfileMenu);
 
@@ -1446,22 +1465,6 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(generateDiff);
-
-        scanRawData.setText("Scan Raw Data");
-        scanRawData.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scanRawDataActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(scanRawData);
-
-        scanFileArchive.setText("Scan File Archive");
-        scanFileArchive.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scanFileArchiveActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(scanFileArchive);
 
         fileArchiveIntegrityCheck.setText("File Archive Integrity Check");
         fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
@@ -1778,10 +1781,6 @@ public class Toolkit extends javax.swing.JFrame {
             new SlotManager(entry, (RPacks) info.getResource()).setVisible(true);
     }//GEN-LAST:event_editSlotContextActionPerformed
 
-    private void scanRawDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRawDataActionPerformed
-        ScanCallback.scanRawData();
-    }//GEN-LAST:event_scanRawDataActionPerformed
-
     private void exportLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportLAMSContextActionPerformed
         ExportCallbacks.exportTranslations();
     }//GEN-LAST:event_exportLAMSContextActionPerformed
@@ -1955,10 +1954,6 @@ public class Toolkit extends javax.swing.JFrame {
     private void changeHashActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHashActionPerformed
         DatabaseCallbacks.changeHash();
     }//GEN-LAST:event_changeHashActionPerformed
-
-    private void scanFileArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanFileArchiveActionPerformed
-        UtilityCallbacks.scanFileArchive();
-    }//GEN-LAST:event_scanFileArchiveActionPerformed
 
     private void exportAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnimationActionPerformed
         ExportCallbacks.exportAnimation();
@@ -2434,6 +2429,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JRadioButton StringMetadata;
     private javax.swing.JMenuItem addFile;
     private javax.swing.JMenuItem addFolder;
+    private javax.swing.JMenuItem addKey;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JMenuItem changeGUID;
@@ -2512,6 +2508,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPanel itemMetadata;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator6;
@@ -2524,6 +2521,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
     private javax.swing.JMenuItem loadMod;
+    private javax.swing.JMenuItem loadSavedata;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenuItem manageArchives;
@@ -2561,8 +2559,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator saveDivider;
     public javax.swing.JMenuItem saveMenu;
     public javax.swing.JMenu savedataMenu;
-    private javax.swing.JMenuItem scanFileArchive;
-    private javax.swing.JMenuItem scanRawData;
     public javax.swing.JTextField search;
     private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
