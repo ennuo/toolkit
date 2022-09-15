@@ -148,18 +148,23 @@ public class ExportCallbacks {
     }
 
     public static void exportDDS() {
+        FileEntry selected = ResourceSystem.getSelected().getEntry();
+
         File file = FileChooser.openFile(
-            ResourceSystem.getSelected().getName().substring(0, ResourceSystem.getSelected().getName().length() - 4) + "dds",
-            "DDS",
+            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".dds",
+            "dds",
             true
         );
 
         if (file == null) return;
 
-        RTexture texture = ResourceSystem.getSelected().getEntry().getResource("texture");
-        if (texture == null || !texture.parsed) return;
+        ResourceInfo info = selected.getInfo();
+        if (info == null) return;
 
-        FileIO.write(texture.data, file.getAbsolutePath());
+        RTexture texture = selected.getInfo().getResource();
+        if (texture == null) return;
+        
+        FileIO.write(texture.getData(), file.getAbsolutePath());
     }
 
     public static void exportTranslations() {
