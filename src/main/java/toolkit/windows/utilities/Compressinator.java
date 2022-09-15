@@ -23,6 +23,22 @@ public class Compressinator extends javax.swing.JFrame {
     DefaultListModel<String> model = new DefaultListModel<>();
     FileChooser fileChooser;
     byte[] fileData;
+
+    static ResourceType[] types;
+    static {
+        ArrayList<ResourceType> collection = new ArrayList<>();
+
+        for (ResourceType type : ResourceType.values()) {
+            // UI would need to be updated to handle CellGcmTexture.
+            if (type.equals(ResourceType.GTF_TEXTURE))
+                continue;
+            
+            if (type.getHeader() != null) 
+                collection.add(type);
+        }
+
+        types = collection.toArray(ResourceType[]::new);
+    }
     
     public Compressinator() {
         this.initComponents();
@@ -40,7 +56,7 @@ public class Compressinator extends javax.swing.JFrame {
         jFormattedTextField1 = new javax.swing.JFormattedTextField();
         headerPanel = new javax.swing.JPanel();
         headerCategoryLabel = new javax.swing.JLabel();
-        resourceCombo = new javax.swing.JComboBox(cwlib.enums.Magic.values());
+        resourceCombo = new javax.swing.JComboBox(Compressinator.types);
         magicLabel = new javax.swing.JLabel();
         revisionLabel = new javax.swing.JLabel();
         revision = new javax.swing.JTextField();
@@ -406,7 +422,7 @@ public class Compressinator extends javax.swing.JFrame {
             revision,
             compressionFlags,
             type,
-            SerializationType.BINARY,
+            type == ResourceType.TEXTURE ? SerializationType.COMPRESSED_TEXTURE : SerializationType.BINARY,
             this.dependencies.toArray(ResourceDescriptor[]::new)
         ));
 
