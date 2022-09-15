@@ -4,6 +4,7 @@ import cwlib.resources.RPlan;
 import cwlib.types.Resource;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.enums.Branch;
 import cwlib.enums.GameVersion;
 import cwlib.enums.InventoryItemFlags;
@@ -32,7 +33,6 @@ import cwlib.types.save.BigSave;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
 import cwlib.util.Strings;
-import toolkit.utilities.ResourceSystem;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

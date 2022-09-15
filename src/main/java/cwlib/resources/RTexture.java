@@ -4,7 +4,6 @@ import cwlib.types.Resource;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
 import cwlib.util.Images;
-import toolkit.utilities.ResourceSystem;
 import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
@@ -17,6 +16,7 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import cwlib.external.DDSReader;
+import cwlib.singleton.ResourceSystem;
 
 public class RTexture {
     private CellGcmTexture info;
@@ -73,11 +73,23 @@ public class RTexture {
                 if (type != ResourceType.GTF_TEXTURE)
                     throw new SerializationException("Invalid ResourceType in GXT/GTF swizzled load");
                 ResourceSystem.println("Texture", "Converting GXT texture to DDS.");
-                ResourceSystem.println("Texture", "Unswizzling isn't correctly implemented, so this will probably be broken!");
-                this.parseGTF();
+                this.parseGXT();
                 break;
             default: throw new SerializationException("Invalid serialization type in RTexture resource!");
         }
+    }
+
+    public void parseGXT() {
+        this.unswizzleCompressed();
+        byte[] header = this.getDDSHeader();
+        byte[] gtf = this.data;
+
+        byte[] DDS = new byte[gtf.length + header.length];
+        System.arraycopy(header, 0, DDS, 0, header.length);
+        System.arraycopy(gtf, 0, DDS, header.length, gtf.length);
+        
+        this.data = DDS;
+        this.cached = this.getImage();
     }
 
     /**
@@ -102,6 +114,80 @@ public class RTexture {
             this.info.getMethod() == SerializationType.GXT_SWIZZLED) 
             this.unswizzle();
         else this.cached = this.getImage();
+    }
+
+    private int getMortonNumber(int x, int y, int width, int height) {
+        int logW = 31 - Integer.numberOfLeadingZeros(width);
+        int logH = 31 - Integer.numberOfLeadingZeros(height);
+
+        int d = Integer.min(logW, logH);
+        int m = 0;
+
+        for (int i = 0; i < d; ++i)
+            m |= ((x & (1 << i)) << (i + 1)) | ((y & (1 << i)) << i);
+
+        if(width < height)
+            m |= ((y & ~(width  - 1)) << d);
+        else
+            m |= ((x & ~(height - 1)) << d);
+
+        return m;
+    }
+
+    /**
+     * Unswizzles each DXT1/5 compressed block in a Vita GXT texture.
+     */
+    private void unswizzleCompressed() {
+        byte[] pixels = new byte[this.data.length];
+
+        int blockWidth = 4, blockHeight = 4;
+        int bpp = 4;
+        if (this.info.getFormat().equals(CellGcmEnumForGtf.DXT5))
+            bpp = 8;
+
+        int base = 0;
+
+        int width = Integer.max(this.info.getWidth(), blockWidth);
+        int height = Integer.max(this.info.getHeight(), blockHeight);
+
+        int log2width = 1 << (31 - Integer.numberOfLeadingZeros(width + (width - 1)));
+        int log2height = 1 << (31 - Integer.numberOfLeadingZeros(height + (height - 1)));
+        
+        for (int i = 0; i < this.info.getMipCount(); ++i) {
+            int w = ((width + blockWidth - 1) / blockWidth);
+            int h = ((height + blockHeight - 1) / blockHeight);
+            int blockSize = bpp * blockWidth * blockHeight;
+    
+            int log2w = 1 << (31 - Integer.numberOfLeadingZeros(w + (w - 1)));
+            int log2h = 1 << (31 - Integer.numberOfLeadingZeros(h + (h - 1)));
+    
+            int mx = getMortonNumber(log2w - 1, 0, log2w, log2h);
+            int my = getMortonNumber(0, log2h - 1, log2w, log2h);
+    
+            int pixelSize = blockSize / 8;
+    
+            int oy = 0, tgt = base;
+            for (int y = 0; y < h; ++y) {
+                int ox = 0;
+                for (int x = 0; x < w; ++x) {
+                    int offset = base + ((ox + oy) * pixelSize);
+                    System.arraycopy(this.data, offset, pixels, tgt, pixelSize);
+                    tgt += pixelSize;
+                    ox = (ox - mx) & mx;
+                }
+                oy = (oy - my) & my;
+            }
+
+            base += ((bpp * log2width * log2height) / 8);
+
+            width = width > blockWidth ? width / 2 : blockWidth;
+            height = height > blockHeight ? height / 2 : blockHeight;
+
+            log2width = log2width > blockWidth ? log2width / 2 : blockWidth;
+            log2height = log2height > blockHeight ? log2height / 2 : blockHeight;
+        }
+
+        this.data = pixels;
     }
 
     /**

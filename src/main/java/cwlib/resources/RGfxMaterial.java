@@ -3,6 +3,7 @@ package cwlib.resources;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cwlib.enums.AudioMaterial;
 import cwlib.enums.BoxType;
 import cwlib.enums.Branch;
 import cwlib.enums.GfxMaterialFlags;
@@ -67,7 +68,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     public MaterialBox[] boxes;
     public MaterialWire[] wires;
 
-    public int soundEnum;
+    public AudioMaterial soundEnum = AudioMaterial.NONE;
 
     public MaterialParameterAnimation[] parameterAnimations;
 
@@ -179,7 +180,7 @@ public class RGfxMaterial implements Serializable, Compressable {
         gmat.wires = serializer.array(gmat.wires, MaterialWire.class);
 
         if (version >= Revisions.GFXMATERIAL_SOUND_ENUM)
-            gmat.soundEnum = serializer.i32(gmat.soundEnum);
+            gmat.soundEnum = serializer.enum32(gmat.soundEnum);
 
         if (version >= Revisions.PARAMETER_ANIMATIONS)
             gmat.parameterAnimations = serializer.array(gmat.parameterAnimations, MaterialParameterAnimation.class);

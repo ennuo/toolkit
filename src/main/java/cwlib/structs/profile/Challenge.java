@@ -3,6 +3,7 @@ package cwlib.structs.profile;
 import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
@@ -13,8 +14,14 @@ public class Challenge implements Serializable {
     public int challengeStatus;
     public int levelID;
     public int scoreToBeat;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CHALLENGE_LEVEL_TYPE)
     public int levelType;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CHALLENGE_SCORE)
     public int myScore;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CHALLENGE_SCORE)
     public String networkOnlineID;
 
     @SuppressWarnings("unchecked")

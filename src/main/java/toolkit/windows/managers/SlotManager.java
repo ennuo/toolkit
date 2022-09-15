@@ -5,6 +5,7 @@ import cwlib.resources.RPacks;
 import cwlib.types.Resource;
 import cwlib.resources.RSlotList;
 import cwlib.resources.RTranslationTable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.enums.ContentsType;
 import cwlib.enums.Crater;
 import cwlib.enums.GameMode;
@@ -21,7 +22,6 @@ import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
 import cwlib.util.Strings;
-import toolkit.utilities.ResourceSystem;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;

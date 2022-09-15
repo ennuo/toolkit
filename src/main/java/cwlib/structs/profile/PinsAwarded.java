@@ -3,6 +3,7 @@ package cwlib.structs.profile;
 import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
@@ -13,10 +14,20 @@ public class PinsAwarded implements Serializable {
     public PinProgress[] pinProgress;
     public int[] recentlyAwardedPinIDs;
     public int[] profileDisplayPinIDs;
+
+    @GsonRevision(min=Revisions.PIN_FLAGS)
     public byte pinsFlags;
+
+    @GsonRevision(min=Revisions.WEEKDAYS_PLAYED_PIN)
     public byte weekdaysPlayedBits;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_MOE_PIN_PROGRESS)
     public int moreOfEverythingPinProgress;
+
+    @GsonRevision(lbp3=true, min=Revisions.SLAPPED_AS_PIN)
     public byte slappedAsBits;
+
+    @GsonRevision(lbp3=true, min=Revisions.SIMON_SAYS_PIN)
     public int simonSaysProgress;
 
     @SuppressWarnings("unchecked")

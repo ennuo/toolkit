@@ -1,6 +1,5 @@
 package cwlib.structs.slot;
 
-import toolkit.utilities.ResourceSystem;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
@@ -13,6 +12,7 @@ import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkOnlineID;
 

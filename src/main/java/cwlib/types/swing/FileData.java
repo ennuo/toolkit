@@ -72,7 +72,7 @@ public abstract class FileData {
             }
             this.base = base;
         }
-        this.model = new FileModel(new FileNode(type.name(), null, null));
+        this.model = new FileModel(new FileNode(type.name(), null, null, this));
         this.root = (FileNode) this.model.getRoot();
         
         JTree tree = new JTree();

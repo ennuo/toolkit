@@ -2,6 +2,7 @@ package cwlib.structs.profile;
 
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class InventoryCollection implements Serializable {
@@ -10,6 +11,8 @@ public class InventoryCollection implements Serializable {
     public int inventoryCollectionIndex;
     public InventoryPage[] inventoryPageInstances;
     public int currentPageNumber;
+
+    @GsonRevision(lbp3=true, min=Revisions.COLLECTION_POPPET_POWERUP)
     public boolean poppetPowerupSelection;
 
     @SuppressWarnings("unchecked")

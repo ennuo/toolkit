@@ -8,12 +8,11 @@ import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.GatherData;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
-
-import toolkit.utilities.ResourceSystem;
 
 /**
  * Utilities for operations on resources.

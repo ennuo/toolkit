@@ -69,12 +69,15 @@ public class Nodes {
     }
 
     public static FileNode addFolder(FileNode root, String path) {
+        if (path == null || path.isEmpty()) return root;
+        if (path.endsWith("/")) path = path.substring(0, path.length());
+        
         String[] components = path.split("/");
         String parent = "";
         for (String component : components) {
             int index = Nodes.childIndex(root, component);
             if (index == -1) {
-                FileNode child = new FileNode(component, parent , null);
+                FileNode child = new FileNode(component, parent , null, root.getSource());
                 root.insert(child, root.getChildCount());
                 root = child;
                 continue;
@@ -98,12 +101,12 @@ public class Nodes {
         for (int i = 0; i < strings.length; i++) {
             int index = Nodes.childIndex(node, strings[i]);
             if (index == -1) {
-                FileNode child = new FileNode(strings[i], relativePath, (i + 1 == strings.length) ? entry : null);
+                FileNode child = new FileNode(strings[i], relativePath, (i + 1 == strings.length) ? entry : null, node.getSource());
                 node.insert(child, node.getChildCount());
                 node = child;
             } else {
                 if (i + 1 == strings.length) {
-                    FileNode child = new FileNode(strings[i], relativePath, entry);
+                    FileNode child = new FileNode(strings[i], relativePath, entry, node.getSource());
                     node.insert(child, node.getChildCount());
                 } else
                     node = (FileNode) node.getChildAt(index);

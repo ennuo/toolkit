@@ -18,7 +18,7 @@ public final class CellGcmTexture {
     private final byte location;
     private final byte flags;
     private final int pitch, offset;
-    private final SerializationType method;
+    private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
     
     /**
      * Deserializes TextureInfo from stream.
@@ -83,4 +83,8 @@ public final class CellGcmTexture {
 
     public boolean isBumpTexture() { return (this.flags & 0x1) != 0; }
     public boolean isVolumeTexture() { return (this.dimension > 2); }
+
+    public void setMethod(SerializationType method) {
+        this.method = method;
+    }
 }

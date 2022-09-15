@@ -5,6 +5,7 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.singleton.ResourceSystem;
 import cwlib.util.Compressor;
 import cwlib.util.FileIO;
 import cwlib.types.Resource;
@@ -14,7 +15,6 @@ import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;

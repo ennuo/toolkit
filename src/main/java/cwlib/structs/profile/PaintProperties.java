@@ -3,6 +3,7 @@ package cwlib.structs.profile;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
@@ -12,6 +13,8 @@ public class PaintProperties implements Serializable {
     private int triggerOverride, stickerSaveSize;
     private boolean angleOverride, uiHidden;
     private ResourceDescriptor lastAutoSave;
+
+    @GsonRevision(min=Revisions.PTG_USE_DEFAULT_BACKGROUND)
     private boolean useDefaultBackground;
 
     @SuppressWarnings("unchecked")

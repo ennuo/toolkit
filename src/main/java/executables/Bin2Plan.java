@@ -5,9 +5,9 @@ import java.util.HashMap;
 
 import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.util.FileIO;
-import toolkit.utilities.ResourceSystem;
 
 public class Bin2Plan {
     public static void main(String[] args) {

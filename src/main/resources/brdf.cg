@@ -15,6 +15,9 @@
 #define DEFERRED (1 << 7)
 #define DEFERRED_NORMAL_PASS (1 << 8)
 
+// Make shader PSSL compatible.
+#define ORBIS (1 << 15)
+
 // Material properties
 #define SPECULAR (1 << 9)
 #define NORMAL (1 << 10)
@@ -22,6 +25,7 @@
 #define REFRACT (1 << 12)
 #define GLOW (1 << 13)
 #define GLASSY (1 << 14)
+
 
 // Set this variable to define what maps this material uses.
 #define PROPERTIES ENV.MATERIAL_PROPERTIES
@@ -52,6 +56,24 @@
 // FLAGS[8] = NO_FLAGS
 // FLAGS[9] = DECALS
 
+#if (FLAGS & ORBIS)
+    #define SAMPLE_2D(sampler, uv) sampler##_tex.Sample(sampler##_smp, uv)
+    #define SAMPLE_3D(sampler, uv) sampler##_tex.Sample(sampler##_smp, uv)
+    #define SAMPLE_3D_LOD(sampler, locd) sampler##_tex.SampleLOD(sampler##_smp, locd.xyz, locd.w)
+    #define SAMPLE_2D_PROJ(sampler, value) sampler##_tex.Sample(sampler##_smp, float2(value.x, value.y) / value.w)
+
+    #define CREATE_SAMPLER_2D(name, index) SamplerState name##_smp: register(s##index); Texture2D name##_tex : register(t##index)
+    #define CREATE_SAMPLER_3D(name, index) SamplerState name##_smp: register(s##index); Texture3D name##_tex : register(t##index)
+#else
+    #define SAMPLE_2D(sampler, uv) tex2D(sampler, uv)
+    #define SAMPLE_3D(sampler, uv) tex3D(sampler, uv)
+    #define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, uv, locd)
+    #define SAMPLE_2D_PROJ(sampler, value) tex2Dproj(sampler, value)
+
+    #define CREATE_SAMPLER_2D(name, index) sampler2D name: TEXUNIT##index
+    #define CREATE_SAMPLER_3D(name, index) sampler3D name: TEXUNIT##index
+#endif
+
 float AlphaTestLevel = ENV.ALPHA_TEST_LEVEL;
 
 float CosinePower = ENV.COSINE_POWER;
@@ -79,21 +101,21 @@ float rim_round = 0.9;
 
     #if (FLAGS & BAKED_AO)
         uniform float4 aotweak;
-        sampler2D aomap: TEXUNIT8;
+        CREATE_SAMPLER_2D(aomap, 8);
     #endif
 
     #if (FLAGS & BAKED_SHADOWS)
-        sampler2D shadowmap: TEXUNIT14;
+        CREATE_SAMPLER_2D(shadowmap, 14);
     #endif
 
     #if (FLAGS & DYNAMIC_SHADOWS)
-        sampler2D shadowtex: TEXUNIT12;
+        CREATE_SAMPLER_2D(shadowtex, 12);
         uniform float3 zmul;
     #endif
 
     #if (FLAGS & DYNAMIC_AO)
-        sampler3D tex: TEXUNIT9;
-        sampler3D tex_lo: TEXUNIT10;
+        CREATE_SAMPLER_3D(tex, 9);
+        CREATE_SAMPLER_3D(tex_lo, 10);
     #endif
 
     #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
@@ -102,13 +124,13 @@ float rim_round = 0.9;
     #endif
 
     #if (FLAGS & SPRITELIGHT)
-        sampler3D sprlight_itex: TEXUNIT7;
-        sampler3D sprlight_wstex: TEXUNIT11;
+        CREATE_SAMPLER_3D(sprlight_itex, 7);
+        CREATE_SAMPLER_3D(sprlight_wstex, 11);
     #endif
 
     #if (FLAGS & WATER_CAUSTICS)
         uniform float4 watertweaks, causticuvscale;
-        sampler2D caustic_tex: TEXUNIT6;
+        CREATE_SAMPLER_2D(caustic_tex, 6);
     #endif
 
     uniform float4 fogccparams;
@@ -118,41 +140,46 @@ float rim_round = 0.9;
 uniform float4 fogcol;
 uniform float4 tintcol;
 
-// uniform float4 miscparams, dynamicWetnessParams, alphatestparams; 
+#if (FLAGS & ORBIS)
+    uniform float4 miscparams, dynamicWetnessParams, alphatestparams; 
+#endif
 
-sampler2D s0: TEXUNIT0;
-sampler2D s1: TEXUNIT1;
-sampler2D s2: TEXUNIT2;
-sampler2D s3: TEXUNIT3;
-sampler2D s4: TEXUNIT4;
-sampler2D s5: TEXUNIT5;
-sampler2D s6: TEXUNIT6;
-sampler2D s7: TEXUNIT7;
+CREATE_SAMPLER_2D(s0, 0);
+CREATE_SAMPLER_2D(s1, 1);
+CREATE_SAMPLER_2D(s2, 2);
+CREATE_SAMPLER_2D(s3, 3);
+CREATE_SAMPLER_2D(s4, 4);
+CREATE_SAMPLER_2D(s5, 5);
+CREATE_SAMPLER_2D(s6, 6);
+CREATE_SAMPLER_2D(s7, 7);
+
 
 #if (FLAGS & DECALS)
     #if ((FLAGS & DEFERRED) != 0)
-        sampler2D itex: TEXUNIT10;
-        sampler2D wstex: TEXUNIT11;
+        CREATE_SAMPLER_2D(itex, 10);
+        CREATE_SAMPLER_2D(wstex, 11);
     #else
-        sampler2D itex: TEXUNIT8;
-        sampler2D wstex: TEXUNIT14;
+        CREATE_SAMPLER_2D(itex, 8);
+        CREATE_SAMPLER_2D(wstex, 14);
     #endif
 #endif
 
 #if ((FLAGS & DEFERRED) && ((FLAGS & DEFERRED_NORMAL_PASS) == 0))
-    sampler2D lbuf: TEXUNIT12;
-    sampler2D zbuf: TEXUNIT13;
-    sampler2D nbuf: TEXUNIT14;
+    CREATE_SAMPLER_2D(lbuf, 12);
+    CREATE_SAMPLER_2D(zbuf, 13);
+    CREATE_SAMPLER_2D(nbuf, 14);
 #endif
 
-sampler2D cbuf: TEXUNIT15;
+CREATE_SAMPLER_2D(cbuf, 15);
 
-// sampler3D bouncevolcol: TEXUNIT16;
-// sampler3D bouncevoldir: TEXUNIT17;
+// #if (FLAGS & ORBIS)
+//     CREATE_SAMPLER_3D(bouncevolcol, 16);
+//     CREATE_SAMPLER_3D(bouncevoldir, 17);
+// #endif
 
 #if (PROPERTIES & NORMAL)
-half3 NormalMap(half4 iNormal, half4 iTangent, float4 sample) {
-    half2 n = sample.yx;
+half3 NormalMap(half4 iNormal, half4 iTangent, float4 iSample) {
+    half2 n = iSample.yx;
     n.y = 1.0 - n.y;
     n -= 0.501953;
 
@@ -161,8 +188,8 @@ half3 NormalMap(half4 iNormal, half4 iTangent, float4 sample) {
     return v / length(v);
 }
 
-half3 BumpMap(half4 iNormal, half4 iTangent, float4 sample) {
-    half2 n = sample.yw - 0.501953;
+half3 BumpMap(half4 iNormal, half4 iTangent, float4 iSample) {
+    half2 n = iSample.yw - 0.501953;
     half3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
     float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
     return normalize(v);
@@ -203,16 +230,18 @@ ENV.AUTO_ALPHA_SETUP
 
 #if (FLAGS & DECALS)
 float4 GetDecals(float3 iDecalUV) {
-    float2 dcoord = (frac(iDecalUV.xy * 256.0) * 127.0 + floor(tex2D(itex, iDecalUV.xy).xy * 32640.0 + 0.5) + 0.5) * 0.000488281;
-    return tex2D(wstex, dcoord);
+    float2 dcoord = (frac(iDecalUV.xy * 256.0) * 127.0 + floor(SAMPLE_2D(itex, iDecalUV.xy).xy * 32640.0 + 0.5) + 0.5) * 0.000488281;
+    return SAMPLE_2D(wstex, dcoord);
 }
 #endif
 
 #if ((FLAGS & DEFERRED) == 0)
+    #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
     float3 GetWorldPos(float4 iVec2Eye) {
         return (((iVec2Eye - minaabb) * maxaabb) + maxaabb_add).xyz;
     }
-
+    #endif
+    
     #if (FLAGS & DYNAMIC_AO)
     float DynamicAO(float4 iVec2Eye, half3 iNormal) {
         half4 aoNormal = half4(iNormal, 1.0);
@@ -222,13 +251,13 @@ float4 GetDecals(float3 iDecalUV) {
 
         worldPos.xyz += aoNormal.xyz;
 
-        float ao = tex3Dlod(tex, worldPos).z;
+        float ao = SAMPLE_3D_LOD(tex, worldPos).z;
         worldPos.xyz += aoNormal.xyz;
-        ao += tex3Dlod(tex_lo, worldPos).z;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
         worldPos.xyzw += aoNormal.xyzw;
-        ao += tex3Dlod(tex_lo, worldPos).z;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
         worldPos.xyzw += aoNormal.xyzw;
-        ao += tex3Dlod(tex_lo, worldPos).z;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
         
         return 1 - ao * minaabb.w;
     }
@@ -238,11 +267,11 @@ float4 GetDecals(float3 iDecalUV) {
     float GetAO(half3 iNormal, float4 iVec2Eye, float2 iLightmapUV) {
         #if ((FLAGS & AO_FLAGS) == AO_FLAGS)
             float ao = DynamicAO(iVec2Eye, iNormal);
-            return min(ao, (tex2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y);
+            return min(ao, (SAMPLE_2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y);
         #elif (FLAGS & DYNAMIC_AO)
             return DynamicAO(iVec2Eye, iNormal);
         #elif (FLAGS & BAKED_AO)
-            return (tex2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y;
+            return (SAMPLE_2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y;
         #endif
     }
     #endif
@@ -254,7 +283,7 @@ float4 GetDecals(float3 iDecalUV) {
         float shadowPos = (abs(dot(lightVec, lightVec)) / length(lightVec)) - lightscaleadd.y;
         half shadow = 1.0;
         if (shadowPos < 1.0) {
-            half4 shadowProj = tex2Dproj(shadowtex, iShadowMapPosition);
+            half4 shadowProj = SAMPLE_2D_PROJ(shadowtex, iShadowMapPosition);
             float2 s = (shadowProj.zw * 0.03125) + shadowProj.xy;
 
             half h4x = s.x - shadowPos; 
@@ -272,9 +301,9 @@ float4 GetDecals(float3 iDecalUV) {
     half GetShadow(float4 iShadowMapPosition, float2 iLightmapUV, float4 iVec2Eye) {
         #if ((FLAGS & SHADOW_FLAGS) == SHADOW_FLAGS)
             half shadow = GetDynamicShadow(iShadowMapPosition, iVec2Eye);
-            return min(shadow, tex2D(shadowmap, iLightmapUV).x);
+            return min(shadow, SAMPLE_2D(shadowmap, iLightmapUV).x);
         #elif (FLAGS & BAKED_SHADOWS)
-            return tex2D(shadowmap, iLightmapUV).x; // baked shadow, is this used for static meshes?
+            return SAMPLE_2D(shadowmap, iLightmapUV).x; // baked shadow, is this used for static meshes?
         #elif (FLAGS & DYNAMIC_SHADOWS)
             return GetDynamicShadow(iShadowMapPosition, iVec2Eye);
         #endif
@@ -289,7 +318,7 @@ float4 GetDecals(float3 iDecalUV) {
             float2 causticuv = (iVec2Eye.xz * causticuvscale.xy) + causticuvscale.zw;
             causticuv += ((iLightVec.xz * waterDirection) * 0.00005);
             
-            float caustic = tex2D(caustic_tex, causticuv).x - 0.5;
+            float caustic = SAMPLE_2D(caustic_tex, causticuv).x - 0.5;
             caustic *= (saturate((iShadow * saturate(-iNdotL)) + 0.125) * max((-waterDirection * 0.000025) + 1.0, 0.0));
 
             float direction = min(waterDirection * 0.0125, 1.0);
@@ -344,7 +373,7 @@ void main(
     float4 iWorldPos: WPOS,
     float4 iColor: COLOR0,
 
-    out half4 color_out: COLOR0
+    out half4 color_out
 ) {
     #if (PROPERTIES & ALPHA)
         if (DoAlphaTest(iUV, iColor)) discard;
@@ -368,7 +397,7 @@ void main(
         float2 pos = iWorldPos.xy * DEFERRED_POS_OFFSET;
         pos.y = 1.0 - pos.y;
 
-        float zbfs = tex2D(zbuf, pos - DEFERRED_ZBUF_OFFSET).w;
+        float zbfs = SAMPLE_2D(zbuf, pos - DEFERRED_ZBUF_OFFSET).w;
 
         // In LBP1, the left side of the normal buffer has transparency.
         #if (PROPERTIES & GLASSY)
@@ -378,11 +407,11 @@ void main(
         #endif
 
         #if ((PROPERTIES & GLASSY) || (PROPERTIES & REFRACT))
-            float2 nbfs = tex2D(nbuf, pixelPos).xy;
+            float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
             half3 normal = decode(nbfs);
         #endif
 
-        float4 lbfs = tex2D(lbuf, pixelPos);
+        float4 lbfs = SAMPLE_2D(lbuf, pixelPos);
 
         half3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
         #if (FLAGS & DECALS)
@@ -412,7 +441,7 @@ void main(
 
             float2 cuv = (n * (RefractiveIndex * float2(9.0, -16.0))) + (pos + float2(0.000195313, 0.0));
             cuv.x = (round(cuv.x * 1280.0) * 0.00078125) - 0.000195313;
-            float3 cbfs = tex2D(cbuf, cuv).xyz;
+            float3 cbfs = SAMPLE_2D(cbuf, cuv).xyz;
 
             half3 color = ((diffuse * tintcol.xyz) * cbfs) + (lobe * 2) + (prod * pow(saturate(dot(n, n) * 10.0 - 0.5), 2));
         #else
@@ -494,12 +523,12 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     #if (FLAGS & SPRITELIGHT)
         float3 worldPos = GetWorldPos(iVec2Eye);
 
-        float3 ws = (tex3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
+        float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
         ws /= sqrt(dot(ws, ws) + 0.0010004);
         float RdotS = saturate(dot(reflectVec, ws));
         float NdotS = dot(iNormal, ws);
 
-        float3 spritelight = tex3D(sprlight_itex, worldPos).xyz * ao;
+        float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
 
         color += (max((NdotS + 0.199951), 0.0) * spritelight);
 
@@ -524,7 +553,7 @@ void main(
 
     float4 iColor: COLOR0,
 
-    out half4 color_out: COLOR0
+    out half4 color_out
 ) {
     #if (PROPERTIES & NORMAL)
         half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV);
@@ -560,7 +589,7 @@ void main(
         float2 wpos = iWorldPos.xy * oores;
         float2 cuv = (normal.xy * (RefractiveIndex * float2(9.0, -16.0))) + float2(wpos.x, 1.0 - wpos.y);
         half n = saturate((dot(normal.xy, normal.xy) * 10.0) - 0.5);
-        half3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * tex2D(cbuf, cuv).xyz) + (lighting * 2.0);
+        half3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
     #else
         half3 color = (diffuse * prod) + lighting;
     #endif

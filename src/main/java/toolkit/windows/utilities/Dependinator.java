@@ -3,9 +3,9 @@ package toolkit.windows.utilities;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Strings;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.nio.file.Paths;

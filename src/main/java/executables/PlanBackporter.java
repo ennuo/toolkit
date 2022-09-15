@@ -5,12 +5,12 @@ import java.io.File;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.PartHistory;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
-import toolkit.utilities.ResourceSystem;
 
 public class PlanBackporter {
     public static void main(String[] args) {

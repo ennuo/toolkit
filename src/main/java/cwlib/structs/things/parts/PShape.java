@@ -130,10 +130,10 @@ public class PShape implements Serializable {
         
         if (version <= 0x389) {
             if (serializer.isWriting())
-                serializer.getOutput().v4(Colors.RGBA32.toVector(shape.color));
+                serializer.getOutput().v4(Colors.RGBA32.fromARGB(shape.color));
             else {
                 Vector4f color = serializer.getInput().v4();
-                shape.color = Colors.RGBA32.fromVector(color);
+                shape.color = Colors.RGBA32.getARGB(color);
             }
         } else shape.color = serializer.i32(shape.color);
 
@@ -163,10 +163,10 @@ public class PShape implements Serializable {
         if (version >= 0x303) {
             if (version < 0x38a) {
                 if (serializer.isWriting())
-                serializer.getOutput().v4(Colors.RGBA32.toVector(shape.colorOff));
+                serializer.getOutput().v4(Colors.RGBA32.fromARGB(shape.colorOff));
                 else {
                     Vector4f color = serializer.getInput().v4();
-                    shape.colorOff = Colors.RGBA32.fromVector(color);
+                    shape.colorOff = Colors.RGBA32.getARGB(color);
                 }
             } else shape.colorOff = serializer.i32(shape.colorOff);
             shape.brightnessOff = serializer.f32(shape.brightnessOff);

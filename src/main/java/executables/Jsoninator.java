@@ -7,11 +7,11 @@ import java.nio.file.Path;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.Compressable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 import cwlib.util.GsonUtils;
-import toolkit.utilities.ResourceSystem;
 
 public class Jsoninator {
     public static class WrappedResource {

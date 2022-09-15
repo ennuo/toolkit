@@ -1,10 +1,12 @@
 package cwlib.enums;
 
+import cwlib.io.ValueEnum;
+
 /**
  * Represents every possible tutorial level
  * and video.
  */
-public enum TutorialLevels {
+public enum TutorialLevel implements ValueEnum<Integer> {
     UNKNOWN(0x0),
     NONE(0x1),
     LEVEL_10_MOVING_OBJECTS(0x2),
@@ -57,19 +59,19 @@ public enum TutorialLevels {
     VIDEO_NO_JOIN_POST(0x30);
 
     private final int value;
-    private TutorialLevels(int value) { this.value = value; }
-    public int getValue() { return this.value; }
+    private TutorialLevel(int value) { this.value = value; }
+    public Integer getValue() { return this.value; }
     
     /**
      * Attempts to get a ToolType from value.
      * @param value Tool type value
      * @return ToolType
      */
-    public static TutorialLevels fromValue(byte value) {
-        for (TutorialLevels level : TutorialLevels.values()) {
+    public static TutorialLevel fromValue(int value) {
+        for (TutorialLevel level : TutorialLevel.values()) {
             if (level.value == value) 
                 return level;
         }
-        return TutorialLevels.UNKNOWN;
+        return TutorialLevel.UNKNOWN;
     }
 }

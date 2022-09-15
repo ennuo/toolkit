@@ -6,6 +6,7 @@ import java.util.Set;
 import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -14,17 +15,40 @@ import cwlib.types.data.Revision;
 public class PlayerMetrics implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
+    @GsonRevision(min=0x170)
     private int totalTime, editingTime, playingTime, idlingTime;
+    
+    @GsonRevision(min=0x184)
     private int multiplayerGamesCount;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_LEVEL_TIMES_MAP)
     private HashMap<Integer, Integer> levelTimesMap;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_LEVEL_TIMES_MAP)
     private int totalLevelTime;
+
+    @GsonRevision(min=0x1ca)
     private float playLadderPoints;
+
+    @GsonRevision(min=0x1ac)
     private int storyLevelCompletionCount;
+
+    @GsonRevision(min=0x1f8)
     private int communityLevelCompletionCount;
+
+    @GsonRevision(min=0x1ac)
     private int levelCompletionCount;
+
+    @GsonRevision(min=0x1f8)
     private int levelsTaggedCount;
+
+    @GsonRevision(min=0x1ca)
     private int gamesWithRandomPlayersCount;
+
+    @GsonRevision(min=0x1df)
     private float pointsCollected;
+
+    @GsonRevision(min=0x1ea)
     private long[] stats;
     
     @SuppressWarnings("unchecked")

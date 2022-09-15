@@ -1,6 +1,7 @@
 package toolkit.windows.utilities;
 
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
@@ -11,7 +12,6 @@ import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.mods.Mod;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;

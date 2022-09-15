@@ -1,13 +1,13 @@
 package toolkit.functions;
 
 import cwlib.enums.DatabaseType;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.util.FileIO;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.ResourceDescriptor;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 
 import java.io.File;
 

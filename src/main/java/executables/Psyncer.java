@@ -1,19 +1,26 @@
 package executables;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RLocalProfile;
 import cwlib.resources.RSyncedProfile;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
 import cwlib.util.GsonUtils;
-import toolkit.utilities.ResourceSystem;
 
 public class Psyncer {
+    public static class PsyncState {
+        public RSyncedProfile synced;
+        public RLocalProfile local;
+    }
+    
+
     public static void main(String[] args) {
         ResourceSystem.DISABLE_LOGS = true;
         if (args.length < 2 || args.length > 3) {
@@ -70,9 +77,14 @@ public class Psyncer {
             return;
         }
 
+        GsonUtils.REVISION = archive.getGameRevision();
+        
         if (extractJSON) {
-            GsonUtils.REVISION = archive.getGameRevision();
-            FileIO.write(GsonUtils.toJSON(synced).getBytes(), args[1]);
+            PsyncState state = new PsyncState();
+            state.local = local;
+            state.synced = synced;
+
+            FileIO.write(GsonUtils.toJSON(state).getBytes(StandardCharsets.UTF_8), args[1]);
             return;
         }
         
@@ -82,18 +94,22 @@ public class Psyncer {
             return;
         }
 
-        try { synced = GsonUtils.fromJSON(new String(jsonData), RSyncedProfile.class); }
+        try { 
+            PsyncState state = GsonUtils.fromJSON(new String(jsonData, StandardCharsets.UTF_8), PsyncState.class);
+            synced = state.synced;
+            local = state.local;
+        }
         catch (Exception ex) {
             System.err.println("Failed to convert JSON to RSyncedProfile!");
             return;
         }
 
         local.syncedProfile = new ResourceDescriptor(
-            archive.add(Resource.compress(synced, archive.getGameRevision(), CompressionFlags.USE_ALL_COMPRESSION)),
+            archive.add(Resource.compress(synced, archive.getGameRevision(), CompressionFlags.USE_NO_COMPRESSION)),
             ResourceType.SYNCED_PROFILE
         );
 
-        archive.getKey().setRootHash(archive.add(Resource.compress(local, archive.getGameRevision(), CompressionFlags.USE_ALL_COMPRESSION)));
+        archive.getKey().setRootHash(archive.add(Resource.compress(local, archive.getGameRevision(), CompressionFlags.USE_NO_COMPRESSION)));
 
         archive.save();
 

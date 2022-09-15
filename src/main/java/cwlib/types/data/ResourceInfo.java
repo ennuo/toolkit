@@ -11,10 +11,10 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.resources.RStaticMesh;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.util.Bytes;
 import cwlib.util.Compressor;
-import toolkit.utilities.ResourceSystem;
 
 public class ResourceInfo {
     private Object resource;

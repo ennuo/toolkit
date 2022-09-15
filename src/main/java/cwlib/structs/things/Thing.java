@@ -9,11 +9,11 @@ import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.parts.PJoint;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
-import toolkit.utilities.ResourceSystem;
 
 /**
  * Represents an object in the game world.

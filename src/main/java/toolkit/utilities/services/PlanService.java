@@ -2,9 +2,9 @@ package toolkit.utilities.services;
 
 import cwlib.enums.ResourceType;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.databases.FileEntry;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import javax.swing.JTree;

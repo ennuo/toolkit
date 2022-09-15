@@ -3,6 +3,7 @@ package cwlib.structs.profile;
 import cwlib.enums.Branch;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
 import cwlib.types.data.Revision;
@@ -12,25 +13,49 @@ public class PlayedLevelData implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public SlotID slotID;
+
+    @GsonRevision(min=0x1fe)
     public long lastPlayedTimestamp;
+
+    @GsonRevision(min=0x201)
     public int[] localHighScore;
+
     public short playCount, completionCount, acedCount;
+
+    @GsonRevision(min=0x1c2)
     public CollectableData[] collectables;
+
+    @GsonRevision(min=0x1e4)
     public int[] videos;
+
+    @GsonRevision(min=0x364)
     public SlotID[] linkedLevels;
+
+    @GsonRevision(min=0x364)
     public SlotID[] subLevels;
+
+    @GsonRevision(min=0x266)
     public SHA1 levelHash;
+
+    @GsonRevision(min=0x399)
     public short flags;
 
     /* LBP3 */
 
+    @GsonRevision(lbp3=true, min=0x1ad)
     public int bestTime;
+
+    @GsonRevision(lbp3=true, min=0x1ad)
     public short multiplayerCompletionCount;
 
     /* Vita */
-    public short deferredPlayCount;
-    public short deferredPlayCountUploaded;
+    @GsonRevision(branch=0x4431, min=Revisions.D1_DEFERRED_PLAYS)
+    public short deferredPlayCount, deferredPlayCountUploaded;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_UPLOADED_HIGH_SCORE)
     public int[] uploadedLocalHighScore;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_TROPHIES)
     public short goldTrophyCount, silverTrophyCount, bronzeTrophyCount;
 
     @SuppressWarnings("unchecked")

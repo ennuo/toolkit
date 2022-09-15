@@ -20,7 +20,7 @@
             <configuration>
                <archive>
                   <manifest>
-                     <mainClass>toolkit.Launcher</mainClass>
+                     <mainClass>executables.gfx.GfxGUI</mainClass>
                   </manifest>
                </archive>
                <descriptorRefs>

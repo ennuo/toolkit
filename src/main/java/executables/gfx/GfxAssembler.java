@@ -9,12 +9,12 @@ import java.util.HashMap;
 import cwlib.enums.BoxType;
 import cwlib.enums.CompressionFlags;
 import cwlib.resources.RGfxMaterial;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 import toolkit.configurations.Config;
-import toolkit.utilities.ResourceSystem;
 
 public class GfxAssembler {
     public static String BRDF = FileIO.getResourceFileAsString("/brdf.cg");
@@ -56,6 +56,8 @@ public class GfxAssembler {
         public static final int GLOW = (1 << 13);
     
         public static final int GLASSY = (1 << 14);
+
+        public static final int ORBIS = (1 << 15);
     }
 
     public static final String resolve(StringBuilder shader, RGfxMaterial gmat, MaterialBox box, int type) {
@@ -71,7 +73,7 @@ public class GfxAssembler {
                 variableName = "smp" + index;
                 String channel = (params[4] == 1 || params[4] == 256) ? "zw" : "xy";
                 if (type == OutputPort.REFLECTION) {
-                    assignment = String.format("tex2Dbias(%s, iUV, ReflectionBlur)", texVar);
+                    assignment = String.format("SAMPLE_2D_BIAS(%s, iUV, ReflectionBlur)", texVar);
                     break;
                 }
 
@@ -85,7 +87,7 @@ public class GfxAssembler {
                 if (ox != 0.0f || oy != 0.0f)
                     uv += String.format(" + float2(%f, %f)", ox, oy);
                 
-                assignment = String.format("tex2D(%s, %s)", texVar, uv);
+                assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);
 
                 break;
             }
@@ -248,17 +250,9 @@ public class GfxAssembler {
         }
     }
 
-    public static void preprocess(String string, String output) {
-        File directory = ResourceSystem.getWorkingDirectory();
-        File shader = new File(directory, "shader");
-        FileIO.write(string.getBytes(), shader.getAbsolutePath());
-        File loc = new File(Config.jarDirectory, "sce/sce-cgc.exe");
-        run(loc.getAbsolutePath(), "-profile", "sce_fp_rsx", "-o", output, shader.getAbsolutePath(), "-preprocess");
-        shader.delete();
-    }
 
-    public static byte[] getShader(String string) { return getShader(string, false); }
-    public static byte[] getShader(String string, boolean cgb) {
+    public static byte[] getShader(String string) { return getShader(string, false, false); }
+    public static byte[] getShader(String string, boolean cgb, boolean orbis) {
         File directory = ResourceSystem.getWorkingDirectory();
         File shader = new File(directory, "shader");
         File compiled = new File(directory, "compiled");
@@ -267,13 +261,19 @@ public class GfxAssembler {
 
         FileIO.write(string.getBytes(), shader.getAbsolutePath());
         
-        File loc = new File(Config.jarDirectory, "sce/sce-cgc.exe");
+    
+        String profile = "sce_fp_rsx";
+        File loc = new File("E:/util/sce-cgc.exe");
+        if (orbis) {
+            loc = new File("E:/util/orbis-wave-psslc.exe");
+            profile = "sce_ps_orbis";
+        }
 
         String msg;
-        if (cgb) 
-            msg = run(loc.getAbsolutePath(), "-profile", "sce_fp_rsx", "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
+        if (cgb && !orbis) 
+            msg = run(loc.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
         else
-            msg = run(loc.getAbsolutePath(), "-profile", "sce_fp_rsx", "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());
+            msg = run(loc.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());
 
         shader.delete();
         if (compiled.exists()) {

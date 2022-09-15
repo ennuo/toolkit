@@ -3,6 +3,7 @@ package cwlib.structs.profile;
 import cwlib.enums.InventoryItemFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
+import cwlib.enums.TutorialLevel;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
@@ -31,7 +32,7 @@ public class InventoryItem implements Serializable {
     /**
      * Cache of GUID for this item.
      */
-    @GsonRevision(min=262,lbp3=true)
+    @GsonRevision(min=262, lbp3=true)
     public GUID guid;
 
     /**
@@ -43,7 +44,9 @@ public class InventoryItem implements Serializable {
      * Tutorial related data, see ETutorialLevels
      */
     @GsonRevision(max=875)
-    public int tutorialLevel, tutorialVideo;
+    public TutorialLevel tutorialLevel = TutorialLevel.UNKNOWN;
+    @GsonRevision(max=875)
+    public TutorialLevel tutorialVideo = TutorialLevel.UNKNOWN;
 
     /**
      * State of the item in your inventory,
@@ -73,8 +76,13 @@ public class InventoryItem implements Serializable {
         if (version >= Revisions.ITEM_FLAGS) {
             item.UID = serializer.i32(item.UID, true);
             if (version < Revisions.REMOVE_OLD_LBP1_FIELDS) {
-                item.tutorialLevel = serializer.i32(item.tutorialLevel, true);
-                item.tutorialVideo = serializer.i32(item.tutorialVideo, true);
+                if (serializer.isWriting()) {
+                    serializer.getOutput().i32(item.tutorialLevel.getValue(), true);
+                    serializer.getOutput().i32(item.tutorialVideo.getValue(), true);
+                } else {
+                    item.tutorialLevel = TutorialLevel.fromValue(serializer.getInput().i32(true));
+                    item.tutorialVideo = TutorialLevel.fromValue(serializer.getInput().i32(true));
+                }
             }
             item.flags = serializer.i32(item.flags, true);
             if (version >= Revisions.USER_CATEGORIES)

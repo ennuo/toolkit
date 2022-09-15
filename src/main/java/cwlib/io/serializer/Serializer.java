@@ -18,13 +18,13 @@ import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.util.Bytes;
-import toolkit.utilities.ResourceSystem;
 
 /**
  * Reversible serializer for assets, also handles

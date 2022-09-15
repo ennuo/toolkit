@@ -10,8 +10,11 @@ import cwlib.enums.GameProgressionStatus;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
+import cwlib.enums.TutorialLevel;
+import cwlib.enums.TutorialState;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -43,136 +46,332 @@ public class RLocalProfile implements Compressable, Serializable {
     /**
      * Whether or not this profile was from a production build.
      */
+    @GsonRevision(min=0x3b6)
     public boolean fromProductionBuild = true;
 
-    public HashMap<Integer, Integer> lbp1TutorialStates = new HashMap<>();
+    @GsonRevision(min=0x1e4)
+    public HashMap<TutorialLevel, TutorialState> lbp1TutorialStates = new HashMap<>();
 
+    @GsonRevision(min=0x266)
     public int[] dlcPackViewed, dlcPackShown;
 
+    @GsonRevision(min=0x1e5)
     public int lbp1MainMenuButtonUnlocks;
 
+    @GsonRevision(min=0x16e)
     public ArrayList<PlayedLevelData> playedLevelData;
+    
+    @GsonRevision(min=0x37a)
     public ArrayList<ViewedLevelData> viewedLevelData;
+    @GsonRevision(min=0x37a)
     public ArrayList<ViewedPlayerData> viewedPlayerData;
 
+    @GsonRevision(min=0x16e)
     public HashMap<SlotID, Slot> oldMyMoonSlots = new HashMap<>();
 
+    @GsonRevision(min=0x20e)
     public boolean copiedFromAnotherUser;
+
+    @GsonRevision(min=0x268)
     public boolean fixedUpByDeveloper;
+
+    @GsonRevision(min=0x297)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_SAVEGAME_INFO)
     public boolean showSaveGameInfo;
+    
+    @GsonRevision(min=0x297)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_SAVEGAME_INFO)
     public int totalLevelCount;
+
+    @GsonRevision(min=0x394)
     public int lastMmPicksCount;
+
+    @GsonRevision(min=0x2cc)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_NEWS_TIMESTAMP)
     public long lastNewsItemTimestamp;
+
+    @GsonRevision(min=0x324)
     public long lastStreamEventTimestamp;
+
+    @GsonRevision(min=0x2cd)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_QUEUE)
     public long lolcatFtwTimestamp;
 
+    @GsonRevision(min=0x328)
     public String[] oldTextSearches;
+
     public SlotLink[] oldDiscoveredLinks;
     public SlotLink[] pendingLinks;
     public SlotID lastPlayed = new SlotID();
 
-    public int[] lbp1VideosPlayed, lbp2VideosPlayed;
+    @GsonRevision(min=0x17e)
+    public int[] lbp1VideosPlayed;
+    
+    @GsonRevision(min=0x36c)
+    public int[] lbp2VideosPlayed;
 
-    public PlayerMetrics currentPlayerMetrics, lastPostedPlayerMetrics;
+    @GsonRevision(min=0x170)
+    public PlayerMetrics currentPlayerMetrics;
+    
+    @GsonRevision(min=0x1ac)
+    public PlayerMetrics lastPostedPlayerMetrics;
 
+    @GsonRevision(min=0x1b9)
     public GameProgressionStatus lbp1GameProgressionStatus = GameProgressionStatus.NEW_GAME;
+    
+    @GsonRevision(min=0x1d0)
     public int lbp1GameProgressionEventHappenedBits;
+
+    @GsonRevision(min=0x1d0)
     public int lbp1GameProgressionEventsExplainedBits;
+
+    @GsonRevision(min=0x26d)
     public int demoProgressionStatus;
+
+    @GsonRevision(min=0x36c)
     public int lbp2GameProgressionFlags;
+
+    @GsonRevision(min=0x387)
     public InventoryItem[] pendingInventoryItems;
+
     public ResourceDescriptor podLevel;
 
+    @GsonRevision(min=0x150)
     public NetworkPlayerID playerId;
+
+
+    @GsonRevision(min=0x297)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_SAVEGAME_INFO)
     public NetworkPlayerID ownerPlayerId;
+
+    @GsonRevision(min=0x297)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_SAVEGAME_INFO)
     public OpenPSID ownerPsid;
+
+    @GsonRevision(min=0x2ec)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_OWNER_ID)
     public int ownerUserId;
+
+    @GsonRevision(min=0x176)
     public SHA1 eulaAgreed;
+
+    @GsonRevision(min=0x3d5)
     public NetworkPlayerID acceptingPlayer;
+
     public ResourceDescriptor syncedProfile;
 
+    @GsonRevision(min=0x1a2)
     public NetworkPlayerID[] voipMutedPlayers;
+
+    @GsonRevision(min=0x1a2)
     public boolean voipChatPaused;
+
+    @GsonRevision(min=0x1a2)
     public boolean enableMusicInPlayMode;
+
+    @GsonRevision(min=0x1b5)
     public boolean enableMusicInPod;
 
+    @GsonRevision(min=0x1b6)
     public LegacyInventoryCollection[] legacyInventoryCollections;
+    
+    @GsonRevision(min=0x1b6)
     public InventoryView[] legacyInventoryViews;
 
+    @GsonRevision(min=0x317)
     public InventoryCollection[] inventoryCollections;
 
+    @GsonRevision(min=0x1e1)
     public ResourceDescriptor avatarIcon;
+
+    @GsonRevision(min=0x23d)
     public ResourceDescriptor saveIcon;
 
+    @GsonRevision(min=0x1e6)
     public int lbp1CreateModeVOProgress;
+
+    @GsonRevision(min=0x200)
     public float gamma;
+
+    @GsonRevision(min=0x200)
     public float screenSize;
+
+    @GsonRevision(min=0x35f)
     public boolean hasSeenCalibrationScreen;
-    public long[] lbp1VOPlayed, lbp2VOPlayed;
+
+    @GsonRevision(min=0x206)
+    public long[] lbp1VOPlayed;
+    
+    @GsonRevision(min=0x36c)
+    public long[] lbp2VOPlayed;
+
+    @GsonRevision(min=0x23b)
     public int subtitleMode;
     
+    @GsonRevision(min=0x32f)
     public PinsAwarded pinsAwarded;
 
+    @GsonRevision(min=0x261)
     public boolean userSettingPhotoBooth;
+
+    @GsonRevision(min=0x261)
     public boolean userSettingCollection;
+
+    @GsonRevision(lbp3=true, min=0x17f)
     public boolean userSettingAdvancedEditMode;
+
+    @GsonRevision(min=0x2d3)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_THERMOMETER)
     public boolean showThermometer;
+
+    @GsonRevision(min=0x384)
     public boolean saveOnlinePlaySettings;
+
+    @GsonRevision(min=0x30e)
     public int onlinePlayMode;
+
+    @GsonRevision(min=0x30e)
     public int friendJoinRequestMode;
+
+    @GsonRevision(min=0x30e)
     public int nonFriendJoinRequestMode;
 
+    @GsonRevision(min=0x353)
     public int[] lbp2TutorialsPlayed;
+
+    @GsonRevision(min=0x353)
     public int[] sectionHeadingToggled;
 
+    @GsonRevision(lbp3=true, min=0x20e)
     public int[] mysteryPodEventsSeen;
+
+    @GsonRevision(min=0x367)
     public SHA1[] lastLegacyImportedProfileHashLBP1;
+
+    @GsonRevision(min=0x3f6)
     public SHA1[] lastLegacyImportedProfileHashLBP2;
+
+    @GsonRevision(min=0x36c)
     public boolean playedLBP1;
+
+    @GsonRevision(lbp3=true, min=0x12d)
     public boolean hasPerformedFirstRun;
+
+    @GsonRevision(min=0x3af)
     public boolean lbp2TutorialUnlockButtonUnleashed;
 
+    @GsonRevision(min=0x28c)
     public int[] hiddenCategories;
+
+    @GsonRevision(min=0x2d2)
     public CollectedBubble[] collectedBubbles;
+
+    @GsonRevision(min=0x2f6)
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_WATER_LEVELS)
     public int numWaterLevelsPlayed;
+
+    @GsonRevision(min=0x3d0)
     public boolean autoFilterOn;
+
+    @GsonRevision(min=0x3d3)
     public boolean hasUsed6Axis, hasUsedMove;
+
+    @GsonRevision(min=0x3dc)
     public PaintProperties paintProperties;
 
+    @GsonRevision(min=0x3ef)
+    @GsonRevision(branch=0x4431, min=Revisions.D1_DATALABELS)
     public PlayerDataLabels playerDataLabels;
 
     /* Vita stuff */
 
+    @GsonRevision(branch=0x4431, min=Revisions.D1_3G_CONNECTIVITY)
     public int total3GUpStream, total3GDownStream;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_TOUCH_CREATE)
     public boolean createRearTouchPan, createRearTouchPinchZoom, createRearTapZoom;
+    
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CREATE_WARNING)
     public boolean createFrameRateWarningMessages;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CREATE_BETA)
     public long onlineBetaNetworkTimestamp;
+
+    @GsonRevision(branch=0x4431, min=Revisions.D1_CREATE_BETA)
     public int onlineBetaPlayTimeSinceOnline, onlineBetaBootsSinceOnline;
 
+    @GsonRevision(min=0x3e3)
     public float distanceMovedWhilstAttracted;
+
+    @GsonRevision(min=0x3e5)
     public int beakersUsedPart1, beakersUsedPart2;
+
+    @GsonRevision(min=0x3ec)
     public int profileFlags;
 
+    @GsonRevision(min=0x3f2)
     public byte goldMedalsAwarded, goldMedalStoryArcPins;
+
+    @GsonRevision(min=0x3f3)
     public boolean twitterEnabled, facebookEnabled;
+    @GsonRevision(min=0x3f3)
     public String twitterAccessToken, twitterAccessTokenSecret;
-    public boolean playedLBP2, createChallengeTutorialSeen, playChallengeTutorialSeen;
+    
+    @GsonRevision(min=0x3f4)
+    public boolean playedLBP2;
+
+    @GsonRevision(min=0x3f5)
+    public boolean createChallengeTutorialSeen, playChallengeTutorialSeen;
+    
+    @GsonRevision(min=0x3f8)
     public int ownedLBP;
+
+    @GsonRevision(lbp3=true, min=0xf0)
     public int dceUuidState;
+
+    @GsonRevision(lbp3=true, min=0x15c)
     public boolean lastPlayedPPP;
+
+    @GsonRevision(lbp3=true, min=0x20f)
     public SlotID lastPlayedPlanet;
+
+    @GsonRevision(lbp3=true, min=0x20f)
     public boolean lastPlayedEarthAdv;
+
+    @GsonRevision(lbp3=true, min=0x20f)
     public boolean hasSeenDiveInBetaMessage;
+
+    @GsonRevision(lbp3=true, min=0x184)
     public int touchCreateCursorMode;
+
+    @GsonRevision(lbp3=true, min=0x188)
     public boolean showAdvancedEditModeMessageCounter;
+
+    @GsonRevision(lbp3=true, min=0x195)
     public boolean showAdventureSaveWarning;
+
+    @GsonRevision(lbp3=true, min=0x1a0)
     public int totalFramesInEditMode;
+
+    @GsonRevision(lbp3=true, min=0x1a2)
     public SHA1[] onlineTutorialsPlayed;
+
+    @GsonRevision(lbp3=true, min=0x1a2)
     public SlotID[] popitPuzzlesCompleted;
+
+    @GsonRevision(lbp3=true, min=0x1ab)
     public boolean timesaverNoticeViewed;
+
+    @GsonRevision(lbp3=true, min=0x1ae)
     public int questProgressPin;
+
+    @GsonRevision(lbp3=true, min=0x20a)
     public int[] activityFilterToggled;
+
+    @GsonRevision(lbp3=true, min=0x213)
     public int lastLandingPageFocusItems;
+
+    @GsonRevision(lbp3=true, min=0x216)
     public GoPlayCache[] goPlayCache;
 
 
@@ -202,19 +401,19 @@ public class RLocalProfile implements Compressable, Serializable {
         if (version > 0x1e3) {
             if (serializer.isWriting()) {
                 MemoryOutputStream stream = serializer.getOutput();
-                ArrayList<Integer> keys = new ArrayList<>(profile.lbp1TutorialStates.keySet());
-                keys.sort((l, r) -> l - r);
+                ArrayList<TutorialLevel> keys = new ArrayList<>(profile.lbp1TutorialStates.keySet());
+                keys.sort((l, r) -> l.getValue() - r.getValue());
                 stream.i32(keys.size());
-                for (Integer key : keys) {
-                    stream.i32(key);
-                    stream.i32(profile.lbp1TutorialStates.get(key));
+                for (TutorialLevel key : keys) {
+                    stream.enum32(key);
+                    stream.enum32(profile.lbp1TutorialStates.get(key));
                 }
             } else {
                 MemoryInputStream stream = serializer.getInput();
                 int count = stream.i32();
-                profile.lbp1TutorialStates = new HashMap<Integer, Integer>(count);
+                profile.lbp1TutorialStates = new HashMap<TutorialLevel, TutorialState>(count);
                 for (int i = 0; i < count; ++i)
-                    profile.lbp1TutorialStates.put(stream.i32(), stream.i32());
+                    profile.lbp1TutorialStates.put(stream.enum32(TutorialLevel.class), stream.enum32(TutorialState.class));
             }
         }
 

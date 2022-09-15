@@ -1,6 +1,7 @@
 package toolkit.utilities;
 
 import cwlib.util.Bytes;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
@@ -48,7 +49,7 @@ public class TreeSelectionListener {
             return;
         }
 
-        ResourceSystem.getResourceService().submit(() -> {
+        //ResourceSystem.getResourceService().submit(() -> {
             if (!ResourceSystem.canExtract()) return;
 
             byte[] data = ResourceSystem.extract(entry);
@@ -88,6 +89,6 @@ public class TreeSelectionListener {
             
             if (services.containsKey(magic))
                 ((ResourceService)services.get(magic)).process(tree, entry, data);
-        });
+        //});
     }
 }

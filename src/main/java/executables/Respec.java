@@ -7,12 +7,12 @@ import cwlib.enums.PartHistory;
 import cwlib.io.Compressable;
 import cwlib.io.serializer.Serializer;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
-import toolkit.utilities.ResourceSystem;
 
 public class Respec {
     public static void main(String[] args) {

@@ -8,6 +8,7 @@ import cwlib.types.data.ResourceInfo;
 import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.enums.ResourceType;
 import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RPlan;
@@ -18,7 +19,6 @@ import cwlib.types.swing.FileNode;
 import cwlib.util.Bytes;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;

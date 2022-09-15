@@ -1,10 +1,10 @@
 package toolkit.functions;
 
 import cwlib.util.FileIO;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.save.BigSave;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;

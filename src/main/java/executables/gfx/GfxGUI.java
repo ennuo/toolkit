@@ -49,6 +49,7 @@ public class GfxGUI extends javax.swing.JFrame {
     }
     
     private static final File SCE_CGC = new File(Config.jarDirectory, "sce/sce-cgc.exe");
+    private static final File SCE_PSSLC = new File(Config.jarDirectory, "sce/orbis-wave-psslc.exe");
     
     private RGfxMaterial gmat;
     
@@ -490,7 +491,7 @@ public class GfxGUI extends javax.swing.JFrame {
 
         gameLabel.setText("Game:");
 
-        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1", "LBP2" }));
+        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1", "LBP2/3", "LBP3 PS4" }));
         gameComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 gameComboBoxActionPerformed(evt);
@@ -700,7 +701,13 @@ public class GfxGUI extends javax.swing.JFrame {
             return;
         }
         
-        boolean isLBP2 = this.gameComboBox.getSelectedIndex() == 1;
+        boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0;
+        boolean isPS4 = this.gameComboBox.getSelectedIndex() == 2;
+        
+        if (isPS4 && !SCE_PSSLC.exists()) {
+            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-PSSL compiler! Cannot compile! (Expected location is %s)", SCE_PSSLC.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
         int flags = 0;
         if (this.receiveShadowCheckbox.isSelected()) flags |= GfxMaterialFlags.RECEIVE_SHADOWS;
@@ -729,7 +736,7 @@ public class GfxGUI extends javax.swing.JFrame {
             this.gmat.alphaMode = (byte) this.alphaModeCombo.getSelectedIndex();
         
         this.gmat.shaders = new byte[isLBP2 ? 10 : 4][];
-        try { CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, isLBP2); }
+        try { CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, isLBP2, isPS4); }
         catch (Exception ex) {
             new ErrorDialogue(this, true, "An error occurred while compiling BRDF shader.", ex.getMessage());
             return;
@@ -776,7 +783,7 @@ public class GfxGUI extends javax.swing.JFrame {
 
     private void gameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gameComboBoxActionPerformed
         int index = this.gameComboBox.getSelectedIndex();
-        boolean isLBP2 = index == 1;
+        boolean isLBP2 = index > 0;
         this.alphaClipCheckbox.setEnabled(isLBP2);
         this.alphaModeCombo.setEnabled(isLBP2);
     }//GEN-LAST:event_gameComboBoxActionPerformed

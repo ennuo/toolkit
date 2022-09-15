@@ -23,7 +23,6 @@ import de.javagl.jgltf.impl.v2.Skin;
 import de.javagl.jgltf.impl.v2.TextureInfo;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
-import toolkit.utilities.ResourceSystem;
 import cwlib.util.Bytes;
 import cwlib.enums.BoxType;
 import cwlib.io.streams.MemoryOutputStream;
@@ -33,6 +32,7 @@ import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
 import cwlib.resources.RAnimation.AnimationType;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
@@ -912,7 +912,7 @@ public class MeshExporter {
         }
         
         private byte[] getBufferFromMesh(RStaticMesh mesh) {
-            MemoryOutputStream output = new MemoryOutputStream(mesh.numVerts * 0x40 + ((mesh.numVerts - 1) * 0x8));
+            MemoryOutputStream output = new MemoryOutputStream(mesh.getNumVerts() * 0x40 + ((mesh.getNumVerts() - 1) * 0x8));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices()) {

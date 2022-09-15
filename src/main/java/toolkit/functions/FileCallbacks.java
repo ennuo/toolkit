@@ -1,9 +1,9 @@
 package toolkit.functions;
 
 import cwlib.types.swing.FileData;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.archives.Fart;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.io.File;

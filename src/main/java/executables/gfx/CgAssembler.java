@@ -91,6 +91,8 @@ public class CgAssembler {
 
     public static final int GLASSY = (1 << 14);
 
+    public static final int ORBIS = (1 << 15);
+
     public static final int[] LBP2_FLAGS = {
         BAKED_AO | BAKED_SHADOWS,
         SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO | DECALS,
@@ -113,28 +115,29 @@ public class CgAssembler {
         LEGACY | WATER_TWEAKS
     };
 
-    public static final int MATERIAL_FLAGS = 
-        NORMAL | SPECULAR | REFRACT | GLASSY;
-
-    public static byte[] compileShaderVariant(String shader, int index, boolean legacy) {
+    public static byte[] compileShaderVariant(String shader, int index, boolean legacy, boolean orbis) {
         int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
-        flags |= MATERIAL_FLAGS;
+        if (orbis) {
+            if ((flags & DECALS) != 0) flags = ORBIS | DECALS;
+            else flags = ORBIS;
+        }
         shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
-        return GfxAssembler.getShader(shader, !legacy);
+        return GfxAssembler.getShader(shader, !legacy, orbis);
     }
 
-    public static void compile(String template, RGfxMaterial gmat, boolean cgb) {
+    public static void compile(String template, RGfxMaterial gmat, boolean cgb, boolean orbis) {
         HashSet<Long> pool = new HashSet<>();
         for (int i = 0; i < gmat.shaders.length; ++i) {
-            gmat.shaders[i] = compileShaderVariant(template, i, !cgb);
+            gmat.shaders[i] = compileShaderVariant(template, i, !cgb, orbis);
             long[] code = getBytecode(gmat.shaders[i]);
             for (long c : code)
                 pool.add(c);
         }
+
         ArrayList<Long> code = new ArrayList<>(pool);
         code.sort((l, r) -> Long.compareUnsigned(l, r));
 
-        if (cgb) {
+        if (cgb && !orbis) {
             for (int i = 0; i < gmat.shaders.length; ++i)
                 gmat.shaders[i] = convert(gmat.shaders[i], code);
             MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);

@@ -2,11 +2,11 @@ package toolkit.functions;
 
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 import toolkit.windows.managers.ModManager;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;

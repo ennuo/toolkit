@@ -1,9 +1,9 @@
 package toolkit.functions;
 
 import cwlib.io.serializer.SerializationData;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
-import toolkit.utilities.ResourceSystem;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.Bytes;
 

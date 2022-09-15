@@ -3,10 +3,10 @@ package toolkit;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 
+import cwlib.singleton.ResourceSystem;
 import executables.Jsoninator;
 import executables.gfx.GfxGUI;
 import toolkit.configurations.Config;
-import toolkit.utilities.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.awt.EventQueue;

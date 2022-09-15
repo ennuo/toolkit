@@ -8,6 +8,7 @@ import java.util.zip.CRC32;
 
 import cwlib.enums.Part;
 import cwlib.resources.RLevel;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.Decoration;
 import cwlib.structs.things.components.decals.Decal;
@@ -16,7 +17,6 @@ import cwlib.types.Resource;
 import cwlib.types.data.GUID;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
-import toolkit.utilities.ResourceSystem;
 
 public class Descriptor {
     private static final HashMap<Long, GUID> CRC_LOOKUP = new HashMap<>();

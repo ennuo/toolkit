@@ -13,6 +13,7 @@ import cwlib.types.swing.FileNode;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.util.Nodes;
+import cwlib.util.Strings;
 import cwlib.types.swing.SearchParameters;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.SaveArchive;
@@ -20,6 +21,7 @@ import cwlib.ex.SerializationException;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
@@ -2120,48 +2122,38 @@ public class Toolkit extends javax.swing.JFrame {
     private void renameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameFolderActionPerformed
         FileNode node = ResourceSystem.getSelected();
         FileNode[] selected = ResourceSystem.getAllSelected();
-        String parent = node.getPath() + node.getName();
+        String parent = node.getFilePath() + node.getName();
         
         String newFolder = JOptionPane.showInputDialog(Toolkit.instance, "Folder", parent);
         if (newFolder == null) return;
-        newFolder = newFolder.replace("\\", "/");
-        if (newFolder.endsWith("/"))
-            newFolder = newFolder.substring(0, newFolder.length() - 1);
+        newFolder = Strings.cleanupPath(newFolder);
         if (newFolder == parent) return;
         
-        FileData database = node.getEntry().getSource();
-        FileNode lastNode = null;
+        FileData database = node.getSource();
+        
         for (FileNode child : selected) {
             if (child == node) continue;
-            if (child.getEntry() != null) {
-                node.move(newFolder);
+            FileEntry entry = child.getEntry();
+            if (entry != null) {
+                entry.setFolder(newFolder);
                 lastNode = node;
             }
             else node.removeFromParent(); 
         }
 
-        boolean foundParent = false;
-        FileNode theParent = lastNode;
-        while (theParent != null) {
-            theParent = (FileNode) theParent.getParent();
-            if (theParent == node)
-                foundParent = true;
-        }
-        if (!foundParent) {
-            node.removeAllChildren();
-            node.removeFromParent();
-        }
-        
+
+
+
         database.setHasChanges();
 
-        JTree tree = node.getEntry().getSource().getTree();
-        TreePath treePath = new TreePath(((FileNode) lastNode.getParent()).getPath());
+        // JTree tree = node.getSource().getTree();
+        // TreePath treePath = new TreePath(((FileNode) lastNode.getParent()).getPath());
         
-        FileModel m = (FileModel) tree.getModel();
+        FileModel m = (FileModel) node.getSource().getTree().getModel();
         m.reload((FileNode) m.getRoot());
 
-        tree.setSelectionPath(treePath);
-        tree.scrollPathToVisible(treePath);
+        // tree.setSelectionPath(treePath);
+        // tree.scrollPathToVisible(treePath);
 
         Toolkit.instance.updateWorkspace();
     }//GEN-LAST:event_renameFolderActionPerformed

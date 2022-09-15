@@ -1,11 +1,11 @@
 package cwlib.structs.inventory;
 
 import cwlib.resources.RTranslationTable;
+import cwlib.singleton.ResourceSystem;
 import cwlib.enums.Branch;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.types.data.ResourceDescriptor;
-import toolkit.utilities.ResourceSystem;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SlotType;

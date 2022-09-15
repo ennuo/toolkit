@@ -1,11 +1,12 @@
 package cwlib.types.databases;
 
 import cwlib.enums.ResourceKeys;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
-import toolkit.utilities.ResourceSystem;
+import cwlib.util.Strings;
 
 public abstract class FileEntry {
     /**
@@ -86,13 +87,66 @@ public abstract class FileEntry {
     public Object getKey() { return this.key; }
     public ResourceInfo getInfo() { return this.info; }
 
+    /**
+     * Gets the name component of path.
+     * @return Entry name
+     */
+    public String getName() {
+        int index = this.path.lastIndexOf("/");
+        if (index == -1) return this.path;
+        return this.path.substring(index + 1, this.path.length());
+    }
+
+    /**
+     * Gets the folder component of the path.
+     * @return Folder name
+     */
+    public String getFolder() {
+        int index = this.path.lastIndexOf("/");
+        if (index == -1) return "";
+        return this.path.substring(0, index) + "/";
+    }
+
+    /**
+     * Sets the path of this entry, as well as updating the node if it exists.
+     * @param path New path
+     */
     public void setPath(String path) {
         // Null strings are annoying, plus it works functionally the same anyway.
         if (path == null) path = "";
+        path = Strings.cleanupPath(path);
         if (path.equals(this.path)) return;
 
         this.path = path;
+        if (this.node != null) 
+            this.node.update();
+        
         this.source.setHasChanges();
+    }
+
+    /**
+     * Sets the name component of this entry's path, as well as updating the node if it exists.
+     * @param name New path name
+     */
+    public void setName(String name) {
+        this.setPath(this.getFolder() + name);
+    }
+
+    /**
+     * Sets the folder component of this entry's path, as well as updating the node if it exists.
+     * @param name New path folder
+     */
+    public void setFolder(String folder) {
+        if (folder == null) folder = "";
+        if (!folder.endsWith("/")) folder += "/";
+        int index = this.path.lastIndexOf("/");
+        if (index == -1) {
+            this.setPath(folder + this.path);
+            return;
+        }
+        this.setPath(
+            folder + this.path.substring(index, this.path.length())
+        );
     }
 
     public void setSHA1(SHA1 sha1) {

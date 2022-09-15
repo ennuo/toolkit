@@ -1,10 +1,10 @@
 package toolkit.windows.managers;
 
 import cwlib.ex.SerializationException;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.FileArchive;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
 
 import java.io.File;
 import javax.swing.DefaultListModel;

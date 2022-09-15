@@ -3,7 +3,7 @@ package toolkit.functions;
 import cwlib.util.FileIO;
 import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
-import toolkit.utilities.ResourceSystem;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.databases.FileEntry;
 

@@ -9,6 +9,11 @@ import javax.swing.tree.TreeNode;
 
 public class FileNode extends DefaultMutableTreeNode {
     /**
+     * Associated file database.
+     */
+    private final FileData source;
+
+    /**
      * Associated file entry
      */
     private final FileEntry entry;
@@ -23,10 +28,11 @@ public class FileNode extends DefaultMutableTreeNode {
      */
     private boolean visible = true;
 
-    public FileNode(String name, String path, FileEntry entry) {
+    public FileNode(String name, String path, FileEntry entry, FileData source) {
         super(name);
         this.entry = entry;
         this.path = path;
+        this.source = source;
     }
 
     public FileNode getChildAt(int index, boolean isFiltered) {
@@ -60,24 +66,28 @@ public class FileNode extends DefaultMutableTreeNode {
         return count;
     }
 
-    public void move(String folder) {
-        if (folder.endsWith("/")) folder = folder.substring(0, folder.length() - 1);
-        FileNode node = Nodes.addFolder((FileNode) this.getRoot(), folder);
-        this.removeFromParent();
+    /**
+     * Resets this node's position and header based on attached entry.
+     */
+    public void update() {
+        this.userObject = this.entry.getName();
 
+        String folder = this.entry.getFolder();
         this.path = folder;
-        if (!folder.endsWith("/")) this.path += "/";
-
-        this.getEntry().setPath(this.path + this.getName());
         
-        this.setParent(node);
-    }
+        FileNode node = Nodes.addFolder((FileNode) this.getRoot(), folder);
+        if (node == this.parent) return;
 
+        this.removeFromParent();
+        node.insert(this, node.getChildCount());
+    }
+    
     public void delete() {
         if (this.parent != null) 
             this.removeFromParent();
     }
 
+    public FileData getSource() { return this.source; }
     public FileEntry getEntry() { return this.entry; }
     public String getFilePath() { return this.path; }
     public String getName() { return (String) this.userObject; }

@@ -87,4 +87,20 @@ public final class Strings {
         if (guid == null || guid.isEmpty()) return false;
         return GUID_REGEX.matcher(guid).matches() || HEX_GUID_REGEX.matcher(guid).matches();
     }
+
+    /**
+     * Cleans up a filepath string for consistency.
+     * @param path Path string
+     * @return Sanitized path
+     */
+    public static final String cleanupPath(String path) {
+        if (path == null) return null;
+        path = path.trim();
+        path = path.replaceAll("\\\\", "/");
+        if (path.startsWith("/"))
+            path = path.substring(1);
+        if (path.endsWith("/"))
+            path = path.substring(0, path.length() - 1);
+        return path;
+    }
 }

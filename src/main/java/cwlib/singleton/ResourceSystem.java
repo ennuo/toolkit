@@ -1,4 +1,4 @@
-package toolkit.utilities;
+package cwlib.singleton;
 
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -184,6 +184,7 @@ public class ResourceSystem {
     public static boolean add(byte[] data) { 
         return ResourceSystem.add(data, ResourceSystem.selectedDatabase); 
     }
+    
     public static boolean add(byte[] data, FileData database) {
         if (database.getType().containsData() && !database.getType().hasGUIDs()) {
             database.add(data);
