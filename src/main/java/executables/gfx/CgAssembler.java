@@ -117,10 +117,7 @@ public class CgAssembler {
 
     public static byte[] compileShaderVariant(String shader, int index, boolean legacy, boolean orbis) {
         int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
-        if (orbis) {
-            if ((flags & DECALS) != 0) flags = ORBIS | DECALS;
-            else flags = ORBIS;
-        }
+        if (orbis) flags |= ORBIS;
         shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
         return GfxAssembler.getShader(shader, !legacy, orbis);
     }

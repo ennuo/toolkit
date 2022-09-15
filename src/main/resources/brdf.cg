@@ -67,8 +67,9 @@
 #else
     #define SAMPLE_2D(sampler, uv) tex2D(sampler, uv)
     #define SAMPLE_3D(sampler, uv) tex3D(sampler, uv)
-    #define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, uv, locd)
+    #define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, locd)
     #define SAMPLE_2D_PROJ(sampler, value) tex2Dproj(sampler, value)
+    #define SAMPLE_2D_BIAS(sampler, uv, blur) tex2Dbias(sampler, uv, blur)
 
     #define CREATE_SAMPLER_2D(name, index) sampler2D name: TEXUNIT##index
     #define CREATE_SAMPLER_3D(name, index) sampler3D name: TEXUNIT##index
