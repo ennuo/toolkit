@@ -37,16 +37,18 @@ public class ResourceSystem {
     public static final FileNode[] CACHE = new FileNode[MAX_CACHE_ENTRIES];
     public static int CACHE_INDEX = 0;
 
-    public static void addCache(FileNode node) {
-        if (CACHE_INDEX == MAX_CACHE_ENTRIES) {
-            ResourceSystem.println("Clearing cache");
-            for (int i = 0; i < MAX_CACHE_ENTRIES; ++i) {
-                CACHE[i].getEntry().setInfo(null);
-                CACHE[i] = null;
-            }
-            CACHE_INDEX = 0;
+    public static void clearCache() {
+        ResourceSystem.println("Clearing cache");
+        for (int i = 0; i < MAX_CACHE_ENTRIES; ++i) {
+            CACHE[i].getEntry().setInfo(null);
+            CACHE[i] = null;
         }
+        CACHE_INDEX = 0;
+    }
 
+    public static void addCache(FileNode node) {
+        if (CACHE_INDEX == MAX_CACHE_ENTRIES)
+            clearCache();
         int index = CACHE_INDEX++;
         CACHE[index] = node;   
     }
@@ -91,6 +93,7 @@ public class ResourceSystem {
     
     public static void reset() {
         ResourceSystem.databaseType = DatabaseType.NONE;
+        ResourceSystem.selectedDatabase = null;
 
         ResourceSystem.selected.clear();
         ResourceSystem.lastSelected = null;
