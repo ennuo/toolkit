@@ -53,7 +53,11 @@ public final class Strings {
      * @return SHA1 hash from string.
      */
     public static final SHA1 getSHA1(String hash) {
-        if (hash == null || hash.isEmpty() || !Strings.isSHA1(hash)) return null;
+        if (hash == null || hash.isEmpty()) return null;
+        hash = hash.replaceAll("\\s", "");
+        if (hash.startsWith("h"))
+            hash = hash.substring(1);
+        if (!Strings.isSHA1(hash)) return null;
         return new SHA1(hash);
     }
 

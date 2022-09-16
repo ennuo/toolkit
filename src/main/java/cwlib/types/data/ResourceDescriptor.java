@@ -25,13 +25,12 @@ public final class ResourceDescriptor {
      * @param type
      */
     public ResourceDescriptor(String resource, ResourceType type) {
-        if (Strings.isGUID(resource)) {
-            this.guid = new GUID(Strings.getLong(resource));
-            this.sha1 = null;
-        }
-        else if (Strings.isSHA1(resource)) {
+        if (Strings.isSHA1(resource)) {
             this.sha1 = Strings.getSHA1(resource);
             this.guid = null;
+        } else if (Strings.isGUID(resource)) {
+            this.guid = new GUID(Strings.getLong(resource));
+            this.sha1 = null;
         }
         else throw new IllegalArgumentException("Invalid resource reference passed into resource reference!");
 
