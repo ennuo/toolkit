@@ -1,18 +1,14 @@
 package toolkit.functions;
 
-import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
-import cwlib.types.Resource;
-import cwlib.enums.ResourceType;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
-import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;

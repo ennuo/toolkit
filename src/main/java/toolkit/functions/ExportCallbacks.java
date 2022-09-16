@@ -3,7 +3,11 @@ package toolkit.functions;
 import cwlib.resources.RAnimation;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.FileIO;
+import cwlib.util.Resources;
 import cwlib.types.Resource;
+import cwlib.types.data.GUID;
+import cwlib.types.data.GatherData;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
 import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
@@ -13,6 +17,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RPlan;
 import cwlib.resources.RStaticMesh;
+import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileNode;
@@ -181,34 +186,44 @@ public class ExportCallbacks {
 
     public static void exportMod(boolean hashinate) {
         FileEntry entry = ResourceSystem.getSelected().getEntry();
-        String name = Paths.get(ResourceSystem.getSelected().getEntry().path).getFileName().toString();
-        RPlan item = ResourceSystem.getSelected().getEntry().getResource("item");
-        if (item != null)
-            name = name.substring(0, name.length() - 5);
-        else name = name.substring(0, name.length() - 4);
+        String name = entry.getName();
+        name = name.substring(0, name.lastIndexOf("."));
+
+        RPlan item = entry.getInfo().getResource();
+        if (item == null) return;
 
         File file = FileChooser.openFile(name + ".mod", "mod", true);
         if (file == null) return;
 
-        Resource resource = new Resource(ResourceSystem.extract(entry));
+        byte[] data = ResourceSystem.extract(entry);
         Mod mod = new Mod();
-        if (hashinate)
-            Bytes.hashinate(mod, resource, entry);
-        else Bytes.getAllDependencies(mod, resource, entry);
+        //if (hashinate)
+        //    Bytes.hashinate(mod, resource, entry);
+        // else Bytes.getAllDependencies(mod, resource, entry);
 
-        mod.config.title = name;
-        
-        if (file.exists()) {
-            int result = JOptionPane.showConfirmDialog(null, "This mod already exists, do you want to merge them?", "Existing mod!", JOptionPane.YES_NO_CANCEL_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                Mod oldMod = ModCallbacks.loadMod(file);
-                if (oldMod != null) {
-                    for (FileEntry e: oldMod.entries)
-                        mod.add(e.path, e.data, e.GUID);
-                }
-            } else if (result != JOptionPane.NO_OPTION) return;
+        if (hashinate) {
+
+        } else {
+            GatherData[] gatherables = Resources.collect(data, new ResourceDescriptor((GUID) entry.getKey(), ResourceType.PLAN));
+            for (GatherData gatherable : gatherables) {
+                if (mod.get(gatherable.getGUID()) == null)
+                    mod.add(gatherable.getPath(), gatherable.getData(), gatherable.getGUID());
+            }
         }
 
-        mod.save(file.getAbsolutePath());
+        mod.getConfig().title = name;
+        
+        // if (file.exists()) {
+        //     int result = JOptionPane.showConfirmDialog(null, "This mod already exists, do you want to merge them?", "Existing mod!", JOptionPane.YES_NO_CANCEL_OPTION);
+        //     if (result == JOptionPane.YES_OPTION) {
+        //         Mod oldMod = ModCallbacks.loadMod(file);
+        //         if (oldMod != null) {
+        //             for (FileDBRow row: oldMod)
+        //                 mod.add(e.path, e.data, e.GUID);
+        //         }
+        //     } else if (result != JOptionPane.NO_OPTION) return;
+        // }
+
+        mod.save(file);
     }
 }

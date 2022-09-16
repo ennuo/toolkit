@@ -96,7 +96,7 @@ public class Resources {
             Resources.collect(
                 entries, 
                 ResourceSystem.extract(dependency), 
-                descriptor
+                dependency
             );
         }
 

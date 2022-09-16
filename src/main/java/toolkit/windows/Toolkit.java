@@ -2134,16 +2134,11 @@ public class Toolkit extends javax.swing.JFrame {
         for (FileNode child : selected) {
             if (child == node) continue;
             FileEntry entry = child.getEntry();
-            if (entry != null) {
+            if (entry != null)
                 entry.setFolder(newFolder);
-                lastNode = node;
-            }
             else node.removeFromParent(); 
         }
-
-
-
-
+        
         database.setHasChanges();
 
         // JTree tree = node.getSource().getTree();
