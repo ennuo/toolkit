@@ -2,14 +2,18 @@ package cwlib.structs.things.components.script;
 
 import java.util.EnumSet;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.BuiltinType;
 import cwlib.enums.MachineType;
 import cwlib.enums.ModifierType;
 import cwlib.enums.ScriptObjectType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.FieldSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
+@JsonAdapter(FieldSerializer.class)
 public class FieldLayoutDetails implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 

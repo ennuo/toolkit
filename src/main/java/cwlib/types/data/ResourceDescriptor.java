@@ -1,7 +1,10 @@
 package cwlib.types.data;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.ResourceFlags;
 import cwlib.enums.ResourceType;
+import cwlib.io.gson.ResourceSerializer;
 import cwlib.util.Strings;
 
 /**
@@ -9,6 +12,7 @@ import cwlib.util.Strings;
  * the UGC/Profile caches and data archives,
  * or the FileDB.
  */
+@JsonAdapter(ResourceSerializer.class)
 public final class ResourceDescriptor {
     private final ResourceType type;
     private final GUID guid;

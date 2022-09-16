@@ -1,8 +1,12 @@
 package cwlib.types.data;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.io.Serializable;
+import cwlib.io.gson.NetworkPlayerIDSerializer;
 import cwlib.io.serializer.Serializer;
 
+@JsonAdapter(NetworkPlayerIDSerializer.class)
 public class NetworkPlayerID implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = NetworkOnlineID.BASE_ALLOCATION_SIZE + 0x10;
 

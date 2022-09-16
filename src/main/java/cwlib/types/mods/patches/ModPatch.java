@@ -1,7 +1,11 @@
 package cwlib.types.mods.patches;
 
-import cwlib.enums.PatchType;
+import com.google.gson.annotations.JsonAdapter;
 
+import cwlib.enums.PatchType;
+import cwlib.io.gson.PatchSerializer;
+
+@JsonAdapter(PatchSerializer.class)
 public abstract class ModPatch {
     private PatchType type;
     private String name;

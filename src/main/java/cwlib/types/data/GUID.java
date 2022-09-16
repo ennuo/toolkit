@@ -1,11 +1,16 @@
 package cwlib.types.data;
 
+import com.google.gson.annotations.JsonAdapter;
+
+import cwlib.io.gson.GUIDSerializer;
+
 /**
  * Used to represent unique identifiers for resources in-game,
  * due to Java being a signed language, it's not optimal to use
  * integers to represent them, and if longs were used, it brings the
  * possibility of overflowing the data.
  */
+@JsonAdapter(GUIDSerializer.class)
 public final class GUID {
     /**
      * The serialized representation of a GUID is a uint32_t, so the

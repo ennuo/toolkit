@@ -13,38 +13,15 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import cwlib.io.gson.GUIDSerializer;
-import cwlib.io.gson.ResourceSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.gson.GsonRevisions;
 import cwlib.io.gson.Matrix4fSerializer;
-import cwlib.io.gson.NetworkOnlineIDSerializer;
-import cwlib.io.gson.NetworkPlayerIDSerializer;
-import cwlib.io.gson.PatchSerializer;
-import cwlib.io.gson.SHA1Serializer;
-import cwlib.io.gson.ScriptObjectSerializer;
-import cwlib.io.gson.SlotIDSerializer;
-import cwlib.io.gson.ThingSerializer;
 import cwlib.io.gson.Vector2fSerializer;
 import cwlib.io.gson.Vector3fSerializer;
 import cwlib.io.gson.Vector4fSerializer;
-import cwlib.io.gson.WrappedResourceSerializer;
 import cwlib.enums.Branch;
-import cwlib.io.gson.CreationHistorySerializer;
-import cwlib.io.gson.FieldSerializer;
-import cwlib.types.data.NetworkOnlineID;
-import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.Revision;
-import cwlib.types.data.ResourceDescriptor;
-import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.components.script.FieldLayoutDetails;
-import cwlib.structs.things.components.script.ScriptObject;
-import cwlib.types.data.GUID;
-import cwlib.types.data.SHA1;
-import cwlib.types.mods.patches.ModPatch;
-import executables.Jsoninator.WrappedResource;
-import cwlib.structs.inventory.CreationHistory;
 
 public final class GsonUtils {
     public static Revision REVISION = new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision());
@@ -95,22 +72,10 @@ public final class GsonUtils {
                 return false;
             }   
         })
-        .registerTypeAdapter(CreationHistory.class, new CreationHistorySerializer())
-        .registerTypeAdapter(ModPatch.class, new PatchSerializer())
         .registerTypeAdapter(Vector2f.class, new Vector2fSerializer())
         .registerTypeAdapter(Vector3f.class, new Vector3fSerializer())
         .registerTypeAdapter(Vector4f.class, new Vector4fSerializer())
         .registerTypeAdapter(Matrix4f.class, new Matrix4fSerializer())
-        .registerTypeAdapter(SHA1.class, new SHA1Serializer())
-        .registerTypeAdapter(SlotID.class, new SlotIDSerializer())
-        .registerTypeAdapter(GUID.class, new GUIDSerializer())
-        .registerTypeAdapter(NetworkPlayerID.class, new NetworkPlayerIDSerializer())
-        .registerTypeAdapter(NetworkOnlineID.class, new NetworkOnlineIDSerializer())
-        .registerTypeAdapter(Thing.class, new ThingSerializer())
-        .registerTypeAdapter(ResourceDescriptor.class, new ResourceSerializer())
-        .registerTypeAdapter(FieldLayoutDetails.class, new FieldSerializer())
-        .registerTypeAdapter(WrappedResource.class, new WrappedResourceSerializer())
-        .registerTypeAdapter(ScriptObject.class, new ScriptObjectSerializer())
         .create();
 
     /**

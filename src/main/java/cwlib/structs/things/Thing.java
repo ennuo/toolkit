@@ -2,12 +2,15 @@ package cwlib.structs.things;
 
 import java.util.Arrays;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.Branch;
 import cwlib.enums.Part;
 import cwlib.enums.PartHistory;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.parts.PJoint;
@@ -18,6 +21,7 @@ import cwlib.util.Bytes;
 /**
  * Represents an object in the game world.
  */
+@JsonAdapter(ThingSerializer.class)
 public class Thing implements Serializable {
     public static boolean SERIALIZE_WORLD_THING = true;
     public static int MAX_PARTS_REVISION = PartHistory.STREAMING_HINT;

@@ -2,14 +2,18 @@ package cwlib.structs.things.components.script;
 
 import org.joml.Vector4f;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.ResourceType;
 import cwlib.enums.ScriptObjectType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.ScriptObjectSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 
+@JsonAdapter(ScriptObjectSerializer.class)
 public class ScriptObject implements Serializable {
     public ScriptObjectType type = ScriptObjectType.NULL;
     public Object value;

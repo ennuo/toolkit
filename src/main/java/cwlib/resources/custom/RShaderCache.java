@@ -17,7 +17,7 @@ import cwlib.types.data.Revision;
 public class RShaderCache implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
 
-    @GsonRevision(min=2,branch=0x4d5a)
+    @GsonRevision(branch=0x4d5a, min=Revisions.MZ_CGC_ORBIS)
     private boolean orbis;
     
     private ArrayList<CachedShader> shaders = new ArrayList<>();

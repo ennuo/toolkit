@@ -1,5 +1,8 @@
 package cwlib.types.data;
 
+import com.google.gson.annotations.JsonAdapter;
+
+import cwlib.io.gson.SHA1Serializer;
 import cwlib.util.Bytes;
 import cwlib.util.Crypto;
 
@@ -7,6 +10,7 @@ import cwlib.util.Crypto;
  * Encapsulates a fixed size byte array to 
  * represent a SHA1 hash.
  */
+@JsonAdapter(SHA1Serializer.class)
 public final class SHA1 {
     public static final SHA1 EMPTY = new SHA1();
     

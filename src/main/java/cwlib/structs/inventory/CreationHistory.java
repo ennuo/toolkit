@@ -1,6 +1,9 @@
 package cwlib.structs.inventory;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.io.Serializable;
+import cwlib.io.gson.CreationHistorySerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -9,6 +12,7 @@ import cwlib.io.streams.MemoryOutputStream;
  * Represents all the users who have had
  * some form of contribution to this resource.
  */
+@JsonAdapter(CreationHistorySerializer.class)
 public class CreationHistory implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x4;
 

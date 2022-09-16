@@ -1,12 +1,16 @@
 package cwlib.structs.slot;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.SlotType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.SlotIDSerializer;
 import cwlib.io.serializer.Serializer;
 
 /**
  * This structure represents a reference to a slot.
  */
+@JsonAdapter(SlotIDSerializer.class)
 public class SlotID implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 

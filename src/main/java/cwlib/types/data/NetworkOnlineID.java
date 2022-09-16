@@ -1,9 +1,13 @@
 package cwlib.types.data;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.NetworkOnlineIDSerializer;
 import cwlib.io.serializer.Serializer;
 import java.nio.charset.StandardCharsets;
 
+import com.google.gson.annotations.JsonAdapter;
+
+@JsonAdapter(NetworkOnlineIDSerializer.class)
 public class NetworkOnlineID implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
