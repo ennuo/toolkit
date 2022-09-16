@@ -1,7 +1,6 @@
 package toolkit.functions;
 
 import cwlib.resources.RAnimation;
-import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.FileIO;
 import cwlib.util.Resources;
 import cwlib.types.Resource;
@@ -17,18 +16,15 @@ import cwlib.enums.ResourceType;
 import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RPlan;
 import cwlib.resources.RStaticMesh;
-import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileNode;
-import cwlib.util.Bytes;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
@@ -197,18 +193,16 @@ public class ExportCallbacks {
 
         byte[] data = ResourceSystem.extract(entry);
         Mod mod = new Mod();
-        //if (hashinate)
-        //    Bytes.hashinate(mod, resource, entry);
-        // else Bytes.getAllDependencies(mod, resource, entry);
 
-        if (hashinate) {
+        GatherData[] gatherables = null;
+        if (hashinate)
+            gatherables = Resources.hashinate(data, new ResourceDescriptor((GUID) entry.getKey(), ResourceType.PLAN));
+        else
+            gatherables = Resources.collect(data, new ResourceDescriptor((GUID) entry.getKey(), ResourceType.PLAN));
 
-        } else {
-            GatherData[] gatherables = Resources.collect(data, new ResourceDescriptor((GUID) entry.getKey(), ResourceType.PLAN));
-            for (GatherData gatherable : gatherables) {
-                if (mod.get(gatherable.getGUID()) == null)
-                    mod.add(gatherable.getPath(), gatherable.getData(), gatherable.getGUID());
-            }
+        for (GatherData gatherable : gatherables) {
+            if (mod.get(gatherable.getGUID()) == null)
+                mod.add(gatherable.getPath(), gatherable.getData(), gatherable.getGUID());
         }
 
         mod.getConfig().title = name;

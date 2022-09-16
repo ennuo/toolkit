@@ -9,6 +9,7 @@ import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.singleton.ResourceSystem;
+import cwlib.types.Resource;
 import cwlib.types.data.GatherData;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
@@ -111,5 +112,67 @@ public class Resources {
             path = String.format("bundles/resources/%s/%s%s", descriptor.getType().toString().toLowerCase(), sha1, descriptor.getType().getExtension());
 
         entries.add(new GatherData(path, descriptor.getGUID(), sha1, root));
+    }
+
+    /**
+     * Main recursive function handling the gathering of all dependency data, 
+     * as well as replacing all dependencies with hashes.
+     * @param root Resource to hashinate
+     * @param descriptor Descriptor of root resource
+     * @return All gathered dependency data
+     */
+    public static GatherData[] hashinate(byte[] root, ResourceDescriptor descriptor) {
+        ArrayList<GatherData> entries = new ArrayList<>();
+        Resources.hashinate(entries, root, descriptor);
+        return entries.toArray(GatherData[]::new);
+    }
+
+    /**
+     * Main recursive function handling the gathering of all dependency data, 
+     * as well as replacing all dependencies with hashes.
+     * @param entries Entry collection to add data to
+     * @param root Resource to hashinate
+     * @param descriptor Descriptor of root resource
+     * @return SHA1 of resource
+     */
+    private static SHA1 hashinate(ArrayList<GatherData> entries, byte[] root, ResourceDescriptor descriptor) {
+        if (root == null) return SHA1.EMPTY;
+
+        if (root.length > 4) {
+            ResourceType type = ResourceType.fromMagic(new String(new byte[] { root[0], root[1], root[2] }));
+            SerializationType method = SerializationType.fromValue(Character.toString((char) root[3]));
+            if (type != ResourceType.INVALID && method == SerializationType.BINARY) {
+                Resource resource = new Resource(root);
+                for (ResourceDescriptor dependency : resource.getDependencies()) {
+                    // Scripts shouldn't really have dependencies, and when they do, they usually
+                    // refer to themselves, which will get this stuck in a loop.
+                    if (dependency == null || dependency.getType() == ResourceType.SCRIPT) continue;
+                    
+                    SHA1 sha1 = Resources.hashinate(
+                        entries, 
+                        ResourceSystem.extract(dependency), 
+                        dependency
+                    );
+
+                    resource.replaceDependency(
+                        dependency,
+                        new ResourceDescriptor(sha1, dependency.getType())
+                    );
+                }
+                root = resource.compress(resource.getStream().getBuffer());
+            }
+        }
+
+        FileEntry entry = ResourceSystem.get(descriptor.getGUID());
+        SHA1 sha1 = SHA1.fromBuffer(root);
+
+        String path;
+        if (entry != null) path = entry.getPath();
+        else 
+            path = String.format("bundles/resources/%s/%s%s", descriptor.getType().toString().toLowerCase(), sha1, descriptor.getType().getExtension());
+
+        entries.add(new GatherData(path, descriptor.getGUID(), sha1, root));
+
+        return sha1;
     }
 }
