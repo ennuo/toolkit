@@ -527,13 +527,13 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     float RdotL = dot(reflectVec, lightVec);
     float NdotL = dot(iNormal, lightVec); 
 
-    #if (FLAGS & AO_FLAGS)
+    #if ((FLAGS & AO_FLAGS) && ((PROPERTIES & LIGHTING_RAMP) == 0))
         float ao = GetAO(iNormal, iVec2Eye, iLightmapUV);
     #else
         float ao = 1.0; // Dummy multiplication variable, will be optimized out.
     #endif
 
-    #if (FLAGS & SHADOW_FLAGS)
+    #if ((FLAGS & SHADOW_FLAGS) && ((PROPERTIES & LIGHTING_RAMP) == 0))
         half shadow = GetShadow(iShadowMapPosition, iLightmapUV, iVec2Eye);
     #else
         half shadow = 1.0; // Dummy multiplication variable, will be optimized out.
@@ -546,26 +546,36 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     // ...ambient a simple 2 color hemisphere
     float3 color = ((iNormal.y * normal_mul) + normal_add) * ambcol;
 
-    #if (FLAGS & AO_FLAGS)
-        color *= ao;
-    #endif
 
-    #if (FLAGS & WATER_CAUSTICS)
-        color += (color * caustic.y);
-        color += ((((shadow * saturate(-NdotL)) * ao) * caustic.x) * suncol);
+    #if (PROPERTIES & LIGHTING_RAMP)
+        color += suncol;
+        color += (saturate(
+            pow(saturate(NdotV + rim_round), 2) * 
+            (rimcol2 * ((iNormal.y + 1.0) / 2.0))
+        ));
     #else
-        color += ((ao * (shadow * saturate(-NdotL))) * suncol);
-    #endif
 
-    // ... the 2 rim lights are lerp'ed between based on sunlight shadow
-    color += (shadow * saturate(
-        // based on (V.N)^2 w/ bias & scale
-        pow(saturate(NdotV + rim_round), 2) * 
-        lerp(rimcol, rimcol2, (iNormal.y + 1.0) / 2.0)
-    ));
+        #if (FLAGS & AO_FLAGS)
+            color *= ao;
+        #endif
+
+        #if (FLAGS & WATER_CAUSTICS)
+            color += (color * caustic.y);
+            color += ((((shadow * saturate(-NdotL)) * ao) * caustic.x) * suncol);
+        #else
+            color += ((ao * (shadow * saturate(-NdotL))) * suncol);
+        #endif
+
+        // ... the 2 rim lights are lerp'ed between based on sunlight shadow
+        color += (shadow * saturate(
+            // based on (V.N)^2 w/ bias & scale
+            pow(saturate(NdotV + rim_round), 2) * 
+            lerp(rimcol, rimcol2, (iNormal.y + 1.0) / 2.0)
+        ));
+    #endif
 
     float specular = pow(saturate(-RdotL), CosinePower);
-    #if (FLAGS & SPRITELIGHT)
+    #if ((FLAGS & SPRITELIGHT) && ((PROPERTIES & LIGHTING_RAMP) == 0))
         float3 worldPos = GetWorldPos(iVec2Eye);
 
         float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
@@ -614,9 +624,9 @@ void main(
     #endif
 
     #if (PROPERTIES & LIGHTING_RAMP)
-        float3 pos = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
-        float ref = dot(pos, normal) / length(pos) / 2.0;
-        diffuse *= GetLightingRamp(float2(0.5 - ref, 0.5), iColor).xyz;
+        float3 toon_light = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
+        float toon_dot = dot(toon_light, normal) / sqrt(dot(toon_light, toon_light)) / 2.0;
+        diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
     #endif
 
     float4 light = GetLight(normal, iVec2Eye, iShadowMapPosition, iLightmapUV);
