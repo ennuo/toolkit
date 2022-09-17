@@ -4,6 +4,7 @@ import ennuo.craftworld.utilities.Bytes;
 import ennuo.craftworld.utilities.Images;
 import ennuo.craftworld.serializer.Output;
 import ennuo.craftworld.resources.enums.ResourceType;
+import ennuo.craftworld.resources.enums.SerializationMethod;
 import ennuo.craftworld.resources.structs.TextureInfo;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -84,13 +85,13 @@ public class Texture {
                 this.cached = Images.fromDDS(this.data);
                 break;
             case GTF_TEXTURE:
+                if (resource.method == SerializationMethod.GXT_EXTENDED || resource.method == SerializationMethod.GXT_SIMPLE) {
+                    System.out.println("Converting GXT texture to DDS.");
+                    this.parseGXT(resource);
+                    break;
+                }
                 System.out.println("Converting GTF texture to DDS");
                 this.parseGTF(resource);
-                break;
-            case GXT_TEXTURE:
-                System.out.println("Converting GXT texture to DDS.");
-                System.out.println("Unswizzling isn't correctly implemented, so this will probably be broken!");
-                this.parseGXT(resource);
                 break;
             default:
                 this.parsed = false;
@@ -103,19 +104,18 @@ public class Texture {
      * @param gxt GXT resource instance
      */
     public void parseGXT(Resource gxt) {
+        this.data = gxt.handle.data;
+
+        this.unswizzleCompressed();
         byte[] header = this.getDDSHeader();
-        
-        byte[] DDS = new byte[gxt.handle.data.length + header.length];
+        byte[] gtf = this.data;
+
+        byte[] DDS = new byte[gtf.length + header.length];
         System.arraycopy(header, 0, DDS, 0, header.length);
-        System.arraycopy(gxt.handle.data, 0, DDS, header.length, gxt.handle.length);
+        System.arraycopy(gtf, 0, DDS, header.length, gtf.length);
         
         this.data = DDS;
-        
-        // TODO(Aidan): The unswizzling process is different for Vita,
-        // or I'm assuming the wrong DDS type, either way, the textures
-        // come out corrupted regardless and this should be looked into.
-        
-        this.unswizzle();
+        this.cached = this.getImage();
     }
 
     /**
@@ -133,6 +133,80 @@ public class Texture {
         if (this.info.format == 0x85 || this.info.format == 0x81) 
             this.unswizzle();
         else this.cached = this.getImage();
+    }
+
+    private int getMortonNumber(int x, int y, int width, int height) {
+        int logW = 31 - Integer.numberOfLeadingZeros(width);
+        int logH = 31 - Integer.numberOfLeadingZeros(height);
+
+        int d = Integer.min(logW, logH);
+        int m = 0;
+
+        for (int i = 0; i < d; ++i)
+            m |= ((x & (1 << i)) << (i + 1)) | ((y & (1 << i)) << i);
+
+        if(width < height)
+            m |= ((y & ~(width  - 1)) << d);
+        else
+            m |= ((x & ~(height - 1)) << d);
+
+        return m;
+    }
+
+    /**
+     * Unswizzles each DXT1/5 compressed block in a Vita GXT texture.
+     */
+    private void unswizzleCompressed() {
+        byte[] pixels = new byte[this.data.length];
+
+        int blockWidth = 4, blockHeight = 4;
+        int bpp = 4;
+        if (this.info.format == 0x88)
+            bpp = 8;
+
+        int base = 0;
+
+        int width = Integer.max(this.info.width, blockWidth);
+        int height = Integer.max(this.info.height, blockHeight);
+
+        int log2width = 1 << (31 - Integer.numberOfLeadingZeros(width + (width - 1)));
+        int log2height = 1 << (31 - Integer.numberOfLeadingZeros(height + (height - 1)));
+        
+        for (int i = 0; i < this.info.mipmap; ++i) {
+            int w = ((width + blockWidth - 1) / blockWidth);
+            int h = ((height + blockHeight - 1) / blockHeight);
+            int blockSize = bpp * blockWidth * blockHeight;
+    
+            int log2w = 1 << (31 - Integer.numberOfLeadingZeros(w + (w - 1)));
+            int log2h = 1 << (31 - Integer.numberOfLeadingZeros(h + (h - 1)));
+    
+            int mx = getMortonNumber(log2w - 1, 0, log2w, log2h);
+            int my = getMortonNumber(0, log2h - 1, log2w, log2h);
+    
+            int pixelSize = blockSize / 8;
+    
+            int oy = 0, tgt = base;
+            for (int y = 0; y < h; ++y) {
+                int ox = 0;
+                for (int x = 0; x < w; ++x) {
+                    int offset = base + ((ox + oy) * pixelSize);
+                    System.arraycopy(this.data, offset, pixels, tgt, pixelSize);
+                    tgt += pixelSize;
+                    ox = (ox - mx) & mx;
+                }
+                oy = (oy - my) & my;
+            }
+
+            base += ((bpp * log2width * log2height) / 8);
+
+            width = width > blockWidth ? width / 2 : blockWidth;
+            height = height > blockHeight ? height / 2 : blockHeight;
+
+            log2width = log2width > blockWidth ? log2width / 2 : blockWidth;
+            log2height = log2height > blockHeight ? log2height / 2 : blockHeight;
+        }
+
+        this.data = pixels;
     }
 
     /**
@@ -168,7 +242,7 @@ public class Texture {
         int log2height = (int) (Math.log(this.info.height) / Math.log(2));
         
         int xMask = 0x55555555;
-	int yMask = 0xAAAAAAAA;
+	    int yMask = 0xAAAAAAAA;
         
         int limitMask = (log2width < log2height) ? log2width : log2height;
         limitMask = 1 << (limitMask << 1);
@@ -242,7 +316,7 @@ public class Texture {
         header.u32LE(width);
         header.u32LE(0); // dwPitchOrLinearSize
         header.u32LE(0); // dwDepth
-        header.u32LE(mips + 1);
+        header.u32LE(mips);
         for (int i = 0; i < 11; ++i)
             header.u32LE(0); // dwReserved[11]
         
