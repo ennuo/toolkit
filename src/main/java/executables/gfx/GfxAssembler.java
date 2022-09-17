@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import cwlib.enums.BoxType;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.gmat.MaterialBox;
@@ -31,6 +32,13 @@ public class GfxAssembler {
         public static final int BUMP = 3;
         public static final int GLOW = 4;
         public static final int REFLECTION = 6;
+
+        public static final int ANISO = 170;
+        public static final int TRANS = 171;
+        public static final int COLOR_CORRECTION = 172; // ramp
+        public static final int FUZZ = 173;
+        public static final int BRDF_REFLECTANCE = 174;
+        public static final int TOON_RAMP = 175;
     }
 
     public static class GfxFlags {
@@ -55,7 +63,7 @@ public class GfxAssembler {
         public static final int REFRACT = (1 << 12);
         public static final int GLOW = (1 << 13);
     
-        public static final int GLASSY = (1 << 14);
+        public static final int GLASS = (1 << 14);
 
         public static final int ORBIS = (1 << 15);
     }
@@ -86,8 +94,13 @@ public class GfxAssembler {
                 float oy = Float.intBitsToFloat(params[3]);
                 if (ox != 0.0f || oy != 0.0f)
                     uv += String.format(" + float2(%f, %f)", ox, oy);
-                
+
                 assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);
+
+                if (type == OutputPort.FUZZ) {
+                    shader.append(String.format("\tfloat4 %s = float4(%s.x, SAMPLE_2D(%s, iUV.zw).yz, 0.0);\n", variableName, assignment, texVar));
+                    return variableName;
+                }
 
                 break;
             }
@@ -111,6 +124,21 @@ public class GfxAssembler {
             case BoxType.COLOR: {
                 variableName = "col" + index;
                 assignment = String.format("float4(%s, %s, %s, %s)", Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]), Float.intBitsToFloat(params[2]), Float.intBitsToFloat(params[3]));
+                break;
+            }
+            case 11: {
+                MaterialBox lNode = gmat.getBoxConnectedToPort(box, 0);
+                MaterialBox rNode = gmat.getBoxConnectedToPort(box, 1);
+                if (lNode == null || rNode == null) 
+                    throw new RuntimeException("(11) node is supposed to take two inputs!");
+
+                String l = resolve(shader, gmat, lNode, type); // color
+                String r = resolve(shader, gmat, rNode, type); // diffuse
+
+                variableName = "sum" + index;
+
+                assignment = String.format("(%s + %s)", l, r);
+
                 break;
             }
             case 12: {
@@ -177,16 +205,14 @@ public class GfxAssembler {
             if (port == OutputPort.BUMP) {
                 String function = USE_NORMAL_MAPS ? "NormalMap" : "BumpMap";
                 builder.append(String.format("\treturn %s(iNormal, iTangent, %s);", function, variable));
-            } else if (port == OutputPort.ALPHA_CLIP)
-                builder.append(String.format("\treturn %s.w < AlphaTestLevel;", variable));
-            else
+            } else
                 builder.append(String.format("\treturn %s;", variable));
 
             return builder.toString();
         }
 
         if (port == OutputPort.ALPHA_CLIP)
-            return "\treturn false; // This material does not have alpha clip";
+            return "\treturn float4(1.); // This material does not have alpha masking";
         return "\treturn float4(0.); // This material doesn't use this.";
     }
 
@@ -194,6 +220,9 @@ public class GfxAssembler {
         MaterialBox normal = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.BUMP);
         MaterialBox diffuse = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.DIFFUSE);
         MaterialBox alpha = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ALPHA_CLIP);
+        MaterialBox fuzz = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.FUZZ);
+        MaterialBox aniso = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ANISO);
+        MaterialBox ramp = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.TOON_RAMP);
         MaterialBox specular = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.SPECULAR);
         MaterialBox glow = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.GLOW);
         MaterialBox reflection = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.REFLECTION);
@@ -201,12 +230,21 @@ public class GfxAssembler {
         ArrayList<String> properties = new ArrayList<>();
 
         if (normal != null) properties.add("NORMAL");
+
         if (alpha != null) properties.add("ALPHA");
+        else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
+            alpha = diffuse;
+            properties.add("ALPHA");
+        }
+
         if (specular != null) properties.add("SPECULAR");
         if (glow != null) properties.add("GLOW");
         if (reflection != null) properties.add("REFRACT");
-        if (material.alphaLayer == 0xc0 || material.alphaMode == 4) 
-            properties.add("GLASSY");
+        if (fuzz != null) properties.add("FUZZ");
+        if (aniso != null) properties.add("ANISO");
+        if (ramp != null) properties.add("LIGHTING_RAMP");
+        if (material.alphaLayer == 0xc0) 
+            properties.add("GLASS");
         if (properties.size() == 0)
             properties.add("NO_FLAGS");
         
@@ -220,15 +258,34 @@ public class GfxAssembler {
         shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, OutputPort.DIFFUSE));
         shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, OutputPort.GLOW));
         shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, OutputPort.ALPHA_CLIP));
+        shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, OutputPort.FUZZ));
+        shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, OutputPort.ANISO));
+        shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, OutputPort.TOON_RAMP));
 
         if (!USE_ENV_VARIABLES) {
             shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", material.alphaTestLevel));
+            shader = shader.replace("ENV.ALPHA_MODE", "" + material.alphaMode);
+
             shader = shader.replace("ENV.COSINE_POWER", String.format("%f", material.cosinePower * 22.0f));
             shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", material.bumpLevel));
+            
             shader = shader.replace("ENV.REFLECTION_BLUR", String.format("%f", material.reflectionBlur - 1.0f));
             shader = shader.replace("ENV.REFRACTIVE_INDEX", String.format("%f", material.refractiveIndex));
+
+            shader = shader.replace("ENV.FRESNEL_FALLOFF_POWER", String.format("%f", material.refractiveFresnelFalloffPower));
+            shader = shader.replace("ENV.FRESNEL_MULTIPLIER", String.format("%f", material.refractiveFresnelMultiplier));
+            shader = shader.replace("ENV.FRESNEL_OFFSET", String.format("%f", material.refractiveFresnelOffset));
+            shader = shader.replace("ENV.FRESNEL_SHIFT", String.format("%f", material.refractiveFresnelShift));
+
+            shader = shader.replace("ENV.FUZZ_LIGHTING_BIAS", String.format("%f", ((float)((int)material.fuzzLightingBias & 0xff)) / 255.0f));
+            shader = shader.replace("ENV.FUZZ_LIGHTING_SCALE", String.format("%f", ((float)((int)material.fuzzLightingScale & 0xff)) / 255.0f));
+
+            shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format("%f", ((float)((int)material.iridesenceRoughness & 0xff)) / 255.0f));
         }
 
+        if (fuzz != null) 
+            FileIO.write(shader.getBytes(), "C:/Users/Aidan/Desktop/shader.cg");
+        
         return shader;
     }
 

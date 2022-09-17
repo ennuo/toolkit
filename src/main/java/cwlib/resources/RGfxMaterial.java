@@ -50,7 +50,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     public float refractiveFresnelShift;
 
     public byte fuzzLengthAndRefractiveFlag;
-    public byte translucencyDensity;
+    public byte translucencyDensity = -1;
     public byte fuzzSwirlAngle = -1;
     public byte fuzzSwirlAmplitude;
     public byte fuzzLightingBias = 127;
@@ -309,7 +309,7 @@ public class RGfxMaterial implements Serializable, Compressable {
     
     public MaterialBox getBoxConnectedToPort(int box, int port) {
         for (MaterialWire wire : this.wires) {
-            if (wire.boxTo == box && wire.portTo == port)
+            if (wire.boxTo == box && (wire.portTo & 0xff) == port)
                 return this.boxes[wire.boxFrom];
         }
         return null;

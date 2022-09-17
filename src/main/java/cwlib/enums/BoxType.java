@@ -18,3 +18,16 @@ public class BoxType {
     // public static final int TYPE_11 = 11; // only used in sticker switch?, takes in two inputs
     public static final int SUBTRACT = 12;
 }
+
+
+// 0 = OUTPUT
+// 1 = DIFFUSE SAMPLE
+// 2 = RAMP SAMPLE
+// 3 = COLOR
+// 4 = TYPE 11
+
+// WIRES
+// 1 -> DIFFUSE OUTPUT
+// 3 -> 4@p0
+// 2 -> 4@p1
+// 4 -> TOON RAMP OUTPUT

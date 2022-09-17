@@ -21,11 +21,23 @@
 // Material properties
 #define SPECULAR (1 << 9)
 #define NORMAL (1 << 10)
-#define ALPHA (1 << 11) // Not implemented for LBP2!
+#define ALPHA (1 << 11)
 #define REFRACT (1 << 12)
 #define GLOW (1 << 13)
-#define GLASSY (1 << 14)
+#define GLASS (1 << 14)
+#define ANISO (1 << 16)
+#define TRANS (1 << 17)
+#define COLOR_CORRECTION (1 << 18)
+#define FUZZ (1 << 19)
+#define BRDF_REFLECTANCE (1 << 20)
+#define LIGHTING_RAMP (1 << 21)
 
+// LBP2 alpha modes
+#define BLEND_MODE_DISABLE (0)
+#define BLEND_MODE_ALPHA_BLEND (1)
+#define BLEND_MODE_ADDITIVE (2)
+#define BLEND_MODE_ADDITIVE_NO_ALPHA (3)
+#define BLEND_MODE_PREMULTIPLIED_ALPHA (4)
 
 // Set this variable to define what maps this material uses.
 #define PROPERTIES ENV.MATERIAL_PROPERTIES
@@ -33,6 +45,10 @@
 // Set this variable to define how this shader is compiled.
 // Refer to charts below for appropriate configurations.
 #define FLAGS ENV.COMPILE_FLAGS
+
+// Set this variable to define how alpha is handled.
+// Only available in LBP2 onward.
+#define ALPHA_MODE ENV.ALPHA_MODE
 
 // LBP1 Shaders
 
@@ -84,6 +100,16 @@ float BumpLevel = ENV.BUMP_LEVEL;
 float ReflectionBlur = ENV.REFLECTION_BLUR;
 float RefractiveIndex = ENV.REFRACTIVE_INDEX;
 
+float FresnelFalloffPower = ENV.FRESNEL_FALLOFF_POWER;
+float FresnelMultiplier = ENV.FRESNEL_MULTIPLIER;
+float FresnelOffset = ENV.FRESNEL_OFFSET;
+float FresnelShift = ENV.FRESNEL_SHIFT;
+
+float FuzzLightingBias = ENV.FUZZ_LIGHTING_BIAS;
+float FuzzLightingScale = ENV.FUZZ_LIGHTING_SCALE;
+
+float IridescenceRoughness = ENV.IRIDESCENCE_ROUGHNESS;
+
 float normal_mul = 0.15;
 float normal_add = 0.5;
 
@@ -96,7 +122,7 @@ float rim_round = 0.9;
     uniform float3 rimcol2, ambcol, suncol;
     float3 rimcol = float3(0.5, 0.4, 0.3);
 
-    #if (PROPERTIES & GLASSY)
+    #if (PROPERTIES & GLASS)
         float2 oores = float2(0.00078125, 0.00138889);
     #endif
 
@@ -119,7 +145,7 @@ float rim_round = 0.9;
         CREATE_SAMPLER_3D(tex_lo, 10);
     #endif
 
-    #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
+    #if ((FLAGS & SPRITELIG1T) || (FLAGS & DYNAMIC_AO))
         uniform float4 minaabb, maxaabb;
         uniform float4 maxaabb_add, maxaabb_normal;
     #endif
@@ -224,8 +250,26 @@ ENV.AUTO_GLOW_SETUP
 #endif
 
 #if (PROPERTIES & ALPHA)
-bool DoAlphaTest(float4 iUV, float4 iColor) {
+float4 GetAlpha(float4 iUV, float4 iColor) {
 ENV.AUTO_ALPHA_SETUP
+}
+#endif
+
+#if (PROPERTIES & ANISO)
+float4 GetAniso(float4 iUV, float4 iColor) {
+ENV.AUTO_ANISO_SETUP
+}
+#endif
+
+#if (PROPERTIES & FUZZ)
+float4 GetFuzz(float4 iUV, float4 iColor) {
+ENV.AUTO_FUZZ_SETUP
+}
+#endif
+
+#if (PROPERTIES & LIGHTING_RAMP)
+float4 GetLightingRamp(float2 iUV, float4 iColor) {
+ENV.AUTO_RAMP_SETUP
 }
 #endif
 
@@ -377,7 +421,7 @@ void main(
     out half4 color_out
 ) {
     #if (PROPERTIES & ALPHA)
-        if (DoAlphaTest(iUV, iColor)) discard;
+        if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
     #endif
 
     // First normal pass shader
@@ -401,13 +445,13 @@ void main(
         float zbfs = SAMPLE_2D(zbuf, pos - DEFERRED_ZBUF_OFFSET).w;
 
         // In LBP1, the left side of the normal buffer has transparency.
-        #if (PROPERTIES & GLASSY)
+        #if (PROPERTIES & GLASS)
             float2 pixelPos = float2(-DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
         #else
             float2 pixelPos = float2(DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
         #endif
 
-        #if ((PROPERTIES & GLASSY) || (PROPERTIES & REFRACT))
+        #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT))
             float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
             half3 normal = decode(nbfs);
         #endif
@@ -437,7 +481,7 @@ void main(
             half3 lobe = reflection;
         #endif
 
-        #if (PROPERTIES & GLASSY)
+        #if (PROPERTIES & GLASS)
             half2 n = nbfs - 0.501961;
 
             float2 cuv = (n * (RefractiveIndex * float2(9.0, -16.0))) + (pos + float2(0.000195313, 0.0));
@@ -453,7 +497,7 @@ void main(
             color += GetGlowColor(iUV, iColor).xyz;
         #endif
 
-        #if (PROPERTIES & GLASSY)
+        #if (PROPERTIES & GLASS)
             color_out = half4(color, 1.0);
         #else
             color.x = abs(color.x * tintcol.x) / sqrt(color.x * tintcol.x);
@@ -547,6 +591,7 @@ void main(
     half4 iNormal: TEXCOORD2,
     float3 iDecalUV: TEXCOORD3,
     float4 iVec2Eye: TEXCOORD4,
+    float4 iAttr5: TEXCOORD5,
     float4 iShadowMapPosition: TEXCOORD6,
     float2 iLightmapUV: TEXCOORD7,
 
@@ -568,6 +613,12 @@ void main(
         diffuse = (diffuse * decals.w) + decals.xyz;
     #endif
 
+    #if (PROPERTIES & LIGHTING_RAMP)
+        float3 pos = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
+        float ref = dot(pos, normal) / length(pos) / 2.0;
+        diffuse *= GetLightingRamp(float2(0.5 - ref, 0.5), iColor).xyz;
+    #endif
+
     float4 light = GetLight(normal, iVec2Eye, iShadowMapPosition, iLightmapUV);
     float3 prod = light.xyz * light.xyz;
 
@@ -586,13 +637,22 @@ void main(
         half3 lighting = reflection;
     #endif 
     
-    #if (PROPERTIES & GLASSY)
+    #if (PROPERTIES & GLASS)
         float2 wpos = iWorldPos.xy * oores;
         float2 cuv = (normal.xy * (RefractiveIndex * float2(9.0, -16.0))) + float2(wpos.x, 1.0 - wpos.y);
         half n = saturate((dot(normal.xy, normal.xy) * 10.0) - 0.5);
         half3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
     #else
         half3 color = (diffuse * prod) + lighting;
+    #endif
+
+    #if (PROPERTIES & ANISO)
+        float4 aniso = GetAniso(iUV, iColor);
+        // ANISO
+        //float4 aniso_tex = tex2D(s1, iUV.xy);
+        //float HdotA = dot(normalize(iNormal + aniso_tex.xyz), normalize(normalize(lightVec) + normalize(viewVec)));
+        //float aniso = max(0, sin(radians(HdotA) * 180.0))
+
     #endif
 
     half illumination = tintcol.w;
@@ -605,17 +665,37 @@ void main(
         illumination *= (r + ((-r * factor) + factor));
     #endif
 
-    #if ((PROPERTIES & GLASSY) == 0)
+    #if ((PROPERTIES & GLASS) == 0)
         color.x = sqrt(color.x * tintcol.x);
         color.y = sqrt(color.y * tintcol.y);
         color.z = sqrt(color.z * tintcol.z);
+    #endif
+
+    #if ((PROPERTIES & FUZZ) && (FLAGS & ORBIS))
+        float4 fuzz = GetFuzz(iUV, iColor);
+        float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
+        float NdotL = dot(iNormal, lightVec);
+        color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
+        float v2 = (abs(iAttr5.w) * tintcol.w) * fuzz.y * fuzz.x;
+        if (0.101 > v2 && iAttr5.z < 0.0) {
+            color_out = half4(color, 1.0);
+            return;
+        }
     #endif
     
     float fogcc = ((dot(color, float3(0.3, 0.6, 0.1)) + fogccparams.y) * fogccparams.x) + 1.0;
     float3 fog = (fogcc * fogcol.xyz) - color;
     
     #if (PROPERTIES & ALPHA)
-        if (DoAlphaTest(iUV, iColor)) illumination = 0.0;
+        float4 alpha = GetAlpha(iUV, iColor);
+
+        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+            illumination = alpha.x * tintcol.w;
+        #else
+            illumination = alpha.w * tintcol.w;
+        #endif
+
+        if (alpha.w < AlphaTestLevel) illumination = 0.0;
     #endif
 
     color_out = half4(

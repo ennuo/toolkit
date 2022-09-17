@@ -676,11 +676,26 @@ public class GfxGUI extends javax.swing.JFrame {
 
     private String fixupEnvVar(String shader) {
         if (shader == null) return null;
-        shader = shader.replaceAll("ENV.BUMP_LEVEL", String.format("%f", (float) this.bumpLevelSpinner.getValue()));
-        shader = shader.replaceAll("ENV.COSINE_POWER", String.format("%f", ((float) this.cosinePowerSpinner.getValue()) * 22.0f));
-        shader = shader.replaceAll("ENV.ALPHA_TEST_LEVEL", String.format("%f", (float) this.alphaTestLevelSpinner.getValue()));
-        shader = shader.replaceAll("ENV.REFLECTION_BLUR", String.format("%f", ((float) this.alphaTestLevelSpinner.getValue()) - 1.0f));
-        shader = shader.replaceAll("ENV.REFRACTIVE_INDEX", String.format("%f", (float) this.refractiveIndexSpinner.getValue()));
+
+        shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", this.gmat.alphaTestLevel));
+        shader = shader.replace("ENV.ALPHA_MODE", "" + this.gmat.alphaMode);
+
+        shader = shader.replace("ENV.COSINE_POWER", String.format("%f", this.gmat.cosinePower * 22.0f));
+        shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", this.gmat.bumpLevel));
+        
+        shader = shader.replace("ENV.REFLECTION_BLUR", String.format("%f", this.gmat.reflectionBlur - 1.0f));
+        shader = shader.replace("ENV.REFRACTIVE_INDEX", String.format("%f", this.gmat.refractiveIndex));
+
+        shader = shader.replace("ENV.FRESNEL_FALLOFF_POWER", String.format("%f", this.gmat.refractiveFresnelFalloffPower));
+        shader = shader.replace("ENV.FRESNEL_MULTIPLIER", String.format("%f", this.gmat.refractiveFresnelMultiplier));
+        shader = shader.replace("ENV.FRESNEL_OFFSET", String.format("%f", this.gmat.refractiveFresnelOffset));
+        shader = shader.replace("ENV.FRESNEL_SHIFT", String.format("%f", this.gmat.refractiveFresnelShift));
+
+        shader = shader.replace("ENV.FUZZ_LIGHTING_BIAS", String.format("%f", ((float)((int)this.gmat.fuzzLightingBias & 0xff)) / 255.0f));
+        shader = shader.replace("ENV.FUZZ_LIGHTING_SCALE", String.format("%f", ((float)((int)this.gmat.fuzzLightingScale & 0xff)) / 255.0f));
+        
+        shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format("%f", ((float)((int)this.gmat.iridesenceRoughness & 0xff)) / 255.0f));
+        
         return shader;
     }
     
