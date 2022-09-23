@@ -185,6 +185,7 @@ public abstract class FileEntry {
     public void setDetails(FileEntry entry) {
         if (entry == null) 
             throw new NullPointerException("Entry cannot be null!");
+        this.setPath(entry.getPath());
         this.setSize(entry.getSize());
         this.setSHA1(entry.getSHA1());
     }

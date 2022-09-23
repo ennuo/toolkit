@@ -43,13 +43,14 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-public class Mod extends FileData {
+public class Mod extends FileData implements Iterable<FileDBRow>  {
     private static final String LEGACY_PASSWORD = "purchasecollege";
 
     private FileDB database;
@@ -261,6 +262,8 @@ public class Mod extends FileData {
         }
         return row;
     }
+
+    @Override public Iterator<FileDBRow> iterator() { return this.database.iterator(); }
 
     @Override public void remove(FileEntry entry) { this.database.remove(entry); }
     @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }

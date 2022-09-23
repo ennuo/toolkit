@@ -1,13 +1,12 @@
 package toolkit.functions;
 
-import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.SlowOp;
 import toolkit.windows.Toolkit;
 import toolkit.windows.managers.ModManager;
 import toolkit.windows.utilities.SlowOpGUI;
 import cwlib.util.FileIO;
-import cwlib.io.streams.MemoryOutputStream;
+import cwlib.enums.DatabaseType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
@@ -16,16 +15,10 @@ import cwlib.types.archives.FileArchive;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.swing.FileData;
-import cwlib.types.swing.FileModel;
-import cwlib.types.swing.FileNode;
-import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
-import cwlib.types.save.BigSave;
 
 import java.io.File;
 import javax.swing.JOptionPane;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
 
 public class UtilityCallbacks {
     public static void newMod() {
@@ -48,9 +41,17 @@ public class UtilityCallbacks {
         if (file == null) return;
 
         byte[] data = FileIO.read(file.getAbsolutePath());
-        if (data == null) return;
+        if (data == null) {
+            JOptionPane.showMessageDialog(Toolkit.instance, "Failed to read file, is it protected?", "Decompressor", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        Resource resource = new Resource(data);
+        Resource resource = null;
+        try { resource = new Resource(data); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.instance, "Failed to deserialize resource!", "Decompressor", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
         File out = FileChooser.openFile(file.getName() + ".dec", null, true);
         if (out != null)
@@ -60,7 +61,7 @@ public class UtilityCallbacks {
     public static void mergeFileArchives() {         
         File file = FileChooser.openFile("base.farc", "farc", false);
         if (file == null) return;
-         
+
         Fart cache;
         int index = Toolkit.instance.isArchiveLoaded(file);
         if (index != -1) cache = ResourceSystem.getArchives().get(index);
@@ -156,29 +157,38 @@ public class UtilityCallbacks {
     
     public static void installMod() {                                                  
         File[] files = FileChooser.openFiles("mod");
-        if (files == null) return;
+        if (files == null || files.length == 0) return;
 
         FileData database = ResourceSystem.getSelectedDatabase();
+        Fart[] archives = null;
+        if (database.getType().equals(DatabaseType.FILE_DATABASE)) {
+            archives = Toolkit.instance.getSelectedArchives();
+            if (archives == null) return;
+        }
 
         for (int i = 0; i < files.length; ++i) {
             Mod mod = ModCallbacks.loadMod(files[i]);
             if (mod == null) continue;
 
-
-            if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
-                BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
-                for (FileEntry entry: mod.entries)
-                    profile.add(entry.data, true);
-            } else if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MAP) {
-                if (mod.entries.size() == 0) return;
-                FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
-                FileArchive[] archives = Toolkit.instance.getSelectedArchives();
-                if (archives == null) return;
-                for (FileEntry entry: mod.entries) {
-                    if (db.add(entry))
-                        db.addNode(entry);
-                    ResourceSystem.add(entry.data, archives);
+            if (database.getType().containsData()) {
+                for (FileDBRow row : mod) {
+                    byte[] data = mod.extract(row.getSHA1());
+                    if (data != null) database.add(data);
                 }
+                continue;
+            }
+
+            FileDB gameDB = (FileDB) database;
+            for (FileDBRow row : mod) {
+                if (gameDB.exists(row.getGUID()))
+                    gameDB.get(row.getGUID()).setDetails(row);
+                else
+                    gameDB.newFileDBRow(row);
+
+                byte[] data = mod.extract(row.getSHA1());
+                if (data == null) continue;
+
+                ResourceSystem.add(data, archives);
             }
         }
 
