@@ -16,7 +16,7 @@ import cwlib.structs.gmat.MaterialWire;
 import cwlib.util.FileIO;
 
 public class GfxAssembler {
-    public static String BRDF = FileIO.getResourceFileAsString("/brdf.cg");
+    public static String BRDF = FileIO.getResourceFileAsString("/shaders/brdf.cg");
     public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
 
     public static boolean USE_ENV_VARIABLES = false;

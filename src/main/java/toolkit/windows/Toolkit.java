@@ -99,7 +99,7 @@ public class Toolkit extends javax.swing.JFrame {
         Toolkit.instance = this;
         
         this.initComponents();
-        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         
         EasterEgg.initialize(this);
         
@@ -2063,7 +2063,7 @@ public class Toolkit extends javax.swing.JFrame {
         // }
         
         // FileIO.write(new ParamSFO(titleID, name).build(), Path.of(saveDirectory.toString(), "PARAM.SFO").toString());
-        // FileIO.write(FileIO.getResourceFile("/default.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
+        // FileIO.write(FileIO.getResourceFile("/images/slots/backdrop.png"), Path.of(saveDirectory.toString(), "ICON0.PNG").toString());
         
         // // NOTE(Aidan): This seems terribly inefficient in terms of memory cost,
         // // but the levels exported should be low, so it's not entirely an issue,

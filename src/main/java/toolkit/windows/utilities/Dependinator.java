@@ -61,7 +61,7 @@ public class Dependinator extends javax.swing.JFrame {
         this.initComponents();
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setTitle("Dependinator");
         
         this.entry = entry;

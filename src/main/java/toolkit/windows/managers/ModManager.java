@@ -22,7 +22,7 @@ public class ModManager extends javax.swing.JDialog {
         setResizable(false);
         this.mod = mod;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         setTitle("Mod Manager");
         
         ModInfo config = mod.getConfig();

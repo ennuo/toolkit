@@ -17,7 +17,7 @@ public class ProfileManager extends javax.swing.JDialog {
     public ProfileManager(JFrame parent) {
         super(parent, "Profile Manager", true);
         this.initComponents();
-        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setResizable(false);
         this.setModal(true);
         

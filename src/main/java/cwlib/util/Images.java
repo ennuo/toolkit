@@ -249,7 +249,7 @@ public class Images {
     public static ImageIcon getGroupIcon(BufferedImage master) {
         BufferedImage res = null;
         try {
-            BufferedImage image = ImageIO.read(Toolkit.class.getResource("/polaroid.png"));
+            BufferedImage image = ImageIO.read(Toolkit.class.getResource("/images/slots/polaroid.png"));
             if (master == null) return new ImageIcon(image);
             master = getBufferedImageScaled(master, 104, 104);
             res = Images.getOverlayedImage(image, master, 73, 65, true);
@@ -264,7 +264,7 @@ public class Images {
     public static ImageIcon getSlotIcon(BufferedImage master, int revision) {
         if (master == null) {
             try {
-                master = ImageIO.read(Toolkit.class.getResource("/default.png"));
+                master = ImageIO.read(Toolkit.class.getResource("/images/slots/backdrop.png"));
             } catch (IOException ex) {
                 Logger.getLogger(Images.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -291,10 +291,10 @@ public class Images {
 
         BufferedImage res = null;
         try {
-            String path = "/lbp1slot.png";
+            String path = "/images/slots/lbp1.png";
             if (revision > 0x272) {
-                if (revision <= 0x3f8) path = "/lbp2slot.png";
-                else path = "/lbp3slot.png";
+                if (revision <= 0x3f8) path = "/images/slots/lbp2.png";
+                else path = "/images/slots/lbp3.png";
             }
 
             BufferedImage image = ImageIO.read(Toolkit.class.getResource(path));

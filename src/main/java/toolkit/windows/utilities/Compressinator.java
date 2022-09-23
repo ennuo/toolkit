@@ -44,7 +44,7 @@ public class Compressinator extends javax.swing.JFrame {
         this.initComponents();
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setIconImage(new ImageIcon(this.getClass().getResource("/legacy_icon.png")).getImage());
+        this.setIconImage(new ImageIcon(this.getClass().getResource("/icon.png")).getImage());
         this.setTitle("Compressinator");
     }
 

@@ -18,7 +18,7 @@ public class ArchiveManager extends javax.swing.JDialog {
     
     public ArchiveManager(JFrame parent) {
         super(parent, "Archive Manager", true);
-        this.setIconImage(new ImageIcon(getClass().getResource("/legacy_icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setResizable(false);
         this.initComponents();
         
