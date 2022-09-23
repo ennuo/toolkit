@@ -111,6 +111,13 @@ public class ResourceSystem {
         return type.containsData() || (type.hasGUIDs() && database.getBase() != null) || archives.size() > 0;
     }
 
+    public static FileEntry get(ResourceDescriptor descriptor) {
+        if (descriptor == null) return null;
+        if (descriptor.isGUID()) return ResourceSystem.get(descriptor.getGUID());
+        if (descriptor.isHash()) return ResourceSystem.get(descriptor.getSHA1());
+        return null;
+    }
+    
     public static FileEntry get(long guid) { return ResourceSystem.get(new GUID(guid)); }
     public static FileEntry get(GUID guid) {
         if (ResourceSystem.getDatabases().size() == 0) return null;
@@ -130,6 +137,27 @@ public class ResourceSystem {
                 if (entry != null)
                     return entry;
             }
+        }
+
+        return null;
+    }
+
+    public static FileEntry get(SHA1 sha1) {
+        if (ResourceSystem.getDatabases().size() == 0) return null;
+
+        // Prefer current database, can be null if not in GUI mode
+        FileData current = ResourceSystem.selectedDatabase;
+        if (current != null) {
+            FileEntry entry = current.get(sha1);
+            if (entry != null)
+                return entry;
+        }
+
+        for (FileData database : ResourceSystem.getDatabases()) {
+            if (database == current) continue;
+            FileEntry entry = database.get(sha1);
+            if (entry != null)
+                return entry;
         }
 
         return null;

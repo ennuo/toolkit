@@ -32,10 +32,7 @@ public class Dependinator extends javax.swing.JFrame {
 
         private void setDescriptor(ResourceDescriptor descriptor) {
             this.replacement = descriptor;
-            if (descriptor.isGUID())
-                this.entry = ResourceSystem.get(descriptor.getGUID());
-            else
-                this.entry = null;
+            this.entry = ResourceSystem.get(descriptor);
         }
 
         @Override public String toString() {

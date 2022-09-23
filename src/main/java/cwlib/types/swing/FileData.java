@@ -7,6 +7,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import cwlib.enums.DatabaseType;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.Nodes;
@@ -108,6 +109,17 @@ public abstract class FileData {
         boolean success = this.save(this.file);
         if (success) this.hasChanges = false;
         return success;
+    }
+
+    public FileEntry get(ResourceDescriptor descriptor) {
+        if (descriptor == null) return null;
+        if (descriptor.isHash()) return this.get(descriptor.getSHA1());
+        if (descriptor.isGUID()) return this.get(descriptor.getGUID());
+        return null;
+    }
+
+    public FileEntry get(SHA1 sha1) {
+        throw new UnsupportedOperationException(String.format("Unable to search for SHA1 on database of type %s", this.type));
     }
     
     public FileEntry get(GUID guid) {

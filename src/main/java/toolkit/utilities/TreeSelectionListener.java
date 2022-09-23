@@ -62,28 +62,18 @@ public class TreeSelectionListener {
             
             int magic = Bytes.toIntegerBE(data);
 
-            if (entry.getInfo() == null) {
+            ResourceInfo info = entry.getInfo();
+            if (info == null) {
                 ResourceSystem.println("Loading " + entry.getPath());
-                entry.setInfo(new ResourceInfo(node.getName(), data));
+                
+                info = new ResourceInfo(node.getName(), data);
+                entry.setInfo(info);
+
                 ResourceSystem.addCache(node);
             }
-            
-            // if (entry.dependencyModel == null || entry.dependencies == null || entry.hasMissingDependencies) {
-            //     FileModel model = new FileModel(new FileNode("x", null, entry));
-            //     boolean recursive = !(resource.type == ResourceType.PACKS || 
-            //                         resource.type == ResourceType.SLOT_LIST || 
-            //                         resource.type == ResourceType.LEVEL || 
-            //                         resource.type == ResourceType.ADVENTURE_CREATE_PROFILE || 
-            //                         resource.type == ResourceType.PALETTE);
-                
-            //     entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
-                
-            //     toolkit.generateDependencyTree(entry, model);
-            //     entry.dependencyModel = model;
-            // }
 
-            // if (ResourceSystem.getSelected() == node && entry.dependencyModel != null && tree == currentTree)
-            //     toolkit.dependencyTree.setModel(entry.dependencyModel);
+            if (ResourceSystem.getSelected() == node && info.getModel() != null && tree == currentTree)
+                toolkit.dependencyTree.setModel(info.getModel());
             
             toolkit.setEditorPanel(node);
             

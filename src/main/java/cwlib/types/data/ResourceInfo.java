@@ -1,5 +1,7 @@
 package cwlib.types.data;
 
+import java.util.HashSet;
+
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
@@ -13,10 +15,17 @@ import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
+import cwlib.types.databases.FileEntry;
+import cwlib.types.swing.FileModel;
+import cwlib.types.swing.FileNode;
 import cwlib.util.Bytes;
 import cwlib.util.Compressor;
+import cwlib.util.Nodes;
+import cwlib.util.Resources;
 
 public class ResourceInfo {
+    private static final int MAX_DEPENDENCY_DEPTH = 2;
+
     private Object resource;
     private Revision revision;
     private ResourceType type = ResourceType.INVALID;
@@ -24,6 +33,7 @@ public class ResourceInfo {
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
     private ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     private boolean isMissingDependencies;
+    private FileModel model = new FileModel(new FileNode("DEPENDENCIES", null, null, null));
 
     public <T extends Compressable> ResourceInfo(String name, byte[] source) {
         if (source == null || source.length < 4) return;
@@ -115,6 +125,48 @@ public class ResourceInfo {
             RTexture texture = new RTexture(resource);
             this.resource = texture;
         }
+
+        
+        boolean isSlowResource = 
+            this.type == ResourceType.PACKS ||
+            this.type == ResourceType.SLOT_LIST ||
+            this.type == ResourceType.LEVEL ||
+            this.type == ResourceType.ADVENTURE_CREATE_PROFILE ||
+            this.type == ResourceType.PALETTE ||
+            this.type == ResourceType.CACHED_LEVEL_DATA ||
+            this.type == ResourceType.CACHED_COSTUME_DATA ||
+            this.type == ResourceType.LOCAL_PROFILE ||
+            this.type == ResourceType.BIG_PROFILE;
+        
+        int depth = isSlowResource ? ResourceInfo.MAX_DEPENDENCY_DEPTH : 0;
+        if (this.dependencies.length != 0)
+            this.populateDependencyModel(this.dependencies, new HashSet<>(), depth);
+    }
+
+    private void populateDependencyModel(ResourceDescriptor[] dependencies, HashSet<ResourceDescriptor> unique, int depth) {
+        if (dependencies == null) return;
+        if (depth > ResourceInfo.MAX_DEPENDENCY_DEPTH) return;
+
+        for (ResourceDescriptor descriptor : dependencies) {
+            if (unique.contains(descriptor)) continue;
+            unique.add(descriptor);
+            
+            FileEntry entry = ResourceSystem.get(descriptor);
+            if (entry == null) continue;
+
+            Nodes.addNode((FileNode) this.model.getRoot(), entry);
+
+            if ((depth + 1) <= ResourceInfo.MAX_DEPENDENCY_DEPTH) {
+                byte[] data = ResourceSystem.extract(entry);
+                if (data != null) {
+                    this.populateDependencyModel(
+                        Resources.getDependencyTable(data).toArray(ResourceDescriptor[]::new), 
+                        unique, 
+                        (depth + 1)
+                    );
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked") public <T> T getResource() { return (T) this.resource; }
@@ -124,6 +176,7 @@ public class ResourceInfo {
     public byte getCompressionFlags() { return this.compressionFlags; }
     public ResourceDescriptor[] getDependencies() { return this.dependencies; }
     public boolean isMissingDependencies() { return this.isMissingDependencies; }
+    public FileModel getModel() { return this.model; }
     public boolean isResource() { return this.type != ResourceType.INVALID; }
     public boolean isCompressedResource() { 
         return this.type != ResourceType.INVALID && 

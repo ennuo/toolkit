@@ -267,6 +267,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
 
     @Override public void remove(FileEntry entry) { this.database.remove(entry); }
     @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }
+    @Override public FileDBRow get(SHA1 sha1) { return this.database.get(sha1); }
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
     @Override public boolean save(File file) {
         if (file == null) return false;

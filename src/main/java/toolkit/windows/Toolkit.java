@@ -2209,20 +2209,6 @@ public class Toolkit extends javax.swing.JFrame {
         new AssetExporter(ResourceSystem.getSelected().getEntry()).setVisible(true);
     }//GEN-LAST:event_exportAsModCustomActionPerformed
 
-    public void generateDependencyTree(FileEntry entry, FileModel model) {
-        // TODO: FIX DEPENDENCY TREE
-        // if (entry.dependencies != null) {
-        //     FileNode root = (FileNode) model.getRoot();
-        //     for (int i = 0; i < entry.dependencies.size(); ++i) {
-        //         FileEntry dependencyEntry = ResourceSystem.get(entry.dependencies.get(i));
-        //         if (dependencyEntry == null || dependencyEntry.path == null) continue;
-        //         Nodes.addNode(root, dependencyEntry);
-        //         if (dependencyEntry.dependencies != null && dependencyEntry != entry)
-        //             generateDependencyTree(dependencyEntry, model);
-        //     }
-        // }
-    }
-
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;

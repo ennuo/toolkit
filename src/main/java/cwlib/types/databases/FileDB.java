@@ -137,6 +137,23 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
     public boolean exists(long guid) { return this.exists(new GUID(guid)); }
 
     /**
+     * Gets a FileDBRow with a specified SHA1.
+     * 
+     * This method generally should not be used, as it's
+     * not guaranteed that this row is unique. It's also
+     * slower than GUID lookup, as a HashMap is not maintained.
+     * 
+     * @param sha1 SHA1 to find
+     * @return FileDBRow with SHA1
+     */
+    @Override public FileDBRow get(SHA1 sha1) {
+        for (FileDBRow row : this.entries)
+            if (row.getSHA1().equals(sha1))
+                return row;
+        return null;
+    }
+
+    /**
      * Gets a FileDBRow with specified GUID.
      * @param guid GUID to find
      * @return FileDBRow with GUID

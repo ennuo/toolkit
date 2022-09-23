@@ -82,9 +82,7 @@ public class AssetExporter extends JDialog {
         
         public Asset(ResourceDescriptor descriptor) {
             this.descriptor = descriptor;
-            GUID guid = descriptor.getGUID();
-            if (guid != null)
-                this.entry = ResourceSystem.get(guid);
+            this.entry = ResourceSystem.get(descriptor);
         }
         
         @Override public String toString() {

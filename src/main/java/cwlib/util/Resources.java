@@ -31,7 +31,7 @@ public class Resources {
 
         ResourceType type = ResourceType.fromMagic(stream.str(3));
         if (type == ResourceType.INVALID)
-            throw new IllegalArgumentException("Data provided is not a serialized resource!");
+            return dependencies;
 
         SerializationType method = SerializationType.fromValue(stream.str(1));
         // No resource tables stored in other types

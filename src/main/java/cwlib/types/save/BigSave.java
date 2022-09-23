@@ -28,10 +28,12 @@ import cwlib.resources.RBigProfile;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class BigSave extends FileData {
     private ArrayList<SaveEntry> entries = new ArrayList<>();
+    private HashMap<SHA1, SaveEntry> lookup = new HashMap<>();
     
     /**
      * Used for determing which moon model positions to use
@@ -112,6 +114,9 @@ public class BigSave extends FileData {
             byte[] data = fat.extract();
             this.entries.add(new SaveEntry(this, this.generatePath(data, sha1), fat.getSize(), sha1));
         }
+
+        for (SaveEntry entry : this.entries)
+            this.lookup.put(entry.getSHA1(), entry);
     }
 
     public String generatePath(byte[] data, SHA1 sha1) {
@@ -128,6 +133,7 @@ public class BigSave extends FileData {
         return "resources/" + type.getFolder() + sha1.toString() + type.getExtension();
     }
 
+    @Override public SaveEntry get(SHA1 sha1) { return this.lookup.get(sha1); }
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
 
     @Override public void remove(FileEntry entry) {
