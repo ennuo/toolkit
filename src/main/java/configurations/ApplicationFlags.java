@@ -1,4 +1,4 @@
-package toolkit.configurations;
+package configurations;
 
 import java.io.File;
 

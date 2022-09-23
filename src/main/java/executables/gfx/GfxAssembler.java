@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import configurations.ApplicationFlags;
 import cwlib.enums.BoxType;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
@@ -13,7 +14,6 @@ import cwlib.singleton.ResourceSystem;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.util.FileIO;
-import toolkit.configurations.ApplicationFlags;
 
 public class GfxAssembler {
     public static String BRDF = FileIO.getResourceFileAsString("/brdf.cg");

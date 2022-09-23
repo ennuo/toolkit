@@ -7,7 +7,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
-import toolkit.configurations.Config;
+import configurations.Config;
 import toolkit.windows.Toolkit;
 
 import static org.lwjgl.system.MemoryStack.stackPush;

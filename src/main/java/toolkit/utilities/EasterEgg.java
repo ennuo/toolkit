@@ -1,9 +1,8 @@
 package toolkit.utilities;
 
-import toolkit.configurations.Config;
-
 import java.util.HashMap;
 
+import configurations.Config;
 import toolkit.windows.Toolkit;
 
 public class EasterEgg {

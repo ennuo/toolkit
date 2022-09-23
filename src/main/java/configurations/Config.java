@@ -1,4 +1,4 @@
-package toolkit.configurations;
+package configurations;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

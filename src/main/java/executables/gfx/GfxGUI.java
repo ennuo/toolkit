@@ -2,6 +2,10 @@ package executables.gfx;
 
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
+
+import configurations.ApplicationFlags;
+import configurations.Config;
+import configurations.Profile;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
@@ -22,9 +26,6 @@ import java.nio.file.Path;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 
-import toolkit.configurations.ApplicationFlags;
-import toolkit.configurations.Config;
-import toolkit.configurations.Profile;
 import toolkit.utilities.FileChooser;
 
 public class GfxGUI extends javax.swing.JFrame {

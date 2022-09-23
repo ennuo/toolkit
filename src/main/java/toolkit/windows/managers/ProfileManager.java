@@ -5,8 +5,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
-import toolkit.configurations.Config;
-import toolkit.configurations.Profile;
+import configurations.Config;
+import configurations.Profile;
 import toolkit.utilities.FileChooser;
 
 public class ProfileManager extends javax.swing.JDialog {

@@ -49,8 +49,6 @@ import cwlib.types.save.SaveEntry;
 import cwlib.util.Bytes;
 import cwlib.util.Crypto;
 import cwlib.util.Images;
-import toolkit.configurations.Config;
-import toolkit.configurations.Profile;
 import toolkit.functions.*;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
@@ -62,6 +60,9 @@ import java.nio.file.*;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import javax.swing.tree.TreePath;
+
+import configurations.Config;
+import configurations.Profile;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
