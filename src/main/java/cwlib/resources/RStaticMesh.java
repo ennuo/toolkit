@@ -2,8 +2,13 @@ package cwlib.resources;
 
 import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.types.Resource;
+import cwlib.enums.PrimitiveType;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.Bytes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -22,7 +27,7 @@ public class RStaticMesh {
 
     private Vector2f[] uv0;
     private Vector2f[] uv1;
-    
+
     private int[] indices;
     
     public RStaticMesh(Resource resource) {
@@ -75,4 +80,35 @@ public class RStaticMesh {
     public Vector2f[] getUV1() { return this.uv1; }
 
     public int[] getIndices() { return this.indices; }
+
+    /**
+     * Calculates a triangle list from a given range in the index buffer.
+     * @param start First face to include in list
+     * @param count Number of faces from start
+     * @return Mesh's triangle list
+     */
+    public int[] getTriangles(int start, int count, PrimitiveType type) {
+        if (this.indices == null)
+            throw new IllegalStateException("Can't get triangles from mesh without index buffer!");
+
+        int[] faces = this.indices;
+        
+        if (type == PrimitiveType.GL_TRIANGLES) return faces;
+
+        ArrayList<Integer> triangles = new ArrayList<>(this.numVerts * 0x3);
+        Collections.addAll(triangles, faces[0], faces[1], faces[2]);
+        for (int i = 3, j = 1; i < faces.length; ++i, ++j) {
+            if (faces[i] == 65535) {
+                if (i + 3 >= count) break;
+                Collections.addAll(triangles, faces[i + 1], faces[i + 2], faces[i + 3]);
+                i += 3;
+                j = 0;
+                continue;
+            }
+            if ((j & 1) != 0) Collections.addAll(triangles, faces[i - 2], faces[i], faces[i - 1]);
+            else Collections.addAll(triangles, faces[i - 2], faces[i - 1], faces[i]);
+        }
+
+        return triangles.stream().mapToInt(Integer::valueOf).toArray();
+    }
 }

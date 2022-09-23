@@ -27,10 +27,12 @@ import cwlib.util.Bytes;
 import cwlib.enums.BoxType;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.resources.RAnimation;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
+import cwlib.resources.RTexture;
 import cwlib.resources.RAnimation.AnimationType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.animation.AnimBone;
@@ -272,8 +274,8 @@ public class MeshExporter {
             glb.setAsset("CRAFTWORLD", "2.0");
             
             Mesh glMesh = new Mesh();
-            for (int i = 0; i < mesh.info.primitives.length; ++i) {
-                StaticPrimitive primitive = mesh.info.primitives[i];
+            for (int i = 0; i < mesh.getMeshInfo().primitives.length; ++i) {
+                StaticPrimitive primitive = mesh.getMeshInfo().primitives[i];
                 MeshPrimitive glPrimitive = new MeshPrimitive();
                 glPrimitive.addAttributes("POSITION", 
                         glb.createAccessor(
@@ -629,6 +631,21 @@ public class MeshExporter {
                     return node;
             return null;
         }
+
+        public byte[] convertTexture(RGfxMaterial gfx, int index) {
+            ResourceDescriptor descriptor = gfx.textures[index];
+            if (descriptor == null) return null;
+            byte[] data = ResourceSystem.extract(descriptor);
+            if (data == null) return null;
+            RTexture texture = null;
+            try { 
+                texture = new RTexture(data);
+                try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+                    ImageIO.write(texture.getImage(), "png", stream);
+                    return stream.toByteArray();
+                }
+            } catch (Exception ex) { return null; }
+        }
         
         private int createMaterial(String name, RGfxMaterial gmat) {
             if (this.materials.containsKey(name))
@@ -664,7 +681,7 @@ public class MeshExporter {
                     int textureIndex = (int) params[5];
                     FileEntry entry = ResourceSystem.get(gmat.textures[textureIndex]);
                     if (entry == null) continue;
-                    byte[] texture = gmat.extractTexture(textureIndex);
+                    byte[] texture = this.convertTexture(gmat, textureIndex);
                     if (texture == null) continue;
                     int source = addTexture(Paths.get(entry.getPath()).getFileName().toString().replaceFirst("[.][^.]+$", ""), texture);
                     
@@ -944,8 +961,7 @@ public class MeshExporter {
             for (int i = 0; i < primitives.length; ++i) {
                 StaticPrimitive primitive = primitives[i];
                 int primitiveStart = output.getOffset();
-                int[] triangles = 
-                        RMesh.getIndices(mesh.indices, primitive.indexStart, primitive.numIndices, primitive.type);
+                int[] triangles = mesh.getTriangles(primitive.indexStart, primitive.numIndices, primitive.type);
                 primitive.numVerts = getMax(triangles) + 1;
                 for (int triangle : triangles)
                     output.u16((short) triangle);
@@ -973,8 +989,12 @@ public class MeshExporter {
                     cwlib.structs.mesh.Primitive primitive
                             = subMeshes[i][j];
                     int[] triangles = mesh.getTriangles(primitive);
-                    //primitive.getMinVert() = getMin(triangles);
-                    //primitive.getMaxVert() = getMax(triangles);
+
+                    primitive.setMinMax(
+                        getMin(triangles), 
+                        getMax(triangles)
+                    );
+
                     for (int triangle : triangles)
                         output.u16((short) (triangle - primitive.getMinVert()));
                     createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.getOffset() - triangleStart);

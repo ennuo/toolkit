@@ -78,8 +78,8 @@ public class Primitive implements Serializable {
         if (version >= Revisions.MESH_TEXTURE_ALTERNATIVES)
             primitive.textureAlternatives = serializer.resource(primitive.textureAlternatives, ResourceType.TEXTURE_LIST);
         
-        primitive.minVert = serializer.i32(primitive.getMinVert());
-        primitive.maxVert = serializer.i32(primitive.getMaxVert());
+        primitive.minVert = serializer.i32(primitive.minVert);
+        primitive.maxVert = serializer.i32(primitive.maxVert);
         primitive.firstIndex = serializer.i32(primitive.firstIndex);
         primitive.numIndices = serializer.i32(primitive.numIndices);
         primitive.region = serializer.i32(primitive.region);
@@ -95,6 +95,17 @@ public class Primitive implements Serializable {
     public int getFirstIndex() { return this.firstIndex; }
     public int getNumIndices() { return this.numIndices; }
     public int getRegion() { return this.region; }
+
+    /**
+     * In PS4 versions of models, the min/max vertices are all over the place,
+     * as I'm not sure what's the reason for it, the MeshExporter has to fix up primitives.
+     * @param minVert Fixed up minimum vertex in primitive
+     * @param maxVert Fixed up maximum vertex in primitive
+     */
+    public void setMinMax(int minVert, int maxVert) {
+        this.minVert = minVert;
+        this.maxVert = maxVert;
+    }
 
     public void setMaterial(ResourceDescriptor material) { this.material = material; }
     public void setRegion(int region) { this.region = region; }

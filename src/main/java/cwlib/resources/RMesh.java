@@ -1086,8 +1086,8 @@ public class RMesh implements Compressable, Serializable {
             Vector3f[] offsets = new Vector3f[this.numVerts];
             Vector3f[] normals = new Vector3f[this.numVerts];
             for (int j = 0; j < this.numVerts; ++j) {
-                offsets[i] = stream.v3();
-                normals[i] = Bytes.unpackNormal32(stream.u32(true));
+                offsets[j] = stream.v3();
+                normals[j] = Bytes.unpackNormal32(stream.u32(true));
             }
             morphs[i] = new Morph(offsets, normals);
         }
@@ -1149,6 +1149,7 @@ public class RMesh implements Compressable, Serializable {
         Collections.addAll(triangles, faces[0], faces[1], faces[2]);
         for (int i = 3, j = 1; i < faces.length; ++i, ++j) {
             if (faces[i] == 65535) {
+                if (i + 3 >= count) break;
                 Collections.addAll(triangles, faces[i + 1], faces[i + 2], faces[i + 3]);
                 i += 3;
                 j = 0;
