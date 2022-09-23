@@ -2,6 +2,11 @@ package cwlib.enums;
 
 public enum Branch {
     /**
+     * Dummy branch.
+     */
+    NONE(0x0, 0x0, 0x0),
+
+    /**
      * Branched revision for Leerdammer update in LittleBigPlanet 1.
      * Tag: LD
      */

@@ -30,7 +30,7 @@ public class Compressinator extends javax.swing.JFrame {
 
         for (ResourceType type : ResourceType.values()) {
             // UI would need to be updated to handle CellGcmTexture.
-            if (type.equals(ResourceType.GTF_TEXTURE))
+            if (type.equals(ResourceType.GTF_TEXTURE) || type.equals(ResourceType.STATIC_MESH) || type.equals(ResourceType.FONTFACE))
                 continue;
             
             if (type.getHeader() != null) 

@@ -19,6 +19,21 @@ public final class CellGcmTexture {
     private final byte flags;
     private final int pitch, offset;
     private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
+
+    public CellGcmTexture(CellGcmEnumForGtf format, short width, short height, byte mips, boolean noSRGB) {
+        this.format = format;
+        this.mipmap = mips;
+        this.dimension = 2;
+        this.cubemap = 0;
+        this.remap = 0xaae4;
+        this.width = width;
+        this.height = height;
+        this.depth = 1;
+        this.location = 0;
+        this.flags = (byte) ((noSRGB) ? 0x1 : 0x0);
+        this.pitch = 0;
+        this.offset = 0;
+    }
     
     /**
      * Deserializes TextureInfo from stream.
