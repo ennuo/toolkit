@@ -2212,7 +2212,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_exportAsModCustomActionPerformed
 
     private void openGfxCompilerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openGfxCompilerActionPerformed
-        new GfxGUI();
+        new GfxGUI().setVisible(true);
     }//GEN-LAST:event_openGfxCompilerActionPerformed
 
     public void populateMetadata(RPlan item) {
