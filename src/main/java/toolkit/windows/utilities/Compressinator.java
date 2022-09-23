@@ -1,38 +1,39 @@
 package toolkit.windows.utilities;
 
-import cwlib.types.Resource;
+import cwlib.enums.Branch;
+import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.CompressionFlags;
-import cwlib.util.FileIO;
-import cwlib.util.Strings;
-import toolkit.utilities.FileChooser;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.serializer.SerializationData;
-import cwlib.types.data.Revision;
-import cwlib.types.data.GUID;
+import cwlib.singleton.ResourceSystem;
+import cwlib.structs.texture.CellGcmTexture;
+import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
-
+import cwlib.types.data.Revision;
+import cwlib.types.databases.FileEntry;
+import cwlib.util.Bytes;
+import cwlib.util.Compressor;
+import cwlib.util.FileIO;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import toolkit.utilities.FileChooser;
+import toolkit.windows.Toolkit;
+import toolkit.dialogues.DescriptorDialogue;
 
 public class Compressinator extends javax.swing.JFrame {
-    ArrayList<ResourceDescriptor> dependencies = new ArrayList<ResourceDescriptor>();
-    DefaultListModel<String> model = new DefaultListModel<>();
-    FileChooser fileChooser;
-    byte[] fileData;
-
     static ResourceType[] types;
     static {
         ArrayList<ResourceType> collection = new ArrayList<>();
 
+        collection.add(ResourceType.FILE_OF_BYTES);
         for (ResourceType type : ResourceType.values()) {
-            // UI would need to be updated to handle CellGcmTexture.
-            if (type.equals(ResourceType.GTF_TEXTURE) || type.equals(ResourceType.STATIC_MESH) || type.equals(ResourceType.FONTFACE))
+            if (type.equals(ResourceType.STATIC_MESH) || type.equals(ResourceType.FONTFACE))
                 continue;
-            
             if (type.getHeader() != null) 
                 collection.add(type);
         }
@@ -40,444 +41,583 @@ public class Compressinator extends javax.swing.JFrame {
         types = collection.toArray(ResourceType[]::new);
     }
     
+    private static class Dependentry {
+        private final ResourceDescriptor descriptor;
+        private final FileEntry entry;
+        
+        private Dependentry(ResourceDescriptor descriptor) {
+            this.descriptor = descriptor;
+            if (descriptor.isGUID())
+                this.entry = ResourceSystem.get(descriptor.getGUID());
+            else
+                this.entry = null;
+        }
+        
+        @Override public String toString() {
+            String postfix = String.format(" [%s]", this.descriptor.getType());
+            if (this.entry != null)
+                return this.entry.getName() + postfix;
+            return this.descriptor.toString() + postfix;
+        }
+
+        @Override public int hashCode() { return this.descriptor.hashCode(); }
+        @Override public boolean equals(Object other) { 
+            if (other == this) return true;
+            if (!(other instanceof Dependentry)) return false;
+            return ((Dependentry)other).descriptor.equals(this.descriptor);
+        }
+    }
+    
+    private Revision revision;
+    private byte[] dataSource;
+    private DefaultListModel<Dependentry> model = new DefaultListModel<>();
+    
     public Compressinator() {
         this.initComponents();
-        this.setResizable(false);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setIconImage(new ImageIcon(this.getClass().getResource("/icon.png")).getImage());
-        this.setTitle("Compressinator");
+        this.setLocationRelativeTo(Toolkit.instance);
+        this.getRootPane().setDefaultButton(this.compressButton);
+        
+        this.dependencyList.setModel(this.model);
+        
+        this.revisionSpinner.setValue(0x272);
+        this.branchCombo.setSelectedItem(Branch.LEERDAMMER);
+        this.branchSpinner.setValue(Branch.LEERDAMMER.getRevision() & 0xffff);
+        
+        this.resourceCombo.addActionListener(listener -> this.update());
+        this.revisionSpinner.addChangeListener(listener -> this.update());
+        this.branchCombo.addActionListener(listener -> this.update());
+        this.branchSpinner.addChangeListener(listener -> this.update());
+        
+        this.update();
     }
+    
+    private void update() {
+        Branch branch = (Branch) this.branchCombo.getSelectedItem(); 
+        this.revision = new Revision(
+                (int)this.revisionSpinner.getValue(),
+                branch.getID(),
+                (short) ((int)this.branchSpinner.getValue())
+        );
+        
+        ResourceType type = (ResourceType) this.resourceCombo.getSelectedItem();
+        
+        boolean hasRevision = type != ResourceType.FILE_OF_BYTES && type != ResourceType.TEXTURE && type != ResourceType.GTF_TEXTURE;
+        boolean hasBranchRevision = hasRevision && this.revision.getVersion() >= Revisions.BRANCHES;
+        boolean hasCompressionFlags = hasRevision && ((this.revision.getVersion() >= 0x297) || this.revision.after(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
+        
+        this.revisionSpinner.setEnabled(hasRevision);
+        this.branchCombo.setEnabled(hasBranchRevision);
+        this.branchSpinner.setEnabled(hasBranchRevision && branch != Branch.NONE);
+        
+        this.integersCheckbox.setEnabled(hasCompressionFlags);
+        this.matrixCheckbox.setEnabled(hasCompressionFlags);
+        this.vectorsCheckbox.setEnabled(hasCompressionFlags);
+        
+        boolean isGTF = type == ResourceType.GTF_TEXTURE;
+        
+        this.formatCombo.setEnabled(isGTF);
+        this.heightSpinner.setEnabled(isGTF);
+        this.widthSpinner.setEnabled(isGTF);
+        this.mipSpinner.setEnabled(isGTF);
+        
+        if (type == ResourceType.FILE_OF_BYTES) {
+            this.descriptorTabs.setSelectedIndex(-1);
+            this.descriptorTabs.setEnabledAt(1, false);
+            this.descriptorTabs.setEnabledAt(0, false);
+        }
+        else if (type == ResourceType.TEXTURE || isGTF) {
+            this.descriptorTabs.setEnabledAt(1, true);
+            this.descriptorTabs.setEnabledAt(0, false);
+            
+            this.gtfPanel.setVisible(isGTF);
 
-    @SuppressWarnings("unchecked")
+            this.descriptorTabs.setSelectedIndex(1);
+        } else {
+            this.descriptorTabs.setEnabledAt(0, true);
+            this.descriptorTabs.setEnabledAt(1, false);
+            
+            this.descriptorTabs.setSelectedIndex(0);
+        }
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        refType = new javax.swing.ButtonGroup();
-        jFormattedTextField1 = new javax.swing.JFormattedTextField();
-        headerPanel = new javax.swing.JPanel();
-        headerCategoryLabel = new javax.swing.JLabel();
-        resourceCombo = new javax.swing.JComboBox(Compressinator.types);
-        magicLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        typeLabel = new javax.swing.JLabel();
+        resourceCombo = new javax.swing.JComboBox(types);
         revisionLabel = new javax.swing.JLabel();
-        revision = new javax.swing.JTextField();
+        revisionSpinner = new javax.swing.JSpinner();
         branchLabel = new javax.swing.JLabel();
-        branchID = new javax.swing.JTextField();
-        branchRevision = new javax.swing.JTextField();
+        branchCombo = new javax.swing.JComboBox(Branch.values());
+        branchSpinner = new javax.swing.JSpinner();
         compressionFlagsLabel = new javax.swing.JLabel();
-        useCompressedIntegers = new javax.swing.JCheckBox();
-        useCompressMatrices = new javax.swing.JCheckBox();
-        useCompressedVectors = new javax.swing.JCheckBox();
-        dependencyManagerPanel = new javax.swing.JPanel();
-        dependenciesCategoryLabel = new javax.swing.JLabel();
-        dependencyScrollPane = new javax.swing.JScrollPane();
+        zlibCheckbox = new javax.swing.JCheckBox();
+        integersCheckbox = new javax.swing.JCheckBox();
+        matrixCheckbox = new javax.swing.JCheckBox();
+        vectorsCheckbox = new javax.swing.JCheckBox();
+        dataLabel = new javax.swing.JLabel();
+        openButton = new javax.swing.JButton();
+        dataSourceLabel = new javax.swing.JLabel();
+        descriptorTabs = new javax.swing.JTabbedPane();
+        dependencyPanel = new javax.swing.JPanel();
+        dependencyListContainer = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList<>();
-        dependencyModifierPanel = new javax.swing.JPanel();
-        dependencyCategoryLabel = new javax.swing.JLabel();
-        hashButton = new javax.swing.JRadioButton();
-        guidButton = new javax.swing.JRadioButton();
-        descriptorValue = new javax.swing.JTextField();
-        descriptorResourceType = new javax.swing.JComboBox(ResourceType.values());
-        addEntry = new javax.swing.JButton();
-        removeEntry = new javax.swing.JButton();
-        compress = new javax.swing.JButton();
-        dataPanel = new javax.swing.JPanel();
-        dataCategoryLabel = new javax.swing.JLabel();
-        openFile = new javax.swing.JButton();
-        fileLabel = new javax.swing.JLabel();
+        addDependencyButton = new javax.swing.JButton();
+        removeDependencyButton = new javax.swing.JButton();
+        textureInfoPanel = new javax.swing.JPanel();
+        gtfPanel = new javax.swing.JPanel();
+        formatLevel = new javax.swing.JLabel();
+        formatCombo = new javax.swing.JComboBox(CellGcmEnumForGtf.values());
+        mipsLabel = new javax.swing.JLabel();
+        mipSpinner = new javax.swing.JSpinner();
+        widthLabel = new javax.swing.JLabel();
+        heightLabel = new javax.swing.JLabel();
+        widthSpinner = new javax.swing.JSpinner();
+        heightSpinner = new javax.swing.JSpinner();
+        noSRGBCheckbox = new javax.swing.JCheckBox();
+        compressButton = new javax.swing.JButton();
 
-        refType.add(hashButton);
-        refType.add(guidButton);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Compressinator");
+        setResizable(false);
 
-        jFormattedTextField1.setText("jFormattedTextField1");
+        typeLabel.setText("Resource Type:");
+        typeLabel.setMaximumSize(new java.awt.Dimension(105, 16));
+        typeLabel.setMinimumSize(new java.awt.Dimension(105, 16));
+        typeLabel.setPreferredSize(new java.awt.Dimension(105, 16));
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        revisionLabel.setText("Revision:");
+        revisionLabel.setMaximumSize(new java.awt.Dimension(105, 16));
+        revisionLabel.setMinimumSize(new java.awt.Dimension(105, 16));
+        revisionLabel.setPreferredSize(new java.awt.Dimension(105, 16));
 
-        headerPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        revisionSpinner.setModel(new javax.swing.SpinnerNumberModel(306, 306, null, 1));
 
-        headerCategoryLabel.setText("Header");
+        branchLabel.setText("Branch:");
+        branchLabel.setMaximumSize(new java.awt.Dimension(105, 16));
+        branchLabel.setMinimumSize(new java.awt.Dimension(105, 16));
+        branchLabel.setPreferredSize(new java.awt.Dimension(105, 16));
 
-        magicLabel.setText("Magic");
+        branchSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 65535, 1));
 
-        revisionLabel.setText("Revision");
+        compressionFlagsLabel.setText("Compression Flags:");
+        compressionFlagsLabel.setMaximumSize(new java.awt.Dimension(105, 16));
+        compressionFlagsLabel.setMinimumSize(new java.awt.Dimension(105, 16));
+        compressionFlagsLabel.setPreferredSize(new java.awt.Dimension(105, 16));
 
-        revision.setText("0x272");
+        zlibCheckbox.setSelected(true);
+        zlibCheckbox.setText("Zlib");
+        zlibCheckbox.setMaximumSize(new java.awt.Dimension(50, 20));
+        zlibCheckbox.setMinimumSize(new java.awt.Dimension(50, 20));
+        zlibCheckbox.setPreferredSize(new java.awt.Dimension(50, 20));
 
-        branchLabel.setText("Branch");
+        integersCheckbox.setSelected(true);
+        integersCheckbox.setText("Integers");
+        integersCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        integersCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        integersCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
-        branchID.setText("0x4c44");
+        matrixCheckbox.setSelected(true);
+        matrixCheckbox.setText("Matrix");
+        matrixCheckbox.setMaximumSize(new java.awt.Dimension(60, 20));
+        matrixCheckbox.setMinimumSize(new java.awt.Dimension(60, 20));
+        matrixCheckbox.setPreferredSize(new java.awt.Dimension(60, 20));
 
-        branchRevision.setText("0x0017");
+        vectorsCheckbox.setSelected(true);
+        vectorsCheckbox.setText("Vectors");
+        vectorsCheckbox.setMaximumSize(new java.awt.Dimension(70, 20));
+        vectorsCheckbox.setMinimumSize(new java.awt.Dimension(70, 20));
+        vectorsCheckbox.setPreferredSize(new java.awt.Dimension(70, 20));
 
-        compressionFlagsLabel.setText("Compression Flags");
+        dataLabel.setText("Data:");
 
-        useCompressedIntegers.setSelected(true);
-        useCompressedIntegers.setText("Integers");
+        openButton.setText("Open");
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
 
-        useCompressMatrices.setSelected(true);
-        useCompressMatrices.setText("Matrices");
+        dataSourceLabel.setText("Select a data source...");
 
-        useCompressedVectors.setSelected(true);
-        useCompressedVectors.setText("Vectors");
-
-        javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
-        headerPanel.setLayout(headerPanelLayout);
-        headerPanelLayout.setHorizontalGroup(
-            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(headerPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(headerPanelLayout.createSequentialGroup()
-                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(compressionFlagsLabel)
-                            .addGroup(headerPanelLayout.createSequentialGroup()
-                                .addComponent(useCompressedIntegers)
-                                .addGap(18, 18, 18)
-                                .addComponent(useCompressMatrices)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(useCompressedVectors)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(headerPanelLayout.createSequentialGroup()
-                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(magicLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(headerCategoryLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(branchLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(revisionLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(typeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(branchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerPanelLayout.createSequentialGroup()
-                                .addComponent(branchID, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(branchRevision))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(resourceCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(revision, javax.swing.GroupLayout.Alignment.TRAILING))))
-                .addContainerGap())
-        );
-        headerPanelLayout.setVerticalGroup(
-            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(headerPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(headerCategoryLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(resourceCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(magicLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(revision)
-                    .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(branchLabel)
-                    .addComponent(branchID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(branchRevision, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compressionFlagsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(useCompressedIntegers)
-                    .addComponent(useCompressMatrices)
-                    .addComponent(useCompressedVectors))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        dependencyManagerPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        dependenciesCategoryLabel.setText("Dependencies");
-
-        dependencyList.setModel(model);
-        dependencyScrollPane.setViewportView(dependencyList);
-
-        dependencyModifierPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        dependencyCategoryLabel.setText("Dependency");
-
-        hashButton.setText("Hash");
-
-        guidButton.setSelected(true);
-        guidButton.setText("GUID");
-
-        descriptorValue.setText("2551");
-
-        addEntry.setText("Add");
-        addEntry.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addEntryActionPerformed(evt);
-            }
-        });
-
-        removeEntry.setText("Remove");
-        removeEntry.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeEntryActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout dependencyModifierPanelLayout = new javax.swing.GroupLayout(dependencyModifierPanel);
-        dependencyModifierPanel.setLayout(dependencyModifierPanelLayout);
-        dependencyModifierPanelLayout.setHorizontalGroup(
-            dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
-                        .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dependencyCategoryLabel)
-                            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
-                                .addComponent(hashButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(revisionSpinner)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(branchCombo, 0, 80, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(guidButton, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(branchSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(compressionFlagsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(zlibCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addComponent(integersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addComponent(matrixCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addComponent(vectorsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(dataLabel))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
-                        .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
-                                .addComponent(addEntry, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(removeEntry, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(descriptorValue)
-                            .addComponent(descriptorResourceType, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(openButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dataSourceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-        dependencyModifierPanelLayout.setVerticalGroup(
-            dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dependencyModifierPanelLayout.createSequentialGroup()
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(dependencyCategoryLabel)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(typeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(resourceCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hashButton)
-                    .addComponent(guidButton))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(revisionSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptorValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(branchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(branchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(branchSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptorResourceType, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(compressionFlagsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(dependencyModifierPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addEntry)
-                    .addComponent(removeEntry))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(zlibCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(integersCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(matrixCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vectorsCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dataLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(openButton)
+                    .addComponent(dataSourceLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout dependencyManagerPanelLayout = new javax.swing.GroupLayout(dependencyManagerPanel);
-        dependencyManagerPanel.setLayout(dependencyManagerPanelLayout);
-        dependencyManagerPanelLayout.setHorizontalGroup(
-            dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(dependenciesCategoryLabel)
-                    .addComponent(dependencyScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dependencyModifierPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        dependencyManagerPanelLayout.setVerticalGroup(
-            dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(dependencyManagerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(dependencyModifierPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(dependencyManagerPanelLayout.createSequentialGroup()
-                        .addComponent(dependenciesCategoryLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dependencyScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
+        dependencyList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        dependencyListContainer.setViewportView(dependencyList);
 
-        compress.setText("Compress");
-        compress.addActionListener(new java.awt.event.ActionListener() {
+        addDependencyButton.setText("Add");
+        addDependencyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compressActionPerformed(evt);
+                addDependencyButtonActionPerformed(evt);
             }
         });
 
-        dataPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        dataCategoryLabel.setText("Data");
-
-        openFile.setText("Open...");
-        openFile.addActionListener(new java.awt.event.ActionListener() {
+        removeDependencyButton.setText("Delete");
+        removeDependencyButton.setEnabled(false);
+        removeDependencyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openFileActionPerformed(evt);
+                removeDependencyButtonActionPerformed(evt);
             }
         });
 
-        fileLabel.setText("No file selected.");
-
-        javax.swing.GroupLayout dataPanelLayout = new javax.swing.GroupLayout(dataPanel);
-        dataPanel.setLayout(dataPanelLayout);
-        dataPanelLayout.setHorizontalGroup(
-            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dataPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout dependencyPanelLayout = new javax.swing.GroupLayout(dependencyPanel);
+        dependencyPanel.setLayout(dependencyPanelLayout);
+        dependencyPanelLayout.setHorizontalGroup(
+            dependencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(dataPanelLayout.createSequentialGroup()
-                        .addComponent(dataCategoryLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(dataPanelLayout.createSequentialGroup()
-                        .addComponent(openFile, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(dependencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dependencyListContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(dependencyPanelLayout.createSequentialGroup()
+                        .addComponent(addDependencyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(removeDependencyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
-        dataPanelLayout.setVerticalGroup(
-            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dataPanelLayout.createSequentialGroup()
+        dependencyPanelLayout.setVerticalGroup(
+            dependencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dependencyPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(dataCategoryLabel)
+                .addComponent(dependencyListContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openFile)
-                    .addComponent(fileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(dependencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addDependencyButton)
+                    .addComponent(removeDependencyButton))
+                .addContainerGap())
+        );
+
+        descriptorTabs.addTab("Dependencies", dependencyPanel);
+
+        formatLevel.setText("Format:");
+        formatLevel.setMaximumSize(new java.awt.Dimension(50, 16));
+        formatLevel.setMinimumSize(new java.awt.Dimension(50, 16));
+        formatLevel.setPreferredSize(new java.awt.Dimension(50, 16));
+
+        mipsLabel.setText("Mips:");
+        mipsLabel.setMaximumSize(new java.awt.Dimension(50, 16));
+        mipsLabel.setMinimumSize(new java.awt.Dimension(50, 16));
+        mipsLabel.setPreferredSize(new java.awt.Dimension(50, 16));
+
+        mipSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 128, 1));
+
+        widthLabel.setText("Width:");
+        widthLabel.setMaximumSize(new java.awt.Dimension(50, 16));
+        widthLabel.setMinimumSize(new java.awt.Dimension(50, 16));
+        widthLabel.setPreferredSize(new java.awt.Dimension(50, 16));
+
+        heightLabel.setText("Height:");
+        heightLabel.setMaximumSize(new java.awt.Dimension(50, 16));
+        heightLabel.setMinimumSize(new java.awt.Dimension(50, 16));
+        heightLabel.setPreferredSize(new java.awt.Dimension(50, 16));
+
+        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+
+        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+
+        javax.swing.GroupLayout gtfPanelLayout = new javax.swing.GroupLayout(gtfPanel);
+        gtfPanel.setLayout(gtfPanelLayout);
+        gtfPanelLayout.setHorizontalGroup(
+            gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(gtfPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(widthLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(heightLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mipsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(formatLevel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(formatCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(mipSpinner)
+                    .addComponent(heightSpinner)
+                    .addComponent(widthSpinner))
+                .addContainerGap())
+        );
+        gtfPanelLayout.setVerticalGroup(
+            gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(gtfPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(formatLevel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(formatCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(mipsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mipSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(widthLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(widthSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(gtfPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(heightLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(heightSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        noSRGBCheckbox.setText("Normal Texture (Linear/No sRGB)");
+
+        javax.swing.GroupLayout textureInfoPanelLayout = new javax.swing.GroupLayout(textureInfoPanel);
+        textureInfoPanel.setLayout(textureInfoPanelLayout);
+        textureInfoPanelLayout.setHorizontalGroup(
+            textureInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(gtfPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(textureInfoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(noSRGBCheckbox)
+                .addContainerGap(53, Short.MAX_VALUE))
+        );
+        textureInfoPanelLayout.setVerticalGroup(
+            textureInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(textureInfoPanelLayout.createSequentialGroup()
+                .addComponent(gtfPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noSRGBCheckbox))
+        );
+
+        descriptorTabs.addTab("Texture Info", textureInfoPanel);
+
+        compressButton.setText("Compress");
+        compressButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compressButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(compress, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                    .addComponent(dependencyManagerPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(headerPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(dataPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(descriptorTabs))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(compressButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dataPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dependencyManagerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compress)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(descriptorTabs))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(compressButton)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void removeEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeEntryActionPerformed
-        int index = this.dependencyList.getSelectedIndex();
-        if (index != -1) {
-            ResourceDescriptor descriptor = this.dependencies.get(index);
-            String value = (String) this.model.get(index);
-
-            System.out.println(String.format("Removing dependency of type %s with value %s", descriptor.getType(), value));
-
-            this.dependencies.remove(index);
-            this.model.remove(index);
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        File file = FileChooser.openFile("data.bin", null,  false);
+        if (file != null) {
+            this.dataSource = FileIO.read(file.getAbsolutePath());
+            this.dataSourceLabel.setText(file.getName());
         }
-    }//GEN-LAST:event_removeEntryActionPerformed
+    }//GEN-LAST:event_openButtonActionPerformed
 
-    private void addEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEntryActionPerformed
-        String value = this.descriptorValue.getText();
-        ResourceType type = (ResourceType) this.descriptorResourceType.getSelectedItem();
-
-        ResourceDescriptor descriptor = null;
-        if (this.guidButton.isSelected() && Strings.isGUID(value)) {
-            long GUID = Strings.getLong(value);
-            
-            if (this.doesGUIDAlreadyExist(GUID)) {
-                System.out.println(String.format("Dependency with value %s already exists, skipping.", "g" + GUID));
-                return;
-            }
-
-            descriptor = new ResourceDescriptor(GUID, type);
-        } else if (Strings.isSHA1(value))
-            descriptor = new ResourceDescriptor(value, type);
-        else return;
-
-        this.model.add(this.model.size(), descriptor.toString());
-        System.out.println(String.format("Adding dependency of type %s with value %s", descriptor.getType(), this.model.get(this.dependencies.size())));
-        this.dependencies.add(this.dependencies.size(), descriptor);
-    }//GEN-LAST:event_addEntryActionPerformed
-
-    private void compressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressActionPerformed
-        int headRevision = (int) Strings.getLong(this.revision.getText());
-        int branchID = (int) Strings.getLong(this.branchID.getText());
-        int branchRevision = (int) Strings.getLong(this.branchRevision.getText());
-        ResourceType type = ((ResourceType) this.resourceCombo.getSelectedItem());
-        
-        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
-        if (this.useCompressedIntegers.isSelected()) 
-            compressionFlags |= CompressionFlags.USE_COMPRESSED_INTEGERS;
-        if (this.useCompressMatrices.isSelected()) 
-            compressionFlags |= CompressionFlags.USE_COMPRESSED_MATRICES;
-        if (this.useCompressedVectors.isSelected()) 
-            compressionFlags |= CompressionFlags.USE_COMPRESSED_VECTORS;
-
-        if (this.fileData == null) {
-            System.err.println("You need to specify a file to compress!");
+    private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
+        if (this.dataSource == null) {
+            JOptionPane.showMessageDialog(this, "You have to select a file to compress!", "An error occurred", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        Revision revision = new Revision(headRevision, branchID, branchRevision);
-        byte[] compressed = Resource.compress(new SerializationData(
-            this.fileData,
-            revision,
-            compressionFlags,
-            type,
-            type == ResourceType.TEXTURE ? SerializationType.COMPRESSED_TEXTURE : SerializationType.BINARY,
-            this.dependencies.toArray(ResourceDescriptor[]::new)
-        ));
-
-        File output = FileChooser.openFile("output" + type.getExtension(), null, true);
-        if (output != null)
-        FileIO.write(compressed, output.getAbsolutePath());
-    }//GEN-LAST:event_compressActionPerformed
-
-    private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
-        File file = FileChooser.openFile("Uncompressed Data", null,  false);
-        if (file != null) {
-            this.fileData = FileIO.read(file.getAbsolutePath());
-            if (this.fileData != null)
-            this.fileLabel.setText(file.getName());
+        this.update();
+        
+        ResourceType type = (ResourceType) this.resourceCombo.getSelectedItem();
+        boolean isCompressed = this.zlibCheckbox.isSelected();
+        
+        byte[] resource = null;
+        if (type == ResourceType.TEXTURE) {
+            byte[] data = this.dataSource;
+            if (this.noSRGBCheckbox.isSelected())
+                data = Bytes.combine(data, new byte[] { 0x42, 0x55, 0x4d, 0x50 });
+            resource = Resource.compress(new SerializationData(data), isCompressed);
+        } else if (type == ResourceType.GTF_TEXTURE) {
+            CellGcmTexture texture = new CellGcmTexture(
+                    (CellGcmEnumForGtf) this.formatCombo.getSelectedItem(),
+                    (short)((int)this.widthSpinner.getValue()),
+                    (short)((int)this.heightSpinner.getValue()),
+                    (byte)(((int)this.mipSpinner.getValue()) & 0xff),
+                    this.noSRGBCheckbox.isSelected()
+            );
+            resource = Resource.compress(new SerializationData(this.dataSource, texture), isCompressed);
+        } else if (type == ResourceType.FILE_OF_BYTES) {
+            resource = Compressor.getCompressedStream(this.dataSource, isCompressed);
+        } else{
+            byte compressionFlags = 0x0;
+            boolean hasCompressionFlags = (this.revision.getVersion() >= Revisions.COMPRESSED_RESOURCES) || (this.revision.after(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
+            
+            if (hasCompressionFlags) {
+                if (this.integersCheckbox.isSelected()) compressionFlags |= CompressionFlags.USE_COMPRESSED_INTEGERS;
+                if (this.matrixCheckbox.isSelected()) compressionFlags |= CompressionFlags.USE_COMPRESSED_MATRICES;
+                if (this.vectorsCheckbox.isSelected()) compressionFlags |= CompressionFlags.USE_COMPRESSED_VECTORS;
+            }
+            
+            ResourceDescriptor[] dependencies = new ResourceDescriptor[this.model.size()];
+            for (int i = 0; i < dependencies.length; ++i)
+                dependencies[i] = this.model.get(i).descriptor;
+            
+            SerializationData data = new SerializationData(
+                    this.dataSource, 
+                    this.revision, 
+                    compressionFlags, 
+                    type, 
+                    SerializationType.BINARY, 
+                    dependencies
+            );
+            
+            resource = Resource.compress(data, isCompressed);
         }
-    }//GEN-LAST:event_openFileActionPerformed
+        
+        File file = FileChooser.openFile("compressed" + type.getExtension(), null, true);
+        if (file == null) return;
+        
+        
+        if (FileIO.write(resource, file.getAbsolutePath()))
+            JOptionPane.showMessageDialog(this, "Successfully wrote file to " + file.getAbsolutePath(), "Compressinator", JOptionPane.INFORMATION_MESSAGE); 
+        else
+            JOptionPane.showMessageDialog(this, "Failed to write file, is it in use?", "Compressinator", JOptionPane.ERROR_MESSAGE);
+        
+    }//GEN-LAST:event_compressButtonActionPerformed
 
-    private boolean doesGUIDAlreadyExist(long value) {
-        GUID guid = new GUID(value);
-        for (ResourceDescriptor descriptor : this.dependencies)
-            if (guid.equals(descriptor.getGUID())) return true;
-        return false;
-    }
+    private void addDependencyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDependencyButtonActionPerformed
+        ResourceDescriptor descriptor = DescriptorDialogue.doDescriptorEntry(this, null);
+        if (descriptor == null || this.model.contains(descriptor)) return;
+        
+        this.model.addElement(new Dependentry(descriptor));
+        
+        this.removeDependencyButton.setEnabled(true);
+        this.dependencyList.setSelectedIndex(this.model.size() - 1);
+    }//GEN-LAST:event_addDependencyButtonActionPerformed
+
+    private void removeDependencyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeDependencyButtonActionPerformed
+        int index = this.dependencyList.getSelectedIndex();
+        if (index == -1) return;
+        if (this.model.size() - 1 != 0) {
+            if (index == 0)
+                this.dependencyList.setSelectedIndex(index + 1);
+            else
+                this.dependencyList.setSelectedIndex(index - 1);   
+        }
+        this.model.removeElementAt(index);
+        
+        if (this.model.size() == 0) this.removeDependencyButton.setEnabled(false);
+    }//GEN-LAST:event_removeDependencyButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addEntry;
-    private javax.swing.JTextField branchID;
+    private javax.swing.JButton addDependencyButton;
+    private javax.swing.JComboBox<Branch> branchCombo;
     private javax.swing.JLabel branchLabel;
-    private javax.swing.JTextField branchRevision;
-    private javax.swing.JButton compress;
+    private javax.swing.JSpinner branchSpinner;
+    private javax.swing.JButton compressButton;
     private javax.swing.JLabel compressionFlagsLabel;
-    private javax.swing.JLabel dataCategoryLabel;
-    private javax.swing.JPanel dataPanel;
-    private javax.swing.JLabel dependenciesCategoryLabel;
-    private javax.swing.JLabel dependencyCategoryLabel;
-    private javax.swing.JList<String> dependencyList;
-    private javax.swing.JPanel dependencyManagerPanel;
-    private javax.swing.JPanel dependencyModifierPanel;
-    private javax.swing.JScrollPane dependencyScrollPane;
-    private javax.swing.JComboBox<String> descriptorResourceType;
-    private javax.swing.JTextField descriptorValue;
-    private javax.swing.JLabel fileLabel;
-    private javax.swing.JRadioButton guidButton;
-    private javax.swing.JRadioButton hashButton;
-    private javax.swing.JLabel headerCategoryLabel;
-    private javax.swing.JPanel headerPanel;
-    private javax.swing.JFormattedTextField jFormattedTextField1;
-    private javax.swing.JLabel magicLabel;
-    private javax.swing.JButton openFile;
-    private javax.swing.ButtonGroup refType;
-    private javax.swing.JButton removeEntry;
-    private javax.swing.JComboBox<String> resourceCombo;
-    private javax.swing.JTextField revision;
+    private javax.swing.JLabel dataLabel;
+    private javax.swing.JLabel dataSourceLabel;
+    private javax.swing.JList<Dependentry> dependencyList;
+    private javax.swing.JScrollPane dependencyListContainer;
+    private javax.swing.JPanel dependencyPanel;
+    private javax.swing.JTabbedPane descriptorTabs;
+    private javax.swing.JComboBox<CellGcmEnumForGtf> formatCombo;
+    private javax.swing.JLabel formatLevel;
+    private javax.swing.JPanel gtfPanel;
+    private javax.swing.JLabel heightLabel;
+    private javax.swing.JSpinner heightSpinner;
+    private javax.swing.JCheckBox integersCheckbox;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JCheckBox matrixCheckbox;
+    private javax.swing.JSpinner mipSpinner;
+    private javax.swing.JLabel mipsLabel;
+    private javax.swing.JCheckBox noSRGBCheckbox;
+    private javax.swing.JButton openButton;
+    private javax.swing.JButton removeDependencyButton;
+    private javax.swing.JComboBox<ResourceType> resourceCombo;
     private javax.swing.JLabel revisionLabel;
-    private javax.swing.JCheckBox useCompressMatrices;
-    private javax.swing.JCheckBox useCompressedIntegers;
-    private javax.swing.JCheckBox useCompressedVectors;
+    private javax.swing.JSpinner revisionSpinner;
+    private javax.swing.JPanel textureInfoPanel;
+    private javax.swing.JLabel typeLabel;
+    private javax.swing.JCheckBox vectorsCheckbox;
+    private javax.swing.JLabel widthLabel;
+    private javax.swing.JSpinner widthSpinner;
+    private javax.swing.JCheckBox zlibCheckbox;
     // End of variables declaration//GEN-END:variables
 }

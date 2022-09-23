@@ -1,6 +1,6 @@
 package toolkit.windows;
 
-import toolkit.windows.utilities.v2.Compressinator;
+import toolkit.windows.utilities.Compressinator;
 import toolkit.windows.utilities.ArchiveSelector;
 import toolkit.windows.utilities.AssetExporter;
 import toolkit.windows.utilities.Dependinator;

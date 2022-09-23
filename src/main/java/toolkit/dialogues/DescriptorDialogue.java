@@ -1,4 +1,4 @@
-package toolkit.windows.utilities.v2;
+package toolkit.dialogues;
 
 import cwlib.enums.ResourceType;
 import cwlib.types.data.ResourceDescriptor;
