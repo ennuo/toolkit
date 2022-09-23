@@ -2,6 +2,7 @@ package cwlib.util;
 
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
@@ -298,6 +299,16 @@ public final class Bytes {
             System.arraycopy(source, sourceOffset, buffer, destOffset, remaining);
 
         return buffer;
+    }
+
+    /**
+     * Gets a byte array containing a ULEB-128 encoded value.
+     * @param value Value to encode
+     * @return Encoded byte array
+     */
+    public static byte[] packULEB128(long value) {
+        MemoryOutputStream stream = new MemoryOutputStream(0x10, CompressionFlags.USE_ALL_COMPRESSION);
+        return stream.u32(value).shrink().getBuffer();
     }
 
     /**

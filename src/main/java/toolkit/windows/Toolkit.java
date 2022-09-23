@@ -2342,13 +2342,11 @@ public class Toolkit extends javax.swing.JFrame {
         entryTable.setValueAt(entry.getSHA1(), 2, 1);
         entryTable.setValueAt(entry.getSize(), 3, 1);
 
-        GUID guid = (entry instanceof FileDBRow) ? ((FileDBRow)entry).getGUID() : null;
+        GUID guid = (GUID) entry.getKey();
         if (guid != null) {
             entryTable.setValueAt(guid.toString(), 4, 1);
             entryTable.setValueAt(Bytes.toHex((int) guid.getValue()), 5, 1);
-            // TODO: Fix ULEB128 table
-            //entryTable.setValueAt(Bytes.toHex(Bytes.encode(entry.GUID)), 6, 1);
-            entryTable.setValueAt("N/A", 6, 1);
+            entryTable.setValueAt(Bytes.toHex(Bytes.packULEB128(guid.getValue())), 6, 1);
         } else {
             entryTable.setValueAt("N/A", 4, 1);
             entryTable.setValueAt("N/A", 5, 1);
