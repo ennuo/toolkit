@@ -63,6 +63,7 @@ import javax.swing.tree.TreePath;
 
 import configurations.Config;
 import configurations.Profile;
+import executables.gfx.GfxGUI;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
@@ -257,17 +258,14 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (database == null) {
             saveDivider.setVisible(false);
-            dumpHashes.setVisible(false);
             MAPMenu.setVisible(false);
         } else {
             saveDivider.setVisible(true);
-            dumpHashes.setVisible(true);
             dumpRLST.setVisible(false);
             if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE) {
                 if (archiveCount != 0)
                     installProfileMod.setVisible(true);
                 MAPMenu.setVisible(true);
-                dumpHashes.setVisible(true);
                 dumpRLST.setVisible(true);
             }
         }
@@ -544,7 +542,6 @@ public class Toolkit extends javax.swing.JFrame {
         patchMAP = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         dumpRLST = new javax.swing.JMenuItem();
-        dumpHashes = new javax.swing.JMenuItem();
         ProfileMenu = new javax.swing.JMenu();
         extractBigProfile = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
@@ -554,22 +551,24 @@ public class Toolkit extends javax.swing.JFrame {
         openModMetadata = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         openCompressinator = new javax.swing.JMenuItem();
-        decompressResource = new javax.swing.JMenuItem();
+        openGfxCompiler = new javax.swing.JMenuItem();
         dumpSep = new javax.swing.JPopupMenu.Separator();
-        generateDiff = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
         fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
+        mergeFARCs = new javax.swing.JMenuItem();
+        swapProfilePlatform = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        convertTexture = new javax.swing.JMenuItem();
+        decompressResource = new javax.swing.JMenuItem();
         collectionD = new javax.swing.JMenu();
         collectorPresets = new javax.swing.JMenu();
         collectAllLevelDependencies = new javax.swing.JMenuItem();
         collectAllItemDependencies = new javax.swing.JMenuItem();
         customCollector = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        mergeFARCs = new javax.swing.JMenuItem();
+        generateDiff = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
-        jSeparator8 = new javax.swing.JPopupMenu.Separator();
-        convertTexture = new javax.swing.JMenuItem();
-        jSeparator7 = new javax.swing.JPopupMenu.Separator();
-        swapProfilePlatform = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
@@ -1217,7 +1216,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         gamedataMenu.setText("Gamedata");
 
-        loadDB.setText("FileDB");
+        loadDB.setText("FileDB (.MAP)");
         loadDB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadDBActionPerformed(evt);
@@ -1225,7 +1224,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         gamedataMenu.add(loadDB);
 
-        loadArchive.setText("File Archive");
+        loadArchive.setText("File Archive (.FARC)");
         loadArchive.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadArchiveActionPerformed(evt);
@@ -1368,14 +1367,6 @@ public class Toolkit extends javax.swing.JFrame {
         });
         MAPMenu.add(dumpRLST);
 
-        dumpHashes.setText("Dump Hashes");
-        dumpHashes.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dumpHashesActionPerformed(evt);
-            }
-        });
-        MAPMenu.add(dumpHashes);
-
         toolkitMenu.add(MAPMenu);
 
         ProfileMenu.setText("Profile");
@@ -1421,7 +1412,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         toolsMenu.setText("Tools");
 
-        openCompressinator.setText("Compress");
+        openCompressinator.setText("Compressinator GUI");
         openCompressinator.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openCompressinatorActionPerformed(evt);
@@ -1429,30 +1420,62 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(openCompressinator);
 
-        decompressResource.setText("Decompress");
-        decompressResource.addActionListener(new java.awt.event.ActionListener() {
+        openGfxCompiler.setText("Gfx Compiler GUI");
+        openGfxCompiler.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                decompressResourceActionPerformed(evt);
+                openGfxCompilerActionPerformed(evt);
             }
         });
-        toolsMenu.add(decompressResource);
+        toolsMenu.add(openGfxCompiler);
         toolsMenu.add(dumpSep);
 
-        generateDiff.setText("Generate FileDB diff");
-        generateDiff.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateDiffActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(generateDiff);
+        jMenu1.setText("Archive Utilities");
 
-        fileArchiveIntegrityCheck.setText("File Archive Integrity Check");
+        fileArchiveIntegrityCheck.setText("FARC Integrity Check");
         fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileArchiveIntegrityCheckActionPerformed(evt);
             }
         });
-        toolsMenu.add(fileArchiveIntegrityCheck);
+        jMenu1.add(fileArchiveIntegrityCheck);
+
+        mergeFARCs.setText("Merge Archives");
+        mergeFARCs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mergeFARCsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(mergeFARCs);
+
+        swapProfilePlatform.setText("Swap FAR4 Endianness (PS3/PS4)");
+        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                swapProfilePlatformActionPerformed(evt);
+            }
+        });
+        jMenu1.add(swapProfilePlatform);
+
+        toolsMenu.add(jMenu1);
+
+        jMenu2.setText("File Utilities");
+
+        convertTexture.setText("PNG/JPG to TEX");
+        convertTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                convertTextureActionPerformed(evt);
+            }
+        });
+        jMenu2.add(convertTexture);
+
+        decompressResource.setText("Decompress Resource");
+        decompressResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                decompressResourceActionPerformed(evt);
+            }
+        });
+        jMenu2.add(decompressResource);
+
+        toolsMenu.add(jMenu2);
 
         collectionD.setText("Collectors");
 
@@ -1487,39 +1510,22 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(collectionD);
         toolsMenu.add(jSeparator3);
 
-        mergeFARCs.setText("Merge FARCs");
-        mergeFARCs.addActionListener(new java.awt.event.ActionListener() {
+        generateDiff.setText("Get FileDB diffs");
+        generateDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mergeFARCsActionPerformed(evt);
+                generateDiffActionPerformed(evt);
             }
         });
-        toolsMenu.add(mergeFARCs);
+        toolsMenu.add(generateDiff);
+        toolsMenu.add(jSeparator5);
 
-        installProfileMod.setText("Install Mod");
+        installProfileMod.setText("Install Mod(s)");
         installProfileMod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 installProfileModActionPerformed(evt);
             }
         });
         toolsMenu.add(installProfileMod);
-        toolsMenu.add(jSeparator8);
-
-        convertTexture.setText("Convert Texture");
-        convertTexture.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                convertTextureActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(convertTexture);
-        toolsMenu.add(jSeparator7);
-
-        swapProfilePlatform.setText("Swap Profile Platform");
-        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                swapProfilePlatformActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(swapProfilePlatform);
 
         toolkitMenu.add(toolsMenu);
 
@@ -1728,10 +1734,6 @@ public class Toolkit extends javax.swing.JFrame {
         ((FileModel) tree.getModel()).reload();
         tree.updateUI();
     }//GEN-LAST:event_searchActionPerformed
-
-    private void dumpHashesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpHashesActionPerformed
-        DatabaseCallbacks.dumpHashes();
-    }//GEN-LAST:event_dumpHashesActionPerformed
 
     private void extractBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractBigProfileActionPerformed
         ProfileCallbacks.extractProfile();
@@ -2209,6 +2211,10 @@ public class Toolkit extends javax.swing.JFrame {
         new AssetExporter(ResourceSystem.getSelected().getEntry()).setVisible(true);
     }//GEN-LAST:event_exportAsModCustomActionPerformed
 
+    private void openGfxCompilerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openGfxCompilerActionPerformed
+        new GfxGUI();
+    }//GEN-LAST:event_openGfxCompilerActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;
@@ -2406,7 +2412,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JSplitPane details;
-    private javax.swing.JMenuItem dumpHashes;
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
@@ -2454,13 +2459,14 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
-    private javax.swing.JPopupMenu.Separator jSeparator7;
-    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
@@ -2485,6 +2491,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem newModernDB;
     private javax.swing.JMenuItem newVitaDB;
     private javax.swing.JMenuItem openCompressinator;
+    private javax.swing.JMenuItem openGfxCompiler;
     public javax.swing.JMenuItem openModMetadata;
     private javax.swing.JComboBox<String> pageCombo;
     private javax.swing.JMenuItem patchMAP;

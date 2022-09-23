@@ -63,17 +63,6 @@ public class DatabaseCallbacks {
 
         FileIO.write(rlst.getBytes(), file.getAbsolutePath());
     }
-
-    public static void dumpHashes() {
-        File file = FileChooser.openFile("hashes.txt", "txt", true);
-        if (file == null) return;
-
-        FileDB database = ResourceSystem.getSelectedDatabase();
-        StringBuilder builder = new StringBuilder((40 + 1) * database.getEntryCount());
-        for (FileDBRow row: database)
-            builder.append(row.getSHA1().toString() + '\n');
-        FileIO.write(builder.toString().getBytes(), file.getAbsolutePath());
-    }
     
     public static void zero() {
         int zeroed = 0;

@@ -49,7 +49,7 @@ public class TreeSelectionListener {
             return;
         }
 
-        //ResourceSystem.getResourceService().submit(() -> {
+        ResourceSystem.getResourceService().submit(() -> {
             if (!ResourceSystem.canExtract()) return;
 
             byte[] data = ResourceSystem.extract(entry);
@@ -79,6 +79,6 @@ public class TreeSelectionListener {
             
             if (services.containsKey(magic))
                 ((ResourceService)services.get(magic)).process(tree, entry, data);
-        //});
+        });
     }
 }

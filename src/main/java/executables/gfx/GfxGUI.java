@@ -24,6 +24,8 @@ import executables.gfx.dialogues.TextureDialogue;
 import java.io.File;
 import java.nio.file.Path;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import toolkit.utilities.FileChooser;
@@ -57,8 +59,10 @@ public class GfxGUI extends javax.swing.JFrame {
     
     private String brdf;
     
-    private GfxGUI() {
+    public GfxGUI() {
         this.initComponents();
+        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
+        
         this.textureList.setModel(this.textureModel);
         
         this.reset();

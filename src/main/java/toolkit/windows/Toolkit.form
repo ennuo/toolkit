@@ -456,7 +456,7 @@
                   <SubComponents>
                     <MenuItem class="javax.swing.JMenuItem" name="loadDB">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="FileDB"/>
+                        <Property name="text" type="java.lang.String" value="FileDB (.MAP)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadDBActionPerformed"/>
@@ -467,7 +467,7 @@
                     </MenuItem>
                     <MenuItem class="javax.swing.JMenuItem" name="loadArchive">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="File Archive"/>
+                        <Property name="text" type="java.lang.String" value="File Archive (.FARC)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadArchiveActionPerformed"/>
@@ -652,14 +652,6 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dumpRLSTActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="dumpHashes">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Dump Hashes"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dumpHashesActionPerformed"/>
-              </Events>
-            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="ProfileMenu">
@@ -723,38 +715,76 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="openCompressinator">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Compress"/>
+                <Property name="text" type="java.lang.String" value="Compressinator GUI"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openCompressinatorActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="decompressResource">
+            <MenuItem class="javax.swing.JMenuItem" name="openGfxCompiler">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Decompress"/>
+                <Property name="text" type="java.lang.String" value="Gfx Compiler GUI"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="decompressResourceActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openGfxCompilerActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="dumpSep">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="generateDiff">
+            <Menu class="javax.swing.JMenu" name="jMenu1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Generate FileDB diff"/>
+                <Property name="text" type="java.lang.String" value="Archive Utilities"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDiffActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="fileArchiveIntegrityCheck">
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="fileArchiveIntegrityCheck">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="FARC Integrity Check"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileArchiveIntegrityCheckActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="mergeFARCs">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Merge Archives"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mergeFARCsActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="swapProfilePlatform">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Swap FAR4 Endianness (PS3/PS4)"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="swapProfilePlatformActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="jMenu2">
               <Properties>
-                <Property name="text" type="java.lang.String" value="File Archive Integrity Check"/>
+                <Property name="text" type="java.lang.String" value="File Utilities"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileArchiveIntegrityCheckActionPerformed"/>
-              </Events>
-            </MenuItem>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="convertTexture">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="PNG/JPG to TEX"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="convertTextureActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="decompressResource">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Decompress Resource"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="decompressResourceActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
             <Menu class="javax.swing.JMenu" name="collectionD">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Collectors"/>
@@ -795,40 +825,22 @@
             </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="mergeFARCs">
+            <MenuItem class="javax.swing.JMenuItem" name="generateDiff">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Merge FARCs"/>
+                <Property name="text" type="java.lang.String" value="Get FileDB diffs"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mergeFARCsActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDiffActionPerformed"/>
               </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator5">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="installProfileMod">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Install Mod"/>
+                <Property name="text" type="java.lang.String" value="Install Mod(s)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="installProfileModActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator8">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="convertTexture">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Convert Texture"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="convertTextureActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="swapProfilePlatform">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Swap Profile Platform"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="swapProfilePlatformActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
