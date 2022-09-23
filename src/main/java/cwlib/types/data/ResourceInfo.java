@@ -48,18 +48,22 @@ public class ResourceInfo {
             return;
         }
 
-        if (name.endsWith(".fpo") || name.endsWith(".vpo") || name.endsWith(".gpo")) {
-            ResourceSystem.println("Assuming resource is shader from extension");
+        if (name.endsWith(".fpo") || name.endsWith(".vpo") || name.endsWith(".gpo") || name.endsWith(".sbu")) {
+            ResourceSystem.println("Assuming resource is compressed object from extension");
+            
             this.type = ResourceType.VERTEX_SHADER;
             if (name.endsWith(".fpo"))
                 this.type = ResourceType.PIXEL_SHADER;
+            if (name.endsWith(".sbu"))
+                this.type = ResourceType.SPU_ELF;
+            
             try {
                 // Only decompressing the data to see if it's valid data,
                 // might be better to just check for zlib flags, but it'll do.
                 Compressor.decompressData(new MemoryInputStream(source), source.length);
                 this.method = SerializationType.BINARY;
             } catch (Exception ex) {
-                ResourceSystem.println("Failed to decompress shader, marking resource as invalid.");
+                ResourceSystem.println("Failed to decompress resource, marking as invalid.");
                 this.type = ResourceType.INVALID;
             }
             return;

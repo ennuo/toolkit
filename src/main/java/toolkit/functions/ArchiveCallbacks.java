@@ -139,7 +139,7 @@ public class ArchiveCallbacks {
     }   
 
     private static byte[] tryDecompress(String name, byte[] data) {
-        if (name.endsWith(".vpo") || name.endsWith(".gpo") || name.endsWith(".fpo")) {
+        if (name.endsWith(".vpo") || name.endsWith(".gpo") || name.endsWith(".fpo") || name.endsWith(".sbu")) {
             try {
                 return Compressor.decompressData(new MemoryInputStream(data), data.length);
             } catch (Exception ex) {
