@@ -583,8 +583,8 @@ public class ItemManager extends javax.swing.JFrame {
             this.categoryTextEntry.setText(details.categoryTag);
             this.locationTextEntry.setText(details.locationTag);
         } else {
-            this.categoryTextEntry.setText(this.profile.getProfile().stringTable.get(details.categoryIndex).string);
-            this.locationTextEntry.setText(this.profile.getProfile().stringTable.get(details.locationIndex).string);
+            this.categoryTextEntry.setText(this.profile.getProfile().stringTable.get(details.categoryIndex));
+            this.locationTextEntry.setText(this.profile.getProfile().stringTable.get(details.locationIndex));
         }
         
         boolean useUCD = (details.userCreatedDetails != null) || (details.titleKey == 0 && details.descriptionKey == 0);
@@ -616,7 +616,8 @@ public class ItemManager extends javax.swing.JFrame {
         
         this.unlockSlotTypeCombo.setSelectedItem(details.levelUnlockSlotID.slotType);
         this.unlockSlotNumberSpinner.setValue(details.levelUnlockSlotID.slotNumber);
-        this.highlightSoundSpinner.setValue(details.highlightSound);
+
+        this.highlightSoundSpinner.setValue(details.highlightSound != null ? details.highlightSound.getValue() : 0l);
         this.dateAddedSpinner.setValue(new Date(details.dateAdded * 1000));
         
         byte[] color = Bytes.toBytesBE(details.colour);

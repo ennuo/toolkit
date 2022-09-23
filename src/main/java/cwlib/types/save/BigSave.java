@@ -63,8 +63,8 @@ public class BigSave extends FileData {
         HashSet<SHA1> locked = new HashSet<>();
 
         for (InventoryItem item : this.profile.inventory) {
-            item.details.translatedLocation = this.profile.stringTable.get(item.details.locationIndex).string;
-            item.details.translatedCategory = this.profile.stringTable.get(item.details.categoryIndex).string;
+            item.details.translatedLocation = this.profile.stringTable.get(item.details.locationIndex);
+            item.details.translatedCategory = this.profile.stringTable.get(item.details.categoryIndex);
             ResourceDescriptor plan = item.plan;
             if (plan == null || plan.isGUID()) continue;
             byte[] data = archive.extract(plan.getSHA1()); 

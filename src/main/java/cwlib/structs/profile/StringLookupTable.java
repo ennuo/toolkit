@@ -51,12 +51,12 @@ public class StringLookupTable implements Serializable, Iterable<SortString> {
     /**
      * Gets a string by its index.
      * @param index Index of string
-     * @return String entry
+     * @return Translated string
      */
-    public SortString get(int index) {
+    public String get(int index) {
         for (SortString string : this.stringList) {
             if (string.index == index)
-                return string;
+                return string.string;
         }
         return null;
     }
