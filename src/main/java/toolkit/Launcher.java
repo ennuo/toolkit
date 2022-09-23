@@ -14,6 +14,8 @@ import java.util.Arrays;
 
 public class Launcher {
     public static void main(String args[]) {
+        Config.initialize();
+        
         // Executable switcher
         if (args.length != 0) {
             String mode = args[0];
@@ -35,7 +37,6 @@ public class Launcher {
 
         // If no switcher is provided, use Toolkit GUI.
         LafManager.install(new DarculaTheme());
-        Config.initialize();
         ResourceSystem.GUI_MODE = true;
         EventQueue.invokeLater(() -> new Toolkit().run(args).setVisible(true));
     }

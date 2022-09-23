@@ -30,7 +30,7 @@ public class PBody implements Serializable {
      * The state of this object
      */
     @GsonRevision(min=0x147)
-    public int frozen = 1;
+    public int frozen;
 
     /**
      * The player that's currently editing this thing(?)

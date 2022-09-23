@@ -13,7 +13,7 @@ public class MaterialWire implements Serializable {
 
     public int boxFrom, boxTo;
     public byte portFrom, portTo;
-    private byte[] swizzle = new byte[SWIZZLE_ELEMENT_COUNT];
+    public byte[] swizzle = new byte[SWIZZLE_ELEMENT_COUNT];
 
     @SuppressWarnings("unchecked")
     @Override public MaterialWire serialize(Serializer serializer, Serializable structure) {

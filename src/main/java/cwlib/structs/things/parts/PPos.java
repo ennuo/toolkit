@@ -34,6 +34,37 @@ public class PPos implements Serializable {
     // Vector4 mCol2
     // Vector4 mCol3
 
+    public PPos() {};
+
+    public PPos(Thing root, int animHash) { 
+        this.thingOfWhichIAmABone = root;
+        this.animHash = animHash;
+    }
+
+    public PPos(Matrix4f wpos) {
+        this.worldPosition = wpos;
+        this.localPosition = wpos;
+    }
+
+    public PPos(Matrix4f wpos, Matrix4f pos) {
+        this.worldPosition = wpos;
+        this.localPosition = pos;
+    }
+
+    public PPos(Thing root, int animHash, Matrix4f wpos) {
+        this.thingOfWhichIAmABone = root;
+        this.animHash = animHash;
+        this.worldPosition = wpos;
+        this.localPosition = wpos;
+    }
+
+    public PPos(Thing root, int animHash, Matrix4f wpos, Matrix4f pos) {
+        this.thingOfWhichIAmABone = root;
+        this.animHash = animHash;
+        this.worldPosition = wpos;
+        this.localPosition = pos;
+    }
+
     
     @SuppressWarnings("unchecked")
     @Override public PPos serialize(Serializer serializer, Serializable structure) {

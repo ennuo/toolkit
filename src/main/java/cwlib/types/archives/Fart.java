@@ -232,6 +232,12 @@ public abstract class Fart implements Iterable<Fat> {
     public boolean shouldSave() {
         return this.queue.size() != 0;
     }
+    
+    /**
+     * Gets number of entries in FAT.
+     * @return Number of entries.
+     */
+    public int getEntryCount() { return this.entries.length; }
 
     @Override public Iterator<Fat> iterator() {
         return Arrays.stream(this.entries).iterator();

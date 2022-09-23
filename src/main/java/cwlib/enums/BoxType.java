@@ -8,26 +8,20 @@ public class BoxType {
     public static final int TEXTURE_SAMPLE = 1;
     public static final int THING_COLOR = 2; // u32 (8)?
     public static final int COLOR = 3;
-    // public static final int TYPE_4 = 4; // f32 (-4), passed into mix parameter of texture sample usually? only used in like 3 shaders, specifically the ones related to paintinator meter bars
-    // 5 is not used in any shader
-    // 6 is not used in any shader
-    // 7 is not used in any shader
+    public static final int CONSTANT = 4;
+    public static final int CONSTANT2 = 5;
+    public static final int CONSTANT3 = 6;
+    public static final int CONSTANT4 = 7;
     // 8 is not used in any shader
-    // 9 is not used in any shader
+    public static final int MULTIPLY_ADD = 9; // Multiply by params[0], then add by params[1].
     public static final int MULTIPLY = 10;
-    // public static final int TYPE_11 = 11; // only used in sticker switch?, takes in two inputs
-    public static final int SUBTRACT = 12;
+    public static final int ADD = 11;
+    public static final int MIX = 12;
+    public static final int MAKE_FLOAT2 = 13;
+    public static final int MAKE_FLOAT3 = 14;
+    public static final int MAKE_FLOAT4 = 15;
+    public static final int BLEND = 16;
+    // 17, something with fur
+    // 18 ??? 
+    public static final int EXPONENT = 19;
 }
-
-
-// 0 = OUTPUT
-// 1 = DIFFUSE SAMPLE
-// 2 = RAMP SAMPLE
-// 3 = COLOR
-// 4 = TYPE 11
-
-// WIRES
-// 1 -> DIFFUSE OUTPUT
-// 3 -> 4@p0
-// 2 -> 4@p1
-// 4 -> TOON RAMP OUTPUT

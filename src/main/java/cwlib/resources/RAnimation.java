@@ -214,7 +214,7 @@ public class RAnimation implements Serializable, Compressable {
 
         byte[] animData = stream.bytearray();
 
-        System.out.println("Length: " + animData.length);
+        //System.out.println("Length: " + animData.length);
 
         anim.locators = serializer.array(anim.locators, Locator.class);
 
@@ -245,7 +245,7 @@ public class RAnimation implements Serializable, Compressable {
         anim.packedScale = new Vector4f[boneCount + (scaleAnims * (anim.numFrames - 1))];
         anim.packedMorph = new float[morphCount + (morphAnims * (anim.numFrames - 1))];
 
-        System.out.println("Rotation Buffer Start: " + stream.getOffset());
+        //System.out.println("Rotation Buffer Start: " + stream.getOffset());
 
         for (int i = 0; i < anim.packedRotation.length; ++i) {
             float x = ((float) stream.i16()) / 0x7FFF;
@@ -256,21 +256,21 @@ public class RAnimation implements Serializable, Compressable {
             anim.packedRotation[i] = new Vector4f(x, y, z, w);
         }
 
-        System.out.println("Position Buffer Start: " + stream.getOffset());
+        //System.out.println("Position Buffer Start: " + stream.getOffset());
 
         for (int i = 0; i < anim.packedPosition.length; ++i)
             anim.packedPosition[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
 
-        System.out.println("Scale Buffer Start: " + stream.getOffset());
+        //System.out.println("Scale Buffer Start: " + stream.getOffset());
 
         for (int i = 0; i < anim.packedScale.length; ++i)
             anim.packedScale[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
 
-        System.out.println("Morph Start: " + stream.getOffset());
+        //System.out.println("Morph Start: " + stream.getOffset());
         for (int i = 0; i < anim.packedMorph.length; ++i)
             anim.packedMorph[i] = stream.f16();
 
-        System.out.println(stream.getOffset());
+        //System.out.println(stream.getOffset());
 
         return anim;
     }

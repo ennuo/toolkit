@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.BoneFlag;
 import cwlib.io.Serializable;
+import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.animation.AnimBone;
 
@@ -19,7 +22,12 @@ public class Bone extends AnimBone {
 
     private String name;
     public int flags = BoneFlag.NONE;
-    public Matrix4f skinPoseMatrix, invSkinPoseMatrix;
+
+    @JsonAdapter(TranslationSerializer.class)
+    public Matrix4f skinPoseMatrix;
+    
+    public Matrix4f invSkinPoseMatrix;
+
     public Vector4f obbMin, obbMax;
     public MeshShapeVertex[] shapeVerts;
     public MeshShapeInfo[] shapeInfos;
@@ -123,6 +131,12 @@ public class Bone extends AnimBone {
                 bones.add(bone);
         }
         return bones.toArray(Bone[]::new);
+    }
+
+    public Matrix4f getLocalTransform(Bone[] bones) {
+        if (this.parent == -1) return this.skinPoseMatrix;
+        Bone bone = bones[this.parent];
+        return new Matrix4f(bone.skinPoseMatrix).invert().mul(this.skinPoseMatrix);
     }
 
     @Override public int getAllocatedSize() { 

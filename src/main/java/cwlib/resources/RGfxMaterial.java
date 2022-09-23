@@ -293,6 +293,18 @@ public class RGfxMaterial implements Serializable, Compressable {
         return -1;
     }
 
+    public MaterialWire getWireConnectedToPort(MaterialBox box, int port) { 
+        return this.getWireConnectedToPort(this.getBoxIndex(box), port); 
+    }
+
+    public MaterialWire getWireConnectedToPort(int box, int port) { 
+        for (MaterialWire wire : this.wires) {
+            if (wire.boxTo == box && (wire.portTo & 0xff) == port)
+                return wire;
+        }
+        return null;
+    }
+
     public MaterialBox[] getBoxesConnected(MaterialBox box) { return this.getBoxesConnected(this.getBoxIndex(box)); }
     public MaterialBox[] getBoxesConnected(int box) {
         ArrayList<MaterialBox> boxes = new ArrayList<>();

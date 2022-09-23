@@ -241,11 +241,12 @@ public class RTexture {
      * @return Generated DDS header
      */
     public byte[] getDDSHeader() {
-        System.out.println(String.format("DDS Type: %s (%s)", Bytes.toHex(this.info.getFormat().getValue()), this.info.getFormat().name()));
-        System.out.println(String.format("Image Width: %spx", this.info.getWidth()));
-        System.out.println(String.format("Image Height: %spx", this.info.getHeight()));
+        //System.out.println(String.format("DDS Type: %s (%s)", Bytes.toHex(this.info.getFormat().getValue()), this.info.getFormat().name()));
+        //System.out.println(String.format("Image Width: %spx", this.info.getWidth()));
+        //System.out.println(String.format("Image Height: %spx", this.info.getHeight()));
         return DDS.getDDSHeader(this.info);
     }
 
     public CellGcmTexture getInfo() { return this.info; }
+    public byte[] getData() { return this.data; }
 }

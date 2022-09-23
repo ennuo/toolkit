@@ -27,6 +27,9 @@ public class FileIO {
     }
 
     public static boolean write(byte[] data, String path) {
+        File file = new File(path);
+        if (file.getParentFile() != null)
+            file.getParentFile().mkdirs();
         try {
             ResourceSystem.println("FileIO", "Writing file to " + path);
             FileOutputStream stream = new FileOutputStream(path);

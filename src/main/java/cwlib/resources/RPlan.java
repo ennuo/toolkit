@@ -150,6 +150,13 @@ public class RPlan implements Compressable, Serializable {
      * @param things Thing array to set
      */
     public void setThings(Thing[] things) {
+        {
+            // This is terribly inefficient, but whatever
+            Serializer serializer = new Serializer(0x800000, this.revision, this.compressionFlags);
+            serializer.array(things, Thing.class, true);
+            things = serializer.getThings();
+        }
+        
         Serializer serializer = new Serializer(0x800000, this.revision, this.compressionFlags);
         serializer.array(things, Thing.class, true);
         this.thingData = serializer.getBuffer();

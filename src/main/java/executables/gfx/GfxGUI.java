@@ -21,6 +21,8 @@ import java.io.File;
 import java.nio.file.Path;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+
+import toolkit.configurations.ApplicationFlags;
 import toolkit.configurations.Config;
 import toolkit.configurations.Profile;
 import toolkit.utilities.FileChooser;
@@ -48,9 +50,6 @@ public class GfxGUI extends javax.swing.JFrame {
         }
     }
     
-    private static final File SCE_CGC = new File(Config.jarDirectory, "sce/sce-cgc.exe");
-    private static final File SCE_PSSLC = new File(Config.jarDirectory, "sce/orbis-wave-psslc.exe");
-    
     private RGfxMaterial gmat;
     
     private DefaultListModel textureModel = new DefaultListModel();
@@ -62,21 +61,13 @@ public class GfxGUI extends javax.swing.JFrame {
         this.textureList.setModel(this.textureModel);
         
         this.reset();
-        
-        // Hack for Toolkit FileChooser
-        Config.instance = new Config();
-        Config.instance.profiles.add(new Profile());
-        Config.instance.currentProfile = 0;
-        
-        GfxAssembler.USE_ENV_VARIABLES = true;
-        
         this.getRootPane().setDefaultButton(this.compileButton);
         
         if (!System.getProperty("os.name").toLowerCase().contains("win"))
             JOptionPane.showMessageDialog(this, "This program is only functional on Windows!", "Error", JOptionPane.WARNING_MESSAGE);
         
-        if (!SCE_CGC.exists())
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC compiler! This program will not function! (Expected location is %s)", SCE_CGC.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
+        if (!ApplicationFlags.CAN_COMPILE_CELL_SHADERS)
+            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC compiler! This program will not function! (Expected location is %s)", ApplicationFlags.SCE_CGC_EXECUTABLE.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
     }
     
     private void reset() {
@@ -705,11 +696,9 @@ public class GfxGUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "This program is only functional on Windows!", "Error", JOptionPane.WARNING_MESSAGE);   
             return;
         }
-        
-        if (!SCE_CGC.exists()) {
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC compiler! Cannot compile! (Expected location is %s)", SCE_CGC.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+
+        if (!ApplicationFlags.CAN_COMPILE_CELL_SHADERS)
+        JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC compiler! Cannot compile! (Expected location is %s)", ApplicationFlags.SCE_CGC_EXECUTABLE.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
         
         if (this.brdf == null) {
             JOptionPane.showMessageDialog(this, "BRDF shader is missing! Can't compile!", "Error", JOptionPane.WARNING_MESSAGE);
@@ -719,8 +708,8 @@ public class GfxGUI extends javax.swing.JFrame {
         boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0;
         boolean isPS4 = this.gameComboBox.getSelectedIndex() == 2;
         
-        if (isPS4 && !SCE_PSSLC.exists()) {
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-PSSL compiler! Cannot compile! (Expected location is %s)", SCE_PSSLC.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
+        if (isPS4 && !ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS) {
+            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-PSSL compiler! Cannot compile! (Expected location is %s)", ApplicationFlags.SCE_PSSL_EXECUTABLE.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
         

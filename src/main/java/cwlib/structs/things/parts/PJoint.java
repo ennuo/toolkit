@@ -18,13 +18,13 @@ public class PJoint implements Serializable {
 
     public Thing a, b;
     public Vector3f aContact, bContact;
-    public float length, angle, offsetTime;
+    public float length = 0.548f, angle, offsetTime;
     public boolean invertAngle;
     public ResourceDescriptor settings;
     public int[] boneIdx;
     public Vector4f boneLengths;
-    public int type;
-    public float strength;
+    public int type = 8;
+    public float strength = 4.7610626f;
 
     @GsonRevision(min=0x18d)
     public boolean stiff;
@@ -32,10 +32,10 @@ public class PJoint implements Serializable {
     public Vector3f slideDir;
     
     public int animationPattern;
-    public float animationRange, animationTime,
+    public float animationRange = 1.0f, animationTime = 60.0f,
     animationPhase, animationSpeed, animationPause;
     public float aAngleOffset, bAngleOffset;
-    public float modStartFrames, modDeltaFrames, modScale;
+    public float modStartFrames, modDeltaFrames, modScale = 1.0f;
 
     @GsonRevision(max=0x2c3)
     @Deprecated public boolean modDriven;
@@ -43,10 +43,10 @@ public class PJoint implements Serializable {
     @GsonRevision(max=0x306)
     @Deprecated public byte interactPlayMode, interactEditMode;
     
-    public float renderScale;
+    public float renderScale = 1.0f;
 
     @GsonRevision(min=0x16a)
-    public int jointSoundEnum;
+    public int jointSoundEnum = 1;
     
     @GsonRevision(min=0x21d)
     public float tweakTargetMaxLength, tweakTargetMinLength;
@@ -93,6 +93,12 @@ public class PJoint implements Serializable {
     // SPRING_ANGULAR 8
     // MOTOR 9
     // QUANTIZED 10
+
+    public PJoint() {};
+    public PJoint(Thing a, Thing b) {
+        this.a = a;
+        this.b = b;
+    }
 
     @SuppressWarnings("unchecked")
     @Override public PJoint serialize(Serializer serializer, Serializable structure) {

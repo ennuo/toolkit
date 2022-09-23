@@ -72,7 +72,7 @@ public class Mod extends FileData {
     }
 
     public Mod(File file) {
-        super(null, DatabaseType.MOD);
+        super(file, DatabaseType.MOD);
         this.process(file);
     }
     

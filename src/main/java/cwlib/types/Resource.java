@@ -252,6 +252,20 @@ public class Resource {
         );
     }
 
+    public byte[] compress() {
+        return Resource.compress(
+            new SerializationData(
+                this.data,
+                this.revision,
+                this.compressionFlags,
+                this.type,
+                this.method,
+                this.getDependencies()
+            ),
+            true
+        );
+    }
+
     /**
      * Wraps a resource in a container, with optional compression.
      * @param data Serialization data to wrap

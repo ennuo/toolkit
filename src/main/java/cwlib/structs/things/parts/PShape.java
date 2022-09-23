@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import cwlib.enums.AudioMaterial;
@@ -64,7 +65,7 @@ public class PShape implements Serializable {
     @GsonRevision(min=0x303) public int colorOff;
     @GsonRevision(min=0x303) public float brightnessOff;
 
-    @GsonRevision(max=0x306) public byte interactPlayMode, interactEditMode;
+    @GsonRevision(max=0x306) public byte interactPlayMode, interactEditMode = 1;
 
     public LethalType lethalType = LethalType.NOT;
 
@@ -74,7 +75,7 @@ public class PShape implements Serializable {
     
     public short flags = ShapeFlags.DEFAULT_FLAGS;
 
-    @GsonRevision(min=0x307) public ContactCache contactCache = new ContactCache();
+    @GsonRevision(min=0x307) public transient ContactCache contactCache = new ContactCache();
 
     @GsonRevision(min=0x3bd) public byte stickiness, grabbability, grabFilter;
 
@@ -107,6 +108,13 @@ public class PShape implements Serializable {
     @GsonRevision(branch=0x4431, min=0x34) public byte bouncePadBehavior;
     @GsonRevision(branch=0x4431, min=0x5f) public float zBiasVita;
     @GsonRevision(branch=0x4431, min=0x7a) public boolean touchWhenInvisible;
+
+    public PShape() {};
+    public PShape(Vector3f[] vertices) {
+        this.polygon.vertices = vertices;
+        this.polygon.loops = new int[] { vertices.length };
+        this.polygon.requiresZ = true;
+    } 
 
     @SuppressWarnings("unchecked")
     @Override public PShape serialize(Serializer serializer, Serializable structure) {

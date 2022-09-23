@@ -7,19 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cwlib.enums.BoxType;
-import cwlib.enums.CompressionFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.gmat.MaterialBox;
-import cwlib.types.Resource;
-import cwlib.types.data.Revision;
+import cwlib.structs.gmat.MaterialWire;
 import cwlib.util.FileIO;
-import toolkit.configurations.Config;
+import toolkit.configurations.ApplicationFlags;
 
 public class GfxAssembler {
     public static String BRDF = FileIO.getResourceFileAsString("/brdf.cg");
-    public static HashMap<MaterialBox, String> LOOKUP = new HashMap<>();
+    public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
 
     public static boolean USE_ENV_VARIABLES = false;
     public static boolean USE_NORMAL_MAPS = false;
@@ -32,7 +30,9 @@ public class GfxAssembler {
         public static final int BUMP = 3;
         public static final int GLOW = 4;
         public static final int REFLECTION = 6;
+        public static final int UNKNOWN = 7; // 7, just adds tex * ambcol, to final color
 
+        // 169
         public static final int ANISO = 170;
         public static final int TRANS = 171;
         public static final int COLOR_CORRECTION = 172; // ramp
@@ -68,14 +68,38 @@ public class GfxAssembler {
         public static final int ORBIS = (1 << 15);
     }
 
-    public static final String resolve(StringBuilder shader, RGfxMaterial gmat, MaterialBox box, int type) {
+    public static class Variable {
+        public final String value;
+        public final int type;
+
+        public Variable(String value, int type) {
+            this.value = value;
+            this.type = type;
+        }
+
+        @Override public String toString() { return this.value.toString(); }
+    }
+
+    public static final Variable getWithSwizzle(StringBuilder shader, RGfxMaterial gfx, MaterialBox box, int port, int type) {
+        MaterialWire wire = gfx.getWireConnectedToPort(box, port);
+        if (wire == null) return null;
+        Variable variable = resolve(shader, gfx, gfx.boxes[wire.boxFrom], type);
+        String swizzle = new String(wire.swizzle).replaceAll("\0", "");
+        if (swizzle.length() != 0)
+            return new Variable(variable.value + "." + swizzle, swizzle.length());
+        return variable;      
+    }
+
+    public static final Variable resolve(StringBuilder shader, RGfxMaterial gmat, MaterialBox box, int type) {
         if (LOOKUP.containsKey(box))
             return LOOKUP.get(box);
         
         int index = CURRENT_ATTRIBUTE++;
         int[] params = box.getParameters();
+        int returnType = 4;
         String variableName, assignment;
         switch (box.type) {
+            case BoxType.OUTPUT: { throw new RuntimeException("Why?"); }
             case BoxType.TEXTURE_SAMPLE: {
                 String texVar = "s" + params[5];
                 variableName = "smp" + index;
@@ -95,45 +119,92 @@ public class GfxAssembler {
                 if (ox != 0.0f || oy != 0.0f)
                     uv += String.format(" + float2(%f, %f)", ox, oy);
 
+                Variable add = getWithSwizzle(shader, gmat, box, 0, type);
+                if (add != null)
+                    uv = String.format("(%s) + %s", uv, add);
+                Variable scale = getWithSwizzle(shader, gmat, box, 1, type);
+                if (scale != null)
+                    uv = String.format("(%s) * %s", uv, scale);
+                Variable sub = getWithSwizzle(shader, gmat, box, 2, type);
+                if (sub != null)
+                    uv = String.format("(%s) - %s", uv, sub);
+
+
                 assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);
 
                 if (type == OutputPort.FUZZ) {
                     shader.append(String.format("\tfloat4 %s = float4(%s.x, SAMPLE_2D(%s, iUV.zw).yz, 0.0);\n", variableName, assignment, texVar));
-                    return variableName;
+                    return new Variable(variableName, 4);
                 }
 
                 break;
             }
-            case BoxType.MULTIPLY: {
-                MaterialBox[] nodes = gmat.getBoxesConnected(box);
-
-                if (nodes.length != 2) throw new RuntimeException("Mulitipication node must take in two inputs!");
-                String l = resolve(shader, gmat, nodes[0], type);
-                String r = resolve(shader, gmat, nodes[1], type);
-                variableName = "mul" + index;
-                assignment = String.format("(%s * %s)", l, r);
-
-                break;
-            }
-            case 2: {
-                return "iColor";
-            }
-            case 4: {
-                return "iColor"; // I don't think this is accurate, but whatever
-            }
+            case BoxType.THING_COLOR: return new Variable("iColor", 4);
             case BoxType.COLOR: {
                 variableName = "col" + index;
                 assignment = String.format("float4(%s, %s, %s, %s)", Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]), Float.intBitsToFloat(params[2]), Float.intBitsToFloat(params[3]));
                 break;
             }
-            case 11: {
-                MaterialBox lNode = gmat.getBoxConnectedToPort(box, 0);
-                MaterialBox rNode = gmat.getBoxConnectedToPort(box, 1);
-                if (lNode == null || rNode == null) 
-                    throw new RuntimeException("(11) node is supposed to take two inputs!");
+            case BoxType.CONSTANT: return new Variable(String.format("%s", Float.intBitsToFloat(params[0])), 1);
+            case BoxType.CONSTANT2: {
+                return new Variable(String.format("float2(%s, %s)", 
+                    Float.intBitsToFloat(params[0]),
+                    Float.intBitsToFloat(params[1])), 2);
+            }
+            case BoxType.CONSTANT3: {
+                return new Variable(String.format("float3(%s, %s, %s)", 
+                    Float.intBitsToFloat(params[0]),
+                    Float.intBitsToFloat(params[1]),
+                    Float.intBitsToFloat(params[2])), 3);
+            }
+            case BoxType.CONSTANT4: {
+                return new Variable(String.format("float4(%s, %s, %s, %s)", 
+                    Float.intBitsToFloat(params[0]),
+                    Float.intBitsToFloat(params[1]),
+                    Float.intBitsToFloat(params[2]),
+                    Float.intBitsToFloat(params[3])), 4);
+            }
+            // 8
+            case BoxType.MULTIPLY_ADD: {
+                MaterialBox node = gmat.getBoxConnectedToPort(box, 0);
+                if (node == null) 
+                    throw new RuntimeException("MAD node is supposed to take one input!");
+                
+                Variable input = getWithSwizzle(shader, gmat, box, 0, type);
+                returnType = input.type;
+                
+                variableName = "mad" + index;
+                assignment = String.format("((%s * %s) + %s)", input,
+                    Float.intBitsToFloat(params[0]),
+                    Float.intBitsToFloat(params[1]));
+                break;
+                
+            }
+            case BoxType.MULTIPLY: {
+                Variable l = getWithSwizzle(shader, gmat, box, 0, type);
+                Variable r = getWithSwizzle(shader, gmat, box, 1, type);
 
-                String l = resolve(shader, gmat, lNode, type); // color
-                String r = resolve(shader, gmat, rNode, type); // diffuse
+                if (l == null || r == null) 
+                    throw new RuntimeException("Multiply node is supposed to take two inputs!");
+                
+                returnType = l.type;
+                if (r.type > l.type)
+                    returnType = r.type;
+
+                variableName = "mul" + index;
+                assignment = String.format("(%s * %s)", l, r);
+
+                break;
+            }
+            case BoxType.ADD: {
+                Variable l = getWithSwizzle(shader, gmat, box, 0, type);
+                Variable r = getWithSwizzle(shader, gmat, box, 1, type);
+                if (l == null || r == null) 
+                    throw new RuntimeException("Add node is supposed to take two inputs!");
+                
+                returnType = l.type;
+                if (r.type > l.type)
+                    returnType = r.type;
 
                 variableName = "sum" + index;
 
@@ -141,26 +212,55 @@ public class GfxAssembler {
 
                 break;
             }
-            case 12: {
-                MaterialBox lNode = gmat.getBoxConnectedToPort(box, 0);
-                MaterialBox rNode = gmat.getBoxConnectedToPort(box, 1);
-                if (lNode == null || rNode == null) 
-                    throw new RuntimeException("Subtraction node is supposed to take two inputs!");
+            case BoxType.MIX: {
+                Variable l = getWithSwizzle(shader, gmat, box, 0, type);
+                Variable r = getWithSwizzle(shader, gmat, box, 1, type);
+                if (l == null || r == null) 
+                    throw new RuntimeException("Mix node is supposed to take two inputs!");
+
+                returnType = l.type;
+                if (r.type > l.type)
+                    returnType = r.type;
 
                 String f = String.format("%f", Float.intBitsToFloat(params[0]));
-                String l = resolve(shader, gmat, lNode, type); // color
-                String r = resolve(shader, gmat, rNode, type); // diffuse
+                Variable w = getWithSwizzle(shader, gmat, box, 2, type);
+                if (w != null) f = w.toString();
+            
 
-                variableName = "sub" + index;
+                variableName = "mix" + index;
                 assignment = String.format("(((%s - %s) * %s) + %s)", r, l, f, l);
 
                 break;
             }
-            case 16: {
-                String input1 = resolve(shader, gmat, gmat.getBoxConnectedToPort(box, 0), type);
-                String input2 = resolve(shader, gmat, gmat.getBoxConnectedToPort(box, 1), type);
-                String input3 = resolve(shader, gmat, gmat.getBoxConnectedToPort(box, 2), type);
+            case BoxType.MAKE_FLOAT2:
+            case BoxType.MAKE_FLOAT3:
+            case BoxType.MAKE_FLOAT4: {
+                int count = box.type - 11;
+                String[] inputs = new String[count];
+                for (int i = 0; i < inputs.length; ++i) {
+                    Variable variable = getWithSwizzle(shader, gmat, box, i, type);
+                    if (variable != null)
+                        inputs[i] = variable.value;
+                    else
+                        inputs[i] = String.format("%f", Float.intBitsToFloat(params[i]));
+                }
                 
+                return new Variable(
+                    String.format("float%d(%s)", count, String.join(", ", inputs)),
+                    count
+                );
+            }
+            case BoxType.BLEND: {
+                Variable input1 = getWithSwizzle(shader, gmat, box, 0, type);
+                Variable input2 = getWithSwizzle(shader, gmat, box, 1, type);
+                Variable input3 = getWithSwizzle(shader, gmat, box, 2, type);
+                
+                returnType = input1.type;
+                if (input2.type > returnType)
+                    returnType = input2.type;
+                if (input3.type > returnType)
+                    returnType = input3.type;
+
                 variableName = "blnd" + index;
 
                 assignment = String.format("((%s - %s) * saturate(%s.x * 100.0 - 15.0) + %s)", input2, input1, input3, input1);
@@ -184,14 +284,33 @@ public class GfxAssembler {
                 // INPUT[2] = MASK
                 // return v;
             }
+            case BoxType.EXPONENT: {
+                MaterialBox node = gmat.getBoxConnectedToPort(box, 0);
+                if (node == null) 
+                    throw new RuntimeException("MAD node is supposed to take one input!");
+                
+                Variable input = getWithSwizzle(shader, gmat, box, 0, type);
+                returnType = input.type;
+                
+                variableName = "ex" + index;
+                assignment = String.format("pow(%s, %s)",
+                    input,
+                    Float.intBitsToFloat(params[0])
+                );
+                
+                break;
+            }
             default: {
                 throw new RuntimeException("Unhandled box type! (" + (box.type) + ")");
             }
         }
 
-        LOOKUP.put(box, variableName);
-        shader.append(String.format("\tfloat4 %s = %s;\n", variableName, assignment));
-        return variableName;
+        Variable variable = new Variable(variableName, returnType);
+        LOOKUP.put(box, variable);
+
+        shader.append(String.format("\tfloat%d %s = %s;\n", returnType, variableName, assignment));
+        
+        return variable;
     }
 
     public static final String setupPath(RGfxMaterial gfx, MaterialBox box, int port) {
@@ -200,7 +319,7 @@ public class GfxAssembler {
         if (box != null) {
 
             StringBuilder builder = new StringBuilder(1000);
-            String variable = resolve(builder, gfx, box, port);
+            Variable variable = resolve(builder, gfx, box, port);
 
             if (port == OutputPort.BUMP) {
                 String function = USE_NORMAL_MAPS ? "NormalMap" : "BumpMap";
@@ -222,14 +341,14 @@ public class GfxAssembler {
         MaterialBox alpha = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ALPHA_CLIP);
         MaterialBox fuzz = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.FUZZ);
         MaterialBox aniso = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ANISO);
+        MaterialBox cc = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.COLOR_CORRECTION);
         MaterialBox ramp = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.TOON_RAMP);
+        MaterialBox unknown = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.UNKNOWN);
         MaterialBox specular = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.SPECULAR);
         MaterialBox glow = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.GLOW);
         MaterialBox reflection = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.REFLECTION);
-
+        
         ArrayList<String> properties = new ArrayList<>();
-
-        if (normal != null) properties.add("NORMAL");
 
         if (alpha != null) properties.add("ALPHA");
         else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
@@ -238,15 +357,20 @@ public class GfxAssembler {
         }
 
         if (specular != null) properties.add("SPECULAR");
+        if (normal != null) properties.add("NORMAL");
         if (glow != null) properties.add("GLOW");
         if (reflection != null) properties.add("REFRACT");
-        if (fuzz != null) properties.add("FUZZ");
-        if (aniso != null) properties.add("ANISO");
-        if (ramp != null) properties.add("LIGHTING_RAMP");
         if (material.alphaLayer == 0xc0) 
             properties.add("GLASS");
+        if (unknown != null) properties.add("ST7");
+        if (aniso != null) properties.add("ANISO");
+        if (cc != null) properties.add("COLOR_CORRECTION");
+        if (fuzz != null) properties.add("FUZZ");
+        if (ramp != null) properties.add("LIGHTING_RAMP");
+
         if (properties.size() == 0)
             properties.add("NO_FLAGS");
+
         
         String shader = BRDF;
         if (flags != -1)
@@ -258,14 +382,16 @@ public class GfxAssembler {
         shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, OutputPort.DIFFUSE));
         shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, OutputPort.GLOW));
         shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, OutputPort.ALPHA_CLIP));
+        shader = shader.replace("ENV.AUTO_ST7_SETUP", setupPath(material, unknown, OutputPort.UNKNOWN));
         shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, OutputPort.FUZZ));
         shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, OutputPort.ANISO));
+        shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, OutputPort.COLOR_CORRECTION));
         shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, OutputPort.TOON_RAMP));
 
         if (!USE_ENV_VARIABLES) {
             shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", material.alphaTestLevel));
             shader = shader.replace("ENV.ALPHA_MODE", "" + material.alphaMode);
-
+            
             shader = shader.replace("ENV.COSINE_POWER", String.format("%f", material.cosinePower * 22.0f));
             shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", material.bumpLevel));
             
@@ -283,9 +409,6 @@ public class GfxAssembler {
             shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format("%f", ((float)((int)material.iridesenceRoughness & 0xff)) / 255.0f));
         }
 
-        if (fuzz != null) 
-            FileIO.write(shader.getBytes(), "C:/Users/Aidan/Desktop/shader.cg");
-        
         return shader;
     }
 
@@ -311,26 +434,27 @@ public class GfxAssembler {
     public static byte[] getShader(String string) { return getShader(string, false, false); }
     public static byte[] getShader(String string, boolean cgb, boolean orbis) {
         File directory = ResourceSystem.getWorkingDirectory();
+
         File shader = new File(directory, "shader");
         File compiled = new File(directory, "compiled");
+
         if (shader.exists()) shader.delete();
         if (compiled.exists()) compiled.delete();
 
         FileIO.write(string.getBytes(), shader.getAbsolutePath());
-        
     
         String profile = "sce_fp_rsx";
-        File loc = new File("E:/util/sce-cgc.exe");
+        File compiler = ApplicationFlags.SCE_CGC_EXECUTABLE;
         if (orbis) {
-            loc = new File("E:/util/orbis-wave-psslc.exe");
+            compiler = ApplicationFlags.SCE_PSSL_EXECUTABLE;
             profile = "sce_ps_orbis";
         }
 
         String msg;
         if (cgb && !orbis) 
-            msg = run(loc.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
         else
-            msg = run(loc.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());
 
         shader.delete();
         if (compiled.exists()) {
@@ -340,27 +464,5 @@ public class GfxAssembler {
         } 
         
         throw new RuntimeException(msg);
-    }
-
-    public static byte[] compile(RGfxMaterial material) {
-        try {
-            String normal = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.LEGACY_NORMAL_PASS);
-            String color = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY);
-            String decal = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.DECALS);
-            String water = GfxAssembler.generateBRDF(material, GfxFlags.LEGACY | GfxFlags.WATER_TWEAKS);
-    
-            byte[] normalShader = getShader(normal);
-            byte[] colorShader = getShader(color);
-            byte[] decalShader = getShader(decal);   
-            byte[] waterShader = getShader(water);
-            
-            if (normalShader == null || colorShader == null || decalShader == null || waterShader == null) return null;
-    
-            material.shaders = new byte[][] { normalShader, colorShader, decalShader, waterShader };
-            return Resource.compress(material.build(new Revision(0x272, 0x4c44, 0x0017), CompressionFlags.USE_ALL_COMPRESSION));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null; 
-        }
     }
 }

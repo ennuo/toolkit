@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GfxMaterialFlags;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RGfxMaterial;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
+import cwlib.util.FileIO;
 
 public class CgAssembler {
     public static long[] getBytecode(byte[] cgb) {
@@ -115,17 +117,27 @@ public class CgAssembler {
         LEGACY | WATER_TWEAKS
     };
 
-    public static byte[] compileShaderVariant(String shader, int index, boolean legacy, boolean orbis) {
+    public static byte[] compileShaderVariant(String shader, int gmatFlags, int index, boolean legacy, boolean orbis) {
         int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
+        
         if (orbis) flags |= ORBIS;
+
+        if ((gmatFlags & GfxMaterialFlags.RECEIVE_SHADOWS) != 0)
+            flags |= (1 << 22);
+        if ((gmatFlags & GfxMaterialFlags.RECEIVE_SUN) != 0)
+            flags |= (1 << 23);
+        if ((gmatFlags & GfxMaterialFlags.RECEIVE_SPRITELIGHTS) != 0)
+            flags |= (1 << 24);
+        
         shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
+
         return GfxAssembler.getShader(shader, !legacy, orbis);
     }
 
     public static void compile(String template, RGfxMaterial gmat, boolean cgb, boolean orbis) {
         HashSet<Long> pool = new HashSet<>();
         for (int i = 0; i < gmat.shaders.length; ++i) {
-            gmat.shaders[i] = compileShaderVariant(template, i, !cgb, orbis);
+            gmat.shaders[i] = compileShaderVariant(template, gmat.flags, i, !cgb, orbis);
             long[] code = getBytecode(gmat.shaders[i]);
             for (long c : code)
                 pool.add(c);

@@ -2,16 +2,20 @@ package toolkit.functions;
 
 import cwlib.util.Bytes;
 import toolkit.utilities.FileChooser;
+import toolkit.utilities.SlowOp;
 import toolkit.windows.Toolkit;
 import toolkit.windows.managers.ModManager;
+import toolkit.windows.utilities.SlowOpGUI;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
+import cwlib.types.archives.Fat;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
+import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
@@ -54,57 +58,46 @@ public class UtilityCallbacks {
     }
     
     public static void mergeFileArchives() {         
-        Toolkit toolkit = Toolkit.instance;
-        File base = FileChooser.openFile("base.farc", "farc", false);
-        if (base == null) return;
-        Fart archive;
-        int index = toolkit.isArchiveLoaded(base);
-        if (index != -1) archive = ResourceSystem.getArchives().get(index);
-        else archive = new FileArchive(base);
+        File file = FileChooser.openFile("base.farc", "farc", false);
+        if (file == null) return;
+         
+        Fart cache;
+        int index = Toolkit.instance.isArchiveLoaded(file);
+        if (index != -1) cache = ResourceSystem.getArchives().get(index);
+        else cache = new FileArchive(file);
 
-        if (archive == null) {
-            System.err.println("Base FileArchive is null! Aborting!");
-            return;
-        }
-
-        File patch = FileChooser.openFile("patch.farc", "farc", false);
-        if (patch == null) return;
-        FileArchive pArchive = new FileArchive(patch);
-
-        if (pArchive == null) {
-            System.err.println("Patch FileArchive is null! Aborting!");
-            return;
-        }
-
-        toolkit.resourceService.submit(() -> {
-            toolkit.progressBar.setVisible(true);
-            toolkit.progressBar.setMaximum(pArchive.entries.size());
-            toolkit.progressBar.setValue(0);
-            int count = 0;
-            for (FileEntry entry: pArchive.entries) {
-                toolkit.progressBar.setValue(count + 1);
-
-                byte[] data = pArchive.extract(entry);
-
-                int querySize = ((data.length * 10) + archive.queueSize + archive.hashTable.length + 8 + (archive.entries.size() * 0x1C)) * 2;
-                if (querySize < 0 || querySize >= Integer.MAX_VALUE) {
-                    System.out.println("Ran out of memory, flushing current changes...");
-                    archive.save(toolkit.progressBar);
-                    toolkit.progressBar.setMaximum(pArchive.entries.size());
-                    toolkit.progressBar.setValue(count + 1);
+        file = FileChooser.openFile("patch.farc", "farc", false);
+        if (file == null) return;
+        
+        FileArchive patch = new FileArchive(file);
+        
+        // Flush archives at 256MBs, maybe make this configurable, or auto-calculate some
+        // appropriate value based on lower end systems.
+        final int CACHE_SIZE = 268_435_456;
+        
+        SlowOpGUI.performSlowOperation(Toolkit.instance, "Merging Archives", patch.getEntryCount(), new SlowOp() {
+            private int current = 0;
+            
+            @Override public int run(SlowOpGUI state) {
+                for (Fat fat : patch) {
+                    if (state.wantQuit()) return -1;
+                    
+                    // Save if we have too much stored in memory currently.
+                    if (cache.getQueueSize() >= CACHE_SIZE)
+                        cache.save();
+                    
+                    cache.add(patch.extract(fat.getSHA1()));
+                    
+                    current++;
                 }
-
-                archive.add(pArchive.extract(entry));
-                count++;
+                
+                cache.save();
+                
+                return 0;
             }
-
-            archive.save(toolkit.progressBar);
-
-            toolkit.progressBar.setVisible(false);
-            toolkit.progressBar.setMaximum(0); toolkit.progressBar.setValue(0);
+            
+            @Override public int getProgress() { return this.current; }
         });
-
-        JOptionPane.showMessageDialog(toolkit, "Please wait..");
     }
     
     public static void generateFileDBDiff() {                                             
@@ -165,40 +158,31 @@ public class UtilityCallbacks {
         File[] files = FileChooser.openFiles("mod");
         if (files == null) return;
 
+        FileData database = ResourceSystem.getSelectedDatabase();
+
         for (int i = 0; i < files.length; ++i) {
-            File file = files[i];
+            Mod mod = ModCallbacks.loadMod(files[i]);
+            if (mod == null) continue;
 
-            Mod mod = ModCallbacks.loadMod(file);
-            if (mod != null) {
 
-                if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
-                    BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
-                    for (FileEntry entry: mod.entries)
-                        profile.add(entry.data, true);
-                } else if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MAP) {
-                    if (mod.entries.size() == 0) return;
-                    FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
-                    FileArchive[] archives = Toolkit.instance.getSelectedArchives();
-                    if (archives == null) return;
-                    for (FileEntry entry: mod.entries) {
-                        if (db.add(entry))
-                            db.addNode(entry);
-                        ResourceSystem.add(entry.data, archives);
-                    }
+            if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.PROFILE) {
+                BigSave profile = (BigSave) Toolkit.instance.getCurrentDB();
+                for (FileEntry entry: mod.entries)
+                    profile.add(entry.data, true);
+            } else if (ResourceSystem.getDatabaseType() == Globals.ResourceSystem.MAP) {
+                if (mod.entries.size() == 0) return;
+                FileDB db = (FileDB) Toolkit.instance.getCurrentDB();
+                FileArchive[] archives = Toolkit.instance.getSelectedArchives();
+                if (archives == null) return;
+                for (FileEntry entry: mod.entries) {
+                    if (db.add(entry))
+                        db.addNode(entry);
+                    ResourceSystem.add(entry.data, archives);
                 }
-
             }
         }
 
-        Toolkit.instance.getCurrentDB().shouldSave = true;
-        Toolkit.instance.updateWorkspace();
-
-        JTree tree = Toolkit.instance.getCurrentTree();
-        TreePath[] treePath = tree.getSelectionPaths();
-
-        FileModel m = (FileModel) tree.getModel();
-        m.reload((FileNode) m.getRoot());
-
-        tree.setSelectionPaths(treePath);
+        database.setHasChanges();
+        ResourceSystem.reloadModel(database);
     }
 }

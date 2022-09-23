@@ -18,6 +18,13 @@ public class SoftbodyCluster {
     private Matrix4f restDyadicSum;
     private float[] restQuadraticDyadicSum = new float[QUAD_DYADIC_SUM_LENGTH];
 
+    public SoftbodyCluster() {
+        // float9x9
+        for (int i = 0; i < QUAD_DYADIC_SUM_LENGTH; ++i)
+            if (i % 10 == 0)
+                this.restQuadraticDyadicSum[i] = 1.0f;
+    }
+
     public String getName() { return this.name; }
     public Vector4f getRestCenterOfMass() { return this.restCenterOfMass; }
     public Matrix4f getRestDyadicSum() { return this.restDyadicSum; }

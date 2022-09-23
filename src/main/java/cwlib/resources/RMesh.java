@@ -712,7 +712,13 @@ public class RMesh implements Compressable, Serializable {
      * @param mass New mass of the vertex
      */
     public void setVertexMass(int index, float mass) {
-        if (this.mass == null || index < 0 || index >= this.mass.length)
+        if (this.mass == null || this.mass.length != this.numVerts) {
+            this.mass = new float[this.numVerts];
+            for (int i = 0; i < this.numVerts; ++i)
+                this.mass[i] = 1.0f;
+        }
+
+        if (index < 0 || index >= this.mass.length)
             throw new NullPointerException("Vertex at position " + index + " does not exist!");
         this.mass[index] = mass;
     }
@@ -788,9 +794,26 @@ public class RMesh implements Compressable, Serializable {
         for (int i = 0; i < count; ++i) {
             vertices[i] = stream.v3();
 
+            // stream.i8(cluster_index * 2);
+            // stream.i8(0)
+            // stream.i8(0)
+            // stream.i8(vertex_weight)
+
+            stream.i32(true); 
+        }
+        return vertices;
+    }
+
+    public byte[][] getBlendIndices(int start, int count) {
+        MemoryInputStream stream = new MemoryInputStream(this.getVertexStream());
+        stream.seek(start * 0x10);
+        byte[][] vertices = new byte[count][];
+        for (int i = 0; i < count; ++i) {
+            stream.v3();
+
             // This is always 0x000000FF, the field is bone indices, but those seem depreciated.
             // It's probably only kept for alignment reasons?
-            stream.i32(true); 
+            vertices[i] = stream.bytes(4);
         }
         return vertices;
     }
@@ -1069,6 +1092,39 @@ public class RMesh implements Compressable, Serializable {
             morphs[i] = new Morph(offsets, normals);
         }
         return morphs;
+    }
+
+    /**
+     * Calculates a triangle list from a given range in the index buffer.
+     * @param start First face to include in list
+     * @param count Number of faces from start
+     * @return Mesh's triangle list
+     */
+    public int[] getSpringyTriangles(int start, int count) {
+        if (this.indices == null)
+            throw new IllegalStateException("Can't get triangles from mesh without index buffer!");
+        
+        int[] faces = new int[count];
+        short[] stream = this.springyTriIndices;
+        for (int i = start; i < count; ++i)
+            faces[i] = stream[i] & 0xffff;
+        
+        if (!this.springTrisStripped) return faces;
+
+        ArrayList<Integer> triangles = new ArrayList<>(this.numVerts * 0x3);
+        Collections.addAll(triangles, faces[0], faces[1], faces[2]);
+        for (int i = 3, j = 1; i < faces.length; ++i, ++j) {
+            if (faces[i] == 65535) {
+                Collections.addAll(triangles, faces[i + 1], faces[i + 2], faces[i + 3]);
+                i += 3;
+                j = 0;
+                continue;
+            }
+            if ((j & 1) != 0) Collections.addAll(triangles, faces[i - 2], faces[i], faces[i - 1]);
+            else Collections.addAll(triangles, faces[i - 2], faces[i - 1], faces[i]);
+        }
+
+        return triangles.stream().mapToInt(Integer::valueOf).toArray();
     }
 
     /**

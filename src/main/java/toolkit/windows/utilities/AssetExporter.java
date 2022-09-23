@@ -1,12 +1,12 @@
 package toolkit.windows.utilities;
 
-import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -15,20 +15,21 @@ import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
-import toolkit.windows.Toolkit;
+import javax.swing.JOptionPane;
 
 public class AssetExporter extends JDialog {
     private enum MaterialLibrary {
         NONE,
         LBP1,
-        LBP3;
+        LBP2,
+        LBP_PS4,
+        LBP_VITA
     }
 
     public static enum PackageType {
@@ -109,18 +110,18 @@ public class AssetExporter extends JDialog {
         }
     }
     
-    private final DefaultListModel assetModel = new DefaultListModel();
+    private final DefaultListModel<Asset> assetModel = new DefaultListModel<>();
     
     private final Asset root;
     
     // Resources that get treated as GUID by default.
-    private static final HashSet<Long> defaults = new HashSet<>();
+    private static final HashSet<GUID> defaults = new HashSet<>();
     static {
-        defaults.add(9877l); // naked_to.mol
-        defaults.add(9876l); // naked_he.mol
-        defaults.add(11166l); // palette_identity.gmat
-        defaults.add(3465l); // general_infinite_mass.mat
-        defaults.add(11987l); // general_infinite_mass.mat
+        defaults.add(new GUID(9877l)); // naked_to.mol
+        defaults.add(new GUID(9876l)); // naked_he.mol
+        defaults.add(new GUID(11166l)); // palette_identity.gmat
+        defaults.add(new GUID(3465l)); // general_infinite_mass.mat
+        defaults.add(new GUID(11987l)); // general_infinite_mass.mat
     }
     
     private FileEntry entry;
@@ -141,13 +142,16 @@ public class AssetExporter extends JDialog {
         
         byte[] rootData = ResourceSystem.extract(entry.getSHA1());
         if (rootData == null) {
+            JOptionPane.showMessageDialog(this, "Unable to obtain resource data, do you have the archive mounted?", "An error occurred", JOptionPane.ERROR_MESSAGE);
             this.dispose();
             this.root = null;
             return;
         }
         
-        Resource resource = new Resource(rootData);
-        if (resource.getResourceType() == ResourceType.INVALID) {
+        Resource resource = null;
+        try { resource = new Resource(rootData); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Resource was unable to deserialize!", "An error occurred", JOptionPane.ERROR_MESSAGE);
             this.dispose();
             this.root = null;
             return;
@@ -209,7 +213,7 @@ public class AssetExporter extends JDialog {
         MaterialLibrary library = (MaterialLibrary) this.materialLibraryCombo.getSelectedItem();
         
         // Add remap support later
-        this.recurse(this.root, assets);
+        this.recurse(this.root, assets, library);
         
         Mod mod = new Mod();
         
@@ -217,15 +221,15 @@ public class AssetExporter extends JDialog {
             if (asset.data == null) continue;
             if (asset.entry == null || asset.entry.getKey() == null) {
                 if (asset.entry != null && !asset.entry.getPath().isEmpty())
-                    mod.add(asset.entry.getPath(), asset.entry.data);
+                    mod.add(asset.entry.getPath(), asset.data);
                 else {
                     String sha1 = SHA1.fromBuffer(asset.data).toString();
-                    mod.add("resources/" + sha1, asset.entry.data);
+                    mod.add("resources/" + sha1, asset.data);
                 }
-            } else mod.add(asset.entry.path, asset.data, asset.entry.GUID);
+            } else mod.add(asset.entry.getPath(), asset.data, (GUID) asset.entry.getKey());
         }
         
-        mod.save(path);
+        mod.save(new File(path));
         
         this.dispose();
     }
@@ -237,39 +241,41 @@ public class AssetExporter extends JDialog {
         return null;
     }
     
-    private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets) {
+    private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets, MaterialLibrary remap) {
         if (asset.data == null) return asset.descriptor;
         Resource resource = new Resource(asset.data);
-        if (resource.method != SerializationType.BINARY || asset.recursed) {
+        if (resource.getSerializationType() != SerializationType.BINARY || asset.recursed) {
             if (asset.hashinate)
-                return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.type);
-            return new ResourceDescriptor(asset.entry.GUID, asset.descriptor.type);
+                return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
+            return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
         }
-        if (remap == null || (remap != null && resource.type != ResourceType.GFX_MATERIAL)) {
-            for (int i = 0; i < resource.dependencies.size(); ++i) {
-                ResourceDescriptor dependencyDescriptor = resource.dependencies.get(i);
-                if (dependencyDescriptor.type == ResourceType.SCRIPT) continue;
+        if (remap == MaterialLibrary.NONE || (remap != MaterialLibrary.NONE && resource.getResourceType() != ResourceType.GFX_MATERIAL)) {
+            ResourceDescriptor[] dependencies = resource.getDependencies();
+            for (int i = 0; i < dependencies.length; ++i) {
+                ResourceDescriptor dependencyDescriptor = dependencies[i];
+                if (dependencyDescriptor.getType() == ResourceType.SCRIPT) continue;
                 Asset dependencyAsset = this.getAsset(assets, dependencyDescriptor);
                 if (dependencyAsset == null)
                     System.out.println(asset.toString() + " : " + i);
                 else
                     System.out.println(asset.toString() + " : " + dependencyAsset.toString());
-                resource.replaceDependency(dependencyDescriptor, this.getAllDependencies(dependencyAsset, assets, remap));
+                resource.replaceDependency(dependencyDescriptor, this.recurse(dependencyAsset, assets, remap));
             }
         }
-        if (resource.type == ResourceType.PLAN && asset.hashinate && asset.entry.GUID != -1)
-            RPlan.removePlanDescriptors(resource, asset.entry.GUID);
+
+        // if (resource.getResourceType() == ResourceType.PLAN && asset.hashinate && asset.entry.GUID != -1)
+        //     RPlan.removePlanDescriptors(resource, asset.entry.GUID);
+
         byte[] data = null;
-        if (resource.type == ResourceType.GFX_MATERIAL) {
-            //GfxMaterialInfo info = new GfxMaterialInfo(new GfxMaterial(resource));
-            //data = info.build
-            data = resource.compressToResource();
-        } else data = resource.compressToResource();
+        if (remap != MaterialLibrary.NONE && resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
+            throw new RuntimeException("You shouldn't even be able to get this.");
+        } else data = resource.compress();
         asset.data = data;
-        asset.recursed = true;
+
+
         if (asset.hashinate)
-            return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.type);
-        return new ResourceDescriptor(asset.entry.GUID, asset.descriptor.type);
+            return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
+        return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
     }
     
     private void getDescriptors(byte[] resource, HashSet<Asset> descriptors) {
@@ -285,7 +291,7 @@ public class AssetExporter extends JDialog {
         int revision = data.i32();
         // Dependency table didn't exist before this revision.
         if (revision < 0x109) return;
-        data.offset = data.i32();
+        data.seek(data.i32(), SeekMode.Begin);
         int count = data.i32();
         for (int i = 0; i < count; ++i) {
             Asset asset = null;
@@ -339,15 +345,14 @@ public class AssetExporter extends JDialog {
         this.switchReferenceTypeButton.setEnabled(!asset.locked);
             
     }
-    
-    @SuppressWarnings("unchecked")
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         packagingTypeLabel = new javax.swing.JLabel();
-        packagingTypeCombo = new javax.swing.JComboBox(PackageType.values());
+        packagingTypeCombo = new javax.swing.JComboBox<>(PackageType.values());
         materialLibraryLabel = new javax.swing.JLabel();
-        materialLibraryCombo = new javax.swing.JComboBox(MaterialLibrary.values());
+        materialLibraryCombo = new javax.swing.JComboBox<>(MaterialLibrary.values());
         exportButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         switchReferenceTypeButton = new javax.swing.JButton();
@@ -489,7 +494,7 @@ public class AssetExporter extends JDialog {
     }//GEN-LAST:event_switchReferenceTypeButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        String name = Paths.get(this.entry.path).getFileName().toString();
+        String name = this.entry.getName();
         int extIndex = name.lastIndexOf(".");
         if (extIndex != -1)
             name = name.substring(0, extIndex);
@@ -501,15 +506,15 @@ public class AssetExporter extends JDialog {
     }//GEN-LAST:event_exportButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList<String> assetList;
+    private javax.swing.JList<Asset> assetList;
     private javax.swing.JButton exportButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton markAllAsGUIDButton;
     private javax.swing.JButton markAllAsHashButton;
-    private javax.swing.JComboBox<String> materialLibraryCombo;
+    private javax.swing.JComboBox<MaterialLibrary> materialLibraryCombo;
     private javax.swing.JLabel materialLibraryLabel;
-    private javax.swing.JComboBox<String> packagingTypeCombo;
+    private javax.swing.JComboBox<PackageType> packagingTypeCombo;
     private javax.swing.JLabel packagingTypeLabel;
     private javax.swing.JButton switchReferenceTypeButton;
     // End of variables declaration//GEN-END:variables

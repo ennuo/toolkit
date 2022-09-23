@@ -25,6 +25,7 @@
 #define REFRACT (1 << 12)
 #define GLOW (1 << 13)
 #define GLASS (1 << 14)
+#define ST7 (1 << 22)
 #define ANISO (1 << 16)
 #define TRANS (1 << 17)
 #define COLOR_CORRECTION (1 << 18)
@@ -32,12 +33,17 @@
 #define BRDF_REFLECTANCE (1 << 20)
 #define LIGHTING_RAMP (1 << 21)
 
+// Receive flags
+#define RECEIVE_SHADOWS (1 << 22)
+#define RECEIVE_SUN (1 << 23)
+#define RECEIVE_SPRITELIGHTS (1 << 24)
+
 // LBP2 alpha modes
-#define BLEND_MODE_DISABLE (0)
-#define BLEND_MODE_ALPHA_BLEND (1)
-#define BLEND_MODE_ADDITIVE (2)
-#define BLEND_MODE_ADDITIVE_NO_ALPHA (3)
-#define BLEND_MODE_PREMULTIPLIED_ALPHA (4)
+#define BLEND_MODE_DISABLE 0
+#define BLEND_MODE_ALPHA_BLEND 1
+#define BLEND_MODE_ADDITIVE 2
+#define BLEND_MODE_ADDITIVE_NO_ALPHA 3
+#define BLEND_MODE_PREMULTIPLIED_ALPHA 4
 
 // Set this variable to define what maps this material uses.
 #define PROPERTIES ENV.MATERIAL_PROPERTIES
@@ -116,9 +122,9 @@ float normal_add = 0.5;
 float rim_round = 0.9;
 
 #if ((FLAGS & DEFERRED) == 0)
+    uniform float3 sunpos;
     uniform float2 lightscaleadd;
 
-    uniform float3 sunpos;
     uniform float3 rimcol2, ambcol, suncol;
     float3 rimcol = float3(0.5, 0.4, 0.3);
 
@@ -222,7 +228,7 @@ half3 BumpMap(half4 iNormal, half4 iTangent, float4 iSample) {
     return normalize(v);
 }
 
-half3 GetNormalFromTexture(half4 iNormal, half4 iTangent, float4 iUV) {
+half3 GetNormalFromTexture(half4 iNormal, half4 iTangent, float4 iUV, float4 iColor) {
 ENV.AUTO_NORMAL_SETUP
 }
 #endif
@@ -255,9 +261,21 @@ ENV.AUTO_ALPHA_SETUP
 }
 #endif
 
+#if (PROPERTIES & ST7)
+float4 GetST7Sample(float4 iUV, float4 iColor) {
+ENV.AUTO_ST7_SETUP
+}
+#endif
+
 #if (PROPERTIES & ANISO)
 float4 GetAniso(float4 iUV, float4 iColor) {
 ENV.AUTO_ANISO_SETUP
+}
+#endif
+
+#if (PROPERTIES & COLOR_CORRECTION)
+float4 GetColorCorrection(float2 iUV, float4 iColor) {
+ENV.AUTO_COLOR_CORRECTION_SETUP
 }
 #endif
 
@@ -427,7 +445,7 @@ void main(
     // First normal pass shader
     #if ((FLAGS & DEFERRED_NORMAL_PASS) == (DEFERRED_NORMAL_PASS))
         #if (PROPERTIES & NORMAL)
-            half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV);
+            half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
         #else
             half3 normal = normalize(iNormal.xyz);
         #endif
@@ -451,7 +469,7 @@ void main(
             float2 pixelPos = float2(DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
         #endif
 
-        #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT))
+        #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT) || (PROPERTIES & LIGHTING_RAMP))
             float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
             half3 normal = decode(nbfs);
         #endif
@@ -464,12 +482,17 @@ void main(
             diffuse = (diffuse * decals.w) + decals.xyz;
         #endif
 
+        #if (PROPERTIES & LIGHTING_RAMP)
+            float toon_dot = dot(iVec2Eye.xyz , normal) / sqrt(dot(iVec2Eye.xyz , iVec2Eye.xyz)) / 2.0;
+            diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
+        #endif
+
         half3 prod = pow(lbfs.xyz, 2);
 
         #if (PROPERTIES & REFRACT)
             float3 viewDir = iVec2Eye / length(iVec2Eye);
             half3 reflection = GetReflection(reflect(viewDir, normal).xy).xyz;
-            reflection *= dot(prod, float3(0.299072, 0.586914, 0.114014));
+            reflection *= dot(prod, float3(0.299, 0.587, 0.114));
         #else
             half3 reflection = half3(0.0, 0.0, 0.0); // Dummy addition variable.
         #endif
@@ -527,13 +550,13 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     float RdotL = dot(reflectVec, lightVec);
     float NdotL = dot(iNormal, lightVec); 
 
-    #if ((FLAGS & AO_FLAGS) && ((PROPERTIES & LIGHTING_RAMP) == 0))
+    #if ((FLAGS & AO_FLAGS) && (FLAGS & RECEIVE_SHADOWS))
         float ao = GetAO(iNormal, iVec2Eye, iLightmapUV);
     #else
         float ao = 1.0; // Dummy multiplication variable, will be optimized out.
     #endif
 
-    #if ((FLAGS & SHADOW_FLAGS) && ((PROPERTIES & LIGHTING_RAMP) == 0))
+    #if ((FLAGS & SHADOW_FLAGS) && (FLAGS & RECEIVE_SHADOWS))
         half shadow = GetShadow(iShadowMapPosition, iLightmapUV, iVec2Eye);
     #else
         half shadow = 1.0; // Dummy multiplication variable, will be optimized out.
@@ -546,15 +569,7 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     // ...ambient a simple 2 color hemisphere
     float3 color = ((iNormal.y * normal_mul) + normal_add) * ambcol;
 
-
-    #if (PROPERTIES & LIGHTING_RAMP)
-        color += suncol;
-        color += (saturate(
-            pow(saturate(NdotV + rim_round), 2) * 
-            (rimcol2 * ((iNormal.y + 1.0) / 2.0))
-        ));
-    #else
-
+    #if (FLAGS & RECEIVE_SHADOWS)
         #if (FLAGS & AO_FLAGS)
             color *= ao;
         #endif
@@ -572,23 +587,43 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
             pow(saturate(NdotV + rim_round), 2) * 
             lerp(rimcol, rimcol2, (iNormal.y + 1.0) / 2.0)
         ));
+    #else
+        #if (FLAGS & WATER_CAUSTICS)
+            color += (color * caustic.y);
+        #endif
+        color += suncol;
+
+        color += (saturate(
+            pow(saturate(NdotV + rim_round), 2) * 
+            (rimcol2 * ((iNormal.y + 1.0) / 2.0))
+        ));
     #endif
 
     float specular = pow(saturate(-RdotL), CosinePower);
-    #if ((FLAGS & SPRITELIGHT) && ((PROPERTIES & LIGHTING_RAMP) == 0))
+    #if ((FLAGS & SPRITELIGHT) && (FLAGS & RECEIVE_SHADOWS) && (FLAGS & RECEIVE_SPRITELIGHTS))
         float3 worldPos = GetWorldPos(iVec2Eye);
 
-        float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
-        ws /= sqrt(dot(ws, ws) + 0.0010004);
-        float RdotS = saturate(dot(reflectVec, ws));
-        float NdotS = dot(iNormal, ws);
+        // I don't entirely know how this works graphically,
+        // so I'm splitting them even though intuition says
+        // they're probably the same, minus the bounce.
+        // #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+        //     float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
+        //     float NdotS = dot(iNormal, ws); 
+        //     float s = (NdotS / sqrt(dot(ws, ws) + 0.001)) + 0.2;
+        //     float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
+        //     color += (max(NdotS, 0.0) * spritelight);
+        // #else
+            float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
+            ws /= sqrt(dot(ws, ws) + 0.001);
+            float RdotS = saturate(dot(reflectVec, ws));
+            float NdotS = dot(iNormal, ws);
+            float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
+            color += (max((NdotS + 0.2), 0.0) * spritelight);
 
-        float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
+            // I assume this is bounce
+            specular += (spritelight * (pow(RdotS, 22.0) * (NdotS > 0.0))).x;
+        // #endif
 
-        color += (max((NdotS + 0.199951), 0.0) * spritelight);
-
-        // It's probably problematic to do this here, but whatever, I'll fix it later.
-        specular += (spritelight * (pow(RdotS, 22.0) * (NdotS > 0.0))).x;
     #endif
 
     return float4(color, specular);
@@ -611,8 +646,11 @@ void main(
 
     out half4 color_out
 ) {
+    float3 viewVec = normalize(iVec2Eye.xyz);
+    float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
+
     #if (PROPERTIES & NORMAL)
-        half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV);
+        half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
     #else
         half3 normal = normalize(iNormal.xyz);
     #endif
@@ -622,6 +660,11 @@ void main(
         float4 decals = GetDecals(iDecalUV);
         diffuse = (diffuse * decals.w) + decals.xyz;
     #endif
+
+    // #if (PROPERTIES & COLOR_CORRECTION) 
+    //     float lum = saturate(dot(diffuse, float3(0.3, 0.6, 0.1)));
+    //     diffuse = GetColorCorrection(float2(lum, 0.5), iColor).xyz;
+    // #endif
 
     #if (PROPERTIES & LIGHTING_RAMP)
         float3 toon_light = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
@@ -633,7 +676,6 @@ void main(
     float3 prod = light.xyz * light.xyz;
 
     #if (PROPERTIES & REFRACT)
-        float3 viewVec = iVec2Eye.xyz / length(iVec2Eye.xyz); 
         float3 reflection = GetReflection(reflect(viewVec, normal).xy).xyz;
         reflection *= dot(prod, float3(0.299072, 0.586914, 0.114014));
     #else
@@ -642,6 +684,18 @@ void main(
 
     #if (PROPERTIES & SPECULAR)
         float3 specular = GetSpecularColor(iUV, iColor).xyz;
+
+        #if (PROPERTIES & ANISO)
+            float anisoOffset = -0.5;
+            float3 anisoDir = GetAniso(iUV, iColor).xyz;
+
+            float HdotA = dot(normalize(normal + anisoDir), viewVec + lightVec);
+            float aniso = max(0, sin(radians((HdotA + anisoOffset) * 180.0)));
+
+            specular *= aniso;
+        #endif
+
+
         half3 lighting = (((light.w * prod) * specular) + (specular * reflection)) * 2.0;
     #else
         half3 lighting = reflection;
@@ -654,15 +708,6 @@ void main(
         half3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
     #else
         half3 color = (diffuse * prod) + lighting;
-    #endif
-
-    #if (PROPERTIES & ANISO)
-        float4 aniso = GetAniso(iUV, iColor);
-        // ANISO
-        //float4 aniso_tex = tex2D(s1, iUV.xy);
-        //float HdotA = dot(normalize(iNormal + aniso_tex.xyz), normalize(normalize(lightVec) + normalize(viewVec)));
-        //float aniso = max(0, sin(radians(HdotA) * 180.0))
-
     #endif
 
     half illumination = tintcol.w;
@@ -681,17 +726,16 @@ void main(
         color.z = sqrt(color.z * tintcol.z);
     #endif
 
-    #if ((PROPERTIES & FUZZ) && (FLAGS & ORBIS))
-        float4 fuzz = GetFuzz(iUV, iColor);
-        float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
-        float NdotL = dot(iNormal, lightVec);
-        color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
-        float v2 = (abs(iAttr5.w) * tintcol.w) * fuzz.y * fuzz.x;
-        if (0.101 > v2 && iAttr5.z < 0.0) {
-            color_out = half4(color, 1.0);
-            return;
-        }
-    #endif
+    // #if ((PROPERTIES & FUZZ) && (FLAGS & ORBIS))
+    //     float4 fuzz = GetFuzz(iUV, iColor);
+    //     float NdotL = dot(iNormal, lightVec);
+    //     color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
+    //     float v2 = (abs(iAttr5.w) * tintcol.w) * fuzz.y * fuzz.x;
+    //     if (0.101 > v2 && iAttr5.z < 0.0) {
+    //         color_out = half4(color, 1.0);
+    //         return;
+    //     }
+    // #endif
     
     float fogcc = ((dot(color, float3(0.3, 0.6, 0.1)) + fogccparams.y) * fogccparams.x) + 1.0;
     float3 fog = (fogcc * fogcol.xyz) - color;
@@ -701,15 +745,27 @@ void main(
 
         #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
             illumination = alpha.x * tintcol.w;
-        #else
+        #elif (ALPHA_MODE != BLEND_MODE_DISABLE)
             illumination = alpha.w * tintcol.w;
+            if (alpha.w < AlphaTestLevel) illumination = 0.0;
+        #else
+            if (alpha.w < AlphaTestLevel) illumination = 0.0;
         #endif
 
-        if (alpha.w < AlphaTestLevel) illumination = 0.0;
+    #endif
+
+    #if (PROPERTIES & ST7)
+        color += (ambcol * GetST7Sample(iUV, iColor).xyz);
+    #endif
+
+    color += (factor * fog);
+
+    #if ((PROPERTIES & ALPHA) && (PROPERTIES & GLOW))
+        color *= illumination;
     #endif
 
     color_out = half4(
-        color + (factor * fog),
+        color,
         illumination
     );
 } 

@@ -3,11 +3,17 @@ package executables;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import org.joml.Matrix4f;
+
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RLocalProfile;
 import cwlib.resources.RSyncedProfile;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.Thing;
+import cwlib.structs.things.parts.PShape;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.ResourceDescriptor;
@@ -80,11 +86,7 @@ public class Psyncer {
         GsonUtils.REVISION = archive.getGameRevision();
         
         if (extractJSON) {
-            PsyncState state = new PsyncState();
-            state.local = local;
-            state.synced = synced;
-
-            FileIO.write(GsonUtils.toJSON(state).getBytes(StandardCharsets.UTF_8), args[1]);
+            FileIO.write(GsonUtils.toJSON(synced).getBytes(StandardCharsets.UTF_8), args[1]);
             return;
         }
         
@@ -95,9 +97,7 @@ public class Psyncer {
         }
 
         try { 
-            PsyncState state = GsonUtils.fromJSON(new String(jsonData, StandardCharsets.UTF_8), PsyncState.class);
-            synced = state.synced;
-            local = state.local;
+            synced = GsonUtils.fromJSON(new String(jsonData, StandardCharsets.UTF_8), RSyncedProfile.class);
         }
         catch (Exception ex) {
             System.err.println("Failed to convert JSON to RSyncedProfile!");

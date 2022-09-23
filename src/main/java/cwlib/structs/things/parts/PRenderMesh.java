@@ -28,6 +28,11 @@ public class PRenderMesh implements Serializable {
     public float poppetRenderScale = 1.0f;
     @GsonRevision(min=0x1f6,max=0x34c)
     public float parentDistanceFront, parentDistanceSide;
+
+    public PRenderMesh() {}
+    public PRenderMesh(ResourceDescriptor mesh) {
+        this.mesh = mesh;
+    }
     
     @SuppressWarnings("unchecked")
     @Override public PRenderMesh serialize(Serializer serializer, Serializable structure) {
