@@ -37,6 +37,8 @@ public final class GUID {
 
     @Override public boolean equals(Object other) {
         if (other == this) return true;
+        if (other instanceof Long)
+            return ((long)other) == this.value;
         if (!(other instanceof GUID)) return false;
         final GUID otherGUID = (GUID) other;
         return otherGUID.value == this.value;
