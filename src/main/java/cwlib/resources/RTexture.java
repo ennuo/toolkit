@@ -104,10 +104,7 @@ public class RTexture {
         System.arraycopy(gtf, 0, DDS, header.length, gtf.length);
         
         this.data = DDS;
-
-        // TODO(Aidan): The unswizzling process is different for Vita,
-        // or I'm assuming the wrong DDS type, either way, the textures
-        // come out corrupted regardless and this should be looked into.
+        
         CellGcmEnumForGtf format = this.info.getFormat();
         if (format == CellGcmEnumForGtf.A8R8G8B8 || format == CellGcmEnumForGtf.B8 || 
             this.info.getMethod() == SerializationType.GTF_SWIZZLED || 
