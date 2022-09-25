@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import cwlib.external.DDSReader;
@@ -21,6 +23,7 @@ import cwlib.singleton.ResourceSystem;
 public class RTexture {
     private CellGcmTexture info;
     private byte[] data;
+    public boolean noSRGB = false;
 
     private BufferedImage cached;
 
@@ -63,6 +66,10 @@ public class RTexture {
                 if (type == ResourceType.TEXTURE) {
                     ResourceSystem.println("Texture", "Detected COMPRESSED_TEXTURE, decompressing to DDS");
                     this.cached = Images.fromDDS(this.data);
+
+                    byte[] footer = Arrays.copyOfRange(this.data, this.data.length - 4, this.data.length);
+                    if (Bytes.toIntegerBE(footer) == 0x42554D50)
+                        noSRGB = true;
                 } else {
                     ResourceSystem.println("Texture", "Detected GTF_TEXTURE, generating DDS header");
                     this.parseGTF();
@@ -77,6 +84,9 @@ public class RTexture {
                 break;
             default: throw new SerializationException("Invalid serialization type in RTexture resource!");
         }
+
+        if (this.info != null && this.info.isBumpTexture())
+            noSRGB = true;
     }
 
     public void parseGXT() {

@@ -1,12 +1,15 @@
 package toolkit.functions;
 
+import cwlib.enums.ResourceType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.util.Strings;
+import toolkit.gl.Shader;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
@@ -40,7 +43,7 @@ public class DatabaseCallbacks {
                 toolkit.search.setText("Search...");
                 toolkit.search.setForeground(Color.GRAY);
             } else toolkit.addTab(database);
-                
+            
             toolkit.updateWorkspace();
         });
     }

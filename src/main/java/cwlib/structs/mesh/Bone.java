@@ -84,6 +84,16 @@ public class Bone extends AnimBone {
         this.name = name;
     }
 
+    public static Bone getByHash(Bone[] skeleton, int animHash) {
+        if (skeleton == null)
+            throw new NullPointerException("Can't get bones from null skeleton!");
+        if (animHash == 0) return skeleton[0];
+        for (Bone bone : skeleton)
+            if (bone.animHash == animHash)
+                return bone;
+        return null;
+    }
+
     /**
      * Attempts to get a bone's name from an animation hash.
      * @param skeleton Skeleton to search for animation hash
@@ -97,6 +107,18 @@ public class Bone extends AnimBone {
             if (bone.animHash == animHash)
                 return bone.name;
         return null;
+    }
+
+    public static int indexOf(Bone[] skeleton, int animHash) {
+        if (skeleton == null)
+            throw new NullPointerException("Can't get bones from null skeleton!");
+        if (animHash == 0) return 0;
+        for (int i = 0; i < skeleton.length; ++i) {
+            Bone bone = skeleton[i];
+            if (bone.animHash == animHash)
+                return i;
+        }
+        return -1;
     }
 
     /**

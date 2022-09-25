@@ -1,13 +1,19 @@
 package toolkit.utilities;
 
 import cwlib.util.Bytes;
+import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.Thing;
+import cwlib.types.Resource;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.swing.FileNode;
 import cwlib.types.databases.FileEntry;
+import toolkit.gl.CraftworldRenderer;
 import toolkit.utilities.services.*;
 import toolkit.windows.Toolkit;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JTree;
 

@@ -1,0 +1,75 @@
+package toolkit.gl;
+
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+public class Camera {
+    public static Camera MAIN = new Camera(-15150.0f, 4000.0f, 4200f);
+
+    private float fov = (float) Math.toRadians(75);
+    private float zNear = 1.0f;
+    private float zFar = 100000.0f;
+    private float aspectRatio = (float) (16.0 / 9.0);
+
+    private Vector3f translation, rotation;
+
+    private Matrix4f projectionMatrix, viewMatrix;
+
+    public Camera(Vector3f translation, Vector3f euler) {
+        this.translation = translation;
+        this.rotation = euler;
+
+        this.recomputeProjectionMatrix();
+        this.recomputeViewMatrix();
+    }
+
+    public Camera(Vector3f translation) { this(translation, new Vector3f()); }
+    public Camera(float x, float y, float z) { this(new Vector3f(x, y, z)); }
+
+    public void setFov(float fov) {  this.fov = fov; this.recomputeProjectionMatrix(); }
+    public void setZNear(float value) { this.zNear = value; this.recomputeProjectionMatrix(); }
+    public void setZFar(float value) { this.zFar = value; this.recomputeProjectionMatrix(); }
+    public void setAspectRatio(float value) { 
+        if (value == this.aspectRatio) return;
+        this.aspectRatio = value;
+        this.recomputeProjectionMatrix();
+    }
+
+    public void setTranslation(Vector3f translation) {
+        this.translation = translation;
+        this.recomputeViewMatrix();
+    }
+
+    public void setPosX(float x) { 
+        this.translation.x = x;
+        this.recomputeViewMatrix();
+    }
+
+    public void setPosY(float y) { 
+        this.translation.y = y;
+        this.recomputeViewMatrix();
+    }
+    
+    public void setPosZ(float z) { 
+        this.translation.z = z;
+        this.recomputeViewMatrix();
+    }
+    
+    public void recomputeProjectionMatrix() {
+        this.projectionMatrix = new Matrix4f().identity().setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar);
+    }
+
+    public void recomputeViewMatrix() {
+        this.viewMatrix = new Matrix4f()
+            .identity()
+            .rotate((float) Math.toRadians(this.rotation.x), new Vector3f(1.0f, 0.0f, 0.0f))
+            .rotate((float) Math.toRadians(this.rotation.y), new Vector3f(0.0f, 1.0f, 0.0f))
+            .rotate((float) Math.toRadians(this.rotation.z), new Vector3f(0.0f, 0.0f, 1.0f))
+            .translate(-this.translation.x, -this.translation.y, -this.translation.z);
+    }
+
+    public Matrix4f getViewMatrix() { return this.viewMatrix; }
+    public Matrix4f getProjectionMatrix() { return this.projectionMatrix; }
+    public Vector3f getTranslation() { return this.translation; }
+    public Vector3f getEulerRotation() { return this.rotation; }
+}

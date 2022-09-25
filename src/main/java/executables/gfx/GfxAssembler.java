@@ -21,6 +21,7 @@ public class GfxAssembler {
 
     public static boolean USE_ENV_VARIABLES = false;
     public static boolean USE_NORMAL_MAPS = false;
+    public static boolean IS_GLSL = false;
     public static int CURRENT_ATTRIBUTE = 0;
 
     public static class OutputPort {
@@ -329,13 +330,17 @@ public class GfxAssembler {
 
             return builder.toString();
         }
-
+        
+        if (port == OutputPort.BUMP && IS_GLSL)
+            return "\treturn float4(normalize(normal), 1.0);";
         if (port == OutputPort.ALPHA_CLIP)
-            return "\treturn float4(1.); // This material does not have alpha masking";
-        return "\treturn float4(0.); // This material doesn't use this.";
+            return "\treturn float4(1.0); // This material does not have alpha masking";
+        return "\treturn float4(0.0); // This material doesn't use this.";
     }
 
     public static final String generateBRDF(RGfxMaterial material, int flags) {
+        IS_GLSL = (flags == 0xDEADBEEF);
+
         MaterialBox normal = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.BUMP);
         MaterialBox diffuse = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.DIFFUSE);
         MaterialBox alpha = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ALPHA_CLIP);
@@ -347,6 +352,27 @@ public class GfxAssembler {
         MaterialBox specular = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.SPECULAR);
         MaterialBox glow = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.GLOW);
         MaterialBox reflection = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.REFLECTION);
+
+        if (IS_GLSL) {
+            String shader = FileIO.getResourceFileAsString("/shaders/default.fs");
+            
+            shader = shader.replace("ENV.COSINE_POWER", String.format("%f", material.cosinePower * 22.0f));
+            shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", material.bumpLevel));
+            
+            shader = shader.replace("ENV.DIFFUSE", setupPath(material, diffuse, OutputPort.DIFFUSE));
+            shader = shader.replace("ENV.SPECULAR", setupPath(material, specular, OutputPort.SPECULAR));
+            shader = shader.replace("ENV.BUMP", setupPath(material, normal, OutputPort.BUMP));
+            shader = shader.replaceAll("float1", "float");
+            shader = shader.replaceAll("float2", "vec2");
+            shader = shader.replaceAll("float3", "vec3");
+            shader = shader.replaceAll("float4", "vec4");
+            shader = shader.replaceAll("iUV", "uv");
+            shader = shader.replaceAll("iTangent", "tangent");
+            shader = shader.replaceAll("iNormal", "normal");
+            shader = shader.replaceAll("half", "vec");
+            
+            return shader;
+        }
         
         ArrayList<String> properties = new ArrayList<>();
 

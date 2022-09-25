@@ -12,6 +12,11 @@ public class ApplicationFlags {
      * Enables Ghostbusters resource loading.
      */
     public static boolean ENABLE_GHOSTBUSTERS = false;
+    
+    /**
+     * Enables 3D workspace.
+     */
+    public static boolean ENABLE_3D = false;
 
     /**
      * Path to PS3 shader compiler executable, you'll have to

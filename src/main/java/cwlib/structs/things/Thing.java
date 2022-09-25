@@ -2,6 +2,8 @@ package cwlib.structs.things;
 
 import java.util.Arrays;
 
+import org.joml.Matrix4f;
+
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
@@ -13,10 +15,15 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.parts.PJoint;
+import cwlib.structs.things.parts.PLevelSettings;
+import cwlib.structs.things.parts.PPos;
+import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
+import toolkit.gl.Mesh;
 
 /**
  * Represents an object in the game world.
@@ -40,6 +47,10 @@ public class Thing implements Serializable {
     public boolean hidden;
     public short flags;
     public byte extraFlags;
+
+    public boolean isDirty = true;
+    public Matrix4f[] matrices;
+
 
     private Serializable[] parts = new Serializable[0x3f];
 
@@ -173,9 +184,45 @@ public class Thing implements Serializable {
         return thing;
     }
 
+    public void render(PLevelSettings lighting) {
+        PPos pos = this.getPart(Part.POS);
+        PRenderMesh mesh = this.getPart(Part.RENDER_MESH);
+        if (pos == null || mesh == null || mesh.mesh == null) return;
+
+        Mesh glMesh = Mesh.get(mesh.mesh);
+        if (glMesh == null) return;
+
+        if (this.isDirty) {
+            System.out.println("Recomputing joint matrices...");
+
+            Matrix4f[] joints = new Matrix4f[glMesh.bones.length];
+            for (int i = 0; i < joints.length; ++i)
+                joints[i] = new Matrix4f(glMesh.bones[i].invSkinPoseMatrix);            
+            joints[0] = new Matrix4f(pos.worldPosition).mul(joints[0]);
+    
+            if (mesh.boneThings != null) {
+                for (Thing thing : mesh.boneThings) {
+                    if (thing == null || thing == this || !thing.hasPart(Part.POS)) continue;
+    
+                    PPos bonePos = thing.getPart(Part.POS);
+                    int index = Bone.indexOf(glMesh.bones, bonePos.animHash);
+                    if (index == -1) continue;
+    
+                    joints[index] = new Matrix4f(bonePos.worldPosition).mul(joints[index]);
+                }
+            }
+            
+            this.matrices = joints;
+            this.isDirty = false;
+        }
+
+        glMesh.draw(lighting, this.matrices);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
     public <T extends Serializable> void setPart(Part part, T value) { this.parts[part.getIndex()] = value; }
+    public boolean hasPart(Part part) { return this.parts[part.getIndex()] != null; }
 
     @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }
 }

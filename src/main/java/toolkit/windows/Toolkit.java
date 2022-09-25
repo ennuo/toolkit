@@ -1,5 +1,6 @@
 package toolkit.windows;
 
+import configurations.ApplicationFlags;
 import toolkit.windows.utilities.Compressinator;
 import toolkit.windows.utilities.ArchiveSelector;
 import toolkit.windows.utilities.AssetExporter;
@@ -32,6 +33,7 @@ import cwlib.structs.slot.Slot;
 import cwlib.structs.inventory.InventoryItemDetails;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
@@ -50,6 +52,7 @@ import cwlib.util.Bytes;
 import cwlib.util.Crypto;
 import cwlib.util.Images;
 import toolkit.functions.*;
+import toolkit.gl.CraftworldRenderer;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
 import toolkit.utilities.*;
@@ -65,34 +68,13 @@ import configurations.Config;
 import configurations.Profile;
 import executables.gfx.GfxGUI;
 
+import java.awt.BorderLayout;
+import org.lwjgl.opengl.GL;
+
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit instance;
-
-    public boolean useContext = false;
-
-    MouseListener showContextMenu = new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
-            if (SwingUtilities.isRightMouseButton(e)) {
-                JTree tree = (JTree) e.getComponent();
-                int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                if (selPath != null) {
-                    useContext = true;
-                    tree.setSelectionPath(selPath);
-                } else {
-                    useContext = false;
-                    tree.setSelectionPath(null);
-                    ResourceSystem.resetSelections();
-                }
-                if (selRow > -1) {
-                    tree.setSelectionRow(selRow);
-                    useContext = true;
-                } else useContext = false;
-                ResourceSystem.updateSelections(tree);
-                generateEntryContext(tree, e.getX(), e.getY());
-            }
-        }
-    };
+    public static CraftworldRenderer renderer;
+    private boolean useContext = false;
 
     public Toolkit() {
         /* Reset the state in case of a reboot. */
@@ -103,6 +85,9 @@ public class Toolkit extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         
         EasterEgg.initialize(this);
+
+        if (ApplicationFlags.ENABLE_3D) this.renderer();
+        else this.disable3DView();
         
         this.entryTable.getActionMap().put("copy", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -174,7 +159,6 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         
-        
         /* Auto-load configurations from whatever profile is currently enabled. */
         
         Profile profile = Config.instance.getCurrentProfile();
@@ -192,8 +176,75 @@ public class Toolkit extends javax.swing.JFrame {
                 if (Files.exists(Paths.get(path)))
                     DatabaseCallbacks.loadFileDB(new File(path));
             }
-        }        
+        } 
     }
+    
+    private void renderer() {
+        scenePanel.setLayout(new BorderLayout());
+        scenePanel.add(renderer = new CraftworldRenderer());
+        scenePanel.setPreferredSize(new Dimension(850, 292));
+        
+        Runnable loop = new Runnable() {
+            @Override public void run() {
+                if (!renderer.isValid()) {
+                    GL.setCapabilities(null);
+                    return;
+                }
+                renderer.update();
+                SwingUtilities.invokeLater(this);
+            }
+        };
+        
+        SwingUtilities.invokeLater(loop);
+    }
+
+    private void enable3DView() {        
+        this.previewContainer.setTopComponent(this.renderPane);
+        this.renderPane.removeAll();
+
+        this.renderPane.addTab("Overview", this.overviewPane);
+        this.renderPane.addTab("Scene", this.scenePanel);
+        this.renderPane.setSelectedIndex(1);
+
+        this.workspace.setLeftComponent(this.resourceTabs);
+        this.resourceTabs.removeAll();
+        this.resourceTabs.addTab("Assets", this.treeContainer);
+        this.resourceTabs.addTab("Hierachy", this.hierachyPanel);
+        this.resourceTabs.setSelectedIndex(0);
+
+        this.previewContainer.setDividerLocation(400);
+        this.workspace.setDividerLocation(275);
+        this.details.setDividerLocation(850);
+    }
+
+    private void disable3DView() {
+        this.previewContainer.setTopComponent(this.overviewPane);
+        this.workspace.setLeftComponent(this.treeContainer);
+    }
+    
+    private MouseListener showContextMenu = new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)) {
+                JTree tree = (JTree) e.getComponent();
+                int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+                if (selPath != null) {
+                    useContext = true;
+                    tree.setSelectionPath(selPath);
+                } else {
+                    useContext = false;
+                    tree.setSelectionPath(null);
+                    ResourceSystem.resetSelections();
+                }
+                if (selRow > -1) {
+                    tree.setSelectionRow(selRow);
+                    useContext = true;
+                } else useContext = false;
+                ResourceSystem.updateSelections(tree);
+                generateEntryContext(tree, e.getX(), e.getY());
+            }
+        }
+    };
 
     private void checkForChanges() {
         for (FileData data: ResourceSystem.getDatabases()) {
@@ -239,14 +290,14 @@ public class Toolkit extends javax.swing.JFrame {
         addFolder.setVisible(false);
         
         if (ResourceSystem.getDatabaseType() == DatabaseType.NONE && ResourceSystem.getArchives().size() != 0) {
-            FARMenu.setVisible(true);
+            archiveMenu.setVisible(true);
             addFolder.setVisible(true);
         }
         else if (ResourceSystem.canExtract() && ResourceSystem.getDatabaseType() != DatabaseType.MOD) {
-            FARMenu.setVisible(true); 
+            archiveMenu.setVisible(true); 
             addFolder.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE);
         }
-        else FARMenu.setVisible(false);
+        else archiveMenu.setVisible(false);
 
         if (ResourceSystem.getDatabaseType() != DatabaseType.NONE) {
             saveDivider.setVisible(true);
@@ -258,22 +309,22 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (database == null) {
             saveDivider.setVisible(false);
-            MAPMenu.setVisible(false);
+            databaseMenu.setVisible(false);
         } else {
             saveDivider.setVisible(true);
             dumpRLST.setVisible(false);
             if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE) {
                 if (archiveCount != 0)
                     installProfileMod.setVisible(true);
-                MAPMenu.setVisible(true);
+                databaseMenu.setVisible(true);
                 dumpRLST.setVisible(true);
             }
         }
 
         if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
-            ProfileMenu.setVisible(true);
+            profileMenu.setVisible(true);
             installProfileMod.setVisible(true);
-        } else ProfileMenu.setVisible(false);
+        } else profileMenu.setVisible(false);
 
         modMenu.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.MOD);
     }
@@ -303,6 +354,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceImage.setVisible(false);
         editMenuContext.setVisible(false);
         editItemContext.setVisible(false);
+        loadLevelContext.setVisible(false);
         
         boolean isDependencyTree = tree == this.dependencyTree;
         
@@ -360,6 +412,9 @@ public class Toolkit extends javax.swing.JFrame {
 
                 if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
                 if (info.getResource() != null) {
+                    if (type == ResourceType.LEVEL)
+                        loadLevelContext.setVisible(true);
+                    
                     if (type == ResourceType.ANIMATION) {
                         exportGroup.setVisible(true);
                         exportAnimation.setVisible(true);
@@ -468,21 +523,22 @@ public class Toolkit extends javax.swing.JFrame {
         duplicateContext = new javax.swing.JMenuItem();
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
+        loadLevelContext = new javax.swing.JMenuItem();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
-        workspaceDivider = new javax.swing.JSplitPane();
-        treeContainer = new javax.swing.JSplitPane();
-        search = new javax.swing.JTextField();
-        fileDataTabs = new javax.swing.JTabbedPane();
+        workspace = new javax.swing.JSplitPane();
         details = new javax.swing.JSplitPane();
         previewContainer = new javax.swing.JSplitPane();
         consoleContainer = new javax.swing.JScrollPane();
         console = new javax.swing.JTextArea();
-        preview = new javax.swing.JSplitPane();
+        renderPane = new javax.swing.JTabbedPane();
+        overviewPane = new javax.swing.JSplitPane();
         texture = new javax.swing.JLabel();
         hex = new tv.porst.jhexview.JHexView();
-        entryData = new javax.swing.JSplitPane();
+        scenePanel = new javax.swing.JPanel();
+        infoCardPanel = new javax.swing.JPanel();
+        fileDataPane = new javax.swing.JSplitPane();
         tableContainer = new javax.swing.JScrollPane();
         entryTable = new javax.swing.JTable();
         entryModifiers = new javax.swing.JTabbedPane();
@@ -505,8 +561,20 @@ public class Toolkit extends javax.swing.JFrame {
         creatorLabel = new javax.swing.JLabel();
         creatorField = new javax.swing.JTextField();
         subCombo = new javax.swing.JTextField();
+        inspectorPane = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        cameraPosX = new javax.swing.JSpinner();
+        cameraPosY = new javax.swing.JSpinner();
+        cameraPosZ = new javax.swing.JSpinner();
+        resourceTabs = new javax.swing.JTabbedPane();
+        treeContainer = new javax.swing.JSplitPane();
+        search = new javax.swing.JTextField();
+        fileDataTabs = new javax.swing.JTabbedPane();
+        hierachyPanel = new javax.swing.JPanel();
         progressBar = new javax.swing.JProgressBar();
-        toolkitMenu = new javax.swing.JMenuBar();
+        navigation = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         menuFileMenu = new javax.swing.JMenu();
         newGamedataGroup = new javax.swing.JMenu();
@@ -533,16 +601,16 @@ public class Toolkit extends javax.swing.JFrame {
         reboot = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         editMenuDelete = new javax.swing.JMenuItem();
-        FARMenu = new javax.swing.JMenu();
+        archiveMenu = new javax.swing.JMenu();
         manageArchives = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         addFile = new javax.swing.JMenuItem();
         addFolder = new javax.swing.JMenuItem();
-        MAPMenu = new javax.swing.JMenu();
+        databaseMenu = new javax.swing.JMenu();
         patchMAP = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         dumpRLST = new javax.swing.JMenuItem();
-        ProfileMenu = new javax.swing.JMenu();
+        profileMenu = new javax.swing.JMenu();
         extractBigProfile = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         editProfileSlots = new javax.swing.JMenuItem();
@@ -881,6 +949,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(deleteContext);
 
+        loadLevelContext.setText("Load Level");
+        loadLevelContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadLevelContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(loadLevelContext);
+
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -896,26 +972,7 @@ public class Toolkit extends javax.swing.JFrame {
         setTitle("Craftworld Toolkit");
         setMinimumSize(new java.awt.Dimension(698, 296));
 
-        workspaceDivider.setDividerLocation(275);
-
-        treeContainer.setDividerLocation(30);
-        treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
-        treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
-
-        search.setEditable(false);
-        search.setText(" Search is currently disabled.");
-        search.setBorder(null);
-        search.setFocusable(false);
-        search.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchActionPerformed(evt);
-            }
-        });
-        treeContainer.setLeftComponent(search);
-        treeContainer.setRightComponent(fileDataTabs);
-
-        workspaceDivider.setLeftComponent(treeContainer);
+        workspace.setDividerLocation(275);
 
         details.setResizeWeight(1);
         details.setDividerLocation(850);
@@ -939,13 +996,13 @@ public class Toolkit extends javax.swing.JFrame {
 
         previewContainer.setBottomComponent(consoleContainer);
 
-        preview.setDividerLocation(325);
+        overviewPane.setDividerLocation(325);
 
         texture.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         texture.setText("No preview to be displayed.");
         texture.setToolTipText("");
         texture.setFocusable(false);
-        preview.setLeftComponent(texture);
+        overviewPane.setLeftComponent(texture);
 
         javax.swing.GroupLayout hexLayout = new javax.swing.GroupLayout(hex);
         hex.setLayout(hexLayout);
@@ -955,20 +1012,37 @@ public class Toolkit extends javax.swing.JFrame {
         );
         hexLayout.setVerticalGroup(
             hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 322, Short.MAX_VALUE)
+            .addGap(0, 292, Short.MAX_VALUE)
         );
 
-        preview.setRightComponent(hex);
+        overviewPane.setRightComponent(hex);
 
-        previewContainer.setLeftComponent(preview);
+        renderPane.addTab("Overview", overviewPane);
+
+        javax.swing.GroupLayout scenePanelLayout = new javax.swing.GroupLayout(scenePanel);
+        scenePanel.setLayout(scenePanelLayout);
+        scenePanelLayout.setHorizontalGroup(
+            scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 850, Short.MAX_VALUE)
+        );
+        scenePanelLayout.setVerticalGroup(
+            scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 292, Short.MAX_VALUE)
+        );
+
+        renderPane.addTab("Scene", scenePanel);
+
+        previewContainer.setTopComponent(renderPane);
 
         details.setLeftComponent(previewContainer);
 
-        entryData.setDividerLocation(204);
-        entryData.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        entryData.setMaximumSize(new java.awt.Dimension(55, 2147483647));
-        entryData.setMinimumSize(new java.awt.Dimension(55, 102));
-        entryData.setPreferredSize(new java.awt.Dimension(55, 1120));
+        infoCardPanel.setLayout(new java.awt.CardLayout());
+
+        fileDataPane.setDividerLocation(204);
+        fileDataPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        fileDataPane.setMaximumSize(new java.awt.Dimension(55, 2147483647));
+        fileDataPane.setMinimumSize(new java.awt.Dimension(55, 102));
+        fileDataPane.setPreferredSize(new java.awt.Dimension(55, 1120));
 
         tableContainer.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         tableContainer.setMaximumSize(new java.awt.Dimension(452, 32767));
@@ -1004,7 +1078,7 @@ public class Toolkit extends javax.swing.JFrame {
             entryTable.getColumnModel().getColumn(1).setResizable(false);
         }
 
-        entryData.setLeftComponent(tableContainer);
+        fileDataPane.setLeftComponent(tableContainer);
 
         entryModifiers.setMaximumSize(new java.awt.Dimension(452, 32767));
         entryModifiers.setMinimumSize(new java.awt.Dimension(452, 81));
@@ -1108,7 +1182,7 @@ public class Toolkit extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(subCombo))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         itemMetadataLayout.setVerticalGroup(
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1145,16 +1219,105 @@ public class Toolkit extends javax.swing.JFrame {
                 .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
                     .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Metadata", itemMetadata);
 
-        entryData.setRightComponent(entryModifiers);
+        fileDataPane.setRightComponent(entryModifiers);
 
-        details.setRightComponent(entryData);
+        infoCardPanel.add(fileDataPane, "card2");
 
-        workspaceDivider.setRightComponent(details);
+        jLabel1.setText("Thing UID 0");
+
+        jLabel2.setText("PCamera");
+
+        jLabel3.setText("Target Position");
+
+        cameraPosX.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosX.setToolTipText("");
+
+        cameraPosY.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosY.setToolTipText("");
+
+        cameraPosZ.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosZ.setToolTipText("");
+
+        javax.swing.GroupLayout inspectorPaneLayout = new javax.swing.GroupLayout(inspectorPane);
+        inspectorPane.setLayout(inspectorPaneLayout);
+        inspectorPaneLayout.setHorizontalGroup(
+            inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cameraPosX)
+                    .addComponent(cameraPosY, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(inspectorPaneLayout.createSequentialGroup()
+                        .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(0, 159, Short.MAX_VALUE))
+                    .addComponent(cameraPosZ))
+                .addContainerGap())
+        );
+        inspectorPaneLayout.setVerticalGroup(
+            inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosZ, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(441, Short.MAX_VALUE))
+        );
+
+        infoCardPanel.add(inspectorPane, "card3");
+
+        details.setRightComponent(infoCardPanel);
+
+        workspace.setRightComponent(details);
+
+        treeContainer.setDividerLocation(30);
+        treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
+        treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
+
+        search.setEditable(false);
+        search.setText(" Search is currently disabled.");
+        search.setBorder(null);
+        search.setFocusable(false);
+        search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchActionPerformed(evt);
+            }
+        });
+        treeContainer.setLeftComponent(search);
+        treeContainer.setRightComponent(fileDataTabs);
+
+        resourceTabs.addTab("Assets", treeContainer);
+
+        javax.swing.GroupLayout hierachyPanelLayout = new javax.swing.GroupLayout(hierachyPanel);
+        hierachyPanel.setLayout(hierachyPanelLayout);
+        hierachyPanelLayout.setHorizontalGroup(
+            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 150, Short.MAX_VALUE)
+        );
+        hierachyPanelLayout.setVerticalGroup(
+            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 558, Short.MAX_VALUE)
+        );
+
+        resourceTabs.addTab("Hierachy", hierachyPanel);
+
+        workspace.setLeftComponent(resourceTabs);
 
         progressBar.setEnabled(false);
 
@@ -1303,7 +1466,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         fileMenu.add(reboot);
 
-        toolkitMenu.add(fileMenu);
+        navigation.add(fileMenu);
 
         editMenu.setText("Edit");
 
@@ -1316,9 +1479,9 @@ public class Toolkit extends javax.swing.JFrame {
         });
         editMenu.add(editMenuDelete);
 
-        toolkitMenu.add(editMenu);
+        navigation.add(editMenu);
 
-        FARMenu.setText("Archive");
+        archiveMenu.setText("Archive");
 
         manageArchives.setText("Manage Archives");
         manageArchives.addActionListener(new java.awt.event.ActionListener() {
@@ -1326,8 +1489,8 @@ public class Toolkit extends javax.swing.JFrame {
                 manageArchivesActionPerformed(evt);
             }
         });
-        FARMenu.add(manageArchives);
-        FARMenu.add(jSeparator10);
+        archiveMenu.add(manageArchives);
+        archiveMenu.add(jSeparator10);
 
         addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addFile.setText("Add...");
@@ -1336,7 +1499,7 @@ public class Toolkit extends javax.swing.JFrame {
                 addFileActionPerformed(evt);
             }
         });
-        FARMenu.add(addFile);
+        archiveMenu.add(addFile);
 
         addFolder.setText("Add Folder");
         addFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -1344,11 +1507,11 @@ public class Toolkit extends javax.swing.JFrame {
                 addFolderActionPerformed(evt);
             }
         });
-        FARMenu.add(addFolder);
+        archiveMenu.add(addFolder);
 
-        toolkitMenu.add(FARMenu);
+        navigation.add(archiveMenu);
 
-        MAPMenu.setText("FileDB");
+        databaseMenu.setText("FileDB");
 
         patchMAP.setText("Patch");
         patchMAP.addActionListener(new java.awt.event.ActionListener() {
@@ -1356,8 +1519,8 @@ public class Toolkit extends javax.swing.JFrame {
                 patchMAPActionPerformed(evt);
             }
         });
-        MAPMenu.add(patchMAP);
-        MAPMenu.add(jSeparator6);
+        databaseMenu.add(patchMAP);
+        databaseMenu.add(jSeparator6);
 
         dumpRLST.setText("Dump RLST");
         dumpRLST.addActionListener(new java.awt.event.ActionListener() {
@@ -1365,11 +1528,11 @@ public class Toolkit extends javax.swing.JFrame {
                 dumpRLSTActionPerformed(evt);
             }
         });
-        MAPMenu.add(dumpRLST);
+        databaseMenu.add(dumpRLST);
 
-        toolkitMenu.add(MAPMenu);
+        navigation.add(databaseMenu);
 
-        ProfileMenu.setText("Profile");
+        profileMenu.setText("Profile");
 
         extractBigProfile.setText("Extract Profile");
         extractBigProfile.addActionListener(new java.awt.event.ActionListener() {
@@ -1377,8 +1540,8 @@ public class Toolkit extends javax.swing.JFrame {
                 extractBigProfileActionPerformed(evt);
             }
         });
-        ProfileMenu.add(extractBigProfile);
-        ProfileMenu.add(jSeparator1);
+        profileMenu.add(extractBigProfile);
+        profileMenu.add(jSeparator1);
 
         editProfileSlots.setText("Edit Slots");
         editProfileSlots.addActionListener(new java.awt.event.ActionListener() {
@@ -1386,7 +1549,7 @@ public class Toolkit extends javax.swing.JFrame {
                 editProfileSlotsActionPerformed(evt);
             }
         });
-        ProfileMenu.add(editProfileSlots);
+        profileMenu.add(editProfileSlots);
 
         editProfileItems.setText("Edit Items");
         editProfileItems.addActionListener(new java.awt.event.ActionListener() {
@@ -1394,9 +1557,9 @@ public class Toolkit extends javax.swing.JFrame {
                 editProfileItemsActionPerformed(evt);
             }
         });
-        ProfileMenu.add(editProfileItems);
+        profileMenu.add(editProfileItems);
 
-        toolkitMenu.add(ProfileMenu);
+        navigation.add(profileMenu);
 
         modMenu.setText("Mod");
 
@@ -1408,7 +1571,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         modMenu.add(openModMetadata);
 
-        toolkitMenu.add(modMenu);
+        navigation.add(modMenu);
 
         toolsMenu.setText("Tools");
 
@@ -1527,7 +1690,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(installProfileMod);
 
-        toolkitMenu.add(toolsMenu);
+        navigation.add(toolsMenu);
 
         debugMenu.setText("Debug");
 
@@ -1539,9 +1702,9 @@ public class Toolkit extends javax.swing.JFrame {
         });
         debugMenu.add(debugLoadProfileBackup);
 
-        toolkitMenu.add(debugMenu);
+        navigation.add(debugMenu);
 
-        setJMenuBar(toolkitMenu);
+        setJMenuBar(navigation);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1551,14 +1714,14 @@ public class Toolkit extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
+                    .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(workspaceDivider, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12))
@@ -1904,6 +2067,8 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
         this.search.getParent().remove(this.search);
+        if (renderer != null)
+            renderer.getParent().remove(renderer);
         this.checkForChanges();
         this.dispose();
         EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
@@ -2215,6 +2380,14 @@ public class Toolkit extends javax.swing.JFrame {
         new GfxGUI().setVisible(true);
     }//GEN-LAST:event_openGfxCompilerActionPerformed
 
+    private void loadLevelContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLevelContextActionPerformed
+        ResourceInfo info = ResourceSystem.getSelected().getEntry().getInfo();
+        if (info == null) return;
+        RLevel level = info.getResource();
+        if (level == null) return;
+        renderer.setLevel(level);
+    }//GEN-LAST:event_loadLevelContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;
@@ -2377,13 +2550,14 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JMenu FARMenu;
     private javax.swing.JRadioButton LAMSMetadata;
-    private javax.swing.JMenu MAPMenu;
-    private javax.swing.JMenu ProfileMenu;
     private javax.swing.JRadioButton StringMetadata;
     private javax.swing.JMenuItem addFile;
     private javax.swing.JMenuItem addFolder;
+    public javax.swing.JMenu archiveMenu;
+    private javax.swing.JSpinner cameraPosX;
+    private javax.swing.JSpinner cameraPosY;
+    private javax.swing.JSpinner cameraPosZ;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JMenuItem changeGUID;
@@ -2402,6 +2576,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
     private javax.swing.JMenuItem customCollector;
+    private javax.swing.JMenu databaseMenu;
     private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
@@ -2423,7 +2598,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem editProfileSlots;
     private javax.swing.JMenuItem editSlotContext;
     private javax.swing.JPopupMenu entryContext;
-    private javax.swing.JSplitPane entryData;
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
     private javax.swing.JMenuItem exportAnimation;
@@ -2450,15 +2624,22 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu extractContextMenu;
     private javax.swing.JMenuItem extractDecompressedContext;
     private javax.swing.JMenuItem fileArchiveIntegrityCheck;
+    private javax.swing.JSplitPane fileDataPane;
     public javax.swing.JTabbedPane fileDataTabs;
     public javax.swing.JMenu fileMenu;
     private javax.swing.JMenu gamedataMenu;
     private javax.swing.JMenuItem generateDiff;
     private tv.porst.jhexview.JHexView hex;
+    private javax.swing.JPanel hierachyPanel;
     private javax.swing.JTextField iconField;
     private javax.swing.JLabel iconLabel;
+    private javax.swing.JPanel infoCardPanel;
+    private javax.swing.JPanel inspectorPane;
     private javax.swing.JMenuItem installProfileMod;
     private javax.swing.JPanel itemMetadata;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
@@ -2473,6 +2654,7 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JMenuItem loadDB;
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
+    private javax.swing.JMenuItem loadLevelContext;
     private javax.swing.JMenuItem loadMod;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
@@ -2482,6 +2664,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem mergeFARCs;
     private javax.swing.ButtonGroup metadataButtonGroup;
     public javax.swing.JMenu modMenu;
+    private javax.swing.JMenuBar navigation;
     public javax.swing.JMenu newFileDBGroup;
     private javax.swing.JMenuItem newFolderContext;
     private javax.swing.JMenu newGamedataGroup;
@@ -2493,25 +2676,29 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem openCompressinator;
     private javax.swing.JMenuItem openGfxCompiler;
     public javax.swing.JMenuItem openModMetadata;
+    public javax.swing.JSplitPane overviewPane;
     private javax.swing.JComboBox<String> pageCombo;
     private javax.swing.JMenuItem patchMAP;
-    public javax.swing.JSplitPane preview;
     private javax.swing.JSplitPane previewContainer;
+    private javax.swing.JMenu profileMenu;
     public javax.swing.JProgressBar progressBar;
     private javax.swing.JMenuItem reboot;
     private javax.swing.JMenuItem removeDependencies;
     private javax.swing.JMenuItem removeMissingDependencies;
     private javax.swing.JMenuItem renameFolder;
     private javax.swing.JMenuItem renameItemContext;
+    private javax.swing.JTabbedPane renderPane;
     private javax.swing.JMenuItem replaceCompressed;
     private javax.swing.JMenu replaceContext;
     private javax.swing.JMenuItem replaceDecompressed;
     private javax.swing.JMenuItem replaceDependencies;
     private javax.swing.JMenuItem replaceImage;
+    private javax.swing.JTabbedPane resourceTabs;
     public javax.swing.JMenuItem saveAs;
     private javax.swing.JPopupMenu.Separator saveDivider;
     public javax.swing.JMenuItem saveMenu;
     public javax.swing.JMenu savedataMenu;
+    private javax.swing.JPanel scenePanel;
     public javax.swing.JTextField search;
     private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
@@ -2519,10 +2706,9 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;
-    private javax.swing.JMenuBar toolkitMenu;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.JSplitPane treeContainer;
-    private javax.swing.JSplitPane workspaceDivider;
+    private javax.swing.JSplitPane workspace;
     private javax.swing.JMenuItem zeroContext;
     // End of variables declaration//GEN-END:variables
 }
