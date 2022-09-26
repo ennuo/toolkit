@@ -122,13 +122,13 @@ public class GfxAssembler {
 
                 Variable add = getWithSwizzle(shader, gmat, box, 0, type);
                 if (add != null)
-                    uv = String.format("(%s) + %s", uv, add);
+                    uv = String.format("(%s) + %s", uv, (add.value.indexOf(".") == -1 && add.type != 1) ? add.value + ".xy" : add.value);
                 Variable scale = getWithSwizzle(shader, gmat, box, 1, type);
                 if (scale != null)
-                    uv = String.format("(%s) * %s", uv, scale);
+                    uv = String.format("(%s) * %s", uv, (scale.value.indexOf(".") == -1 && scale.type != 1) ? scale.value + ".xy" : scale.value);
                 Variable sub = getWithSwizzle(shader, gmat, box, 2, type);
                 if (sub != null)
-                    uv = String.format("(%s) - %s", uv, sub);
+                    uv = String.format("(%s) - %s", uv, (sub.value.indexOf(".") == -1 && sub.type != 1) ? sub.value + ".xy" : sub.value);
 
 
                 assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);

@@ -19,6 +19,7 @@ import cwlib.types.swing.SearchParameters;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.SaveArchive;
 import cwlib.ex.SerializationException;
+import cwlib.io.serializer.Serializer;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
 import cwlib.resources.RPlan;
@@ -30,6 +31,7 @@ import cwlib.enums.ResourceType;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.structs.slot.Slot;
+import cwlib.structs.things.Thing;
 import cwlib.structs.inventory.InventoryItemDetails;
 
 import java.awt.Color;
@@ -60,12 +62,16 @@ import toolkit.utilities.*;
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import javax.swing.tree.TreePath;
 
 import configurations.Config;
 import configurations.Profile;
+import cwlib.enums.CompressionFlags;
+import cwlib.types.Resource;
+import cwlib.types.data.Revision;
 import executables.gfx.GfxGUI;
 
 import java.awt.BorderLayout;
@@ -355,6 +361,7 @@ public class Toolkit extends javax.swing.JFrame {
         editMenuContext.setVisible(false);
         editItemContext.setVisible(false);
         loadLevelContext.setVisible(false);
+        loadMeshContext.setVisible(false);
         
         boolean isDependencyTree = tree == this.dependencyTree;
         
@@ -430,6 +437,7 @@ public class Toolkit extends javax.swing.JFrame {
                     }
     
                     if (type == ResourceType.MESH) {
+                        loadMeshContext.setVisible(true);
                         RMesh mesh = info.getResource();
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
@@ -524,6 +532,7 @@ public class Toolkit extends javax.swing.JFrame {
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
         loadLevelContext = new javax.swing.JMenuItem();
+        loadMeshContext = new javax.swing.JMenuItem();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
@@ -637,6 +646,8 @@ public class Toolkit extends javax.swing.JFrame {
         generateDiff = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
+        exportWorldPlan = new javax.swing.JMenuItem();
+        exportWorld = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
@@ -956,6 +967,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(loadLevelContext);
+
+        loadMeshContext.setText("Load Mesh");
+        loadMeshContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadMeshContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(loadMeshContext);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -1690,6 +1709,22 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(installProfileMod);
 
+        exportWorldPlan.setText("Export RLevel to RPlan");
+        exportWorldPlan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportWorldPlanActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(exportWorldPlan);
+
+        exportWorld.setText("Export RLevel");
+        exportWorld.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportWorldActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(exportWorld);
+
         navigation.add(toolsMenu);
 
         debugMenu.setText("Debug");
@@ -2388,6 +2423,38 @@ public class Toolkit extends javax.swing.JFrame {
         renderer.setLevel(level);
     }//GEN-LAST:event_loadLevelContextActionPerformed
 
+    private void loadMeshContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadMeshContextActionPerformed
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+        ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
+        renderer.createMeshInstance(descriptor);
+    }//GEN-LAST:event_loadMeshContextActionPerformed
+
+    private void exportWorldPlanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldPlanActionPerformed
+        File file = FileChooser.openFile("level.plan", "plan", true);
+        if (file == null) return;
+        FileIO.write(Toolkit.renderer.getPlanData(), file.getAbsolutePath());
+    }//GEN-LAST:event_exportWorldPlanActionPerformed
+
+    private void exportWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldActionPerformed
+        File file = FileChooser.openFile("level.bin", "bin", true);
+        if (file == null) return;
+
+        // Hack to make sure the thing array includes all entries, very bad, but whatever
+        // I keep saying I'll fix these, but!
+        Revision revision = new Revision(0x272, 0x4c44, 0x0017);
+        Thing[] things = Toolkit.renderer.getThings().toArray(Thing[]::new);
+        {
+            Serializer serializer = new Serializer(0x800000, revision, CompressionFlags.USE_ALL_COMPRESSION);
+            serializer.array(things, Thing.class, true);
+            things = serializer.getThings();
+        }
+
+        Toolkit.renderer.getWorld().things = new ArrayList<Thing>(Arrays.asList(things));
+        
+        byte[] level = Resource.compress(Toolkit.renderer.getLevel().build(revision, CompressionFlags.USE_ALL_COMPRESSION));
+        FileIO.write(level, file.getAbsolutePath());
+    }//GEN-LAST:event_exportWorldActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;
@@ -2619,6 +2686,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportOBJTEXCOORD2;
     private javax.swing.JMenuItem exportPNG;
     private javax.swing.JMenu exportTextureGroupContext;
+    private javax.swing.JMenuItem exportWorld;
+    private javax.swing.JMenuItem exportWorldPlan;
     private javax.swing.JMenuItem extractBigProfile;
     private javax.swing.JMenuItem extractContext;
     private javax.swing.JMenu extractContextMenu;
@@ -2655,6 +2724,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu loadGroupMenu;
     private javax.swing.JMenuItem loadLAMSContext;
     private javax.swing.JMenuItem loadLevelContext;
+    private javax.swing.JMenuItem loadMeshContext;
     private javax.swing.JMenuItem loadMod;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;

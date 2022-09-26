@@ -636,7 +636,7 @@ void main(
     half4 iNormal: TEXCOORD2,
     float3 iDecalUV: TEXCOORD3,
     float4 iVec2Eye: TEXCOORD4,
-    float4 iAttr5: TEXCOORD5,
+    float4 iPositionNew: TEXCOORD5,
     float4 iShadowMapPosition: TEXCOORD6,
     float2 iLightmapUV: TEXCOORD7,
 
@@ -730,8 +730,8 @@ void main(
     //     float4 fuzz = GetFuzz(iUV, iColor);
     //     float NdotL = dot(iNormal, lightVec);
     //     color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
-    //     float v2 = (abs(iAttr5.w) * tintcol.w) * fuzz.y * fuzz.x;
-    //     if (0.101 > v2 && iAttr5.z < 0.0) {
+    //     float v2 = (abs(iPositionNew.w) * tintcol.w) * fuzz.y * fuzz.x;
+    //     if (0.101 > v2 && iPositionNew.z < 0.0) {
     //         color_out = half4(color, 1.0);
     //         return;
     //     }

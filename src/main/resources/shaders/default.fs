@@ -5,14 +5,15 @@
 #define saturate(value) max(0, min(1, value))
 #define lerp(a, b, w) (a + w * (b - a))
 
-in vec3 wpos;
-in vec3 normal;
-in vec3 tangent;
 in vec4 uv;
+in vec3 tangent;
+in vec3 normal;
+in vec3 vec2eye;
+in vec3 wpos;
 
 out vec4 FragColor;
 
-const vec4 iColor = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 iColor;
 
 const float CosinePower = ENV.COSINE_POWER;
 const float BumpLevel = ENV.BUMP_LEVEL;
@@ -22,7 +23,8 @@ const float rim_round = 0.9;
 
 uniform sampler2D s0, s1, s2, s3, s4, s5, s6, s7;
 uniform vec4 ambcol, fogcol, suncol, rimcol, rimcol2;
-uniform vec3 sunpos, vec2eye;
+uniform vec3 sunpos;
+uniform vec2 lightscaleadd;
 
 vec4 BumpMap(vec3 normal, vec3 tangent, vec4 iSample) {
     half2 n = vec2(0.0, 1.0) - iSample.yw - 0.501953;
@@ -47,7 +49,7 @@ void main() {
     vec3 N = GetBump().xyz;
     vec3 V = normalize(vec2eye);
     vec3 R = reflect(V, N);
-    vec3 L = normalize(vec2eye - sunpos);
+    vec3 L = normalize((vec2eye - sunpos) * lightscaleadd.x);
 
     float NdotV = dot(N, V);
     float RdotL = dot(R, L);
@@ -70,5 +72,16 @@ void main() {
     vec3 Kd = GetDiffuse().xyz;
     FragColor = vec4((Kd * prod) + lighting, 1.0);
 
-    FragColor.rgb = pow(FragColor.rgb, vec3(1.0 / 2.2));
+    FragColor.x = sqrt(FragColor.x);
+    FragColor.y = sqrt(FragColor.y);
+    FragColor.z = sqrt(FragColor.z);
+
+
+    float factor = max(max(FragColor.x, max(FragColor.y, FragColor.z)), 1.0);
+    FragColor = vec4(
+        FragColor.xyz / factor,
+        (1.0 / factor) / 2
+    );
+
+    // FragColor.rgb = pow(FragColor.rgb, vec3(1.0 / 2.2));
 }

@@ -1,8 +1,11 @@
 package cwlib.structs.things;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
@@ -16,14 +19,20 @@ import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.mesh.Bone;
+import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PJoint;
 import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
+import cwlib.util.Colors;
+import toolkit.gl.CraftworldRenderer;
 import toolkit.gl.Mesh;
+import toolkit.gl.StaticMesh;
+import toolkit.windows.Toolkit;
 
 /**
  * Represents an object in the game world.
@@ -184,39 +193,93 @@ public class Thing implements Serializable {
         return thing;
     }
 
+    public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parent) {
+        Thing root = boneThings[0];
+        Thing boneThing = new Thing(++Toolkit.renderer.getWorld().thingUIDCounter);
+
+        boneThing.groupHead = root;
+        boneThing.parent = parent;
+
+        Matrix4f ppos = ((PPos)parent.getPart(Part.POS)).getWorldPosition();
+        Matrix4f pos = bone.getLocalTransform(bones);
+        // Matrix4f wpos = bone.skinPoseMatrix;
+
+        Matrix4f wpos = ppos.mul(pos, new Matrix4f());
+
+        boneThing.setPart(Part.POS, new PPos(root, bone.animHash, wpos));
+
+        int index = 0;
+        for (Bone child : bones) {
+            if (child == bone) boneThings[index] = boneThing;
+            if (child.parent != -1 && bones[child.parent] == bone)
+                skeletate(boneThings, bones, child, boneThing);
+            index++;
+        }
+    }
+
     public void render(PLevelSettings lighting) {
         PPos pos = this.getPart(Part.POS);
+        if (pos == null) return;
+
+
         PRenderMesh mesh = this.getPart(Part.RENDER_MESH);
-        if (pos == null || mesh == null || mesh.mesh == null) return;
 
-        Mesh glMesh = Mesh.get(mesh.mesh);
-        if (glMesh == null) return;
+        if (mesh != null && mesh.mesh != null) {
+            Mesh glMesh = Mesh.get(mesh.mesh);
+            if (glMesh == null) return;
+    
+            if (this.isDirty) {
+                Matrix4f[] joints = new Matrix4f[glMesh.bones.length];
+                joints[0] = new Matrix4f(pos.getWorldPosition()).mul(glMesh.bones[0].invSkinPoseMatrix);
+                for (int i = 0; i < joints.length; ++i) joints[i] = joints[0];    
 
-        if (this.isDirty) {
-            System.out.println("Recomputing joint matrices...");
+                if (mesh.boneThings != null) {
+                    if (mesh.boneThings.length == 0) {
+                        mesh.boneThings = new Thing[glMesh.bones.length];
+                        mesh.boneThings[0] = this;
 
-            Matrix4f[] joints = new Matrix4f[glMesh.bones.length];
-            for (int i = 0; i < joints.length; ++i)
-                joints[i] = new Matrix4f(glMesh.bones[i].invSkinPoseMatrix);            
-            joints[0] = new Matrix4f(pos.worldPosition).mul(joints[0]);
-    
-            if (mesh.boneThings != null) {
-                for (Thing thing : mesh.boneThings) {
-                    if (thing == null || thing == this || !thing.hasPart(Part.POS)) continue;
-    
-                    PPos bonePos = thing.getPart(Part.POS);
-                    int index = Bone.indexOf(glMesh.bones, bonePos.animHash);
-                    if (index == -1) continue;
-    
-                    joints[index] = new Matrix4f(bonePos.worldPosition).mul(joints[index]);
+                        pos.worldPosition.mul(glMesh.bones[0].skinPoseMatrix).rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f));
+                        joints[0] = new Matrix4f(pos.getWorldPosition()).mul(glMesh.bones[0].invSkinPoseMatrix);
+                        
+                        for (Bone bone : glMesh.bones) {
+                            if (bone.parent == 0)
+                                skeletate(mesh.boneThings, glMesh.bones, bone, this);
+                        }
+                    }
+
+                    for (Thing thing : mesh.boneThings) {
+                        if (thing == null || thing == this || !thing.hasPart(Part.POS)) continue;
+        
+                        PPos bonePos = thing.getPart(Part.POS);
+                        int index = Bone.indexOf(glMesh.bones, bonePos.animHash);
+                        if (index == -1) continue;
+        
+                        joints[index] = new Matrix4f(bonePos.getWorldPosition()).mul(glMesh.bones[index].invSkinPoseMatrix);
+                    }
                 }
+                
+                this.matrices = joints;
+                this.isDirty = false;
             }
-            
-            this.matrices = joints;
-            this.isDirty = false;
+    
+            glMesh.draw(lighting, this.matrices, Colors.RGBA32.fromARGB(mesh.editorColor));
         }
 
-        glMesh.draw(lighting, this.matrices);
+        PShape shape = this.getPart(Part.SHAPE);
+        PGeneratedMesh generatedMesh = this.getPart(Part.GENERATED_MESH);
+        if (shape != null && generatedMesh != null) {
+            if (shape.glMesh == null)
+                shape.glMesh = new Mesh(generatedMesh, shape);
+            shape.glMesh.draw(lighting, new Matrix4f[] { pos.getWorldPosition() }, Colors.RGBA32.fromARGB(shape.color));
+        }
+
+        PLevelSettings settings = this.getPart(Part.LEVEL_SETTINGS);
+        if (settings != null && settings.backdropMesh != null) {
+            StaticMesh glMesh = StaticMesh.get(settings.backdropMesh);
+            if (glMesh != null)
+                glMesh.draw(settings);
+        }
+        
     }
 
     @SuppressWarnings("unchecked")

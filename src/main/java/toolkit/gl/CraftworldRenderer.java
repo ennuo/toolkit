@@ -2,9 +2,15 @@ package toolkit.gl;
 
 import cwlib.enums.Part;
 import cwlib.resources.RLevel;
+import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.parts.PBody;
+import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PLevelSettings;
+import cwlib.structs.things.parts.PPos;
+import cwlib.structs.things.parts.PRef;
+import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
@@ -20,6 +26,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import org.joml.Matrix4f;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -62,13 +69,14 @@ public class CraftworldRenderer extends AWTGLCanvas {
     public static Shader FALLBACK_PROGRAM;
 
     private RLevel level;
+    private PLevelSettings lighting;
 
     public CraftworldRenderer() {
         super(GL_DATA);
 
         ResourceSystem.DISABLE_LOGS = true;
-        byte[] data = FileIO.getResourceFile("/binary/planets.bin");
-        this.level = new Resource(data).loadResource(RLevel.class);
+        byte[] data = FileIO.getResourceFile("/binary/mybutton.bin");
+        this.setLevel(new Resource(data).loadResource(RLevel.class));
         ResourceSystem.DISABLE_LOGS = false;
         
         this.setupAWT();
@@ -77,14 +85,25 @@ public class CraftworldRenderer extends AWTGLCanvas {
     public CraftworldRenderer(ResourceDescriptor descriptor) {
         super(GL_DATA);
         byte[] data = ResourceSystem.extract(descriptor);
-        this.level = new Resource(data).loadResource(RLevel.class);
+        this.setLevel( new Resource(data).loadResource(RLevel.class));
         this.setupAWT();
     }
 
     public CraftworldRenderer(RLevel level) {
         super(GL_DATA);
-        this.level = level;
+        this.setLevel(level);
         this.setupAWT();
+    }
+    
+    private void findLevelSettings() {
+        for (Thing thing : this.getThings()) {
+            if (thing == null) continue;
+            if (thing.hasPart(Part.LEVEL_SETTINGS)) {
+                this.lighting = thing.getPart(Part.LEVEL_SETTINGS);
+                return;
+            }
+        }
+        this.lighting = DEFAULT_LIGHTING;
     }
 
     private void setupAWT() {
@@ -94,14 +113,52 @@ public class CraftworldRenderer extends AWTGLCanvas {
         this.addKeyListener(new ViewportListener());
     }
 
-    public void setLevel(RLevel level) { this.level = level; }
+    public void setLevel(RLevel level) { 
+        this.level = level; 
+        this.findLevelSettings();
+        
+        PWorld world = this.getWorld();
+
+
+        ResourceDescriptor plan = world.backdropPlan;
+        if (plan == null && world.backdrop != null && world.backdrop.hasPart(Part.REF))
+            plan = ((PRef)world.backdrop.getPart(Part.REF)).plan;
+        
+        if (plan != null) {
+            byte[] planData = ResourceSystem.extract(plan);
+            if (planData == null) return;
+            Thing[] things =  new Resource(planData).loadResource(RPlan.class).getThings();
+            world.backdrop = things[0];
+            ArrayList<Thing> worldThings = this.getThings();
+            synchronized(worldThings) {
+                for (Thing thing : things)
+                    worldThings.add(thing);
+            }
+        }
+        
+        this.findLevelSettings();
+    }
+    
+    public RLevel getLevel() { return this.level; }
     public PWorld getWorld() { return this.level.world.getPart(Part.WORLD); }
     public ArrayList<Thing> getThings() { return this.getWorld().things; }
-    public PLevelSettings getLighting() {
-        Thing thing = this.getWorld().backdrop;
-        if (thing == null || !thing.hasPart(Part.LEVEL_SETTINGS)) 
-            return DEFAULT_LIGHTING;
-        return thing.getPart(Part.LEVEL_SETTINGS);
+    public PLevelSettings getLighting() { return this.lighting; }
+
+    public byte[] getPlanData() { return this.level.toPlan(); }
+    
+    public void createMeshInstance(ResourceDescriptor descriptor) {
+        Thing thing = new Thing(this.level.getNextUID());
+        
+        thing.setPart(Part.POS, new PPos(thing, 0, new Matrix4f().identity()));
+        thing.setPart(Part.BODY, new PBody());
+        thing.setPart(Part.GROUP, new PGroup());
+        thing.setPart(Part.RENDER_MESH, new PRenderMesh(descriptor));
+        
+        ArrayList<Thing> things = this.getThings();
+        synchronized(things) {
+            things.add(thing);
+        }
+        
     }
     
     @Override public void initGL() {
@@ -112,8 +169,6 @@ public class CraftworldRenderer extends AWTGLCanvas {
         glClearColor(ambcol.x, ambcol.y, ambcol.z, 1.0f);
 
         glEnable(GL_PRIMITIVE_RESTART);
-        glPrimitiveRestartIndex(0xFFFF);
-        
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
 

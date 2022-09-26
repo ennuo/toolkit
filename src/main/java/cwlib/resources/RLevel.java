@@ -1,12 +1,15 @@
 package cwlib.resources;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import cwlib.enums.Branch;
+import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.types.Resource;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -16,6 +19,8 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.inventory.InventoryItemDetails;
+import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
@@ -154,6 +159,34 @@ public class RLevel implements Serializable, Compressable {
     @Override public int getAllocatedSize() { 
         int size = BASE_ALLOCATION_SIZE;
         return size;
+    }
+    
+    public int getNextUID() {
+        return ++((PWorld)this.world.getPart(Part.WORLD)).thingUIDCounter;
+    }
+
+    public byte[] toPlan() {
+        RPlan plan = new RPlan();
+        plan.revision = new Revision(0x272, 0x4c44, 0x0017);
+        plan.compressionFlags = 0x7;
+        ArrayList<Thing> things = new ArrayList<>();
+        PWorld world = ((PWorld)this.world.getPart(Part.WORLD));
+        for (Thing thing : world.things) {
+            if (thing == this.world) continue;
+            if (thing == world.backdrop) continue;
+
+            things.add(thing);
+        }
+
+        plan.setThings(things.toArray(Thing[]::new));
+
+        plan.inventoryData = new InventoryItemDetails();
+        plan.inventoryData.type = EnumSet.of(InventoryObjectType.READYMADE);
+        plan.inventoryData.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
+        plan.inventoryData.userCreatedDetails = new UserCreatedDetails("World Export", "Exported world");
+
+
+        return Resource.compress(plan.build());
     }
 
     @Override public SerializationData build(Revision revision, byte compressionFlags) {

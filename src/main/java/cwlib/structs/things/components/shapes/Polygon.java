@@ -30,7 +30,7 @@ public class Polygon implements Serializable {
      * Whether or not this polygon needs the Z vertex.
      */
     @GsonRevision(min=0x341)
-    public boolean requiresZ = false;
+    public boolean requiresZ = true;
 
     /**
      * Controls which parts of the polygon are "loops",

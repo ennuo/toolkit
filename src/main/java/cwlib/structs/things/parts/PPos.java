@@ -6,7 +6,10 @@ import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
@@ -23,34 +26,26 @@ public class PPos implements Serializable {
     
     @GsonRevision(max=0x340) 
     @JsonAdapter(TranslationSerializer.class)
-    public Matrix4f localPosition;
+    public Matrix4f localPosition = new Matrix4f();
 
     @JsonAdapter(TranslationSerializer.class) 
-    public Matrix4f worldPosition;
+    public Matrix4f worldPosition = new Matrix4f();
 
-    // Matrix4
-    // Vector4 mCol0
-    // Vector4 mCol1
-    // Vector4 mCol2
-    // Vector4 mCol3
+    private transient Vector3f translation = new Vector3f();
+    private transient Vector3f rotation = new Vector3f();
+    private transient Vector3f scale = new Vector3f();
 
     public PPos() {};
-
+    public PPos(Matrix4f wpos) { this(wpos, wpos); }
+    
     public PPos(Thing root, int animHash) { 
         this.thingOfWhichIAmABone = root;
         this.animHash = animHash;
     }
-
-    public PPos(Matrix4f wpos) {
-        this.worldPosition = wpos;
-        this.localPosition = wpos;
-    }
-
     public PPos(Matrix4f wpos, Matrix4f pos) {
         this.worldPosition = wpos;
         this.localPosition = pos;
     }
-
     public PPos(Thing root, int animHash, Matrix4f wpos) {
         this.thingOfWhichIAmABone = root;
         this.animHash = animHash;
@@ -65,7 +60,13 @@ public class PPos implements Serializable {
         this.localPosition = pos;
     }
 
-    
+    public Matrix4f getWorldPosition() { return this.worldPosition; }
+    public Matrix4f getLocalPosition() { return this.localPosition; }
+
+    public Vector3f getTranslation() { return this.translation; }
+    public Vector3f getRotation() { return this.rotation; }
+    public Vector3f getScale() { return this.scale; }
+
     @SuppressWarnings("unchecked")
     @Override public PPos serialize(Serializer serializer, Serializable structure) {
         PPos pos = (structure == null) ? new PPos() : (PPos) structure;
@@ -77,8 +78,8 @@ public class PPos implements Serializable {
         
         if (version < 0x341)
             pos.localPosition = serializer.m44(pos.localPosition);
-
         pos.worldPosition = serializer.m44(pos.worldPosition);
+
         if (pos.localPosition == null)
             pos.localPosition = pos.worldPosition;
 
@@ -88,6 +89,6 @@ public class PPos implements Serializable {
         
         return pos;
     }
-    
+
     @Override public int getAllocatedSize() { return PPos.BASE_ALLOCATION_SIZE; }
 }

@@ -16,7 +16,7 @@ public class PRenderMesh implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public ResourceDescriptor mesh;
-    public Thing[] boneThings;
+    public Thing[] boneThings = new Thing[0];
     public ResourceDescriptor anim;
     public float animPos, animSpeed = 1.0f;
     public boolean animLoop = true;
@@ -42,7 +42,7 @@ public class PRenderMesh implements Serializable {
 
         mesh.mesh = serializer.resource(mesh.mesh, ResourceType.MESH);
 
-        mesh.boneThings = serializer.array(mesh.boneThings, Thing.class, true);
+        mesh.boneThings = serializer.thingarray(mesh.boneThings);
         
         mesh.anim = serializer.resource(mesh.anim, ResourceType.ANIMATION);
         mesh.animPos = serializer.f32(mesh.animPos);

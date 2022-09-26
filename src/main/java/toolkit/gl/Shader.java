@@ -13,6 +13,7 @@ import static org.lwjgl.opengl.GL20.*;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
@@ -28,7 +29,9 @@ public class Shader {
     public int view, projection;
     public int[] matrices = new int[MAX_BONES];
     public int ambcol, fogcol, suncol, sunpos, rimcol, rimcol2;
-    public int vec2eye;
+    public int campos;
+    public int lighscaleadd;
+    public int color;
 
     public int[] locations = new int[8];
     public ResourceDescriptor[] textures = new ResourceDescriptor[8];
@@ -60,8 +63,11 @@ public class Shader {
         String source = GfxAssembler.generateBRDF(gfx, 0xDEADBEEF);
         glShaderSource(fragmentID, source);
         glCompileShader(fragmentID);
-        if (glGetShaderi(fragmentID, GL_COMPILE_STATUS) == 0) 
-            throw new AssertionError("Could not compile fragment shader! " + glGetShaderInfoLog(fragmentID));
+        if (glGetShaderi(fragmentID, GL_COMPILE_STATUS) == 0) {
+            System.out.println(source);
+            throw new RuntimeException("Could not compile fragment shader! " + glGetShaderInfoLog(fragmentID));            
+        }
+
 
         this.programID = glCreateProgram();
 
@@ -70,7 +76,7 @@ public class Shader {
         glLinkProgram(this.programID);
 
         if (glGetProgrami(this.programID, GL_LINK_STATUS) == 0)
-            throw new AssertionError("Could not link program!");
+            throw new RuntimeException("Could not link program!");
 
         glDeleteShader(fragmentID);
 
@@ -97,7 +103,11 @@ public class Shader {
         for (int i = 0; i < MAX_BONES; ++i)
             this.matrices[i] = glGetUniformLocation(this.programID, "matrices[" + i + "]");
         
-        this.vec2eye = glGetUniformLocation(this.programID, "vec2eye");
+        this.campos = glGetUniformLocation(this.programID, "campos");
+
+        this.lighscaleadd = glGetUniformLocation(this.programID, "lightscaleadd");
+
+        this.color = glGetUniformLocation(this.programID, "iColor");
 
         for (int i = 0; i < 8; ++i)
             this.locations[i] = glGetUniformLocation(this.programID, "s" + i);
@@ -122,6 +132,11 @@ public class Shader {
         glUniform3f(location, v.x, v.y, v.z);
     }
 
+    public void setUniformFloat2(int location, Vector2f v) {
+        if (location == -1) return;
+        glUniform2f(location, v.x, v.y);
+    }
+
     public void setUniformMatrix(int location, Matrix4f matrix) {
         if (location == -1) return;
         if (matrix == null) matrix = new Matrix4f().identity();
@@ -130,7 +145,7 @@ public class Shader {
         }
     }
 
-    public void bind(PLevelSettings lighting, Matrix4f[] matrices) {
+    public void bind(PLevelSettings lighting, Matrix4f[] matrices, Vector4f color) {
         glUseProgram(this.programID);
         
         // if (this.twoSided) glDisable(GL_CULL_FACE);
@@ -142,15 +157,19 @@ public class Shader {
         setUniformFloat4(this.suncol, lighting.sunColor);
         setUniformFloat4(this.rimcol, lighting.rimColor);
         setUniformFloat4(this.rimcol2, lighting.rimColor2);
-        setUniformFloat3(this.sunpos, lighting.sunPosition);
+        setUniformFloat3(this.sunpos, new Vector3f(lighting.sunPosition).mul(lighting.sunPositionScale));
 
         // Set camera uniforms
-        setUniformFloat3(this.vec2eye, Camera.MAIN.getTranslation());
-
+        setUniformFloat3(this.campos, Camera.MAIN.getTranslation());
+        setUniformFloat2(this.lighscaleadd, new Vector2f(lighting.sunMultiplier, lighting.exposure));
+        
         setUniformMatrix(this.projection, Camera.MAIN.getProjectionMatrix());
         for (int i = 0; i < matrices.length; ++i)
             setUniformMatrix(this.matrices[i], matrices[i]);
         setUniformMatrix(this.view, Camera.MAIN.getViewMatrix());
+
+        if (color != null)
+            setUniformFloat4(this.color, color);
 
         for (int i = 0; i < 8; ++i) {
             if (this.textures[i] == null) continue;
@@ -162,8 +181,8 @@ public class Shader {
             // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
             glUniform1i(this.locations[i], i);
             glBindTexture(GL_TEXTURE_2D, texture.textureID);

@@ -24,9 +24,9 @@ public class Bone extends AnimBone {
     public int flags = BoneFlag.NONE;
 
     @JsonAdapter(TranslationSerializer.class)
-    public Matrix4f skinPoseMatrix;
+    public Matrix4f skinPoseMatrix = new Matrix4f().identity();
     
-    public Matrix4f invSkinPoseMatrix;
+    public Matrix4f invSkinPoseMatrix = new Matrix4f().identity().invert();
 
     public Vector4f obbMin, obbMax;
     public MeshShapeVertex[] shapeVerts;
@@ -158,7 +158,7 @@ public class Bone extends AnimBone {
     public Matrix4f getLocalTransform(Bone[] bones) {
         if (this.parent == -1) return this.skinPoseMatrix;
         Bone bone = bones[this.parent];
-        return new Matrix4f(bone.skinPoseMatrix).invert().mul(this.skinPoseMatrix);
+        return bone.invSkinPoseMatrix.mul(this.skinPoseMatrix, new Matrix4f());
     }
 
     @Override public int getAllocatedSize() { 

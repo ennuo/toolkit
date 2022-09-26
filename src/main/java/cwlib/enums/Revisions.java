@@ -535,7 +535,8 @@ public class Revisions {
     public static final int MZ_CGC_PATH = 0x3; // Keep original path of RGfxMaterial in RShaderCache
     public static final int MZ_CGC_SWIZZLE = 0x4; // Swizzled color vector in RShaderCache
     public static final int MZ_CGC_SHORT_FLAGS = 0x5; // Use short flags in RShaderCache
-    
+    public static final int MZ_SCENE_GRAPH = 0x6; // 
+
     public static final int MZ_MAX = 0x5; // last revision for toolkit revisions
 
     // Legacy mod revisions
