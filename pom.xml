@@ -60,7 +60,7 @@
             <configuration>
                <archive>
                   <manifest>
-                     <mainClass>executables.gfx.GfxGUI</mainClass>
+                     <mainClass>toolkit.Launcher</mainClass>
                   </manifest>
                </archive>
                <descriptorRefs>
