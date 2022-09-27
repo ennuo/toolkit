@@ -55,8 +55,6 @@ public final class SaveEntry extends FileEntry {
         this.slotID = slot.id;
     }
 
-
-
     public BigSave getSave() { return (BigSave) this.source; }
 
     public SaveEntry getAdventure() { return this.adventure; }

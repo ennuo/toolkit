@@ -3,17 +3,11 @@ package executables;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import org.joml.Matrix4f;
-
 import cwlib.enums.CompressionFlags;
-import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RLocalProfile;
 import cwlib.resources.RSyncedProfile;
 import cwlib.singleton.ResourceSystem;
-import cwlib.structs.things.Thing;
-import cwlib.structs.things.parts.PShape;
-import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.ResourceDescriptor;

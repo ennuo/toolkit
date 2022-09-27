@@ -23,9 +23,6 @@ public class Config {
     public List<Profile> profiles = new ArrayList<>();
     public int currentProfile = 0;
     
-    // Use Profile.useLegacyFileDialogue instead.
-    @Deprecated public boolean useLegacyFileDialogue = false;
-    
     public static void removeProfile(int index) {
         Config.instance.profiles.remove(index);
     }

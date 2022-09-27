@@ -1,11 +1,9 @@
 package cwlib.structs.things;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
@@ -29,7 +27,6 @@ import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
 import cwlib.util.Colors;
-import toolkit.gl.CraftworldRenderer;
 import toolkit.gl.Mesh;
 import toolkit.gl.StaticMesh;
 import toolkit.windows.Toolkit;

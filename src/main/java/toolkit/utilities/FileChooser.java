@@ -60,7 +60,7 @@ public class FileChooser {
         if (name != null)
             name = getHomePath(name);
         File[] files = null;
-        if (Config.instance.useLegacyFileDialogue || Config.instance.getCurrentProfile().useLegacyFileDialogue)
+        if (Config.instance.getCurrentProfile().useLegacyFileDialogue)
             return openFileLegacy(name, extensions, saveFile, multiple);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer patterns = null;
@@ -130,7 +130,7 @@ public class FileChooser {
     public static String openDirectory() {
         System.out.println("Waiting for user to select directory...");
         String directory = null;
-        if (Config.instance.useLegacyFileDialogue)
+        if (Config.instance.getCurrentProfile().useLegacyFileDialogue)
             directory = openDirectoryLegacy();
         else directory = tinyfd_selectFolderDialog("Select folder", "");
         if (directory == null) 

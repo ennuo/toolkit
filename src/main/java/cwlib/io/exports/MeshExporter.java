@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -601,35 +600,12 @@ public class MeshExporter {
             return this.gltf.getNodes().size() - 1;
         }
         
-        private Node getNode(int index) {
-            List<Node> nodes = this.gltf.getNodes();
-            if (nodes.size() >= index) return null;
-            return nodes.get(index);
-        }
-        
-        
-        private int getBoneIndex(int node) {
-            List<Integer> joints = this.gltf.getSkins().get(0).getJoints();
-            for (int i = 0; i < joints.size(); ++i)
-                if (joints.get(i) == node)
-                    return i;
-            return -1;
-        }
-        
         private int getNodeIndex(String name) {
             List<Node> nodes = this.gltf.getNodes();
             for (int i = 0; i < nodes.size(); ++i)
                 if (nodes.get(i).getName().equals(name))
                     return i;
             return -1;
-        }
-        
-        private Node getNode(String name) {
-            List<Node> nodes = this.gltf.getNodes();
-            for (Node node : nodes)
-                if (node.getName().equals(name))
-                    return node;
-            return null;
         }
 
         public byte[] convertTexture(RGfxMaterial gfx, int index) {

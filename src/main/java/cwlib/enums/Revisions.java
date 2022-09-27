@@ -401,7 +401,7 @@ public class Revisions {
     public static final int WORLD_WATER_DRAIN = 0x34e; // Added water drain sounds enabled fields to PWorld
     public static final int SLOT_SUBLEVEL = 0x352; // isSubLevel added to slot
     public static final int SLOT_SCOREBOARD_LINK = 0x35e; // added scoreboardLevelLinkSlot to PWorld
-    public static final int REMOVE_OLD_LBP1_FIELDS = 0x36c; // Removed tutorialLevel and tutorialVideo from InventoryItem, removed gameProgressionState from slot 
+    public static final int REMOVE_LBP1_TUTORIALS = 0x36c; // Removed tutorialLevel and tutorialVideo from InventoryItem, removed gameProgressionState from slot 
     public static final int WORLD_CAMERA_SETTINGS = 0x370; // Added camera settings to PWorld
     public static final int WORLD_FRAME_START = 0x377; // add frameLevelStarted to PWorld
     public static final int DETAILS_RELAYOUT_LBP2 = 0x37d; // NetworkOnlineID and NetworkPlayerID are written as fixed length buffers, InventoryItemDetails has been remade again

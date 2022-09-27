@@ -431,7 +431,6 @@ public class SaveArchive extends Fart {
     }
 
     @Override public boolean save() {
-        System.out.println(this.queue.size());
         if (this.file == null)
             throw new IllegalStateException("Can't save archive with no associated file!");
         byte[] archive = this.build();

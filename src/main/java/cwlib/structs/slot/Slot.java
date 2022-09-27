@@ -86,6 +86,13 @@ public class Slot implements Serializable {
     // Server specific data
     public transient int gameVersion;
     public transient SHA1[] resources;
+
+    public Slot() {};
+    public Slot(SlotID id, ResourceDescriptor root, Vector4f location) {
+        this.id = id;
+        this.root = root;
+        this.location = location;
+    }
     
     @SuppressWarnings("unchecked")
     @Override public Slot serialize(Serializer serializer, Serializable structure) {
@@ -213,8 +220,11 @@ public class Slot implements Serializable {
 
         if (!revision.isLBP3()) return slot;
 
-        if (subVersion >= Revisions.SLOT_GAME_MODE)
-            slot.gameMode = serializer.enum32(slot.gameMode);
+        if (subVersion >= Revisions.SLOT_GAME_MODE) {
+            if (serializer.isWriting()) {
+                serializer.getOutput().u8(slot.gameMode == null ? 0 : slot.gameMode.getValue());
+            } else slot.gameMode = GameMode.fromValue(serializer.getInput().u8());
+        }
 
         if (subVersion >= Revisions.SLOT_GAME_KIT)
             slot.isGameKit = serializer.bool(slot.isGameKit);

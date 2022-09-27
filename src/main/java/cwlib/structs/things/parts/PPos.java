@@ -6,10 +6,8 @@ import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 

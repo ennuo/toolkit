@@ -204,6 +204,7 @@ public class Toolkit extends javax.swing.JFrame {
         SwingUtilities.invokeLater(loop);
     }
 
+    @SuppressWarnings("unused")
     private void enable3DView() {        
         this.previewContainer.setTopComponent(this.renderPane);
         this.renderPane.removeAll();

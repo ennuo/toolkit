@@ -14,7 +14,6 @@ import cwlib.resources.RTranslationTable;
 import cwlib.singleton.ResourceSystem;
 import cwlib.enums.ResourceType;
 import cwlib.io.exports.MeshExporter;
-import cwlib.resources.RPlan;
 import cwlib.resources.RStaticMesh;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;

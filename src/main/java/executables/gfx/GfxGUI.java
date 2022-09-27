@@ -4,8 +4,6 @@ import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 
 import configurations.ApplicationFlags;
-import configurations.Config;
-import configurations.Profile;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
@@ -16,7 +14,6 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
-import executables.gfx.GfxAssembler.GfxFlags;
 import executables.gfx.GfxAssembler.OutputPort;
 import executables.gfx.dialogues.ErrorDialogue;
 import executables.gfx.dialogues.TextureDialogue;
@@ -25,7 +22,6 @@ import java.io.File;
 import java.nio.file.Path;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import toolkit.utilities.FileChooser;

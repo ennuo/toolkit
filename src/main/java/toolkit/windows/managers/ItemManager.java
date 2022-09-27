@@ -27,7 +27,6 @@ import cwlib.structs.inventory.InventoryItemPhotoData;
 import cwlib.structs.inventory.PhotoMetadata;
 import cwlib.structs.inventory.PhotoUser;
 import cwlib.structs.inventory.UserCreatedDetails;
-import cwlib.io.serializer.Serializer;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.BigSave;
 import cwlib.types.data.ResourceDescriptor;
@@ -904,7 +903,7 @@ public class ItemManager extends javax.swing.JFrame {
         
         if (item != null) {
             item.plan = this.getDescriptor(this.planTextField, ResourceType.PLAN);
-            int guid = (int) this.guidSpinner.getValue();
+            long guid = (long) this.guidSpinner.getValue();
             if (guid == 0) item.guid = null;
             else item.guid = new GUID(guid);
             item.UID = (int) this.uidSpinner.getValue();

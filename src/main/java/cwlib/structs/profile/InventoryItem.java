@@ -1,5 +1,7 @@
 package cwlib.structs.profile;
 
+import java.util.Date;
+
 import cwlib.enums.InventoryItemFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
@@ -60,11 +62,26 @@ public class InventoryItem implements Serializable {
     @GsonRevision(min=842)
     public int userCategoryIndex;
 
+
+    public InventoryItem() {};
+    public InventoryItem(int UID, ResourceDescriptor descriptor, InventoryItemDetails details) {
+        if (details == null) 
+            details = new InventoryItemDetails();
+        
+        details.dateAdded = new Date().getTime() / 1000;
+
+        this.UID = UID;
+        this.details = details;
+        this.plan = descriptor;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public InventoryItem serialize(Serializer serializer, Serializable structure) {
         InventoryItem item = (structure == null) ? new InventoryItem() : (InventoryItem) structure;
 
         item.plan = serializer.resource(item.plan, ResourceType.PLAN, true);
+        if (item.plan != null)
+            serializer.addDependency(item.plan);
 
         if (serializer.getRevision().getSubVersion() >= Revisions.ITEM_GUID)
             item.guid = serializer.guid(item.guid);
@@ -75,7 +92,7 @@ public class InventoryItem implements Serializable {
 
         if (version >= Revisions.ITEM_FLAGS) {
             item.UID = serializer.i32(item.UID, true);
-            if (version < Revisions.REMOVE_OLD_LBP1_FIELDS) {
+            if (version < Revisions.REMOVE_LBP1_TUTORIALS) {
                 if (serializer.isWriting()) {
                     serializer.getOutput().i32(item.tutorialLevel.getValue(), true);
                     serializer.getOutput().i32(item.tutorialVideo.getValue(), true);

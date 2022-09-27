@@ -10,8 +10,8 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.structs.slot.Slot;
 import cwlib.enums.Crater;
 import cwlib.enums.DatabaseType;
-import cwlib.enums.InventoryItemFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.slot.SlotID;
 import cwlib.types.swing.FileData;
@@ -22,12 +22,11 @@ import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
-import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.resources.RBigProfile;
+import cwlib.resources.RPlan;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -63,7 +62,8 @@ public class BigSave extends FileData {
             throw new IllegalArgumentException("Unable to locate RBigProfile root resource!");
             
         HashSet<SHA1> locked = new HashSet<>();
-
+        locked.add(key.getRootHash());
+        
         for (InventoryItem item : this.profile.inventory) {
             item.details.translatedLocation = this.profile.stringTable.get(item.details.locationIndex);
             item.details.translatedCategory = this.profile.stringTable.get(item.details.categoryIndex);
@@ -136,6 +136,66 @@ public class BigSave extends FileData {
     @Override public SaveEntry get(SHA1 sha1) { return this.lookup.get(sha1); }
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
 
+    @Override public void add(byte[] data) {
+        SHA1 sha1 = this.archive.add(data);
+        this.setHasChanges();
+
+        if (data.length < 4) return;
+
+        ResourceType type = ResourceType.fromMagic(new String(new byte[] { data[0], data[1], data[2] }));
+        SerializationType method = SerializationType.fromValue(Character.toString((char) data[3]));
+        SaveEntry entry = null;
+
+        if (method == SerializationType.BINARY) {
+            switch (type) {
+                case LEVEL: {
+                    ResourceDescriptor root = new ResourceDescriptor(sha1, ResourceType.LEVEL);
+
+                    SlotID id = this.profile.getNextSlotID();
+
+                    // TODO: GET CRATER VERSION
+                    Crater crater = Crater.valueOf("SLOT_" + (id.slotNumber % 82) + "_LBP1");
+
+                    Slot slot = new Slot(
+                        this.profile.getNextSlotID(),
+                        root,
+                        crater.getValue()
+                    );
+
+                    this.profile.myMoonSlots.put(id, slot);
+                    entry = new SaveEntry(this, slot, "levels/Unnamed Level", data.length, sha1);
+
+                    break;
+                }
+                case PLAN: {
+                    RPlan plan = new Resource(data).loadResource(RPlan.class);
+
+                    InventoryItem item = new InventoryItem(
+                        this.profile.getNextUID(),
+                        new ResourceDescriptor(sha1, ResourceType.PLAN),
+                        plan.inventoryData
+                    );
+
+                    this.profile.inventory.add(item);
+                    entry = new SaveEntry(this, item, this.generatePath(item), data.length, sha1); 
+
+                    break;
+                }
+                case ADVENTURE_CREATE_PROFILE: {
+                    // TODO: Handle this case some other time, not that important.
+                    break;
+                }
+                default: break;
+            }
+        }
+
+        if (entry == null)
+            entry = new SaveEntry(this, this.generatePath(data, sha1), data.length, sha1);
+
+        this.lookup.put(sha1, entry);
+        this.entries.add(entry);
+    }
+
     @Override public void remove(FileEntry entry) {
         if (entry.getSource() != this) 
             throw new IllegalArgumentException("SaveEntry doesn't belong to this database!");
@@ -150,38 +210,6 @@ public class BigSave extends FileData {
         }
         FileNode node = saveEntry.getNode();
         if (node != null) node.delete();
-    }
-
-    public void addItem(ResourceDescriptor resource, InventoryItemDetails details) {
-        InventoryItem item = new InventoryItem();
-        
-        item.plan = resource;
-        item.details = details;
-        if (details != null && details.dateAdded == 0)
-            details.dateAdded = new Date().getTime() / 1000;
-        item.UID = this.profile.getNextUID();
-        item.flags = InventoryItemFlags.NONE;
-        
-        this.profile.inventory.add(item);
-        
-        // TODO: ADD NODE
-
-
-        this.setHasChanges();
-    }
-
-    public void addSlot(Slot slot) {
-        SlotID id = this.profile.getNextSlotID();
-
-        // TODO: GET CRATER VERSION
-        Crater crater = Crater.valueOf("SLOT_" + (id.slotNumber % 82) + "_LBP1");
-
-        slot.id = id;
-        slot.location = crater.getValue();
-
-        // TODO: ADD NODE
-
-        this.setHasChanges();
     }
 
     private String generatePath(InventoryItem item) {

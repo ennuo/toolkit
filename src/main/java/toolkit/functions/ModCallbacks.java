@@ -1,10 +1,6 @@
 package toolkit.functions;
 
 import cwlib.util.Bytes;
-import toolkit.windows.Toolkit;
-import cwlib.io.streams.MemoryInputStream;
-import cwlib.util.FileIO;
-import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 
 import java.io.File;

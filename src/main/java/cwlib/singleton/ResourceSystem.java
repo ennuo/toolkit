@@ -239,10 +239,15 @@ public class ResourceSystem {
     public static boolean replace(FileEntry entry, byte[] data) {
         if (entry == null) return false;
 
+        FileData source = entry.getSource();
+
         entry.setDetails(data);
         entry.setInfo(null);
 
-        return ResourceSystem.add(data, entry.getSource());
+        if (!source.getType().containsData())
+            return ResourceSystem.add(data, entry.getSource());
+
+        return true;
     }
 
     public static ArrayList<FileData> getDatabases() { return ResourceSystem.databases; }
@@ -266,6 +271,7 @@ public class ResourceSystem {
         return -1;
     }
     
+    @SuppressWarnings("unchecked")
     public static <T extends Compressable> T getSelectedResource() {
         FileNode node = ResourceSystem.getSelected();
         if (node == null) return null;

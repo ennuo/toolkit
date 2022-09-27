@@ -4,14 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import cwlib.enums.CompressionFlags;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RGfxMaterial;
-import cwlib.types.Resource;
-import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
-import cwlib.util.FileIO;
 
 public class CgAssembler {
     public static long[] getBytecode(byte[] cgb) {
