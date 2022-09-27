@@ -226,6 +226,8 @@ public class AssetExporter extends JDialog {
         });
         
         this.assetList.setSelectedIndex(0);
+        
+        this.pack();
     }
     
     private void finalize(String path) {

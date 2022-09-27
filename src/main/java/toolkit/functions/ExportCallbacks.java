@@ -185,8 +185,8 @@ public class ExportCallbacks {
         String name = entry.getName();
         name = name.substring(0, name.lastIndexOf("."));
 
-        RPlan item = entry.getInfo().getResource();
-        if (item == null) return;
+//        RPlan item = entry.getInfo().getResource();
+//        if (item == null) return;
 
         File file = FileChooser.openFile(name + ".mod", "mod", true);
         if (file == null) return;
