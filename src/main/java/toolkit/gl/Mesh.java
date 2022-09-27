@@ -14,7 +14,6 @@ import org.lwjgl.system.MemoryUtil;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
 import cwlib.singleton.ResourceSystem;
-import cwlib.structs.bevel.BevelVertex;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.things.parts.PGeneratedMesh;
@@ -22,9 +21,6 @@ import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.FileIO;
-import earcut4j.Earcut;
-import javafx.scene.control.skin.TextInputControlSkin.Direction;
 
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL40.*;

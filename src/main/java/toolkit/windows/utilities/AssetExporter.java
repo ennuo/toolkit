@@ -1,5 +1,7 @@
 package toolkit.windows.utilities;
 
+import configurations.ApplicationFlags;
+import cwlib.enums.CompressionFlags;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
@@ -7,10 +9,14 @@ import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.resources.RGfxMaterial;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 import cwlib.types.mods.Mod;
+import executables.gfx.CgAssembler;
+import executables.gfx.GfxAssembler;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
@@ -30,6 +36,22 @@ public class AssetExporter extends JDialog {
         LBP2,
         LBP_PS4,
         LBP_VITA
+    }
+    
+    private static MaterialLibrary[] libraries;
+    static {
+        ArrayList<MaterialLibrary> collection = new ArrayList<>();
+        collection.add(MaterialLibrary.NONE);
+        
+        if (ApplicationFlags.CAN_COMPILE_CELL_SHADERS) {
+            collection.add(MaterialLibrary.LBP1);
+            collection.add(MaterialLibrary.LBP2);
+        }
+        if (ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS) {
+            collection.add(MaterialLibrary.LBP_PS4);
+        }
+        
+        libraries = collection.toArray(MaterialLibrary[]::new);
     }
 
     public static enum PackageType {
@@ -165,9 +187,12 @@ public class AssetExporter extends JDialog {
             this.root = new Asset(new ResourceDescriptor(entry.getSHA1() , resource.getResourceType()));
         this.root.data = rootData;
         
-        boolean containsGmat = false;    
+        boolean containsGmat = resource.getResourceType().equals(ResourceType.GFX_MATERIAL);  
         for (Asset asset : descriptors) {
             ResourceType type = asset.descriptor.getType();
+            
+            if (type.equals(ResourceType.GFX_MATERIAL))
+                containsGmat = true;
             
             // These resources can only use GUIDs
             boolean isLocked = type.equals(ResourceType.MUSIC_SETTINGS) || 
@@ -194,8 +219,7 @@ public class AssetExporter extends JDialog {
             this.assetModel.addElement(asset);
         }
         
-        this.materialLibraryLabel.setVisible(containsGmat);
-        this.materialLibraryCombo.setVisible(containsGmat);
+	this.materialLibraryCombo.setEnabled(containsGmat && libraries.length != 1);
         
         this.assetList.addListSelectionListener(listener -> {
             this.updateButtonStates();
@@ -267,7 +291,25 @@ public class AssetExporter extends JDialog {
 
         byte[] data = null;
         if (remap != MaterialLibrary.NONE && resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
-            throw new RuntimeException("You shouldn't even be able to get this.");
+            RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
+
+            boolean isCGB = remap != MaterialLibrary.LBP1;
+            boolean isOrbis = remap == MaterialLibrary.LBP_PS4;
+
+            gfx.flags = gfx.flags & ~(0x10000);
+            Revision revision = new Revision(0x272, 0x4c44, 0x13);
+            if (isCGB) {
+                revision = new Revision(0x393);
+                gfx.shaders = new byte[10][];
+            }
+            else gfx.shaders = new byte[4][];
+
+            try {
+                CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1), gfx, isCGB, isOrbis);
+            } catch (Exception ex)  { data = resource.compress(); }
+            
+            data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
+
         } else data = resource.compress();
         asset.data = data;
 
@@ -351,7 +393,7 @@ public class AssetExporter extends JDialog {
         packagingTypeLabel = new javax.swing.JLabel();
         packagingTypeCombo = new javax.swing.JComboBox<>(PackageType.values());
         materialLibraryLabel = new javax.swing.JLabel();
-        materialLibraryCombo = new javax.swing.JComboBox<>(MaterialLibrary.values());
+        materialLibraryCombo = new javax.swing.JComboBox<>(libraries);
         exportButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         switchReferenceTypeButton = new javax.swing.JButton();
