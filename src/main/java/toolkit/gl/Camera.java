@@ -4,11 +4,11 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class Camera {
-    public static Camera MAIN = new Camera(-15150.0f, 4000.0f, 4200f);
+    public static Camera MAIN = new Camera(-19518.318359375f, 1997.4072265625f, 1195.43371582031f);
 
-    private float fov = (float) Math.toRadians(75);
-    private float zNear = 1.0f;
-    private float zFar = 100000.0f;
+    private float fov = 1.0f;
+    private float zNear = 2.0f;
+    private float zFar = 150000.0f;
     private float aspectRatio = (float) (16.0 / 9.0);
 
     private Vector3f translation, rotation;
