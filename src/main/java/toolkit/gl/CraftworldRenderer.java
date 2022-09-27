@@ -74,7 +74,7 @@ public class CraftworldRenderer extends AWTGLCanvas {
         super(GL_DATA);
 
         ResourceSystem.DISABLE_LOGS = true;
-        byte[] data = FileIO.getResourceFile("/binary/mybutton.bin");
+        byte[] data = FileIO.getResourceFile("/binary/blank.bin");
         this.setLevel(new Resource(data).loadResource(RLevel.class));
         ResourceSystem.DISABLE_LOGS = false;
         

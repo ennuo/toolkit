@@ -156,13 +156,21 @@ public class RLevel implements Serializable, Compressable {
         return plans;
     }
     
-    @Override public int getAllocatedSize() { 
-        int size = BASE_ALLOCATION_SIZE;
-        return size;
-    }
-    
     public int getNextUID() {
         return ++((PWorld)this.world.getPart(Part.WORLD)).thingUIDCounter;
+    }
+
+    public void addPlan(RPlan plan) {
+        Thing[] things = plan.getThings();
+        PWorld world = this.world.getPart(Part.WORLD);
+        for (Thing thing : things) {
+            if (thing != null) {
+                thing.UID = this.getNextUID();
+                synchronized(world.things) {
+                    world.things.add(thing);
+                }
+            }
+        }
     }
 
     public byte[] toPlan() {
@@ -187,6 +195,11 @@ public class RLevel implements Serializable, Compressable {
 
 
         return Resource.compress(plan.build());
+    }
+
+    @Override public int getAllocatedSize() { 
+        int size = BASE_ALLOCATION_SIZE;
+        return size;
     }
 
     @Override public SerializationData build(Revision revision, byte compressionFlags) {

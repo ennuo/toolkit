@@ -363,6 +363,7 @@ public class Toolkit extends javax.swing.JFrame {
         editItemContext.setVisible(false);
         loadLevelContext.setVisible(false);
         loadMeshContext.setVisible(false);
+        loadPaletteContext.setVisible(false);
         
         boolean isDependencyTree = tree == this.dependencyTree;
         
@@ -420,6 +421,9 @@ public class Toolkit extends javax.swing.JFrame {
 
                 if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
                 if (info.getResource() != null) {
+                    if (type == ResourceType.PALETTE && ApplicationFlags.ENABLE_3D)
+                        loadPaletteContext.setVisible(true);
+                   
                     if (type == ResourceType.LEVEL && ApplicationFlags.ENABLE_3D)
                         loadLevelContext.setVisible(true);
                     
@@ -535,6 +539,7 @@ public class Toolkit extends javax.swing.JFrame {
         deleteContext = new javax.swing.JMenuItem();
         loadLevelContext = new javax.swing.JMenuItem();
         loadMeshContext = new javax.swing.JMenuItem();
+        loadPaletteContext = new javax.swing.JMenuItem();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
@@ -976,6 +981,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(loadMeshContext);
+
+        loadPaletteContext.setText("Load Palette");
+        loadPaletteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadPaletteContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(loadPaletteContext);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -2442,6 +2455,17 @@ public class Toolkit extends javax.swing.JFrame {
         FileIO.write(level, file.getAbsolutePath());
     }//GEN-LAST:event_exportWorldActionPerformed
 
+    private void loadPaletteContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadPaletteContextActionPerformed
+        RLevel level = new RLevel();
+        RPalette palette = ResourceSystem.getSelectedResource();
+        for (ResourceDescriptor descriptor : palette.planList) {
+            byte[] planData = ResourceSystem.extract(descriptor);
+            if (planData == null) continue;
+            level.addPlan(new Resource(planData).loadResource(RPlan.class));
+        }
+        renderer.setLevel(level);
+    }//GEN-LAST:event_loadPaletteContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;
@@ -2712,6 +2736,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem loadLevelContext;
     private javax.swing.JMenuItem loadMeshContext;
     private javax.swing.JMenuItem loadMod;
+    private javax.swing.JMenuItem loadPaletteContext;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenuItem manageArchives;

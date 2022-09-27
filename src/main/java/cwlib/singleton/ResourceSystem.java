@@ -3,6 +3,7 @@ package cwlib.singleton;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.DatabaseType;
+import cwlib.io.Compressable;
 import cwlib.resources.RTranslationTable;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
@@ -11,6 +12,7 @@ import cwlib.types.swing.FileNode;
 import cwlib.util.FileIO;
 import cwlib.util.Nodes;
 import cwlib.types.archives.Fart;
+import cwlib.types.data.ResourceInfo;
 import cwlib.types.databases.FileEntry;
 import toolkit.windows.Toolkit;
 
@@ -262,6 +264,16 @@ public class ResourceSystem {
                 return i;
         }
         return -1;
+    }
+    
+    public static <T extends Compressable> T getSelectedResource() {
+        FileNode node = ResourceSystem.getSelected();
+        if (node == null) return null;
+        FileEntry entry = node.getEntry();
+        if (entry == null) return null;
+        ResourceInfo info = entry.getInfo();
+        if (info == null) return null;
+        return (T) info.getResource();
     }
 
     public static void reloadModel(FileData database) {
