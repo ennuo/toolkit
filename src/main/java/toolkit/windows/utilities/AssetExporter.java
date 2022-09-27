@@ -2,9 +2,11 @@ package toolkit.windows.utilities;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GfxMaterialFlags;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
 import cwlib.io.streams.MemoryInputStream;
@@ -17,6 +19,7 @@ import cwlib.types.data.Revision;
 import cwlib.types.mods.Mod;
 import executables.gfx.CgAssembler;
 import executables.gfx.GfxAssembler;
+import executables.gfx.GfxAssembler.OutputPort;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
@@ -291,6 +294,11 @@ public class AssetExporter extends JDialog {
         byte[] data = null;
         if (remap != MaterialLibrary.NONE && resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
             RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
+            
+            if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
+                if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+                    gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
+            }
 
             boolean isCGB = remap != MaterialLibrary.LBP1;
             boolean isOrbis = remap == MaterialLibrary.LBP_PS4;
@@ -307,7 +315,7 @@ public class AssetExporter extends JDialog {
                 CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1), gfx, isCGB, isOrbis);
                 data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
             } catch (Exception ex)  { data = resource.compress(); }
-            
+
         } else data = resource.compress();
         asset.data = data;
 
