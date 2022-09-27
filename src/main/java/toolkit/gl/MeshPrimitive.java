@@ -8,11 +8,13 @@ public class MeshPrimitive {
     public int firstIndex, numIndices;
     public int type;
     public ResourceDescriptor shader;
+    public int alphaLayer;
 
     public MeshPrimitive(ResourceDescriptor shader, int count) {
         this.firstIndex = 0;
         this.numIndices = count;
         this.shader = shader;
+        this.alphaLayer = Shader.get(this.shader).alphaLayer;
     }
 
     public MeshPrimitive(StaticPrimitive primitive) {
@@ -20,12 +22,13 @@ public class MeshPrimitive {
         this.numIndices = primitive.numIndices;
         this.shader = primitive.gmat;
         this.type = (primitive.type.getValue() & 0xff) - 1;
+        this.alphaLayer = Shader.get(this.shader).alphaLayer;
     }
 
     public MeshPrimitive(Primitive primitive) {
         this.firstIndex = primitive.getFirstIndex();
         this.numIndices = primitive.getNumIndices();
         this.shader = primitive.getMaterial();
-        Shader.get(this.shader); // Preload
+        this.alphaLayer = Shader.get(this.shader).alphaLayer;
     }
 }

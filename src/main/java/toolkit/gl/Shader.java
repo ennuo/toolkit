@@ -7,6 +7,7 @@ import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import executables.gfx.GfxAssembler;
+import executables.gfx.GfxAssembler.OutputPort;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -25,6 +26,7 @@ public class Shader {
     public int programID;
     public ResourceDescriptor descriptor;
     public boolean twoSided = false;
+    public int alphaMode, alphaLayer;
 
     public int view, projection;
     public int[] matrices = new int[MAX_BONES];
@@ -58,7 +60,12 @@ public class Shader {
         RGfxMaterial gfx = new Resource(data).loadResource(RGfxMaterial.class);
 
         this.twoSided = (gfx.flags & GfxMaterialFlags.TWO_SIDED) != 0;
+        this.alphaMode = gfx.alphaMode & 0xff;
+        this.alphaLayer = gfx.alphaLayer & 0xff;
 
+        if (this.alphaLayer == 0 && gfx.getBoxConnectedToPort(gfx.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+            this.alphaLayer = 0x1;
+        
         int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
         String source = GfxAssembler.generateBRDF(gfx, 0xDEADBEEF);
         glShaderSource(fragmentID, source);
@@ -107,7 +114,7 @@ public class Shader {
 
         this.lighscaleadd = glGetUniformLocation(this.programID, "lightscaleadd");
 
-        this.color = glGetUniformLocation(this.programID, "iColor");
+        this.color = glGetUniformLocation(this.programID, "thing_color");
 
         for (int i = 0; i < 8; ++i)
             this.locations[i] = glGetUniformLocation(this.programID, "s" + i);
@@ -150,6 +157,19 @@ public class Shader {
         
         // if (this.twoSided) glDisable(GL_CULL_FACE);
         // else glEnable(GL_CULL_FACE);
+
+        if (this.alphaMode != 0) {
+            glEnable(GL_BLEND);
+            if (this.alphaMode == 4) 
+                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            else if (this.alphaMode == 3)
+                glBlendFunc(GL_ONE, GL_ONE);
+            else if (this.alphaMode == 2)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            else
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        } else glDisable(GL_BLEND);
+        
 
         // Set level lighting uniforms
         setUniformFloat4(this.ambcol, lighting.ambientColor);

@@ -3,6 +3,7 @@ package toolkit.gl;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
@@ -209,8 +210,8 @@ public class Mesh {
         this.type = GL_TRIANGLES;
         this.bones = new Bone[] { new Bone("Shape01") };
 
-        float cutoff = 45.0f;
-        float scale = 1.0f;
+        // float cutoff = 45.0f;
+        // float scale = 1.0f;
 
         Vector3f[] bevelPoints = new Vector3f[] {
             new Vector3f(0.0f, -0.5166667f, -1.0f),
@@ -230,7 +231,7 @@ public class Mesh {
             byte[] data = ResourceSystem.extract(parameters.bevel);
             if (data != null) {
                 RBevel bevel = new Resource(data).loadResource(RBevel.class);
-                cutoff = bevel.autoSmoothCutoffAngle;
+                // cutoff = bevel.autoSmoothCutoffAngle;
                 bevelPoints = new Vector3f[bevel.vertices.size()];
                 for (int i = 0; i < bevelPoints.length; ++i) {
                     bevelPoints[i] = new Vector3f(
@@ -412,6 +413,8 @@ public class Mesh {
         this.primitives = new MeshPrimitive[primitives.length];
         for (int i = 0; i < this.primitives.length; ++i)
             this.primitives[i] = new MeshPrimitive(primitives[i]);
+
+        Arrays.sort(this.primitives, (a, z) -> a.alphaLayer - z.alphaLayer);
 
         MESHES.put(descriptor, this);
     }

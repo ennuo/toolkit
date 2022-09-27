@@ -751,7 +751,7 @@ void main(
         #else
             if (alpha.w < AlphaTestLevel) illumination = 0.0;
         #endif
-
+        
     #endif
 
     #if (PROPERTIES & ST7)

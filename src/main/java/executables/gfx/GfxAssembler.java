@@ -17,6 +17,8 @@ import cwlib.util.FileIO;
 
 public class GfxAssembler {
     public static String BRDF = FileIO.getResourceFileAsString("/shaders/brdf.cg");
+    public static String GLSL = FileIO.getResourceFileAsString("/shaders/default.fs");
+
     public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
 
     public static boolean USE_ENV_VARIABLES = false;
@@ -353,27 +355,9 @@ public class GfxAssembler {
         MaterialBox glow = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.GLOW);
         MaterialBox reflection = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.REFLECTION);
 
-        if (IS_GLSL) {
-            String shader = FileIO.getResourceFileAsString("/shaders/default.fs");
-            
-            shader = shader.replace("ENV.COSINE_POWER", String.format("%f", material.cosinePower * 22.0f));
-            shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", material.bumpLevel));
-            
-            shader = shader.replace("ENV.DIFFUSE", setupPath(material, diffuse, OutputPort.DIFFUSE));
-            shader = shader.replace("ENV.SPECULAR", setupPath(material, specular, OutputPort.SPECULAR));
-            shader = shader.replace("ENV.BUMP", setupPath(material, normal, OutputPort.BUMP));
-            shader = shader.replaceAll("float1", "float");
-            shader = shader.replaceAll("float2", "vec2");
-            shader = shader.replaceAll("float3", "vec3");
-            shader = shader.replaceAll("float4", "vec4");
-            shader = shader.replaceAll("iUV", "uv");
-            shader = shader.replaceAll("iTangent", "tangent");
-            shader = shader.replaceAll("iNormal", "normal");
-            shader = shader.replaceAll("half", "vec");
-            
-            return shader;
-        }
-        
+        String shader = BRDF;
+        if (IS_GLSL) shader = GLSL;
+
         ArrayList<String> properties = new ArrayList<>();
 
         if (alpha != null) properties.add("ALPHA");
@@ -397,8 +381,6 @@ public class GfxAssembler {
         if (properties.size() == 0)
             properties.add("NO_FLAGS");
 
-        
-        String shader = BRDF;
         if (flags != -1)
             shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
         shader = shader.replace("ENV.MATERIAL_PROPERTIES", String.format("(%s)", String.join(" | ", properties)));
@@ -433,6 +415,18 @@ public class GfxAssembler {
             shader = shader.replace("ENV.FUZZ_LIGHTING_SCALE", String.format("%f", ((float)((int)material.fuzzLightingScale & 0xff)) / 255.0f));
 
             shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format("%f", ((float)((int)material.iridesenceRoughness & 0xff)) / 255.0f));
+        }
+
+        if (IS_GLSL) {
+            shader = shader.replaceAll("float1", "float");
+            shader = shader.replaceAll("float2", "vec2");
+            shader = shader.replaceAll("float3", "vec3");
+            shader = shader.replaceAll("float4", "vec4");
+            shader = shader.replaceAll("iUV", "uv");
+            shader = shader.replaceAll("iTangent", "tangent");
+            shader = shader.replaceAll("iNormal", "normal");
+            shader = shader.replaceAll("iColor", "thing_color");
+            shader = shader.replaceAll("half", "vec");
         }
 
         return shader;

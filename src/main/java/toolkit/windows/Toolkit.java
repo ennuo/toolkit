@@ -226,6 +226,7 @@ public class Toolkit extends javax.swing.JFrame {
     private void disable3DView() {
         this.previewContainer.setTopComponent(this.overviewPane);
         this.workspace.setLeftComponent(this.treeContainer);
+        this.exportWorld.setVisible(false);
     }
     
     private MouseListener showContextMenu = new MouseAdapter() {
@@ -419,7 +420,7 @@ public class Toolkit extends javax.swing.JFrame {
 
                 if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
                 if (info.getResource() != null) {
-                    if (type == ResourceType.LEVEL)
+                    if (type == ResourceType.LEVEL && ApplicationFlags.ENABLE_3D)
                         loadLevelContext.setVisible(true);
                     
                     if (type == ResourceType.ANIMATION) {
@@ -437,7 +438,8 @@ public class Toolkit extends javax.swing.JFrame {
                     }
     
                     if (type == ResourceType.MESH) {
-                        loadMeshContext.setVisible(true);
+                        if (ApplicationFlags.ENABLE_3D)
+                            loadMeshContext.setVisible(true);
                         RMesh mesh = info.getResource();
                         exportGroup.setVisible(true);
                         exportModelGroup.setVisible(true);
@@ -646,7 +648,6 @@ public class Toolkit extends javax.swing.JFrame {
         generateDiff = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
-        exportWorldPlan = new javax.swing.JMenuItem();
         exportWorld = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
@@ -1709,14 +1710,6 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(installProfileMod);
 
-        exportWorldPlan.setText("Export RLevel to RPlan");
-        exportWorldPlan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportWorldPlanActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(exportWorldPlan);
-
         exportWorld.setText("Export RLevel");
         exportWorld.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2429,12 +2422,6 @@ public class Toolkit extends javax.swing.JFrame {
         renderer.createMeshInstance(descriptor);
     }//GEN-LAST:event_loadMeshContextActionPerformed
 
-    private void exportWorldPlanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldPlanActionPerformed
-        File file = FileChooser.openFile("level.plan", "plan", true);
-        if (file == null) return;
-        FileIO.write(Toolkit.renderer.getPlanData(), file.getAbsolutePath());
-    }//GEN-LAST:event_exportWorldPlanActionPerformed
-
     private void exportWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldActionPerformed
         File file = FileChooser.openFile("level.bin", "bin", true);
         if (file == null) return;
@@ -2687,7 +2674,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportPNG;
     private javax.swing.JMenu exportTextureGroupContext;
     private javax.swing.JMenuItem exportWorld;
-    private javax.swing.JMenuItem exportWorldPlan;
     private javax.swing.JMenuItem extractBigProfile;
     private javax.swing.JMenuItem extractContext;
     private javax.swing.JMenu extractContextMenu;
