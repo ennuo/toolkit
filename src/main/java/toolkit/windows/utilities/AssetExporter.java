@@ -268,24 +268,21 @@ public class AssetExporter extends JDialog {
     
     private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets, MaterialLibrary remap) {
         if (asset.data == null) return asset.descriptor;
+
         Resource resource = new Resource(asset.data);
         if (resource.getSerializationType() != SerializationType.BINARY || asset.recursed) {
             if (asset.hashinate)
                 return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
             return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
         }
-        if (remap == MaterialLibrary.NONE || (remap != MaterialLibrary.NONE && resource.getResourceType() != ResourceType.GFX_MATERIAL)) {
-            ResourceDescriptor[] dependencies = resource.getDependencies();
-            for (int i = 0; i < dependencies.length; ++i) {
-                ResourceDescriptor dependencyDescriptor = dependencies[i];
-                if (dependencyDescriptor.getType() == ResourceType.SCRIPT) continue;
-                Asset dependencyAsset = this.getAsset(assets, dependencyDescriptor);
-                if (dependencyAsset == null)
-                    System.out.println(asset.toString() + " : " + i);
-                else
-                    System.out.println(asset.toString() + " : " + dependencyAsset.toString());
+
+        ResourceDescriptor[] dependencies = resource.getDependencies();
+        for (int i = 0; i < dependencies.length; ++i) {
+            ResourceDescriptor dependencyDescriptor = dependencies[i];
+            if (dependencyDescriptor.getType() == ResourceType.SCRIPT) continue;
+            Asset dependencyAsset = this.getAsset(assets, dependencyDescriptor);
+            if (dependencyAsset != null)
                 resource.replaceDependency(dependencyDescriptor, this.recurse(dependencyAsset, assets, remap));
-            }
         }
 
         // if (resource.getResourceType() == ResourceType.PLAN && asset.hashinate && asset.entry.GUID != -1)
@@ -308,10 +305,9 @@ public class AssetExporter extends JDialog {
 
             try {
                 CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1), gfx, isCGB, isOrbis);
+                data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
             } catch (Exception ex)  { data = resource.compress(); }
             
-            data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
-
         } else data = resource.compress();
         asset.data = data;
 
