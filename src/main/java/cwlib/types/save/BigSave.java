@@ -153,8 +153,8 @@ public class BigSave extends FileData {
 
                     SlotID id = this.profile.getNextSlotID();
 
-                    // TODO: GET CRATER VERSION
-                    Crater crater = Crater.valueOf("SLOT_" + (id.slotNumber % 82) + "_LBP1");
+                    String version = this.archive.getGameRevision().getSubVersion() > 0x105 ? "_LBP3" : "_LBP1";
+                    Crater crater = Crater.valueOf("SLOT_" + (id.slotNumber % 82) + version);
 
                     Slot slot = new Slot(
                         this.profile.getNextSlotID(),
