@@ -190,20 +190,24 @@ public class Thing implements Serializable {
         return thing;
     }
 
-    public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parent) {
+    public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parentOrRoot) {
         Thing root = boneThings[0];
-        Thing boneThing = new Thing(++Toolkit.renderer.getWorld().thingUIDCounter);
 
-        boneThing.groupHead = root;
-        boneThing.parent = parent;
+        Thing boneThing = null;
 
-        Matrix4f ppos = ((PPos)parent.getPart(Part.POS)).getWorldPosition();
-        Matrix4f pos = bone.getLocalTransform(bones);
-        // Matrix4f wpos = bone.skinPoseMatrix;
+        if (bone.parent != -1) {
+            boneThing = new Thing(++Toolkit.renderer.getWorld().thingUIDCounter);
 
-        Matrix4f wpos = ppos.mul(pos, new Matrix4f());
-
-        boneThing.setPart(Part.POS, new PPos(root, bone.animHash, wpos));
+            boneThing.groupHead = root;
+            boneThing.parent = parentOrRoot;
+    
+            Matrix4f ppos = ((PPos)parentOrRoot.getPart(Part.POS)).getWorldPosition();
+            Matrix4f pos = bone.getLocalTransform(bones);
+    
+            Matrix4f wpos = ppos.mul(pos, new Matrix4f());
+    
+            boneThing.setPart(Part.POS, new PPos(root, bone.animHash, wpos));
+        } else boneThing = parentOrRoot;
 
         int index = 0;
         for (Bone child : bones) {
@@ -212,6 +216,34 @@ public class Thing implements Serializable {
                 skeletate(boneThings, bones, child, boneThing);
             index++;
         }
+    }
+
+    public void computeBoneThings(Thing root, Matrix4f transform, Bone[] bones) {
+        Thing[] boneThings = new Thing[bones.length];
+        boneThings[0] = root;
+
+        transform = transform.rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f), new Matrix4f());
+
+        PPos pos = root.getPart(Part.POS);
+        pos.worldPosition = transform.mul(bones[0].skinPoseMatrix, new Matrix4f());
+
+        for (int i = 0; i < bones.length; ++i) {
+            Bone bone = bones[i];
+            if (bone.parent != -1) continue;
+
+            Thing thing = root;
+            if (i != 0) {
+                Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
+                thing = new Thing(++Toolkit.renderer.getWorld().thingUIDCounter);
+                thing.setPart(Part.POS, new PPos(root, bone.animHash, wpos));
+                thing.groupHead = root;
+                boneThings[i] = thing;
+            }
+
+            skeletate(boneThings, bones, bone, thing);
+        }
+
+        ((PRenderMesh)root.getPart(Part.RENDER_MESH)).boneThings = boneThings;
     }
 
     public void render(PLevelSettings lighting) {
@@ -232,16 +264,11 @@ public class Thing implements Serializable {
 
                 if (mesh.boneThings != null) {
                     if (mesh.boneThings.length == 0) {
-                        mesh.boneThings = new Thing[glMesh.bones.length];
-                        mesh.boneThings[0] = this;
+                        computeBoneThings(this, pos.worldPosition, glMesh.bones);
 
-                        pos.worldPosition.mul(glMesh.bones[0].skinPoseMatrix).rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f));
+                        // Reset default inverses to match new calculated world position
                         joints[0] = new Matrix4f(pos.getWorldPosition()).mul(glMesh.bones[0].invSkinPoseMatrix);
-                        
-                        for (Bone bone : glMesh.bones) {
-                            if (bone.parent == 0)
-                                skeletate(mesh.boneThings, glMesh.bones, bone, this);
-                        }
+                        for (int i = 0; i < joints.length; ++i) joints[i] = joints[0];    
                     }
 
                     for (Thing thing : mesh.boneThings) {
