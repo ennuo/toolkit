@@ -182,7 +182,11 @@ public class Toolkit extends javax.swing.JFrame {
                 if (Files.exists(Paths.get(path)))
                     DatabaseCallbacks.loadFileDB(new File(path));
             }
-        } 
+        }
+        
+        PrintStream out = new CustomPrintStream(new TextAreaOutputStream(console));
+        System.setOut(out);
+        System.setErr(out);
     }
     
     private void renderer() {
@@ -1018,9 +1022,6 @@ public class Toolkit extends javax.swing.JFrame {
         console.setColumns(20);
         console.setLineWrap(true);
         console.setRows(5);
-        PrintStream out = new CustomPrintStream(new TextAreaOutputStream(console));
-        System.setOut(out);
-        System.setErr(out);
         console.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 consoleMouseReleased(evt);

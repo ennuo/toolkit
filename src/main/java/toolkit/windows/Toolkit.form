@@ -1005,9 +1005,6 @@
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="consoleMouseReleased"/>
                       </Events>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="PrintStream out = new CustomPrintStream(new TextAreaOutputStream(console));&#xa;System.setOut(out);&#xa;System.setErr(out);"/>
-                      </AuxValues>
                     </Component>
                   </SubComponents>
                 </Container>
