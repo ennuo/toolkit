@@ -36,6 +36,7 @@ public final class GsonUtils {
     private static final Gson GSON = new GsonBuilder()
         .setPrettyPrinting()
         .serializeSpecialFloatingPointValues()
+        .enableComplexMapKeySerialization()
         .serializeNulls()
         .setExclusionStrategies(new ExclusionStrategy() {
             @Override public boolean shouldSkipField(FieldAttributes field) {

@@ -14,6 +14,13 @@ public class InstanceLayout implements Serializable {
     public ArrayList<FieldLayoutDetails> fields = new ArrayList<>();
     public int instanceSize;
 
+    public InstanceLayout() {}
+    public InstanceLayout(InstanceLayout layout) {
+        for (FieldLayoutDetails field : layout.fields)
+            this.fields.add(new FieldLayoutDetails(field));
+        this.instanceSize = layout.instanceSize;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public InstanceLayout serialize(Serializer serializer, Serializable structure) {
         InstanceLayout layout = (structure == null) ? new InstanceLayout() : (InstanceLayout) structure;

@@ -76,17 +76,21 @@ public class ScriptObject implements Serializable {
             case AUDIOHANDLE: object.value = null; break;
             case ARRAY_SAFE_PTR: object.value = serializer.array((Thing[]) object.value, Thing.class, true); break;
             case ARRAY_OBJECT_REF: {
-                Object[] array = (Object[]) object.value;
-                if (!serializer.isWriting()) array = new Object[serializer.getInput().i32()];
+                ScriptObject[] array = (ScriptObject[]) object.value;
+                if (!serializer.isWriting()) {
+                    array = new ScriptObject[serializer.getInput().i32()];
+                    serializer.setPointer(reference, array);
+                }
                 else serializer.getOutput().i32(array.length);
                 for (int i = 0; i < array.length; ++i)
-                    array[i] = serializer.struct((ScriptObject) array[i], ScriptObject.class);
-                break;
+                    array[i] = serializer.struct(array[i], ScriptObject.class);
+                return object;
             }
             default: throw new SerializationException("Unhandled script object type in field member reflection!");
         }
 
-        serializer.setPointer(reference, object.value);
+        if (!serializer.isWriting())
+            serializer.setPointer(reference, object.value);
         
         return object;
     }

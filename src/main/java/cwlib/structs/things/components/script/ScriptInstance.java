@@ -35,9 +35,26 @@ public class ScriptInstance implements Serializable {
         }
 
         if (serialize) {
-            script.instanceLayout = serializer.reference(script.instanceLayout, InstanceLayout.class);
-            if (script.instanceLayout == null) return script;
-
+            int reference = 0;
+            if (serializer.isWriting()) {
+                if (script.instanceLayout != null)
+                    reference = serializer.getNextReference();
+                serializer.getOutput().i32(reference);
+            }
+            else reference = serializer.getInput().i32();
+            if (reference == 0) return script;
+            
+            if (!serializer.isWriting()) {
+                InstanceLayout layout = serializer.getPointer(reference);
+                if (layout == null) {
+                    layout = new InstanceLayout();
+                    script.instanceLayout = layout;
+                    serializer.setPointer(reference, layout);
+                    layout.serialize(serializer, layout);
+                } else 
+                    script.instanceLayout = new InstanceLayout(layout);
+            } else script.instanceLayout.serialize(serializer, script.instanceLayout);
+            
             boolean reflectDivergent = false;
             if (version > 0x19c)
                 reflectDivergent = serializer.bool(reflectDivergent);
@@ -54,8 +71,14 @@ public class ScriptInstance implements Serializable {
                     case CHAR: field.value = serializer.i8(writing ? (byte) field.value : 0); break;
                     case S32: 
                         field.value = serializer.i32(writing ? (int) field.value : 0); 
-                        if (serializer.isWriting() && field.fishType == BuiltinType.GUID && ((int)field.value) != 0)
-                            serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILENAME));
+                        if (serializer.isWriting() && field.fishType == BuiltinType.GUID && ((int)field.value) != 0) {
+                            if (field.name != null && field.name.equals("FSB"))
+                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILENAME));
+                            else if (field.name != null && field.name.equals("SettingsFile"))
+                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.MUSIC_SETTINGS));
+                            else
+                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILE_OF_BYTES));
+                        }
                         break;
                     case F32: field.value = serializer.f32(writing ? (float) field.value : 0); break;
                     case V4: field.value = serializer.v4((Vector4f) field.value); break;

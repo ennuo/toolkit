@@ -18,7 +18,7 @@ public class FieldLayoutDetails implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public String name;
-    public EnumSet<ModifierType> modifiers = EnumSet.noneOf(ModifierType.class);;
+    public EnumSet<ModifierType> modifiers = EnumSet.noneOf(ModifierType.class);
     public MachineType machineType = MachineType.VOID;
 
     @GsonRevision(min=0x145)
@@ -30,6 +30,17 @@ public class FieldLayoutDetails implements Serializable {
     
     public Object value;
     public ScriptObjectType type = ScriptObjectType.NULL;
+
+    public FieldLayoutDetails() {};
+    public FieldLayoutDetails(FieldLayoutDetails details) {
+        this.name = details.name;
+        this.modifiers = details.modifiers.clone();
+        this.machineType = details.machineType;
+        this.fishType = details.fishType;
+        this.dimensionCount = details.dimensionCount;
+        this.arrayBaseMachineType = details.arrayBaseMachineType;
+        this.instanceOffset = details.instanceOffset;
+    }
 
     @SuppressWarnings("unchecked")
     @Override public FieldLayoutDetails serialize(Serializer serializer, Serializable structure) {
@@ -64,9 +75,5 @@ public class FieldLayoutDetails implements Serializable {
         int size = FieldLayoutDetails.BASE_ALLOCATION_SIZE; 
         if (this.name != null) size += (this.name.length());
         return size;
-    }
-
-    @Override public String toString() {
-        return String.format("%s %s %s", this.modifiers, this.machineType, this.name);
     }
 }
