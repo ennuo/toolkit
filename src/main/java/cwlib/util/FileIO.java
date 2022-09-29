@@ -28,8 +28,9 @@ public class FileIO {
     }
 
     public static byte[] getResourceFile(String filename) {
-        try {
-            return Files.readAllBytes(Paths.get(FileIO.class.getResource(filename).toURI()));
+        try (InputStream stream = FileIO.class.getResourceAsStream(filename)) {
+            if (stream == null) return null;
+            return stream.readAllBytes();
         } catch (Exception ex) { return null; }
     }
 
