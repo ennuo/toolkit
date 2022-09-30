@@ -1,9 +1,15 @@
 package cwlib.structs.things;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
@@ -15,6 +21,7 @@ import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
+import cwlib.resources.RAnimation;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.parts.PGeneratedMesh;
@@ -23,10 +30,13 @@ import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PShape;
+import cwlib.types.Resource;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
 import cwlib.util.Colors;
+import toolkit.gl.CraftworldRenderer;
 import toolkit.gl.Mesh;
 import toolkit.gl.StaticMesh;
 import toolkit.windows.Toolkit;
@@ -190,6 +200,23 @@ public class Thing implements Serializable {
         return thing;
     }
 
+    public static void calculateBoneTransform(RAnimation animation, float position, Matrix4f[] transforms, Bone[] bones, Bone bone, Matrix4f parent) {
+        int index = Bone.indexOf(bones, bone.animHash);
+        int frame = (int) Math.floor(position * animation.getNumFrames());
+
+        Matrix4f local = animation.getFrameMatrix(bone.animHash, frame, position);
+        Matrix4f global = parent.mul(local, new Matrix4f());
+
+        Matrix4f inverse = global.mul(bone.invSkinPoseMatrix, new Matrix4f());
+        transforms[index] = inverse;
+
+        for (Bone child : bones) {
+            if (child.parent == index)
+                calculateBoneTransform(animation, position, transforms, bones, child, global);
+        }
+
+    }
+
     public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parentOrRoot) {
         Thing root = boneThings[0];
 
@@ -225,6 +252,7 @@ public class Thing implements Serializable {
         transform = transform.rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f), new Matrix4f());
 
         PPos pos = root.getPart(Part.POS);
+        pos.animHash = bones[0].animHash;
         pos.worldPosition = transform.mul(bones[0].skinPoseMatrix, new Matrix4f());
 
         for (int i = 0; i < bones.length; ++i) {
@@ -246,6 +274,16 @@ public class Thing implements Serializable {
         ((PRenderMesh)root.getPart(Part.RENDER_MESH)).boneThings = boneThings;
     }
 
+    static HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
+
+    float truncate(float x) {
+        return (float) (x < 0 ? -Math.floor(-x) : Math.floor(x));
+    }
+
+    float fmod(float x, float y) {
+        return x - truncate(x / y) * y;
+    }
+
     public void render(PLevelSettings lighting) {
         PPos pos = this.getPart(Part.POS);
         if (pos == null) return;
@@ -259,7 +297,7 @@ public class Thing implements Serializable {
     
             if (this.isDirty) {
                 Matrix4f[] joints = new Matrix4f[glMesh.bones.length];
-                joints[0] = new Matrix4f(pos.getWorldPosition()).mul(glMesh.bones[0].invSkinPoseMatrix);
+                joints[0] = pos.getWorldPosition().mul(glMesh.bones[0].invSkinPoseMatrix, new Matrix4f());
                 for (int i = 0; i < joints.length; ++i) joints[i] = joints[0];    
 
                 if (mesh.boneThings != null) {
@@ -267,7 +305,7 @@ public class Thing implements Serializable {
                         computeBoneThings(this, pos.worldPosition, glMesh.bones);
 
                         // Reset default inverses to match new calculated world position
-                        joints[0] = new Matrix4f(pos.getWorldPosition()).mul(glMesh.bones[0].invSkinPoseMatrix);
+                        joints[0] = pos.getWorldPosition().mul(glMesh.bones[0].invSkinPoseMatrix, new Matrix4f());
                         for (int i = 0; i < joints.length; ++i) joints[i] = joints[0];    
                     }
 
@@ -278,12 +316,42 @@ public class Thing implements Serializable {
                         int index = Bone.indexOf(glMesh.bones, bonePos.animHash);
                         if (index == -1) continue;
         
-                        joints[index] = new Matrix4f(bonePos.getWorldPosition()).mul(glMesh.bones[index].invSkinPoseMatrix);
+                        joints[index] = bonePos.getWorldPosition().mul(glMesh.bones[index].invSkinPoseMatrix, new Matrix4f());
                     }
                 }
                 
                 this.matrices = joints;
                 this.isDirty = false;
+            }
+
+            if (mesh.anim != null) {
+
+                RAnimation animation = ANIMATIONS.get(mesh.anim);
+                if (animation == null) {
+                    byte[] animData = ResourceSystem.extract(mesh.anim);
+                    if (animData != null) {
+                        animation = new Resource(animData).loadResource(RAnimation.class);
+                        if (animation != null && animation.locators != null && animation.locators.length != 0)
+                            System.out.println("[LOCATOR] Loading " + mesh.anim.toString());
+                        ANIMATIONS.put(mesh.anim, animation);
+                    }
+                }
+                
+                if (animation != null) {
+                    mesh.animPos += (((animation.getFPS() * CraftworldRenderer.DELTA_TIME) / animation.getNumFrames()) * mesh.animSpeed);
+                    mesh.animPos = fmod(mesh.animPos, 1.0f);
+
+                    Matrix4f[] transforms = new Matrix4f[glMesh.bones.length];
+                    for (Thing thing : mesh.boneThings) {
+                        PPos bonePos = thing.getPart(Part.POS);
+                        Bone bone = Bone.getByHash(glMesh.bones, bonePos.animHash);
+                        if (bone.parent != -1) continue;
+                        Matrix4f wpos = bonePos.worldPosition.mul(bone.invSkinPoseMatrix, new Matrix4f());
+                        calculateBoneTransform(animation, mesh.animPos, transforms, glMesh.bones, bone, wpos);
+                    }
+
+                    this.matrices = transforms;
+                }
             }
     
             glMesh.draw(lighting, this.matrices, Colors.RGBA32.fromARGB(mesh.editorColor));

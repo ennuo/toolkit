@@ -1,6 +1,7 @@
 package toolkit.gl;
 
 import cwlib.enums.Part;
+import cwlib.enums.ResourceType;
 import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
@@ -13,6 +14,7 @@ import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
 
@@ -25,6 +27,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import org.joml.Matrix4f;
 
@@ -61,11 +65,15 @@ public class CraftworldRenderer extends AWTGLCanvas {
         GL_DATA.minorVersion = 0;
     }
 
-    private static float deltaTime;
-    private static double lastTime;
+    public static float DELTA_TIME;
+    private static long LAST_TIME;
+    public static float TIME;
     
     public static int TGV_SHADER;
     public static Shader FALLBACK_PROGRAM;
+
+    public static int PRT_SHADOWMAP;
+    public static int PRT_SHADOWMAP_ZBUF;
 
     private RLevel level;
     private PLevelSettings lighting;
@@ -145,7 +153,7 @@ public class CraftworldRenderer extends AWTGLCanvas {
 
     public byte[] getPlanData() { return this.level.toPlan(); }
     
-    public void createMeshInstance(ResourceDescriptor descriptor) {
+    public Thing createMeshInstance(ResourceDescriptor descriptor) {
         Thing thing = new Thing(this.level.getNextUID());
         
         thing.setPart(Part.POS, new PPos(thing, 0, new Matrix4f().identity()));
@@ -157,7 +165,8 @@ public class CraftworldRenderer extends AWTGLCanvas {
         synchronized(things) {
             things.add(thing);
         }
-        
+
+        return thing;
     }
     
     @Override public void initGL() {
@@ -193,16 +202,40 @@ public class CraftworldRenderer extends AWTGLCanvas {
 
         glDeleteShader(fragment);
 
-        lastTime = glfwGetTime();
+        LAST_TIME = System.nanoTime();
 
         FALLBACK_PROGRAM = new Shader(fallback);
+
+        // Create framebuffer and texture
+        PRT_SHADOWMAP = glGenFramebuffers();
+        PRT_SHADOWMAP_ZBUF = glGenTextures();
+
+        // Initialize depth buffer
+        glBindTexture(GL_TEXTURE_2D, PRT_SHADOWMAP_ZBUF);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
+        glTexParameterIi(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterIi(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterIi(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterIi(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        // Attach texture to depth buffer of framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, PRT_SHADOWMAP);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, PRT_SHADOWMAP_ZBUF, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+
+        // Rebind default framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     public void update() {
-        double time = glfwGetTime();
-        deltaTime = (float) (time - lastTime);
-        lastTime = time;
-        time += deltaTime;
+        long now = System.nanoTime();
+
+        DELTA_TIME = (now - LAST_TIME) / 1_000_000_000f;
+
+        TIME += DELTA_TIME;
+
+        LAST_TIME = now;
 
         this.render();
     }

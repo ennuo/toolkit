@@ -18,7 +18,7 @@ public class PRenderMesh implements Serializable {
     public ResourceDescriptor mesh;
     public Thing[] boneThings = new Thing[0];
     public ResourceDescriptor anim;
-    public float animPos, animSpeed = 1.0f;
+    public float animPos = 0.0f, animSpeed = 1.0f;
     public boolean animLoop = true;
     public float loopStart, loopEnd = 1.0f;
     public int editorColor = -1;

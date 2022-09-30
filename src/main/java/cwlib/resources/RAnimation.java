@@ -11,8 +11,12 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.animation.Locator;
+import cwlib.structs.mesh.Bone;
 import cwlib.types.data.Revision;
 
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class RAnimation implements Serializable, Compressable {
@@ -26,7 +30,7 @@ public class RAnimation implements Serializable, Compressable {
 
     public AnimBone[] bones;
 
-    public short numFrames = 19, fps = 30, loopStart = 0;
+    public short numFrames, fps, loopStart;
     public byte morphCount;
 
     public byte[] rotBonesAnimated;
@@ -120,7 +124,7 @@ public class RAnimation implements Serializable, Compressable {
             else output.i32(anim.packedMorph.length);
             for (int i = 0; i < anim.packedMorph.length; ++i) 
                 anim.packedMorph[i] = serializer.f32(anim.packedMorph[i]);
-            
+
             // TODO: Locators when revision > 0x311
 
             return anim;
@@ -231,6 +235,9 @@ public class RAnimation implements Serializable, Compressable {
         anim.scaledBonesAnimated = new byte[scaleAnims];
         anim.morphsAnimated = new byte[morphAnims];
 
+        // System.out.println("locator keys: " + stream.getOffset());
+        if (locatorKeys != 0) stream.bytes(0x4 * locatorKeys);
+
         for (int i = 0; i < rotAnims; ++i) anim.rotBonesAnimated[i] = stream.i8();
         for (int i = 0; i < posAnims; ++i) anim.posBonesAnimated[i] = stream.i8();
         for (int i = 0; i < scaleAnims; ++i) anim.scaledBonesAnimated[i] = stream.i8();
@@ -238,12 +245,20 @@ public class RAnimation implements Serializable, Compressable {
 
         if (stream.getOffset() % 2 != 0) stream.i8(); // Alignment
 
-        if (locatorKeys != 0) throw new SerializationException("locator keys just aint it!");
+        // System.out.println("Data: " + stream.getOffset());
 
         anim.packedRotation = new Vector4f[boneCount + (rotAnims * (anim.numFrames - 1))];
         anim.packedPosition = new Vector4f[boneCount + (posAnims * (anim.numFrames - 1))];
         anim.packedScale = new Vector4f[boneCount + (scaleAnims * (anim.numFrames - 1))];
         anim.packedMorph = new float[morphCount + (morphAnims * (anim.numFrames - 1))];
+
+        // System.out.println("Rotation Size: " + anim.packedRotation.length * 0x6);
+        // System.out.println("Position Size: " + anim.packedPosition.length * 0x6);
+        // System.out.println("Scale Size: " + anim.packedScale.length * 0x6);
+
+        // locatorKeys is 0x6???
+        // 2 locator array 0x1e bytes?
+
 
         //System.out.println("Rotation Buffer Start: " + stream.getOffset());
 
@@ -279,6 +294,105 @@ public class RAnimation implements Serializable, Compressable {
     public Vector4f getBaseRotation(int boneIndex) { return this.packedRotation[boneIndex]; }
     public Vector4f getBaseScale(int boneIndex) { return this.packedScale[boneIndex]; }
     public float getBaseWeight(int morphIndex) { return this.packedMorph[morphIndex]; }
+    public Matrix4f getBaseTransform(int animHash) {
+        int index = this.getBoneIndex(animHash);
+        if (index == -1) return new Matrix4f().identity();
+        Vector4f pos = this.packedPosition[index];
+        Vector4f rot = this.packedRotation[index];
+        Vector4f sx = this.packedScale[index];
+
+        Vector3f translation = new Vector3f(pos.x, pos.y, pos.z);
+        Quaternionf quaternion = new Quaternionf(rot.x, rot.y, rot.z, rot.w);
+        Vector3f scale = new Vector3f(sx.x, sx.y, sx.y);
+
+        return new Matrix4f().identity().translationRotateScale(
+            translation,
+            quaternion,
+            scale
+        );
+    }
+
+    public Matrix4f getFrameMatrix(int animHash, int frame, float position) {
+        int index = this.getBoneIndex(animHash);
+
+        float lastTime = frame * ((float) (1.0f / this.numFrames));
+        float nextTime = (frame + 1) * ((float) (1.0f / this.numFrames));
+        float scaleFactor = (position - lastTime) / (nextTime - lastTime);
+
+        int translationIndex = -1, scaleIndex = -1, rotationIndex = -1;
+
+        Vector4f translation = this.packedPosition[index];
+        Vector4f rotation =  this.packedRotation[index];
+        Vector4f scale = this.packedScale[index];
+
+        Quaternionf quaternion = new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w);
+
+        for (int i = 0; i < this.rotBonesAnimated.length; ++i) {
+            int bone = this.rotBonesAnimated[i] & 0xff;
+            if (bone == index) {
+                rotationIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < this.scaledBonesAnimated.length; ++i) {
+            int bone = this.scaledBonesAnimated[i] & 0xff;
+            if (bone == index) {
+                scaleIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < this.posBonesAnimated.length; ++i) {
+            int bone = this.posBonesAnimated[i] & 0xff;
+            if (bone == index) {
+                translationIndex = i;
+                break;
+            }
+        }
+
+        if (rotationIndex != -1 && frame < this.numFrames) {
+            if (frame != 0) {
+                rotation = this.packedRotation[this.bones.length + ((frame - 1) * this.rotBonesAnimated.length) + rotationIndex];
+                quaternion = new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w);
+            }
+
+            if (frame + 1 != this.numFrames) {
+                rotation = this.packedRotation[this.bones.length + (frame * this.rotBonesAnimated.length) + rotationIndex];
+                quaternion = quaternion.slerp(new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w), scaleFactor);
+            }
+        }
+
+        if (translationIndex != -1 && frame < this.numFrames) {
+            if (frame != 0)
+                translation = this.packedPosition[this.bones.length + ((frame - 1) * this.posBonesAnimated.length) + translationIndex];
+            
+            if (frame + 1 != this.numFrames) {
+                Vector4f nextFrame = this.packedPosition[this.bones.length + ((frame) * this.posBonesAnimated.length) + translationIndex];
+                translation = translation.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
+            }
+        }
+
+        if (scaleIndex != -1 && frame < this.numFrames) {
+            if (frame != 0)
+                scale = this.packedScale[this.bones.length + ((frame - 1) * this.scaledBonesAnimated.length) + scaleIndex];
+            
+            if (frame + 1 != this.numFrames) {
+                Vector4f nextFrame = this.packedScale[this.bones.length + ((frame) * this.scaledBonesAnimated.length) + scaleIndex];
+                scale = scale.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
+            }
+        }
+
+        return new Matrix4f().identity().translationRotateScale(
+            new Vector3f(translation.x, translation.y, translation.z),
+            quaternion,
+            new Vector3f(scale.x, scale.y, scale.z)
+        );
+    }
+
+
+
+
     public float[] getBaseWeights() {
         float[] weights = new float[this.morphCount];
         for (int i = 0; i < this.morphCount; ++i)
@@ -317,10 +431,45 @@ public class RAnimation implements Serializable, Compressable {
         if (indices == null) return false;
         int index = this.getBoneIndex(animHash);
         if (index == -1) return false;
-        for (byte animated : indices)
-            if (animated == index)
+        for (byte animated : indices) {
+            if (((int)animated & 0xff) == index)
                 return true;
+        }
         return false;
+    }
+
+    public Vector3f getTranslationFrame(int animHash, int frame) {
+        int index = this.getBoneIndex(animHash);
+        if (index == -1) return new Vector3f();
+        Vector4f translation = null;
+        if (frame == 0 || !this.isAnimated(animHash, AnimationType.POSITION)) 
+            translation = this.packedPosition[index];
+        else
+            translation = this.packedPosition[this.bones.length + ((frame - 1) * this.posBonesAnimated.length) + index];
+        return new Vector3f(translation.x, translation.y, translation.z);
+    }
+
+    public Quaternionf getRotationFrame(int animHash, int frame) {
+        int index = this.getBoneIndex(animHash);
+        if (index == -1) return new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f);
+        Vector4f rotation = null;
+        if (frame == 0 || !this.isAnimated(animHash, AnimationType.ROTATION)) 
+            rotation = this.packedRotation[index];
+        else
+            rotation = this.packedRotation[this.bones.length + ((frame - 1) * this.rotBonesAnimated.length) + index];
+
+        return new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w);
+    }
+
+    public Vector3f getScaleFrame(int animHash, int frame) {
+        int index = this.getBoneIndex(animHash);
+        if (index == -1) return new Vector3f(1.0f, 1.0f, 1.0f);
+        Vector4f scale = null;
+        if (frame == 0 || !this.isAnimated(animHash, AnimationType.SCALE)) 
+            scale = this.packedScale[index];
+        else
+            scale = this.packedScale[this.bones.length + ((frame - 1) * this.scaledBonesAnimated.length) + index];
+        return new Vector3f(scale.x, scale.y, scale.z);
     }
     
     private Vector4f[] getFrames(int animHash, AnimationType type) {
