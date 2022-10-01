@@ -55,7 +55,7 @@ public class InventoryItemDetails implements Serializable {
     @GsonRevision(min=0x1b1)
     public CreationHistory creationHistory;
 
-    public ResourceDescriptor icon;
+    public ResourceDescriptor icon = new ResourceDescriptor(15525, ResourceType.TEXTURE);
     
     @GsonRevision(min=0x17b)
     public InventoryItemPhotoData photoData;

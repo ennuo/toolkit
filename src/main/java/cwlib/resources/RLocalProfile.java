@@ -772,6 +772,8 @@ public class RLocalProfile implements Compressable, Serializable {
         if (subVersion > 0x215) 
             profile.goPlayCache = serializer.array(profile.goPlayCache, GoPlayCache.class);
         
+        System.out.println(serializer.getOffset());
+
         return profile;
     }
 

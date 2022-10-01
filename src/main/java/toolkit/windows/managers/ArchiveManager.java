@@ -34,7 +34,7 @@ public class ArchiveManager extends javax.swing.JDialog {
             File file = FileChooser.openFile("data.farc", "farc", false);
             if (file == null) return;
             
-            if (Toolkit.instance.isArchiveLoaded(file) != -1) {
+            if (Toolkit.INSTANCE.isArchiveLoaded(file) != -1) {
                 JOptionPane.showMessageDialog(this, "This archive is already loaded!", "Notice", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -51,7 +51,7 @@ public class ArchiveManager extends javax.swing.JDialog {
             
             this.removeButton.setEnabled(true);
             
-            Toolkit.instance.updateWorkspace();
+            Toolkit.INSTANCE.updateWorkspace();
         });
         
         this.removeButton.addActionListener(e -> {
@@ -79,7 +79,7 @@ public class ArchiveManager extends javax.swing.JDialog {
             if (this.archiveModel.size() == 0)
                 this.removeButton.setEnabled(false);
             
-            Toolkit.instance.updateWorkspace();
+            Toolkit.INSTANCE.updateWorkspace();
         });
         
         this.saveChangesButton.addActionListener(e -> {

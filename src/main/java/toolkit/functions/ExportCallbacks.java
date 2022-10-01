@@ -81,7 +81,7 @@ public class ExportCallbacks {
         
         if (file == null) return;
         
-        String input = JOptionPane.showInputDialog(Toolkit.instance, "Mesh GUID", "g0");
+        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Mesh GUID", "g0");
         if (input == null) return;
         input = input.replaceAll("\\s", "");
         

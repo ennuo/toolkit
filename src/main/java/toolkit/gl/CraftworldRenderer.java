@@ -1,21 +1,9 @@
 package toolkit.gl;
 
-import cwlib.enums.Part;
-import cwlib.enums.ResourceType;
 import cwlib.resources.RLevel;
-import cwlib.resources.RPlan;
+import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
-import cwlib.structs.things.Thing;
-import cwlib.structs.things.parts.PBody;
-import cwlib.structs.things.parts.PGroup;
-import cwlib.structs.things.parts.PLevelSettings;
-import cwlib.structs.things.parts.PPos;
-import cwlib.structs.things.parts.PRef;
-import cwlib.structs.things.parts.PRenderMesh;
-import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
-import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
 
 import static org.lwjgl.opengl.GL.*;
@@ -28,9 +16,6 @@ import static org.lwjgl.glfw.GLFW.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.ArrayList;
-import org.joml.Matrix4f;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -38,11 +23,16 @@ import org.lwjgl.opengl.awt.AWTGLCanvas;
 import org.lwjgl.opengl.awt.GLData;
 
 public class CraftworldRenderer extends AWTGLCanvas {
+    public static CraftworldRenderer INSTANCE;
+    public static RSceneGraph SCENE_GRAPH;
+    public static Camera MAIN_CAMERA;
+
+
     public static class ViewportListener implements KeyListener {
         @Override public void keyTyped(KeyEvent e) { return; }
         @Override public void keyReleased(KeyEvent e) { return; }
         @Override public void keyPressed(KeyEvent e) {
-            Vector3f translation = Camera.MAIN.getTranslation();
+            Vector3f translation = MAIN_CAMERA.getTranslation();
             int code = e.getKeyCode();
 
             float displacement = 3.0f * 50.0f;
@@ -51,13 +41,12 @@ public class CraftworldRenderer extends AWTGLCanvas {
             else if (code == KeyEvent.VK_W) translation.y += displacement;
             else if (code == KeyEvent.VK_S) translation.y -= displacement;
 
-            Camera.MAIN.setTranslation(translation);
+            MAIN_CAMERA.setTranslation(translation);
         }
     }
 
     private static final long serialVersionUID = 1L;
-    public static final GLData GL_DATA = new GLData();
-    public static final PLevelSettings DEFAULT_LIGHTING = new PLevelSettings();
+    private static final GLData GL_DATA = new GLData();
     static {
         GL_DATA.samples = 4;
         GL_DATA.swapInterval = 0;
@@ -65,126 +54,55 @@ public class CraftworldRenderer extends AWTGLCanvas {
         GL_DATA.minorVersion = 0;
     }
 
-    public static float DELTA_TIME;
-    private static long LAST_TIME;
-    public static float TIME;
-    
-    public static int TGV_SHADER;
-    public static Shader FALLBACK_PROGRAM;
+    private float deltaTime;
+    private long lastTime;
 
-    public static int PRT_SHADOWMAP;
-    public static int PRT_SHADOWMAP_ZBUF;
+    private int vertexShader;
+    private Shader fallbackShader;
 
-    private RLevel level;
-    private PLevelSettings lighting;
+    private int PRT_SHADOWMAP, PRT_SHADOWMAP_ZBUF;
+
+    private RSceneGraph sceneGraph;
 
     public CraftworldRenderer() {
         super(GL_DATA);
 
+        INSTANCE = this;
+
         ResourceSystem.DISABLE_LOGS = true;
         byte[] data = FileIO.getResourceFile("/binary/blank.bin");
-        this.setLevel(new Resource(data).loadResource(RLevel.class));
+        this.sceneGraph = new RSceneGraph(new Resource(data).loadResource(RLevel.class));
         ResourceSystem.DISABLE_LOGS = false;
-        
-        this.setupAWT();
-    }
 
-    public CraftworldRenderer(ResourceDescriptor descriptor) {
-        super(GL_DATA);
-        byte[] data = ResourceSystem.extract(descriptor);
-        this.setLevel( new Resource(data).loadResource(RLevel.class));
-        this.setupAWT();
-    }
+        SCENE_GRAPH = this.sceneGraph;
+        MAIN_CAMERA = this.sceneGraph.getCamera();
 
-    public CraftworldRenderer(RLevel level) {
-        super(GL_DATA);
-        this.setLevel(level);
         this.setupAWT();
-    }
-    
-    private void findLevelSettings() {
-        for (Thing thing : this.getThings()) {
-            if (thing == null) continue;
-            if (thing.hasPart(Part.LEVEL_SETTINGS)) {
-                this.lighting = thing.getPart(Part.LEVEL_SETTINGS);
-                return;
-            }
-        }
-        this.lighting = DEFAULT_LIGHTING;
     }
 
     private void setupAWT() {
         this.addMouseWheelListener(event -> {
-            Camera.MAIN.setPosZ(Camera.MAIN.getTranslation().z + (float) (event.getUnitsToScroll() * 25.0));
+            MAIN_CAMERA.setPosZ(MAIN_CAMERA.getTranslation().z + (float) (event.getUnitsToScroll() * 25.0));
         });
         this.addKeyListener(new ViewportListener());
     }
 
-    public void setLevel(RLevel level) { 
-        this.level = level; 
-        this.findLevelSettings();
-        
-        PWorld world = this.getWorld();
-
-
-        ResourceDescriptor plan = world.backdropPlan;
-        if (plan == null && world.backdrop != null && world.backdrop.hasPart(Part.REF))
-            plan = ((PRef)world.backdrop.getPart(Part.REF)).plan;
-        
-        if (plan != null) {
-            byte[] planData = ResourceSystem.extract(plan);
-            if (planData == null) return;
-            Thing[] things =  new Resource(planData).loadResource(RPlan.class).getThings();
-            world.backdrop = things[0];
-            ArrayList<Thing> worldThings = this.getThings();
-            synchronized(worldThings) {
-                for (Thing thing : things)
-                    worldThings.add(thing);
-            }
-        }
-        
-        this.findLevelSettings();
-    }
-    
-    public RLevel getLevel() { return this.level; }
-    public PWorld getWorld() { return this.level.world.getPart(Part.WORLD); }
-    public ArrayList<Thing> getThings() { return this.getWorld().things; }
-    public PLevelSettings getLighting() { return this.lighting; }
-
-    public byte[] getPlanData() { return this.level.toPlan(); }
-    
-    public Thing createMeshInstance(ResourceDescriptor descriptor) {
-        Thing thing = new Thing(this.level.getNextUID());
-        
-        thing.setPart(Part.POS, new PPos(thing, 0, new Matrix4f().identity()));
-        thing.setPart(Part.BODY, new PBody());
-        thing.setPart(Part.GROUP, new PGroup());
-        thing.setPart(Part.RENDER_MESH, new PRenderMesh(descriptor));
-        
-        ArrayList<Thing> things = this.getThings();
-        synchronized(things) {
-            things.add(thing);
-        }
-
-        return thing;
-    }
-    
     @Override public void initGL() {
         System.out.println("OpenGL version: " + effective.majorVersion + "." + effective.minorVersion + " (Profile: " + effective.profile + ")");
         createCapabilities();
 
-        Vector4f ambcol = this.getLighting().fogColor;
+        Vector4f ambcol = sceneGraph.getLighting().fogColor;
         glClearColor(ambcol.x, ambcol.y, ambcol.z, 1.0f);
 
         glEnable(GL_PRIMITIVE_RESTART);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
 
-        TGV_SHADER = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(TGV_SHADER, FileIO.getResourceFileAsString("/shaders/default.vs"));
-        glCompileShader(TGV_SHADER);
-        if (glGetShaderi(TGV_SHADER, GL_COMPILE_STATUS) == 0)
-            throw new AssertionError("Could not compile TGV SHADER! " + glGetShaderInfoLog(TGV_SHADER));
+        this.vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(this.vertexShader, FileIO.getResourceFileAsString("/shaders/default.vs"));
+        glCompileShader(this.vertexShader);
+        if (glGetShaderi(this.vertexShader, GL_COMPILE_STATUS) == 0)
+            throw new AssertionError("Could not compile TGV SHADER! " + glGetShaderInfoLog(this.vertexShader));
 
         int fragment = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragment, FileIO.getResourceFileAsString("/shaders/fallback.fs"));
@@ -193,7 +111,7 @@ public class CraftworldRenderer extends AWTGLCanvas {
             throw new AssertionError("Could not compile FALLBACK SHADER! " + glGetShaderInfoLog(fragment));
 
         int fallback = glCreateProgram();
-        glAttachShader(fallback, CraftworldRenderer.TGV_SHADER);
+        glAttachShader(fallback, CraftworldRenderer.this.vertexShader);
         glAttachShader(fallback, fragment);
         glLinkProgram(fallback);
 
@@ -202,9 +120,9 @@ public class CraftworldRenderer extends AWTGLCanvas {
 
         glDeleteShader(fragment);
 
-        LAST_TIME = System.nanoTime();
+        this.lastTime = System.nanoTime();
 
-        FALLBACK_PROGRAM = new Shader(fallback);
+        this.fallbackShader = new Shader(fallback);
 
         // Create framebuffer and texture
         PRT_SHADOWMAP = glGenFramebuffers();
@@ -231,11 +149,8 @@ public class CraftworldRenderer extends AWTGLCanvas {
     public void update() {
         long now = System.nanoTime();
 
-        DELTA_TIME = (now - LAST_TIME) / 1_000_000_000f;
-
-        TIME += DELTA_TIME;
-
-        LAST_TIME = now;
+        this.deltaTime = (now - this.lastTime) / 1_000_000_000f;
+        this.lastTime = now;
 
         this.render();
     }
@@ -243,24 +158,32 @@ public class CraftworldRenderer extends AWTGLCanvas {
     @Override public void paintGL() {
         int w = (int) (this.getWidth() * this.getGraphicsConfiguration().getDefaultTransform().getScaleX());
         int h = (int) (this.getHeight() * this.getGraphicsConfiguration().getDefaultTransform().getScaleY());
-        Camera.MAIN.setAspectRatio((float) (((double)w) / ((double)h)));
+        MAIN_CAMERA.setAspectRatio((float) (((double)w) / ((double)h)));
 
-        Camera.MAIN.recomputeProjectionMatrix();
-        Camera.MAIN.recomputeViewMatrix();
+        MAIN_CAMERA.recomputeProjectionMatrix();
+        MAIN_CAMERA.recomputeViewMatrix();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glViewport(0, 0, w, h);
 
-        PLevelSettings lighting = this.getLighting();
-        ArrayList<Thing> things = this.getThings();
-        synchronized(things) {
-            for (Thing thing : things) {
-                if (thing != null) 
-                    thing.render(lighting);
-            }
-        }
+        this.sceneGraph.update();
 
         swapBuffers();
         glfwPollEvents();
+    }
+
+    public float getDeltaTime() { return this.deltaTime; }
+    public int getVertexShader() { return this.vertexShader; }
+    public Shader getFallbackShader() { return this.fallbackShader; }
+    public RSceneGraph getSceneGraph() { return this.sceneGraph; }
+
+    public void setSceneGraph(RSceneGraph graph) { 
+        this.sceneGraph = graph; 
+        SCENE_GRAPH = graph;
+        MAIN_CAMERA = this.sceneGraph.getCamera();
+    }
+
+    public void setLevel(RLevel level) { 
+        this.setSceneGraph(new RSceneGraph(level));
     }
 }

@@ -189,7 +189,7 @@ public class SlotManager extends javax.swing.JFrame {
         profile.getProfile().myMoonSlots = slotMap;
         
         profile.setHasChanges();
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
         this.dispose();
     }
     

@@ -905,7 +905,7 @@ public class MeshExporter {
         }
         
         private byte[] getBufferFromMesh(RStaticMesh mesh) {
-            MemoryOutputStream output = new MemoryOutputStream(mesh.getNumVerts() * 0x40 + ((mesh.getNumVerts() - 1) * 0x8));
+            MemoryOutputStream output = new MemoryOutputStream(mesh.getNumVerts() * 0x80 + ((mesh.getNumVerts() - 1) * 0x8));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices()) {

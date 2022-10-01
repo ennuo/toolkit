@@ -75,7 +75,7 @@ public class Compressinator extends javax.swing.JFrame {
     public Compressinator() {
         this.initComponents();
         this.setIconImage(new ImageIcon(this.getClass().getResource("/icon.png")).getImage());
-        this.setLocationRelativeTo(Toolkit.instance);
+        this.setLocationRelativeTo(Toolkit.INSTANCE);
         this.getRootPane().setDefaultButton(this.compressButton);
         
         this.dependencyList.setModel(this.model);

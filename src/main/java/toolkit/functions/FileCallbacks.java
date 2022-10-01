@@ -28,7 +28,7 @@ public class FileCallbacks {
             } else System.out.println("FileArchive has no pending changes, skipping save.");
         }
         
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
     }    
     
     public static void saveAs() {                                       
@@ -40,7 +40,7 @@ public class FileCallbacks {
     }
     
     public static void closeTab() {                                         
-        int index = Toolkit.instance.fileDataTabs.getSelectedIndex();
+        int index = Toolkit.INSTANCE.fileDataTabs.getSelectedIndex();
 
         FileData database = ResourceSystem.getSelectedDatabase();
         if (database.hasChanges()) {
@@ -49,6 +49,6 @@ public class FileCallbacks {
         }
 
         ResourceSystem.getDatabases().remove(index);
-        Toolkit.instance.fileDataTabs.removeTabAt(index);
+        Toolkit.INSTANCE.fileDataTabs.removeTabAt(index);
     }  
 }

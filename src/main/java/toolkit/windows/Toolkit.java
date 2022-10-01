@@ -23,6 +23,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
 import cwlib.resources.RPlan;
+import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
@@ -69,6 +70,7 @@ import javax.swing.tree.TreePath;
 
 import configurations.Config;
 import configurations.Profile;
+import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
@@ -78,14 +80,13 @@ import java.awt.BorderLayout;
 import org.lwjgl.opengl.GL;
 
 public class Toolkit extends javax.swing.JFrame {
-    public static Toolkit instance;
-    public static CraftworldRenderer renderer;
+    public static Toolkit INSTANCE;
     private boolean useContext = false;
 
     public Toolkit() {
         /* Reset the state in case of a reboot. */
         ResourceSystem.reset();
-        Toolkit.instance = this;
+        Toolkit.INSTANCE = this;
         
         this.initComponents();
         this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
@@ -191,16 +192,16 @@ public class Toolkit extends javax.swing.JFrame {
     
     private void renderer() {
         scenePanel.setLayout(new BorderLayout());
-        scenePanel.add(renderer = new CraftworldRenderer());
+        scenePanel.add(new CraftworldRenderer());
         scenePanel.setPreferredSize(new Dimension(850, 292));
         
         Runnable loop = new Runnable() {
             @Override public void run() {
-                if (!renderer.isValid()) {
+                if (!CraftworldRenderer.INSTANCE.isValid()) {
                     GL.setCapabilities(null);
                     return;
                 }
-                renderer.update();
+                CraftworldRenderer.INSTANCE.update();
                 SwingUtilities.invokeLater(this);
             }
         };
@@ -659,6 +660,7 @@ public class Toolkit extends javax.swing.JFrame {
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
         exportWorld = new javax.swing.JMenuItem();
+        exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         debugLoadProfileBackup = new javax.swing.JMenuItem();
 
@@ -1733,6 +1735,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(exportWorld);
 
+        exportSceneGraph.setText("Export Scene Graph");
+        exportSceneGraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportSceneGraphActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(exportSceneGraph);
+
         navigation.add(toolsMenu);
 
         debugMenu.setText("Debug");
@@ -2110,8 +2120,6 @@ public class Toolkit extends javax.swing.JFrame {
 
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
         this.search.getParent().remove(this.search);
-        if (renderer != null)
-            renderer.getParent().remove(renderer);
         this.checkForChanges();
         this.dispose();
         EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
@@ -2325,7 +2333,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_collectAllLevelDependenciesActionPerformed
 
     private void customCollectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customCollectorActionPerformed
-        String extension = JOptionPane.showInputDialog(Toolkit.instance, "File extension", ".plan");
+        String extension = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File extension", ".plan");
         if (extension == null) return;
         DebugCallbacks.CollectDependencies(extension);
     }//GEN-LAST:event_customCollectorActionPerformed
@@ -2335,7 +2343,7 @@ public class Toolkit extends javax.swing.JFrame {
         FileNode[] selected = ResourceSystem.getAllSelected();
         String parent = node.getFilePath() + node.getName();
         
-        String newFolder = JOptionPane.showInputDialog(Toolkit.instance, "Folder", parent);
+        String newFolder = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Folder", parent);
         if (newFolder == null) return;
         newFolder = Strings.cleanupPath(newFolder);
         if (newFolder == parent) return;
@@ -2361,7 +2369,7 @@ public class Toolkit extends javax.swing.JFrame {
         // tree.setSelectionPath(treePath);
         // tree.scrollPathToVisible(treePath);
 
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
     }//GEN-LAST:event_renameFolderActionPerformed
 
     private void editMenuDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuDeleteActionPerformed
@@ -2428,33 +2436,22 @@ public class Toolkit extends javax.swing.JFrame {
         if (info == null) return;
         RLevel level = info.getResource();
         if (level == null) return;
-        renderer.setLevel(level);
+        CraftworldRenderer.INSTANCE.setLevel(level);
     }//GEN-LAST:event_loadLevelContextActionPerformed
 
     private void loadMeshContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadMeshContextActionPerformed
         FileEntry entry = ResourceSystem.getSelected().getEntry();
         ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
-        renderer.createMeshInstance(descriptor);
+        CraftworldRenderer.SCENE_GRAPH.addMesh(descriptor);
     }//GEN-LAST:event_loadMeshContextActionPerformed
 
     private void exportWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldActionPerformed
         File file = FileChooser.openFile("level.bin", "bin", true);
         if (file == null) return;
 
-        // Hack to make sure the thing array includes all entries, very bad, but whatever
-        // I keep saying I'll fix these, but!
-        Revision revision = new Revision(0x272, 0x4c44, 0x0017);
-        Thing[] things = Toolkit.renderer.getThings().toArray(Thing[]::new);
-        {
-            Serializer serializer = new Serializer(0x800000, revision, CompressionFlags.USE_ALL_COMPRESSION);
-            serializer.array(things, Thing.class, true);
-            things = serializer.getThings();
-        }
-
-        Toolkit.renderer.getWorld().things = new ArrayList<Thing>(Arrays.asList(things));
-        
-        byte[] level = Resource.compress(Toolkit.renderer.getLevel().build(revision, CompressionFlags.USE_ALL_COMPRESSION));
-        FileIO.write(level, file.getAbsolutePath());
+        Revision revision = new Revision(0x272, 0x4c44, 0x0008);
+        byte[] levelData = CraftworldRenderer.INSTANCE.getSceneGraph().toLevelData(revision, CompressionFlags.USE_NO_COMPRESSION);
+        FileIO.write(levelData, file.getAbsolutePath());
     }//GEN-LAST:event_exportWorldActionPerformed
 
     private void loadPaletteContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadPaletteContextActionPerformed
@@ -2465,8 +2462,18 @@ public class Toolkit extends javax.swing.JFrame {
             if (planData == null) continue;
             level.addPlan(new Resource(planData).loadResource(RPlan.class));
         }
-        renderer.setLevel(level);
+        CraftworldRenderer.INSTANCE.setLevel(level);
     }//GEN-LAST:event_loadPaletteContextActionPerformed
+
+    private void exportSceneGraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportSceneGraphActionPerformed
+        File file = FileChooser.openFile("scene.scenegraph", "scenegraph", true);
+        if (file == null) return;
+        Revision revision = new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision());
+        FileIO.write(
+                Resource.compress(CraftworldRenderer.SCENE_GRAPH.build(revision, CompressionFlags.USE_ALL_COMPRESSION)), 
+                file.getAbsolutePath()
+        );
+    }//GEN-LAST:event_exportSceneGraphActionPerformed
 
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
@@ -2698,6 +2705,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportOBJTEXCOORD1;
     private javax.swing.JMenuItem exportOBJTEXCOORD2;
     private javax.swing.JMenuItem exportPNG;
+    private javax.swing.JMenuItem exportSceneGraph;
     private javax.swing.JMenu exportTextureGroupContext;
     private javax.swing.JMenuItem exportWorld;
     private javax.swing.JMenuItem extractBigProfile;

@@ -17,7 +17,7 @@ import static org.lwjgl.opengl.GL30.*;
 public class Texture {
     public static HashMap<ResourceDescriptor, Texture> TEXTURES = new HashMap<>();
 
-    public final int textureID;
+    public int textureID;
     public final ResourceDescriptor descriptor;
 
     public Texture(ResourceDescriptor descriptor) {
@@ -69,6 +69,14 @@ public class Texture {
         glGenerateMipmap(GL_TEXTURE_2D);
 
         TEXTURES.put(descriptor, this);
+    }
+
+    public void delete() {
+        if (this.textureID != 0) {
+            glDeleteTextures(this.textureID);
+            this.textureID = 0;
+        }
+        TEXTURES.remove(this.descriptor);
     }
 
     public static Texture get(ResourceDescriptor descriptor) {

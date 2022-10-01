@@ -1,5 +1,6 @@
 package toolkit.gl;
 
+import cwlib.enums.ResourceType;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.types.data.ResourceDescriptor;
@@ -29,6 +30,8 @@ public class MeshPrimitive {
         this.firstIndex = primitive.getFirstIndex();
         this.numIndices = primitive.getNumIndices();
         this.shader = primitive.getMaterial();
+        if (this.shader == null)
+            this.shader = new ResourceDescriptor(10803, ResourceType.GFX_MATERIAL);
         this.alphaLayer = Shader.get(this.shader).alphaLayer;
     }
 }

@@ -150,9 +150,9 @@ public class AssetExporter extends JDialog {
     private FileEntry entry;
     
     public AssetExporter(FileEntry entry) {
-        super(Toolkit.instance, true);
+        super(Toolkit.INSTANCE, true);
         this.initComponents();
-        this.setLocationRelativeTo(Toolkit.instance);
+        this.setLocationRelativeTo(Toolkit.INSTANCE);
         this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setResizable(false);
         

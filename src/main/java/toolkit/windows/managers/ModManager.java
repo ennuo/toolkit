@@ -17,7 +17,7 @@ public class ModManager extends javax.swing.JDialog {
     private Mod mod;
     
     public ModManager(Mod mod, boolean modal) {
-        super(Toolkit.instance, modal);
+        super(Toolkit.INSTANCE, modal);
         initComponents();
         setResizable(false);
         this.mod = mod;

@@ -26,6 +26,11 @@ public class PRef implements Serializable {
     @GsonRevision(min=0x13d)
     public boolean stripChildren;
 
+    public PRef() {};
+    public PRef(ResourceDescriptor descriptor) {
+        this.plan = descriptor;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public PRef serialize(Serializer serializer, Serializable structure) {
         PRef ref = (structure == null) ? new PRef() : (PRef) structure;

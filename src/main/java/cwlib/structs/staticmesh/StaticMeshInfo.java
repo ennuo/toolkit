@@ -3,7 +3,12 @@ package cwlib.structs.staticmesh;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
+import cwlib.resources.RStaticMesh;
+import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.util.FileIO;
+import cwlib.util.GsonUtils;
+
 import org.joml.Vector3f;
 
 public class StaticMeshInfo implements Serializable {
@@ -12,19 +17,29 @@ public class StaticMeshInfo implements Serializable {
     public static class UnknownStruct implements Serializable {
         public static final int BASE_ALLOCATION_SIZE = 0x20;
 
-        public Vector3f v1, v2;
-        public short s1, s2, s3, s4;
+        public Vector3f min, max;
+        public short structIndexA, structIndexB, firstPrimitive, numPrimitives;
         
         @SuppressWarnings("unchecked")
         @Override public UnknownStruct serialize(Serializer serializer, Serializable structure) {
             UnknownStruct struct = (structure == null) ? new UnknownStruct() : (UnknownStruct) structure;
             
-            struct.v1 = serializer.v3(struct.v1);
-            struct.s1 = serializer.i16(struct.s1);
-            struct.s2 = serializer.i16(struct.s2);
-            struct.v2 = serializer.v3(struct.v2);
-            struct.s3 = serializer.i16(struct.s3);
-            struct.s4 = serializer.i16(struct.s4);
+            struct.min = serializer.v3(struct.min);
+            struct.structIndexA = serializer.i16(struct.structIndexA);
+            struct.structIndexB = serializer.i16(struct.structIndexB);
+
+            // If structIndexA/structIndexB is -1
+            // then firstPrimitive and numPrimitives is set
+            
+            // If structIndexA/structIndexB is set
+            // then firstPrimitive and numPrimitives is 0
+
+            // Does -1 indicate an instance of a submesh
+            // and otherwise a group of submeshes?
+
+            struct.max = serializer.v3(struct.max);
+            struct.firstPrimitive = serializer.i16(struct.firstPrimitive);
+            struct.numPrimitives = serializer.i16(struct.numPrimitives);
             
             return struct;
         }
@@ -66,5 +81,27 @@ public class StaticMeshInfo implements Serializable {
         if (this.unknown != null)
             size += (this.unknown.length * UnknownStruct.BASE_ALLOCATION_SIZE);
         return size;
+    }
+
+    public static void main(String[] args) {
+        Resource resource = new Resource("C:/Users/Aidan/Desktop/env_default_background_template.smh");
+        RStaticMesh mesh = new RStaticMesh(resource);
+        
+        // Vector3f[] vertices = mesh.getVertices();
+        // int index = 0;
+        // for (UnknownStruct struct : resource.getMeshInfo().unknown) {
+        //     if (struct.s4 != 0) {
+        //         StringBuilder obj = new StringBuilder();
+        //         for (int i = struct.s3; i < struct.s3 + struct.s4; ++i) {
+        //             StaticPrimitive primitive = resource.getMeshInfo().primitives[i];
+        //             for (int j = primitive.)
+
+
+        //         }
+        //     }
+        // }
+        // index++;
+
+        FileIO.write(GsonUtils.toJSON(resource.getMeshInfo()).getBytes(), "C:/Users/Aidan/Desktop/mesh.info.json");
     }
 }

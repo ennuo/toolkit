@@ -62,7 +62,6 @@ public class RLevel implements Serializable, Compressable {
         thing.setPart(Part.BODY, new PBody());
         thing.setPart(Part.WORLD, world);
         thing.setPart(Part.POS, new PPos());
-        thing.setPart(Part.LEVEL_SETTINGS, new PLevelSettings());
         thing.setPart(Part.EFFECTOR, new PEffector());
 
         PScript script = new PScript();

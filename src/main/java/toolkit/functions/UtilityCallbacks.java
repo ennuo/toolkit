@@ -24,14 +24,14 @@ public class UtilityCallbacks {
     public static void newMod() {
         File file = FileChooser.openFile("template.mod", "mod", true);
         if (file == null) return;
-        if (Toolkit.instance.confirmOverwrite(file)) {
+        if (Toolkit.INSTANCE.confirmOverwrite(file)) {
             Mod mod = new Mod();
             new ModManager(mod, true).setVisible(true);
             mod.save(file);
             mod = ModCallbacks.loadMod(file);
             if (mod != null) {
-                Toolkit.instance.addTab(mod);
-                Toolkit.instance.updateWorkspace();
+                Toolkit.INSTANCE.addTab(mod);
+                Toolkit.INSTANCE.updateWorkspace();
             }
         }
     }
@@ -42,14 +42,14 @@ public class UtilityCallbacks {
 
         byte[] data = FileIO.read(file.getAbsolutePath());
         if (data == null) {
-            JOptionPane.showMessageDialog(Toolkit.instance, "Failed to read file, is it protected?", "Decompressor", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Failed to read file, is it protected?", "Decompressor", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Resource resource = null;
         try { resource = new Resource(data); }
         catch (Exception ex) {
-            JOptionPane.showMessageDialog(Toolkit.instance, "Failed to deserialize resource!", "Decompressor", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Failed to deserialize resource!", "Decompressor", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
@@ -63,7 +63,7 @@ public class UtilityCallbacks {
         if (file == null) return;
 
         Fart cache;
-        int index = Toolkit.instance.isArchiveLoaded(file);
+        int index = Toolkit.INSTANCE.isArchiveLoaded(file);
         if (index != -1) cache = ResourceSystem.getArchives().get(index);
         else cache = new FileArchive(file);
 
@@ -76,7 +76,7 @@ public class UtilityCallbacks {
         // appropriate value based on lower end systems.
         final int CACHE_SIZE = 268_435_456;
         
-        SlowOpGUI.performSlowOperation(Toolkit.instance, "Merging Archives", patch.getEntryCount(), new SlowOp() {
+        SlowOpGUI.performSlowOperation(Toolkit.INSTANCE, "Merging Archives", patch.getEntryCount(), new SlowOp() {
             private int current = 0;
             
             @Override public int run(SlowOpGUI state) {
@@ -109,7 +109,7 @@ public class UtilityCallbacks {
         try { base = new FileDB(baseFile); }
         catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                    Toolkit.instance,
+                    Toolkit.INSTANCE,
                     String.format("Failed to load base database (%s). Are you sure it's valid?", baseFile.getName()),
                     "An error occurred",
                     JOptionPane.ERROR_MESSAGE
@@ -124,7 +124,7 @@ public class UtilityCallbacks {
         try { update = new FileDB(updateFile); }
         catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                    Toolkit.instance,
+                    Toolkit.INSTANCE,
                     String.format("Failed to load patch database (%s). Are you sure it's valid?", updateFile.getName()),
                     "An error occurred",
                     JOptionPane.ERROR_MESSAGE
@@ -162,7 +162,7 @@ public class UtilityCallbacks {
         FileData database = ResourceSystem.getSelectedDatabase();
         Fart[] archives = null;
         if (database.getType().equals(DatabaseType.FILE_DATABASE)) {
-            archives = Toolkit.instance.getSelectedArchives();
+            archives = Toolkit.INSTANCE.getSelectedArchives();
             if (archives == null) return;
         }
 

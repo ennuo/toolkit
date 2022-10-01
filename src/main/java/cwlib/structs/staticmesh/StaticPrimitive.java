@@ -10,7 +10,7 @@ import org.joml.Vector4f;
 public class StaticPrimitive implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
-    public Vector4f obbMin, obbMax;
+    public Vector4f min, max;
     public ResourceDescriptor gmat;
     public int vertexStart, indexStart;
     public int numIndices;
@@ -23,8 +23,8 @@ public class StaticPrimitive implements Serializable {
     @Override public StaticPrimitive serialize(Serializer serializer, Serializable structure) {
         StaticPrimitive primitive = (structure == null) ? new StaticPrimitive() : (StaticPrimitive) structure;
 
-        primitive.obbMin = serializer.v4(primitive.obbMin);
-        primitive.obbMax = serializer.v4(primitive.obbMax);
+        primitive.min = serializer.v4(primitive.min);
+        primitive.max = serializer.v4(primitive.max);
         primitive.gmat = serializer.resource(primitive.gmat, ResourceType.GFX_MATERIAL);
         primitive.vertexStart = serializer.i32(primitive.vertexStart);
         primitive.indexStart = serializer.i32(primitive.indexStart);

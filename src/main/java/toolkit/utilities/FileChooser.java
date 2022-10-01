@@ -38,9 +38,9 @@ public class FileChooser {
         setupFilter(name, extensions, multiple, false);
         
         if (!saveFile)
-            returnValue = chooser.showOpenDialog(Toolkit.instance);
+            returnValue = chooser.showOpenDialog(Toolkit.INSTANCE);
         else
-            returnValue = chooser.showSaveDialog(Toolkit.instance);
+            returnValue = chooser.showSaveDialog(Toolkit.INSTANCE);
         
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             if (multiple) return chooser.getSelectedFiles();
@@ -122,7 +122,7 @@ public class FileChooser {
     
     public static String openDirectoryLegacy() {
         setupFilter(null, null, false, true);
-        if (chooser.showOpenDialog(Toolkit.instance) == JFileChooser.APPROVE_OPTION)
+        if (chooser.showOpenDialog(Toolkit.INSTANCE) == JFileChooser.APPROVE_OPTION)
             return chooser.getSelectedFile().getAbsolutePath();
         return null;
     }

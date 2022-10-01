@@ -3,8 +3,11 @@ package toolkit.gl;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class Camera {
-    public static Camera MAIN = new Camera(-19518.318359375f, 1997.4072265625f, 1195.43371582031f);
+import cwlib.io.Serializable;
+import cwlib.io.serializer.Serializer;
+
+public class Camera implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     private float fov = 1.0f;
     private float zNear = 2.0f;
@@ -14,6 +17,10 @@ public class Camera {
     private Vector3f translation, rotation;
 
     private Matrix4f projectionMatrix, viewMatrix;
+
+    public Camera() {
+        this(-19518.318359375f, 1997.4072265625f, 1195.43371582031f);
+    };
 
     public Camera(Vector3f translation, Vector3f euler) {
         this.translation = translation;
@@ -72,4 +79,20 @@ public class Camera {
     public Matrix4f getProjectionMatrix() { return this.projectionMatrix; }
     public Vector3f getTranslation() { return this.translation; }
     public Vector3f getEulerRotation() { return this.rotation; }
+
+    @SuppressWarnings("unchecked")
+    @Override public Camera serialize(Serializer serializer, Serializable structure) {
+        Camera camera = (structure == null) ? new Camera() : (Camera) structure;
+
+        camera.fov = serializer.f32(camera.fov);
+        camera.zNear = serializer.f32(camera.zNear);
+        camera.zFar = serializer.f32(camera.zFar);
+        camera.aspectRatio = serializer.f32(camera.aspectRatio);
+        camera.translation = serializer.v3(camera.translation);
+        camera.rotation = serializer.v3(camera.rotation);
+
+        return camera;
+    }
+
+    @Override public int getAllocatedSize() { return Camera.BASE_ALLOCATION_SIZE; }
 }

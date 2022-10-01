@@ -2,7 +2,6 @@ package cwlib.resources;
 
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
-import cwlib.ex.SerializationException;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.SerializationData;
@@ -11,7 +10,6 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.animation.Locator;
-import cwlib.structs.mesh.Bone;
 import cwlib.types.data.Revision;
 
 import org.joml.Matrix4f;

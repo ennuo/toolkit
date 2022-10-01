@@ -19,7 +19,7 @@ public class TextureService implements ResourceService  {
         }
         
         ImageIcon icon = texture.getImageIcon(320, 320);
-        if (icon != null) Toolkit.instance.setImage(icon);
+        if (icon != null) Toolkit.INSTANCE.setImage(icon);
         else System.out.println("Failed to set icon, it's null?");
     }
 

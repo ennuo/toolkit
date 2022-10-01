@@ -928,7 +928,7 @@ public class ItemManager extends javax.swing.JFrame {
         
         if (this.profile != null) {
             this.profile.setHasChanges();
-            Toolkit.instance.updateWorkspace();
+            Toolkit.INSTANCE.updateWorkspace();
         }
     }
   

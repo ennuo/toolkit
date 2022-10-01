@@ -224,7 +224,7 @@ public class ResourceSystem {
             return true;
         }
 
-        Fart[] archives = Toolkit.instance.getSelectedArchives();
+        Fart[] archives = Toolkit.INSTANCE.getSelectedArchives();
         if (archives == null) return false;
 
         ResourceSystem.add(data, archives);
@@ -233,7 +233,7 @@ public class ResourceSystem {
 
     public static void add(byte[] data, Fart[] archives) {
         for (Fart archive: archives) archive.add(data);
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
     }
 
     public static boolean replace(FileEntry entry, byte[] data) {

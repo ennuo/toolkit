@@ -18,6 +18,7 @@ import cwlib.resources.RPalette;
 import cwlib.resources.RPlan;
 import cwlib.resources.RSlotList;
 import cwlib.resources.custom.RBoneSet;
+import cwlib.resources.custom.RSceneGraph;
 import cwlib.resources.custom.RShaderCache;
 
 /**
@@ -98,7 +99,8 @@ public enum ResourceType implements ValueEnum<Integer> {
     // Custom Toolkit/Workbench resources
 
     BONE_SET("BST", 128, RBoneSet.class, "bonesets/", ".boneset"),
-    SHADER_CACHE("CGC", 129, RShaderCache.class, "shader_caches/", ".shadercache");
+    SHADER_CACHE("CGC", 129, RShaderCache.class, "shader_caches/", ".shadercache"),
+    SCENE_GRAPH("SCE", 130, RSceneGraph.class, "scenes/", ".scenegraph");
     
     private final String header;
     private final int value;

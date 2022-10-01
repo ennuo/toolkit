@@ -18,7 +18,7 @@ public class PlanService implements ResourceService  {
         RPlan plan = info.getResource();
         JTree selected = ResourceSystem.getSelectedDatabase().getTree();
         if (ResourceSystem.getSelected().getEntry() != entry || selected != tree) return;
-        Toolkit.instance.populateMetadata(plan);
+        Toolkit.INSTANCE.populateMetadata(plan);
     }
 
     @Override public int[] getSupportedHeaders() { return HEADERS; }

@@ -78,7 +78,7 @@ public class Shader {
 
         this.programID = glCreateProgram();
 
-        glAttachShader(this.programID, CraftworldRenderer.TGV_SHADER);
+        glAttachShader(this.programID, CraftworldRenderer.INSTANCE.getVertexShader());
         glAttachShader(this.programID, fragmentID);
         glLinkProgram(this.programID);
 
@@ -121,11 +121,11 @@ public class Shader {
     }
 
     public static Shader get(ResourceDescriptor descriptor) {
-        if (descriptor == null) return CraftworldRenderer.FALLBACK_PROGRAM;
+        if (descriptor == null) return CraftworldRenderer.INSTANCE.getFallbackShader();
         if (PROGRAMS.containsKey(descriptor))
             return PROGRAMS.get(descriptor);
         if (ResourceSystem.extract(descriptor) == null)
-            return CraftworldRenderer.FALLBACK_PROGRAM;
+            return CraftworldRenderer.INSTANCE.getFallbackShader();
         return new Shader(descriptor);
     }
 
@@ -180,13 +180,13 @@ public class Shader {
         setUniformFloat3(this.sunpos, new Vector3f(lighting.sunPosition).mul(lighting.sunPositionScale));
 
         // Set camera uniforms
-        setUniformFloat3(this.campos, Camera.MAIN.getTranslation());
+        setUniformFloat3(this.campos, CraftworldRenderer.MAIN_CAMERA.getTranslation());
         setUniformFloat2(this.lighscaleadd, new Vector2f(lighting.sunMultiplier, lighting.exposure));
         
-        setUniformMatrix(this.projection, Camera.MAIN.getProjectionMatrix());
+        setUniformMatrix(this.projection, CraftworldRenderer.MAIN_CAMERA.getProjectionMatrix());
         for (int i = 0; i < matrices.length; ++i)
             setUniformMatrix(this.matrices[i], matrices[i]);
-        setUniformMatrix(this.view, Camera.MAIN.getViewMatrix());
+        setUniformMatrix(this.view, CraftworldRenderer.MAIN_CAMERA.getViewMatrix());
 
         if (color != null)
             setUniformFloat4(this.color, color);

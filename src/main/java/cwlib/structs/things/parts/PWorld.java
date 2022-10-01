@@ -197,17 +197,21 @@ public class PWorld implements Serializable {
             if (serializer.i32(0) != 0) throw new SerializationException("Streaming manager not supported!");
         }
 
-        world.things = serializer.arraylist(world.things, Thing.class, true);
-        serializer.log("END OF WORLD THINGS");
-
-        world.maxVel = serializer.f32(world.maxVel);
-        world.maxAVel = serializer.f32(world.maxAVel);
-
-        world.frame = serializer.s32(world.frame);
-        if (version >= 0x2e2) world.simFrame = serializer.s32(world.simFrame);
-        if (version >= 0x377) world.frameLevelStarted = serializer.i32(world.frameLevelStarted);
         
-        world.thingUIDCounter = serializer.i32(world.thingUIDCounter);
+        if (!revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
+            world.things = serializer.arraylist(world.things, Thing.class, true);
+            // serializer.log("END OF WORLD THINGS");
+
+            world.maxVel = serializer.f32(world.maxVel);
+            world.maxAVel = serializer.f32(world.maxAVel);
+    
+            world.frame = serializer.s32(world.frame);
+            if (version >= 0x2e2) world.simFrame = serializer.s32(world.simFrame);
+            if (version >= 0x377) world.frameLevelStarted = serializer.i32(world.frameLevelStarted);
+
+            world.thingUIDCounter = serializer.i32(world.thingUIDCounter);
+        }
+        
         if (version < 0x32d)
             world.randy = serializer.i32(world.randy);
 
@@ -223,11 +227,13 @@ public class PWorld implements Serializable {
                 serializer.array(null, Thing.class);
         }
 
-        world.selections = serializer.array(world.selections, EditorSelection.class, true);
+        if (!revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
+            world.selections = serializer.array(world.selections, EditorSelection.class, true);
 
-        world.backdrop = serializer.reference(world.backdrop, Thing.class);
-        world.backdropNew = serializer.reference(world.backdropNew, Thing.class);
-        world.backdropTimer = serializer.f32(world.backdropTimer);
+            world.backdrop = serializer.reference(world.backdrop, Thing.class);
+            world.backdropNew = serializer.reference(world.backdropNew, Thing.class);
+            world.backdropTimer = serializer.f32(world.backdropTimer);
+        }
 
         if (version >= 0x3a3)
             world.lbp2NightDaySwapped = serializer.s32(world.lbp2NightDaySwapped);
@@ -445,7 +451,7 @@ public class PWorld implements Serializable {
         if (version >= 0x30c)
             world.globalAudioSettings = serializer.struct(world.globalAudioSettings, GlobalAudioSettings.class);
         
-        if (version >= 0x321) {
+        if ((version >= 0x321 && !revision.isToolkit()) || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
             world.backdropPlan = serializer.resource(world.backdropPlan, ResourceType.PLAN, true);
             world.backdropNewPlan = serializer.resource(world.backdropNewPlan, ResourceType.PLAN, true);
         }

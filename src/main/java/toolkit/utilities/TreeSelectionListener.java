@@ -31,7 +31,7 @@ public class TreeSelectionListener {
     public static void listener(JTree tree) {
         ResourceSystem.setCanExtractSelected(false);
 
-        Toolkit toolkit = Toolkit.instance;
+        Toolkit toolkit = Toolkit.INSTANCE;
         toolkit.setImage(null);
         JTree currentTree = ResourceSystem.getSelectedDatabase().getTree();
         

@@ -170,9 +170,9 @@ public class SaveArchive extends Fart {
 
         stream.seek(saveKeyOffset, SeekMode.Begin);
 
-        // Since that int is always 1, we can check the endianness
-        // of it, well unless someone decided to be funny with their data.
-        if (this.archiveRevision != 5 && stream.getBuffer()[saveKeyOffset + 0xB] == 0)
+        // Local User ID's on PS4 use a hash rather than an incremental index
+        // So this byte will always be set in some way on PS4.
+        if (this.archiveRevision != 5 && stream.getBuffer()[saveKeyOffset + 0x8] != 0)
             this.isLittleEndian = true;
 
         if (this.isLittleEndian) stream.setLittleEndian(true);

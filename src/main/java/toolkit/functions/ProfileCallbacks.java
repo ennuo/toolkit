@@ -17,8 +17,8 @@ public class ProfileCallbacks {
 
     public static void loadProfile(File file) {if (file != null) {
             BigSave profile = new BigSave(file);
-            Toolkit.instance.addTab(profile);
-            Toolkit.instance.updateWorkspace();
+            Toolkit.INSTANCE.addTab(profile);
+            Toolkit.INSTANCE.updateWorkspace();
         }
     }
     

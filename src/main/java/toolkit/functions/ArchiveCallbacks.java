@@ -32,23 +32,23 @@ import javax.swing.JOptionPane;
 
 public class ArchiveCallbacks {
     public static void loadFileArchive(File file) {
-        int index = Toolkit.instance.isArchiveLoaded(file);
+        int index = Toolkit.INSTANCE.isArchiveLoaded(file);
         FileArchive archive = null;
         try { archive = new FileArchive(file); }
         catch (SerializationException ex) {
-            JOptionPane.showMessageDialog(Toolkit.instance, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (index != -1) ResourceSystem.getArchives().set(index, archive);
         else ResourceSystem.getArchives().add(archive);
         
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
     }
     
     public static void newFileArchive() {
         File file = FileChooser.openFile("data.farc", "farc", true);
         if (file == null) return;
-        if (Toolkit.instance.confirmOverwrite(file)) {
+        if (Toolkit.INSTANCE.confirmOverwrite(file)) {
             FileIO.write(new byte[] {
                 0,
                 0,
@@ -85,7 +85,7 @@ public class ArchiveCallbacks {
         DatabaseType type = database.getType();
 
         if (!type.containsData()) {
-            archives = Toolkit.instance.getSelectedArchives();
+            archives = Toolkit.INSTANCE.getSelectedArchives();
             if (archives == null) return;
         }
         
@@ -97,7 +97,7 @@ public class ArchiveCallbacks {
             else ResourceSystem.add(data, archives);
         }
 
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
 
         if (type.containsData()) 
             ResourceSystem.reloadModel(database);
@@ -111,7 +111,7 @@ public class ArchiveCallbacks {
         String directory = FileChooser.openDirectory();
         if (directory == null || directory.isEmpty()) return;
         
-        Fart[] archives = Toolkit.instance.getSelectedArchives();
+        Fart[] archives = Toolkit.INSTANCE.getSelectedArchives();
         if (archives == null) return;
         
         try (Stream<Path> stream = Files.walk(Paths.get(directory))) {
@@ -130,7 +130,7 @@ public class ArchiveCallbacks {
                    
         } catch (IOException ex) { Logger.getLogger(ArchiveCallbacks.class.getName()).log(Level.SEVERE, null, ex); }
 
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
 
         if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART)
             ResourceSystem.reloadSelectedModel();

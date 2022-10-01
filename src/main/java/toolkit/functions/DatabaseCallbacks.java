@@ -23,7 +23,7 @@ import javax.swing.tree.TreePath;
 
 public class DatabaseCallbacks {
     public static void loadFileDB(File file) {
-        Toolkit toolkit = Toolkit.instance;
+        Toolkit toolkit = Toolkit.INSTANCE;
         ResourceSystem.getDatabaseService().submit(() -> {
             FileDB database = null;
             try { database = new FileDB(file); }
@@ -50,7 +50,7 @@ public class DatabaseCallbacks {
         if (file == null) return;
         FileDB base = ResourceSystem.getSelectedDatabase();
         base.patch(new FileDB(file));
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
         base.getModel().reload();
     }
 
@@ -73,12 +73,12 @@ public class DatabaseCallbacks {
                 zeroed++;
             }
         }
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
     public static void newItem() {                                               
-        String file = JOptionPane.showInputDialog(Toolkit.instance, "New Item", "");
+        String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Item", "");
         if (file == null) return;
             
         FileData database = ResourceSystem.getSelectedDatabase();
@@ -87,7 +87,7 @@ public class DatabaseCallbacks {
         
         long nextGUID = database.getNextGUID().getValue();
         
-        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
         if (input == null) return;
         input = input.replaceAll("\\s", "");
         
@@ -113,7 +113,7 @@ public class DatabaseCallbacks {
 
         database.setHasChanges();
         ResourceSystem.reloadModel(database);
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
 
         TreePath treePath = new TreePath(entry.getNode().getPath());
         JTree tree = database.getTree();
@@ -146,14 +146,14 @@ public class DatabaseCallbacks {
         FileNode node = ResourceSystem.getSelected();
         FileEntry entry = node.getEntry();
         
-        String hash = JOptionPane.showInputDialog(Toolkit.instance, "File Hash", "h" + entry.getSHA1().toString().toLowerCase());
+        String hash = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File Hash", "h" + entry.getSHA1().toString().toLowerCase());
         if (hash == null) return;
         hash = hash.replaceAll("\\s", "");
         if (hash.startsWith("h")) hash = hash.substring(1);
         entry.setSHA1(new SHA1(hash));
         
-        Toolkit.instance.updateWorkspace();
-        Toolkit.instance.setEditorPanel(node);
+        Toolkit.INSTANCE.updateWorkspace();
+        Toolkit.INSTANCE.setEditorPanel(node);
     }
     
     public static void changeGUID() {
@@ -163,7 +163,7 @@ public class DatabaseCallbacks {
         FileDBRow entry = (FileDBRow) baseEntry;
         if (entry.getGUID() == null) return;
 
-        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", entry.getGUID().toString());
+        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", entry.getGUID().toString());
         if (input == null) return;
 
         GUID guid = Strings.getGUID(input);
@@ -184,14 +184,14 @@ public class DatabaseCallbacks {
 
         entry.setGUID(guid);
 
-        Toolkit.instance.updateWorkspace();
-        Toolkit.instance.setEditorPanel(node);
+        Toolkit.INSTANCE.updateWorkspace();
+        Toolkit.INSTANCE.setEditorPanel(node);
     }
     
     public static void renameItem() {        
         FileEntry entry = ResourceSystem.getSelected().getEntry();
 
-        String path = (String) JOptionPane.showInputDialog(Toolkit.instance, "Rename", entry.getPath());
+        String path = (String) JOptionPane.showInputDialog(Toolkit.INSTANCE, "Rename", entry.getPath());
         if (path == null) return;
         
         entry.setPath(Strings.cleanupPath(path));
@@ -203,7 +203,7 @@ public class DatabaseCallbacks {
         tree.setSelectionPath(treePath);
         tree.scrollPathToVisible(treePath);
 
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
     }
     
     public static void duplicateItem() {                          
@@ -211,11 +211,11 @@ public class DatabaseCallbacks {
         if (!database.getType().hasGUIDs()) return;
         FileEntry source = ResourceSystem.getSelected().getEntry();
 
-        String path = JOptionPane.showInputDialog(Toolkit.instance, "Duplicate", source.getPath());
+        String path = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Duplicate", source.getPath());
         if (path == null) return;
 
         long nextGUID = database.getNextGUID().getValue();
-        String input = JOptionPane.showInputDialog(Toolkit.instance, "File GUID", "g" + nextGUID);
+        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
         if (input == null) return;
         input = input.replaceAll("\\s", "");
         
@@ -239,7 +239,7 @@ public class DatabaseCallbacks {
         
         database.setHasChanges();
         ResourceSystem.reloadModel(database);
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
         
         TreePath treePath = new TreePath(entry.getNode().getPath());
         JTree tree = database.getTree();
@@ -258,7 +258,7 @@ public class DatabaseCallbacks {
             }
             database.remove(entry);
         }
-        Toolkit.instance.updateWorkspace();
+        Toolkit.INSTANCE.updateWorkspace();
         ResourceSystem.reloadSelectedModel();
     }
     
@@ -268,7 +268,7 @@ public class DatabaseCallbacks {
         output.i32(0);
         File file = FileChooser.openFile("blurayguids.map", "map", true);
         if (file == null) return;
-        if (Toolkit.instance.confirmOverwrite(file)) {
+        if (Toolkit.INSTANCE.confirmOverwrite(file)) {
             FileIO.write(output.getBuffer(), file.getAbsolutePath());
             DatabaseCallbacks.loadFileDB(file);
         }
