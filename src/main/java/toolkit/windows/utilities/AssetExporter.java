@@ -312,7 +312,7 @@ public class AssetExporter extends JDialog {
             else gfx.shaders = new byte[4][];
 
             try {
-                CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1), gfx, isCGB, isOrbis);
+                CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1, false), gfx, isCGB, isOrbis);
                 data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
             } catch (Exception ex)  { data = resource.compress(); }
 

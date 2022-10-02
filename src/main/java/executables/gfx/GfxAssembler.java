@@ -20,8 +20,7 @@ public class GfxAssembler {
     public static String GLSL = FileIO.getResourceFileAsString("/shaders/default.fs");
 
     public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
-
-    public static boolean USE_ENV_VARIABLES = false;
+    
     public static boolean USE_NORMAL_MAPS = false;
     public static boolean IS_GLSL = false;
     public static int CURRENT_ATTRIBUTE = 0;
@@ -340,7 +339,7 @@ public class GfxAssembler {
         return "\treturn float4(0.0); // This material doesn't use this.";
     }
 
-    public static final String generateBRDF(RGfxMaterial material, int flags) {
+    public static final String generateBRDF(RGfxMaterial material, int flags, boolean useEnvironmentVariables) {
         IS_GLSL = (flags == 0xDEADBEEF);
 
         MaterialBox normal = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.BUMP);
@@ -396,7 +395,7 @@ public class GfxAssembler {
         shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, OutputPort.COLOR_CORRECTION));
         shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, OutputPort.TOON_RAMP));
 
-        if (!USE_ENV_VARIABLES) {
+        if (!useEnvironmentVariables) {
             shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", material.alphaTestLevel));
             shader = shader.replace("ENV.ALPHA_MODE", "" + material.alphaMode);
             
@@ -471,7 +470,9 @@ public class GfxAssembler {
         }
 
         String msg;
-        if (cgb && !orbis) 
+        if (orbis)
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-nodx10clamp", "-write-constant-block", "-sbiversion", "0", "-dont-strip-default-cb");
+        else if (cgb)
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
         else
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());

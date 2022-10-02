@@ -149,7 +149,7 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         try {
-            this.brdf = GfxAssembler.generateBRDF(this.gmat, -1);
+            this.brdf = GfxAssembler.generateBRDF(this.gmat, -1, true);
             
             this.brdfShaderPathLabel.setText(name + ".cg");
 

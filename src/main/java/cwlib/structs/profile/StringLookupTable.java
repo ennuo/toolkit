@@ -76,15 +76,33 @@ public class StringLookupTable implements Serializable, Iterable<SortString> {
     }
 
     /**
+     * Finds index of key in string list.
+     * @param key Key to search for
+     * @return Index of key, -1 if not found
+     */
+    public int find(int key) {
+        for (int i = 0; i < this.stringList.size(); ++i) {
+            SortString string = this.stringList.get(i);
+            if (string.lamsKeyID == key)
+                return string.index;
+        }
+        return -1;
+    }
+
+    /**
      * Adds a string to the table.
      * @param string String to add
      * @param key LAMS Key ID of string
      * @return Index of added string
      */
     public int add(String string, int key) {
-        int index = this.find(string);
+        int index = this.find(key);
         if (index != -1)
             return index;
+        index = this.find(string);
+        if (index != -1)
+            return index;
+        
         index = this.stringList.size();
         this.stringList.add(new SortString(key, string, index));
         return index;

@@ -211,24 +211,28 @@ CREATE_SAMPLER_2D(cbuf, 15);
 // #endif
 
 #if (PROPERTIES & NORMAL)
-half3 NormalMap(half4 iNormal, half4 iTangent, float4 iSample) {
-    half2 n = iSample.yx;
+float3 NormalMap(float4 iNormal, float4 iTangent, float4 iSample) {
+    float2 n = iSample.yx;
     n.y = 1.0 - n.y;
     n -= 0.501953;
 
-    half3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
+    float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
     float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
     return v / length(v);
 }
 
-half3 BumpMap(half4 iNormal, half4 iTangent, float4 iSample) {
-    half2 n = iSample.yw - 0.501953;
-    half3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
-    float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
-    return normalize(v);
+float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump) {
+    float2 bump = iBump.yw - 0.501961;
+    float3 bitangent = cross(iTangent.xyz, iNormal.xyz);
+    float3 normal = normalize(
+        (iNormal.xyz * sqrt(abs(dot(bump, bump) - 0.25))) - 
+        (BumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
+    );
+
+    return normal;
 }
 
-half3 GetNormalFromTexture(half4 iNormal, half4 iTangent, float4 iUV, float4 iColor) {
+float3 GetNormalFromTexture(float4 iNormal, float4 iTangent, float4 iUV, float4 iColor) {
 ENV.AUTO_NORMAL_SETUP
 }
 #endif
@@ -306,8 +310,8 @@ float4 GetDecals(float3 iDecalUV) {
     #endif
     
     #if (FLAGS & DYNAMIC_AO)
-    float DynamicAO(float4 iVec2Eye, half3 iNormal) {
-        half4 aoNormal = half4(iNormal, 1.0);
+    float DynamicAO(float4 iVec2Eye, float3 iNormal) {
+        float4 aoNormal = float4(iNormal, 1.0);
         float4 worldPos = float4(GetWorldPos(iVec2Eye), 0.0);
         aoNormal.y += 0.75; // push towards the sky
         aoNormal.xyz *= maxaabb_normal.xyz;
@@ -327,7 +331,7 @@ float4 GetDecals(float3 iDecalUV) {
     #endif
 
     #if (FLAGS & AO_FLAGS)
-    float GetAO(half3 iNormal, float4 iVec2Eye, float2 iLightmapUV) {
+    float GetAO(float3 iNormal, float4 iVec2Eye, float2 iLightmapUV) {
         #if ((FLAGS & AO_FLAGS) == AO_FLAGS)
             float ao = DynamicAO(iVec2Eye, iNormal);
             return min(ao, (SAMPLE_2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y);
@@ -341,15 +345,15 @@ float4 GetDecals(float3 iDecalUV) {
 
 
     #if (FLAGS & DYNAMIC_SHADOWS)
-    half GetDynamicShadow(float4 iShadowMapPosition, float4 iVec2Eye) {
+    float GetDynamicShadow(float4 iShadowMapPosition, float4 iVec2Eye) {
         float3 lightVec = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
         float shadowPos = (abs(dot(lightVec, lightVec)) / length(lightVec)) - lightscaleadd.y;
-        half shadow = 1.0;
+        float shadow = 1.0;
         if (shadowPos < 1.0) {
-            half4 shadowProj = SAMPLE_2D_PROJ(shadowtex, iShadowMapPosition);
+            float4 shadowProj = SAMPLE_2D_PROJ(shadowtex, iShadowMapPosition);
             float2 s = (shadowProj.zw * 0.03125) + shadowProj.xy;
 
-            half h4x = s.x - shadowPos; 
+            float h4x = s.x - shadowPos; 
             s.y = saturate((-s.x * s.x) + s.y) + 0.00005;
             float r3w = s.y / (pow(h4x, 2) + s.y);
             r3w += saturate((iVec2Eye.z * zmul.x) + zmul.y);
@@ -361,9 +365,9 @@ float4 GetDecals(float3 iDecalUV) {
     #endif
 
     #if (FLAGS & SHADOW_FLAGS)
-    half GetShadow(float4 iShadowMapPosition, float2 iLightmapUV, float4 iVec2Eye) {
+    float GetShadow(float4 iShadowMapPosition, float2 iLightmapUV, float4 iVec2Eye) {
         #if ((FLAGS & SHADOW_FLAGS) == SHADOW_FLAGS)
-            half shadow = GetDynamicShadow(iShadowMapPosition, iVec2Eye);
+            float shadow = GetDynamicShadow(iShadowMapPosition, iVec2Eye);
             return min(shadow, SAMPLE_2D(shadowmap, iLightmapUV).x);
         #elif (FLAGS & BAKED_SHADOWS)
             return SAMPLE_2D(shadowmap, iLightmapUV).x; // baked shadow, is this used for static meshes?
@@ -409,16 +413,16 @@ float4 GetDecals(float3 iDecalUV) {
     #define DEFERRED_LNBUF_OFFSET (zbfs * 0.0498047)
 #endif
 
-half2 encode(half3 normal) {
-    half2 encoded = normal.xy;
-    half z = length(normal + half3(0.0, 0.0, 1.0));
+float2 encode(float3 normal) {
+    float2 encoded = normal.xy;
+    float z = length(normal + float3(0.0, 0.0, 1.0));
     return (encoded / z / 2.0) + 0.5;
 }
 
-half3 decode(half2 encoded_normal) {
-    half2 n = (encoded_normal * 2.0) - 1.0;
-    half z = 1.0 - dot(n, n);
-    half3 normal = half3(n, abs(z) / sqrt(z)) / rsqrt(z) * 2.0;
+float3 decode(float2 encoded_normal) {
+    float2 n = (encoded_normal * 2.0) - 1.0;
+    float z = 1.0 - dot(n, n);
+    float3 normal = float3(n, abs(z) / sqrt(z)) / rsqrt(z) * 2.0;
     normal.z -= 1.0;
     return normal;
 }
@@ -427,7 +431,7 @@ half3 decode(half2 encoded_normal) {
 void main(
     float4 iUV: TEXCOORD0,
     float4 iTangent: TEXCOORD1,
-    half4 iNormal: TEXCOORD2,
+    float4 iNormal: TEXCOORD2,
     float3 iDecalUV: TEXCOORD3,
     float3 iVec2Eye: TEXCOORD4,
     float4 iPositionNew: TEXCOORD5,
@@ -436,7 +440,7 @@ void main(
     float4 iWorldPos: WPOS,
     float4 iColor: COLOR0,
 
-    out half4 color_out
+    out half4 fragColor
 ) {
     #if (PROPERTIES & ALPHA)
         if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
@@ -445,15 +449,15 @@ void main(
     // First normal pass shader
     #if ((FLAGS & DEFERRED_NORMAL_PASS) == (DEFERRED_NORMAL_PASS))
         #if (PROPERTIES & NORMAL)
-            half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+            float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
         #else
-            half3 normal = normalize(iNormal.xyz);
+            float3 normal = normalize(iNormal.xyz);
         #endif
 
         float2 delta = ((iPositionNew.xy / iPositionNew.w) - (iPositionOld.xy / iPositionOld.w)) * 4.0;
-        color_out = half4(
+        fragColor = half4(
             encode(normal),
-            float2(delta.x, -delta.y) + 0.503922
+            half2(delta.x, -delta.y) + 0.503922
         );
     // The actual color shaders
     #else
@@ -471,12 +475,12 @@ void main(
 
         #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT) || (PROPERTIES & LIGHTING_RAMP))
             float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
-            half3 normal = decode(nbfs);
+            float3 normal = decode(nbfs);
         #endif
 
         float4 lbfs = SAMPLE_2D(lbuf, pixelPos);
 
-        half3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+        float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
         #if (FLAGS & DECALS)
             float4 decals = GetDecals(iDecalUV);
             diffuse = (diffuse * decals.w) + decals.xyz;
@@ -487,33 +491,33 @@ void main(
             diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
         #endif
 
-        half3 prod = pow(lbfs.xyz, 2);
+        float3 prod = pow(lbfs.xyz, 2);
 
         #if (PROPERTIES & REFRACT)
-            float3 viewDir = iVec2Eye / length(iVec2Eye);
-            half3 reflection = GetReflection(reflect(viewDir, normal).xy).xyz;
+            float3 viewDir = normalize(iVec2Eye.xyz);
+            float3 reflection = GetReflection(reflect(viewDir, normal).xy).xyz;
             reflection *= dot(prod, float3(0.299, 0.587, 0.114));
         #else
-            half3 reflection = half3(0.0, 0.0, 0.0); // Dummy addition variable.
+            float3 reflection = float3(0.0, 0.0, 0.0); // Dummy addition variable.
         #endif
 
         #if (PROPERTIES & SPECULAR)
             float3 specular = GetSpecularColor(iUV, iColor).xyz;
-            half3 lobe = (((lbfs.w * prod) * specular) + (specular * reflection)) * 2;
+            float3 lobe = (((lbfs.w * prod) * specular) + (specular * reflection)) * 2;
         #else
-            half3 lobe = reflection;
+            float3 lobe = reflection;
         #endif
 
         #if (PROPERTIES & GLASS)
-            half2 n = nbfs - 0.501961;
+            float2 n = nbfs - 0.501961;
 
             float2 cuv = (n * (RefractiveIndex * float2(9.0, -16.0))) + (pos + float2(0.000195313, 0.0));
             cuv.x = (round(cuv.x * 1280.0) * 0.00078125) - 0.000195313;
             float3 cbfs = SAMPLE_2D(cbuf, cuv).xyz;
 
-            half3 color = ((diffuse * tintcol.xyz) * cbfs) + (lobe * 2) + (prod * pow(saturate(dot(n, n) * 10.0 - 0.5), 2));
+            float3 color = ((diffuse * tintcol.xyz) * cbfs) + (lobe * 2) + (prod * pow(saturate(dot(n, n) * 10.0 - 0.5), 2));
         #else
-            half3 color = (diffuse * prod) + lobe;
+            float3 color = (diffuse * prod) + lobe;
         #endif
 
         #if (PROPERTIES & GLOW)
@@ -521,16 +525,13 @@ void main(
         #endif
 
         #if (PROPERTIES & GLASS)
-            color_out = half4(color, 1.0);
+            fragColor = half4(color, 1.0);
         #else
-            color.x = abs(color.x * tintcol.x) / sqrt(color.x * tintcol.x);
-            color.y = abs(color.y * tintcol.y) / sqrt(color.y * tintcol.y);
-            color.z = abs(color.z * tintcol.z) / sqrt(color.z * tintcol.z);
+            color = sqrt(abs(color * tintcol.rgb));
+            color = saturate(iDecalUV.z) * (-color + fogcol.xyz) + color;
 
-            color = clamp(iDecalUV.z, 0.0f, 1.0) * (-color + fogcol.xyz) + color;
-
-            half factor = max(max(color.x, max(color.y, color.z)), 1.0);
-            color_out = half4(
+            float factor = max(max(color.x, max(color.y, color.z)), 1.0);
+            fragColor = half4(
                 color / factor,
                 (1.0 / factor) / 2
             );
@@ -541,9 +542,15 @@ void main(
 
 
 // XYZ = Diffuse Light Color, W = Specular Lobe
-float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float2 iLightmapUV) {
+float4 GetLight(float3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float2 iLightmapUV) {
     float3 viewVec = iVec2Eye.xyz / length(iVec2Eye.xyz);
-    float3 reflectVec = reflect(viewVec, iNormal);
+    #if (FLAGS & ORBIS)
+        float3 reflectVec = -reflect(viewVec, iNormal);
+    #else
+        float3 halfVec = normalize((iVec2Eye.xyz - sunpos) + (viewVec * float3(3.0, 1.0, 1.0)));
+        float3 reflectVec = -reflect(halfVec, iNormal);
+    #endif
+
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
 
     float NdotV = dot(iNormal, viewVec);
@@ -557,9 +564,9 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
     #endif
 
     #if ((FLAGS & SHADOW_FLAGS) && (FLAGS & RECEIVE_SHADOWS))
-        half shadow = GetShadow(iShadowMapPosition, iLightmapUV, iVec2Eye);
+        float shadow = GetShadow(iShadowMapPosition, iLightmapUV, iVec2Eye);
     #else
-        half shadow = 1.0; // Dummy multiplication variable, will be optimized out.
+        float shadow = 1.0; // Dummy multiplication variable, will be optimized out.
     #endif
 
     #if (FLAGS & WATER_CAUSTICS)
@@ -599,30 +606,22 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
         ));
     #endif
 
-    float specular = pow(saturate(-RdotL), CosinePower);
+    float specular = pow(saturate(RdotL), CosinePower);
+
+    #if (FLAGS & ORBIS)
+        specular *= miscparams.x;
+    #endif
+
     #if ((FLAGS & SPRITELIGHT) && (FLAGS & RECEIVE_SHADOWS) && (FLAGS & RECEIVE_SPRITELIGHTS))
         float3 worldPos = GetWorldPos(iVec2Eye);
 
-        // I don't entirely know how this works graphically,
-        // so I'm splitting them even though intuition says
-        // they're probably the same, minus the bounce.
-        // #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
-        //     float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
-        //     float NdotS = dot(iNormal, ws); 
-        //     float s = (NdotS / sqrt(dot(ws, ws) + 0.001)) + 0.2;
-        //     float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
-        //     color += (max(NdotS, 0.0) * spritelight);
-        // #else
-            float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
-            ws /= sqrt(dot(ws, ws) + 0.001);
-            float RdotS = saturate(dot(reflectVec, ws));
-            float NdotS = dot(iNormal, ws);
-            float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
-            color += (max((NdotS + 0.2), 0.0) * spritelight);
-
-            // I assume this is bounce
-            specular += (spritelight * (pow(RdotS, 22.0) * (NdotS > 0.0))).x;
-        // #endif
+        float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
+        ws /= sqrt(dot(ws, ws) + 0.001);
+        float RdotS = saturate(dot(reflectVec, ws));
+        float NdotS = dot(iNormal, ws);
+        float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
+        color += (max((NdotS + 0.2), 0.0) * spritelight);
+        specular += (spritelight * (pow(RdotS, 22.0) * (NdotS > 0.0))).x;
 
     #endif
 
@@ -631,31 +630,44 @@ float4 GetLight(half3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float
 
 // LBP2 Main
 void main(
+    #if (FLAGS & ORBIS)
+    float4 iWorldPos: SPOSITION,
+    #else
+    float4 iWorldPos: WPOS,
+    #endif
     float4 iUV: TEXCOORD0,
     float4 iTangent: TEXCOORD1,
-    half4 iNormal: TEXCOORD2,
+    float4 iNormal: TEXCOORD2,
     float3 iDecalUV: TEXCOORD3,
     float4 iVec2Eye: TEXCOORD4,
     float4 iPositionNew: TEXCOORD5,
     float4 iShadowMapPosition: TEXCOORD6,
     float2 iLightmapUV: TEXCOORD7,
 
-    float4 iWorldPos: WPOS,
-
     float4 iColor: COLOR0,
+    float4 iPlaneCoeff: CLP0,
 
-    out half4 color_out
+    out half4 fragColor
 ) {
     float3 viewVec = normalize(iVec2Eye.xyz);
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
 
     #if (PROPERTIES & NORMAL)
-        half3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+        float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
     #else
-        half3 normal = normalize(iNormal.xyz);
+        float3 normal = normalize(iNormal.xyz);
     #endif
 
-    half3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+    #if (FLAGS & ORBIS)
+        float3 wetness = float3(0.0, 0.0, 0.0);
+        float wetness_factor = 0.0;
+        if (dynamicWetnessParams.x < 0.0) {
+            // Actually implement this at some point.
+        }
+
+    #endif
+
+    float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
     #if (FLAGS & DECALS)
         float4 decals = GetDecals(iDecalUV);
         diffuse = (diffuse * decals.w) + decals.xyz;
@@ -695,35 +707,32 @@ void main(
             specular *= aniso;
         #endif
 
-
-        half3 lighting = (((light.w * prod) * specular) + (specular * reflection)) * 2.0;
+        float3 lighting = (((light.w * prod) * specular) + (specular * reflection)) * 2.0;
     #else
-        half3 lighting = reflection;
+        float3 lighting = reflection;
     #endif 
     
     #if (PROPERTIES & GLASS)
         float2 wpos = iWorldPos.xy * oores;
         float2 cuv = (normal.xy * (RefractiveIndex * float2(9.0, -16.0))) + float2(wpos.x, 1.0 - wpos.y);
-        half n = saturate((dot(normal.xy, normal.xy) * 10.0) - 0.5);
-        half3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
+        float n = saturate((dot(normal.xy, normal.xy) * 10.0) - 0.5);
+        float3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
     #else
-        half3 color = (diffuse * prod) + lighting;
+        float3 color = (diffuse * prod) + lighting;
     #endif
 
-    half illumination = tintcol.w;
-    half factor = saturate(iDecalUV.z);
+    float illumination = tintcol.w;
+    float factor = saturate(iDecalUV.z);
 
     #if (PROPERTIES & GLOW)
-        half3 glow = GetGlowColor(iUV, iColor).xyz;
+        float3 glow = GetGlowColor(iUV, iColor).xyz;
         color += glow;
         float r = 1.0 / ((dot(glow, glow) * 4.0) + 1.0);
         illumination *= (r + ((-r * factor) + factor));
     #endif
 
     #if ((PROPERTIES & GLASS) == 0)
-        color.x = sqrt(color.x * tintcol.x);
-        color.y = sqrt(color.y * tintcol.y);
-        color.z = sqrt(color.z * tintcol.z);
+        color = sqrt(abs(color * tintcol.rgb));
     #endif
 
     // #if ((PROPERTIES & FUZZ) && (FLAGS & ORBIS))
@@ -732,7 +741,7 @@ void main(
     //     color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
     //     float v2 = (abs(iPositionNew.w) * tintcol.w) * fuzz.y * fuzz.x;
     //     if (0.101 > v2 && iPositionNew.z < 0.0) {
-    //         color_out = half4(color, 1.0);
+    //         fragColor = float4(color, 1.0);
     //         return;
     //     }
     // #endif
@@ -754,6 +763,10 @@ void main(
         
     #endif
 
+    #if (FLAGS & ORBIS)
+        if (alphatestparams.x >= illumination) discard;
+    #endif
+
     #if (PROPERTIES & ST7)
         color += (ambcol * GetST7Sample(iUV, iColor).xyz);
     #endif
@@ -764,7 +777,11 @@ void main(
         color *= illumination;
     #endif
 
-    color_out = half4(
+    #if (FLAGS & ORBIS)
+        color += (wetness_factor * wetness);
+    #endif
+
+    fragColor = half4(
         color,
         illumination
     );

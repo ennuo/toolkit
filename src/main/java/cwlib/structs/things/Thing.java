@@ -39,7 +39,7 @@ public class Thing implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public String name;
-
+    
     public int UID = 1;
     public Thing world;
     public Thing parent;
@@ -52,10 +52,6 @@ public class Thing implements Serializable {
     public boolean hidden;
     public short flags;
     public byte extraFlags;
-
-    public boolean isDirty = true;
-    public Matrix4f[] matrices;
-
 
     private Serializable[] parts = new Serializable[0x3f];
 

@@ -814,7 +814,7 @@ public class RLocalProfile implements Compressable, Serializable {
         InventoryItemDetails details = plan.inventoryData;
         details.dateAdded = (new Date().getTime() / 1000);
         
-    if (details.icon == null)
+        if (details.icon == null)
             details.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
 
         if (table != null) {
@@ -826,11 +826,11 @@ public class RLocalProfile implements Compressable, Serializable {
                 location = table.translate(plan.inventoryData.location);
             if (location == null)
                 location = "";
-            if (category == null)
+            if (category == null) 
                 category = "";
 
-            details.categoryIndex = (short) this.stringTable.add(category, (int) plan.inventoryData.category);
-            details.locationIndex = (short) this.stringTable.add(location, (int) plan.inventoryData.location);
+            details.categoryIndex = (short) this.stringTable.add(category, (int) (plan.inventoryData.category & 0xffffffff));
+            details.locationIndex = (short) this.stringTable.add(location, (int) (plan.inventoryData.location & 0xffffffff));
         }
 
         item.details = plan.inventoryData;

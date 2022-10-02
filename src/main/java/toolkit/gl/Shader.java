@@ -67,7 +67,7 @@ public class Shader {
             this.alphaLayer = 0x1;
         
         int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
-        String source = GfxAssembler.generateBRDF(gfx, 0xDEADBEEF);
+        String source = GfxAssembler.generateBRDF(gfx, 0xDEADBEEF, false);
         glShaderSource(fragmentID, source);
         glCompileShader(fragmentID);
         if (glGetShaderi(fragmentID, GL_COMPILE_STATUS) == 0) {
