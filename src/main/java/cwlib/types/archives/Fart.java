@@ -170,6 +170,14 @@ public abstract class Fart implements Iterable<Fat> {
     }
 
     /**
+     * Gets a list of all hashes queued to be saved.
+     * @return All hashes currently in queue
+     */
+    public ArrayList<SHA1> getQueueHashes() {
+        return new ArrayList<SHA1>(this.queue.keySet());
+    }
+
+    /**
      * Generates a FAT buffer.
      * @param fat Fat array
      * @return Generated buffer

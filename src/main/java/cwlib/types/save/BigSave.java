@@ -51,16 +51,28 @@ public class BigSave extends FileData {
      */
     private RBigProfile profile;
 
+    public BigSave(File folder, SaveArchive master) {
+        super(folder, DatabaseType.BIGFART);
+        this.archive = master;
+        this.process();
+    }
+
     public BigSave(File file) {
         super(file, DatabaseType.BIGFART);
         this.archive = new SaveArchive(file);
+        if (this.archive.getArchiveRevision() == 5)
+            throw new IllegalArgumentException("This is a Vita profile! Use the correct load option!");
+        this.process();
+    }
+
+    private void process() {
         SaveKey key = this.archive.getKey();
         if (key.getRootType() != ResourceType.BIG_PROFILE)
             throw new IllegalArgumentException("Save archive doesn't have an RBigProfile root resource!");
         this.profile = this.archive.loadResource(key.getRootHash(), RBigProfile.class);
         if (this.profile == null)
             throw new IllegalArgumentException("Unable to locate RBigProfile root resource!");
-            
+        
         HashSet<SHA1> locked = new HashSet<>();
         locked.add(key.getRootHash());
         
@@ -113,6 +125,13 @@ public class BigSave extends FileData {
             if (locked.contains(sha1)) continue;
             byte[] data = fat.extract();
             this.entries.add(new SaveEntry(this, this.generatePath(data, sha1), fat.getSize(), sha1));
+        }
+
+        // When loading a Vita profile, everything gets concatenated in memory, so we have to grab it from the queue.
+        for (SHA1 sha1 : this.archive.getQueueHashes()) {
+            if (locked.contains(sha1)) continue;
+            byte[] data = this.archive.extract(sha1);
+            this.entries.add(new SaveEntry(this, this.generatePath(data, sha1), data.length, sha1));
         }
 
         for (SaveEntry entry : this.entries)
@@ -275,6 +294,10 @@ public class BigSave extends FileData {
     public SaveArchive getArchive() { return this.archive; }
 
     @Override public boolean save(File file) {
+        if (this.archive.getArchiveRevision() == 5) {
+            throw new UnsupportedOperationException("Saving Vita profiles isn't implemented yet!");
+        }
+        
         this.archive.getKey().setRootHash(this.archive.add(Resource.compress(this.profile, this.archive.getGameRevision(), CompressionFlags.USE_NO_COMPRESSION)));
         this.archive.save(file.getAbsolutePath());
         if (file == this.getFile())

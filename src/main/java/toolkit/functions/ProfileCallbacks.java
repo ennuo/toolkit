@@ -9,14 +9,23 @@ import toolkit.windows.Toolkit;
 
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
 public class ProfileCallbacks {
     public static void loadProfile() {
         File file = FileChooser.openFile("bigfart1", null, false);
         loadProfile(file);
     }
 
-    public static void loadProfile(File file) {if (file != null) {
-            BigSave profile = new BigSave(file);
+    public static void loadProfile(File file) {
+        if (file != null) {
+            BigSave profile = null;
+            try { profile = new BigSave(file); }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(Toolkit.INSTANCE, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             Toolkit.INSTANCE.addTab(profile);
             Toolkit.INSTANCE.updateWorkspace();
         }

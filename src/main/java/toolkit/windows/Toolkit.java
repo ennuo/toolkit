@@ -75,6 +75,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
+import cwlib.types.data.SHA1;
 import executables.gfx.GfxGUI;
 
 import java.awt.BorderLayout;
@@ -614,6 +615,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadArchive = new javax.swing.JMenuItem();
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
+        loadVitaProfile = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         manageProfile = new javax.swing.JMenuItem();
@@ -1445,6 +1447,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         savedataMenu.add(loadBigProfile);
+
+        loadVitaProfile.setText("Vita Profile");
+        loadVitaProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadVitaProfileActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadVitaProfile);
 
         loadGroupMenu.add(savedataMenu);
 
@@ -2478,6 +2488,81 @@ public class Toolkit extends javax.swing.JFrame {
         );
     }//GEN-LAST:event_exportSceneGraphActionPerformed
 
+    private void loadVitaProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadVitaProfileActionPerformed
+        String folder = FileChooser.openDirectory();
+        if (folder == null) return;
+        Pattern bigRegex = Pattern.compile("bigfart\\d+");
+        File[] fragments = new File(folder).listFiles((dir, name) -> bigRegex.matcher(name).matches());
+        if (fragments.length == 0) {
+            JOptionPane.showMessageDialog(this, "No Vita BigProfile's were found!", "An error occurred", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        SaveArchive[] archives = new SaveArchive[fragments.length];
+        SaveArchive master = null;
+        
+        for (int i = 0; i < fragments.length; ++i) {
+            File fragment = fragments[i];
+            SaveArchive archive = null;
+            try { archive = new SaveArchive(fragment); }
+            catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, ex.getMessage(), fragment.getName(), JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            archives[i] = archive;
+            if (master == null) master = archive;
+            else if (archive.getID() > master.getID())
+                master = archive;
+        }
+        
+        // Patch all other archives into master archive
+        for (SaveArchive archive  : archives) {
+            if (master == archive) continue;
+            master.add(archive);
+        }
+        
+        // Patch all moon level data into master archive
+        Pattern moonRegex = Pattern.compile("moon\\d+_\\d+");
+        fragments = new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
+        ArrayList<File> extras = new ArrayList<>(Arrays.asList(fragments));
+        
+        // Downloads may be a bit excessive depending on the profile,
+        // so let's just prompt the user if they want to load them
+        Pattern downloadRegex = Pattern.compile("slot\\d+_\\d+");
+        fragments = new File(folder).listFiles((dir, name) -> downloadRegex.matcher(name).matches());
+
+        if (fragments.length != 0) {
+            boolean shouldLoadDownloads = 
+                JOptionPane.showConfirmDialog(this, "Do you want to load downloaded slots?", "Load", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+            if (shouldLoadDownloads) {
+                for (File fragment : fragments)
+                    extras.add(fragment);
+            }
+        }
+
+        for (File file : extras) {
+            SaveArchive archive = null;
+            try { archive = new SaveArchive(file); }
+            catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, ex.getMessage(), file.getName(), JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            master.add(archive);
+        }
+
+        BigSave profile = null;
+        try { profile = new BigSave(new File(folder), master); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Toolkit.INSTANCE.addTab(profile);
+        Toolkit.INSTANCE.updateWorkspace();
+    }//GEN-LAST:event_loadVitaProfileActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails metadata = item.inventoryData;
@@ -2750,6 +2835,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem loadMeshContext;
     private javax.swing.JMenuItem loadMod;
     private javax.swing.JMenuItem loadPaletteContext;
+    private javax.swing.JMenuItem loadVitaProfile;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenuItem manageArchives;
