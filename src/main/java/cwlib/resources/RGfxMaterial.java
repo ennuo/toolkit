@@ -128,47 +128,52 @@ public class RGfxMaterial implements Serializable, Compressable {
             }
         }
 
+        boolean serializeCode = !revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_REMOVE_GFX_CODE);
         int sourceOffsets = gmat.getBlobOffsetCount(revision);
         if (serializer.isWriting()) {
-            MemoryOutputStream stream = serializer.getOutput();
-            int offset = 0;
-            for (int i = 0; i < sourceOffsets; ++i) {
-                byte[] shader = gmat.shaders[i];
-                if (version >= 0x34f)
-                    offset += shader.length;
+            if (serializeCode) {
+                MemoryOutputStream stream = serializer.getOutput();
+                int offset = 0;
+                for (int i = 0; i < sourceOffsets; ++i) {
+                    byte[] shader = gmat.shaders[i];
+                    if (version >= 0x34f)
+                        offset += shader.length;
+                    stream.i32(offset);
+                    if (version < 0x34f)
+                        offset += shader.length;
+                }
+                if (this.code != null) offset += this.code.length;
                 stream.i32(offset);
-                if (version < 0x34f)
-                    offset += shader.length;
+                for (byte[] shader : gmat.shaders) stream.bytes(shader);
+                if (this.code != null)
+                    stream.bytes(this.code);
             }
-            if (this.code != null) offset += this.code.length;
-            stream.i32(offset);
-            for (byte[] shader : gmat.shaders) stream.bytes(shader);
-            if (this.code != null)
-                stream.bytes(this.code);
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 serializer.resource(gmat.textures[i], ResourceType.TEXTURE);
         } else {
-            MemoryInputStream stream = serializer.getInput();
-            int[] blobOffsets  = new int[sourceOffsets];
-            for (int i = 0; i < sourceOffsets; ++i)
-                blobOffsets[i] = stream.i32();
-            byte[] code = stream.bytearray();
-
-            gmat.shaders = new byte[sourceOffsets][];
-            if (version < 0x34f) {
-                for (int i = 1; i < sourceOffsets; ++i)
-                    gmat.shaders[i - 1] = Arrays.copyOfRange(code, blobOffsets[i - 1], blobOffsets[i]);
-                gmat.shaders[sourceOffsets - 1] = Arrays.copyOfRange(code, blobOffsets[sourceOffsets - 1], code.length);
-            } else {
-                int offset = 0;
-                for (int i = 0; i < sourceOffsets; ++i) {
-                    gmat.shaders[i] = Arrays.copyOfRange(code, offset, blobOffsets[i]);
-                    offset += gmat.shaders[i].length;
+            if (serializeCode) {
+                MemoryInputStream stream = serializer.getInput();
+                int[] blobOffsets  = new int[sourceOffsets];
+                for (int i = 0; i < sourceOffsets; ++i)
+                    blobOffsets[i] = stream.i32();
+                byte[] code = stream.bytearray();
+    
+                gmat.shaders = new byte[sourceOffsets][];
+                if (version < 0x34f) {
+                    for (int i = 1; i < sourceOffsets; ++i)
+                        gmat.shaders[i - 1] = Arrays.copyOfRange(code, blobOffsets[i - 1], blobOffsets[i]);
+                    gmat.shaders[sourceOffsets - 1] = Arrays.copyOfRange(code, blobOffsets[sourceOffsets - 1], code.length);
+                } else {
+                    int offset = 0;
+                    for (int i = 0; i < sourceOffsets; ++i) {
+                        gmat.shaders[i] = Arrays.copyOfRange(code, offset, blobOffsets[i]);
+                        offset += gmat.shaders[i].length;
+                    }
+                    if (offset != code.length)
+                        gmat.code = Arrays.copyOfRange(code, offset, code.length);
                 }
-                if (offset != code.length)
-                    gmat.code = Arrays.copyOfRange(code, offset, code.length);
             }
-
+            
             gmat.textures = new ResourceDescriptor[MAX_TEXTURES];
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 gmat.textures[i] = serializer.resource(null, ResourceType.TEXTURE);

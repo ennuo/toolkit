@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -120,21 +119,21 @@ public class ShapeAssembler {
 
     public static void main(String[] args) {
         ResourceSystem.DISABLE_LOGS = true;
-        // if (args.length < 3) {
-        //     System.out.println("java -jar sass.jar <model> <descriptor> <output>");
-        //     return;
-        // }
+        if (args.length < 3) {
+            System.out.println("java -jar sass.jar <model> <descriptor> <output>");
+            return;
+        }
 
-        // if (!new File(args[0]).exists()) {
-        //     System.err.println("Model file doesn't exist!");
-        //     return;
-        // }
+        if (!new File(args[0]).exists()) {
+            System.err.println("Model file doesn't exist!");
+            return;
+        }
 
-        args = new String[] {
-            "C:/Users/Aidan/Desktop/gecko.mol",
-            "g6064",
-            "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
-        };
+        // args = new String[] {
+        //     "C:/Users/Aidan/Desktop/gecko.mol",
+        //     "g6064",
+        //     "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
+        // };
 
         Resource resource = null;
         RMesh mesh = null;

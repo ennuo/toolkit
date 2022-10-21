@@ -1,4 +1,4 @@
-package toolkit.gl;
+package editor.gl.objects;
 
 import java.util.HashMap;
 
@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import cwlib.resources.RTexture;
-import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceDescriptor;
+import editor.gl.RenderSystem;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -28,7 +28,7 @@ public class Texture {
         if (TEXTURES.containsKey(descriptor))
             throw new RuntimeException("Texture is already linked!");
         
-        byte[] data = ResourceSystem.extract(descriptor);
+        byte[] data = RenderSystem.getSceneGraph().getResourceData(descriptor);
         if (data == null)
             throw new RuntimeException("Unable to retrieve data for texture!");
         RTexture texture = new RTexture(data);
@@ -52,7 +52,7 @@ public class Texture {
         buffer.flip();
 
         this.textureID = glGenTextures();
-
+        
         glBindTexture(GL_TEXTURE_2D, textureID);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(
@@ -67,6 +67,8 @@ public class Texture {
             buffer
         );
         glGenerateMipmap(GL_TEXTURE_2D);
+
+        
 
         TEXTURES.put(descriptor, this);
     }
@@ -83,7 +85,7 @@ public class Texture {
         if (descriptor == null) return null;
         if (TEXTURES.containsKey(descriptor))
             return TEXTURES.get(descriptor);
-        if (ResourceSystem.extract(descriptor) == null)
+        if (RenderSystem.getSceneGraph().getResourceData(descriptor) == null)
             return null;
         return new Texture(descriptor);
     }

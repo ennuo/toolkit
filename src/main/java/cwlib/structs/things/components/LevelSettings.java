@@ -11,14 +11,14 @@ import cwlib.types.data.Revision;
 public class LevelSettings implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xb0;
 
-    public Vector3f sunPosition = new Vector3f(1.0f, 0.5f, 1.0f);
-    public float sunPositionScale = 310309f;
-    public Vector4f sunColor = new Vector4f(0.49f, 0.441f, 0.392f, 0.49f);
-    public Vector4f ambientColor = 	new Vector4f(0.4f, 0.6f, 0.8f, 1.0f);
-    public float sunMultiplier = 1.23093f, exposure = 1.0f;
-    public Vector4f fogColor = new Vector4f(-0.3f, -0.5f, -0.7f, 1.0f);
-    public float fogNear = 200f, fogFar = 15000f;
-    public Vector4f rimColor = new Vector4f(0.45f, 0.3f, 0.15f, 1.5f);
+    public Vector3f sunPosition = new Vector3f(0.86f, 0.987f, 0.568f);
+    public float sunPositionScale = 300000f;
+    public Vector4f sunColor = new Vector4f(1.0f, 0.9f, 0.8f, 1.0f);
+    public Vector4f ambientColor = 	new Vector4f(0.2f, 0.3f, 0.4f, 1.0f);
+    public float sunMultiplier = 1.0f, exposure = 1.0f;
+    public Vector4f fogColor = new Vector4f(0.3f, 0.5f, 0.7f, 1.0f);
+    public float fogNear = 1000f, fogFar = 4000f;
+    public Vector4f rimColor = new Vector4f(0.3f, 0.2f, 0.1f, 1.0f);
     @GsonRevision(min=0x138)
     public Vector4f rimColor2 = new Vector4f(0.3f, 0.4f, 0.5f, 1.0f);
 

@@ -2,13 +2,18 @@ package cwlib.resources.custom;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.joml.Matrix4f;
 
+import cwlib.enums.Branch;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
@@ -22,7 +27,12 @@ import cwlib.structs.things.parts.*;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
-import toolkit.gl.Camera;
+import editor.gl.Camera;
+import editor.gl.MeshInstance;
+import editor.gl.MeshPrimitive;
+import editor.gl.objects.Mesh;
+import editor.gl.objects.Shader;
+import editor.gl.objects.Texture;
 
 public class RSceneGraph implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
@@ -30,31 +40,32 @@ public class RSceneGraph implements Serializable, Compressable {
     private String name;
     private Camera camera = new Camera();
     private PWorld world = new PWorld();
-    private transient PLevelSettings lighting = new PLevelSettings();
+    private PLevelSettings lighting = new PLevelSettings();
     private List<Thing> things = Collections.synchronizedList(new ArrayList<>());
     private int nextUID = 1;
     private transient Thing[] backdrop;
     private ResourceDescriptor background;
+    private HashMap<ResourceDescriptor, byte[]> packedData = new HashMap<>();
 
     public RSceneGraph() {}
     public RSceneGraph(RLevel level) {
         this.world = level.world.getPart(Part.WORLD);
         for (Thing thing : this.world.things) {
             if (thing == null) continue;
+
             if (thing.hasPart(Part.LEVEL_SETTINGS)) {
                 this.lighting = thing.getPart(Part.LEVEL_SETTINGS);
+                if (thing == this.world.backdrop && thing.hasPart(Part.REF))
+                    this.background = ((PRef)thing.getPart(Part.REF)).plan;
                 continue;
             }
+
             if (thing.hasPart(Part.WORLD)) continue;
-            if (thing == this.world.backdrop && thing.hasPart(Part.REF)) {
-                this.background = ((PRef)thing.getPart(Part.REF)).plan;
-                continue;
-            }
             thing.UID = this.nextUID++;
             this.things.add(thing);
         }
         
-        if (this.backdrop == null) 
+        if (this.background == null) 
             this.background = world.backdropPlan;
     }
 
@@ -78,6 +89,33 @@ public class RSceneGraph implements Serializable, Compressable {
         graph.nextUID = serializer.i32(graph.nextUID);
         graph.background = serializer.resource(graph.background, ResourceType.PLAN);
 
+        if (serializer.getRevision().has(Branch.MIZUKI, Revisions.MZ_SCE_DEFAULT_LIGHTING))
+            graph.lighting = serializer.struct(graph.lighting, PLevelSettings.class);
+
+        if (serializer.getRevision().has(Branch.MIZUKI, Revisions.MZ_SCE_PACKED_DATA)) {
+            if (serializer.isWriting()) {
+                Set<ResourceDescriptor> keys = graph.packedData.keySet();
+                serializer.getOutput().i32(keys.size());
+                for (ResourceDescriptor key : keys) {
+                    serializer.resource(key, ResourceType.FILE_OF_BYTES);
+                    serializer.bytearray(graph.packedData.get(key));
+                }
+            } else {
+                int count = serializer.getInput().i32();
+                graph.packedData = new HashMap<>(count);
+                for (int i = 0; i < count; ++i) {
+                    graph.packedData.put(
+                        serializer.resource(null, ResourceType.FILE_OF_BYTES), 
+                        serializer.bytearray(null)
+                    );
+                }
+            }
+        }
+
+        // if (!serializer.isWriting()) {
+        //     this.things.clear();
+        // }
+        
         return graph;
     }
 
@@ -94,9 +132,42 @@ public class RSceneGraph implements Serializable, Compressable {
         return thing;
     }
 
+    @SuppressWarnings("unchecked")
+    public void packAssets() {
+        Set<ResourceDescriptor>[] resources = new Set[] {
+            Shader.PROGRAMS.keySet(),
+            Texture.TEXTURES.keySet(),
+            Mesh.MESHES.keySet(),
+            PRenderMesh.ANIMATIONS.keySet()
+        };
+
+        for (Set<ResourceDescriptor> collection : resources) {
+            for (ResourceDescriptor descriptor : collection) {
+                if (this.packedData.containsKey(descriptor)) continue;
+                byte[] fileData = ResourceSystem.extract(descriptor);
+                if (fileData != null)
+                    this.packedData.put(descriptor, fileData);
+            }
+        }
+
+        // Make sure to include background plan
+        if (this.background != null && !this.packedData.containsKey(this.background)) {
+            byte[] fileData = ResourceSystem.extract(this.background);
+            if (fileData != null)
+                this.packedData.put(this.background, fileData);
+        }
+    }
+
+    public byte[] getResourceData(ResourceDescriptor descriptor) {
+        if (descriptor == null) return null;
+        if (this.packedData.containsKey(descriptor))
+            return this.packedData.get(descriptor);
+        return ResourceSystem.extract(descriptor);
+    }
+
     private void loadBackdrop() {
         if (this.backdrop != null || this.background == null) return;
-        byte[] planData = ResourceSystem.extract(this.background);
+        byte[] planData = this.getResourceData(this.background);
         if (planData == null) return;
         this.backdrop = new Resource(planData).loadResource(RPlan.class).getThings();
         for (Thing thing : this.backdrop) {
@@ -112,13 +183,58 @@ public class RSceneGraph implements Serializable, Compressable {
         this.loadBackdrop();
         if (this.backdrop != null) {
             for (Thing thing : this.backdrop)
-                thing.render(this.lighting);
+                thing.render();
         }
         synchronized(this.things) {
             Iterator<Thing> i = this.things.iterator();
             while (i.hasNext())
-                (i.next()).render(this.lighting);
+                (i.next()).render();
         }
+    }
+
+    public HashSet<ResourceDescriptor> getResourcesInUse() {
+        HashSet<ResourceDescriptor> resources = new HashSet<>();
+        synchronized(this.things) {
+            Iterator<Thing> i = this.things.iterator();
+            while (i.hasNext()) {
+                Thing thing = i.next();
+                PRenderMesh mesh = thing.getPart(Part.RENDER_MESH);
+                PGeneratedMesh proc = thing.getPart(Part.GENERATED_MESH);
+                PLevelSettings settings = thing.getPart(Part.LEVEL_SETTINGS);
+
+                MeshInstance instance = null;
+
+                if (mesh != null) {
+                    resources.add(mesh.mesh);
+                    resources.add(mesh.anim);
+                    instance = mesh.instance;
+                }
+
+                if (proc != null) {
+                    resources.add(proc.gfxMaterial);
+                    resources.add(proc.bevel);
+                    instance = proc.instance;
+                }
+
+                if (settings != null) {
+                    resources.add(settings.backdropMesh);
+                    instance = settings.backdropInstance;
+                }
+
+                if (instance != null) {
+                    resources.add(instance.texture);
+                    for (MeshPrimitive primitive : instance.mesh.getPrimitives()) {
+                        resources.add(primitive.getMaterial());
+                        Shader shader = Shader.get(primitive.getMaterial());
+                        for (ResourceDescriptor descriptor : shader.textures) {
+                            resources.add(descriptor);
+                        }
+                    }
+                }
+            }
+        }
+        resources.remove(null);
+        return resources;
     }
 
     public String getName() { return this.name; }

@@ -29,3 +29,6 @@ src/main/java/cwlib/structs/script
 src/main/java/cwlib/resources/RScript.java
 src/main/java/cwlib/cod
 src/main/java/cwlib/fishmonger
+
+.vscode/
+.idea/

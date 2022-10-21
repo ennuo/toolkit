@@ -1,9 +1,12 @@
-package toolkit.gl;
+package editor.gl;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class Camera implements Serializable {
@@ -12,11 +15,13 @@ public class Camera implements Serializable {
     private float fov = 1.0f;
     private float zNear = 2.0f;
     private float zFar = 150000.0f;
-    private float aspectRatio = (float) (16.0 / 9.0);
 
+    @GsonRevision(branch=0x4d5a, max=0x6)
+    private float aspectRatio = (float) (16.0 / 9.0);
+    
     private Vector3f translation, rotation;
 
-    private Matrix4f projectionMatrix, viewMatrix;
+    private transient Matrix4f projectionMatrix, viewMatrix;
 
     public Camera() {
         this(-19518.318359375f, 1997.4072265625f, 1195.43371582031f);
@@ -75,6 +80,8 @@ public class Camera implements Serializable {
             .translate(-this.translation.x, -this.translation.y, -this.translation.z);
     }
 
+    public float getZNear() { return this.zNear; }
+    public float getZFar() { return this.zFar; }
     public Matrix4f getViewMatrix() { return this.viewMatrix; }
     public Matrix4f getProjectionMatrix() { return this.projectionMatrix; }
     public Vector3f getTranslation() { return this.translation; }
@@ -87,9 +94,15 @@ public class Camera implements Serializable {
         camera.fov = serializer.f32(camera.fov);
         camera.zNear = serializer.f32(camera.zNear);
         camera.zFar = serializer.f32(camera.zFar);
-        camera.aspectRatio = serializer.f32(camera.aspectRatio);
+        if (serializer.getRevision().before(Branch.MIZUKI, Revisions.MZ_REMOVE_ASPECT))
+            camera.aspectRatio = serializer.f32(camera.aspectRatio);
         camera.translation = serializer.v3(camera.translation);
         camera.rotation = serializer.v3(camera.rotation);
+
+        if (!serializer.isWriting()) {
+            camera.recomputeProjectionMatrix();
+            camera.recomputeViewMatrix();
+        }
 
         return camera;
     }

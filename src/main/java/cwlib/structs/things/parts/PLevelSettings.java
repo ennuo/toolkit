@@ -11,6 +11,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import editor.gl.MeshInstance;
 
 public class PLevelSettings extends LevelSettings {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
@@ -27,6 +28,8 @@ public class PLevelSettings extends LevelSettings {
     public int backgroundRepeatFlags;
     @GsonRevision(min=0xaf,lbp3=true)
     public float backgroundSkyHeight;
+
+    public transient MeshInstance backdropInstance;
 
     @SuppressWarnings("unchecked")
     @Override public PLevelSettings serialize(Serializer serializer, Serializable structure) {

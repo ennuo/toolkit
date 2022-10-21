@@ -19,7 +19,6 @@ import cwlib.structs.things.components.shapes.Polygon;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.Colors;
-import toolkit.gl.Mesh;
 
 /**
  * Used for collisions and other properties of materials.
@@ -109,8 +108,6 @@ public class PShape implements Serializable {
     @GsonRevision(branch=0x4431, min=0x34) public byte bouncePadBehavior;
     @GsonRevision(branch=0x4431, min=0x5f) public float zBiasVita;
     @GsonRevision(branch=0x4431, min=0x7a) public boolean touchWhenInvisible;
-
-    public Mesh glMesh;
 
     public PShape() {};
     public PShape(Vector3f[] vertices) {

@@ -107,7 +107,12 @@ public class GfxAssembler {
                 variableName = "smp" + index;
                 String channel = (params[4] == 1 || params[4] == 256) ? "zw" : "xy";
                 if (type == OutputPort.REFLECTION) {
-                    assignment = String.format("SAMPLE_2D_BIAS(%s, iUV, ReflectionBlur)", texVar);
+
+                    if (IS_GLSL)
+                        assignment = String.format("SAMPLE_2D_BIAS(%s, iReflectCoord, ReflectionBlur)", texVar);
+                    else
+                        assignment = String.format("SAMPLE_2D_BIAS(%s, iUV, ReflectionBlur)", texVar);
+
                     break;
                 }
 

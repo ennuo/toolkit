@@ -20,16 +20,18 @@ import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Colors;
-import toolkit.gl.CraftworldRenderer;
-import toolkit.gl.Mesh;
+import editor.gl.MeshInstance;
+import editor.gl.RenderSystem;
+import editor.gl.objects.Mesh;
 
 public class PRenderMesh implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
     public static final HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
 
     public ResourceDescriptor mesh;
+    public MeshInstance instance;
     public Thing[] boneThings = new Thing[0];
-    public transient Matrix4f[] renderMatrices = new Matrix4f[0];
+    public transient Matrix4f[] boneModels = new Matrix4f[0];
     public ResourceDescriptor anim;
     public float animPos = 0.0f, animSpeed = 1.0f;
     public transient float animPosOld = -1.0f;
@@ -72,7 +74,7 @@ public class PRenderMesh implements Serializable {
         Thing boneThing = null;
 
         if (bone.parent != -1) {
-            boneThing = CraftworldRenderer.SCENE_GRAPH.addThing();
+            boneThing = RenderSystem.getSceneGraph().addThing();
 
             boneThing.groupHead = root;
             boneThing.parent = parentOrRoot;
@@ -112,7 +114,7 @@ public class PRenderMesh implements Serializable {
             Thing thing = root;
             if (i != 0) {
                 Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
-                thing = CraftworldRenderer.SCENE_GRAPH.addThing();
+                thing = RenderSystem.getSceneGraph().addThing();
                 thing.setPart(Part.POS, new PPos(root, bone.animHash, wpos, new Matrix4f(wpos)));
                 thing.groupHead = root;
                 boneThings[i] = thing;
@@ -124,21 +126,24 @@ public class PRenderMesh implements Serializable {
         ((PRenderMesh)root.getPart(Part.RENDER_MESH)).boneThings = boneThings;
     }
 
-    public void update(Thing thing, Matrix4f wpos, PLevelSettings global) {
+    public void update(Thing thing, Matrix4f wpos, int[] regionIDsToHide) {
         if (this.mesh == null) return;
 
-        Mesh glMesh = Mesh.get(this.mesh);
-        if (glMesh == null) return;
+        if (this.instance == null) {
+            Mesh glMesh = Mesh.getSkinnedMesh(this.mesh);
+            if (glMesh == null) return;
+            this.instance = new MeshInstance(glMesh);
+        }
 
         if (this.boneThings == null || this.boneThings.length == 0)
-            this.setupBoneThings(thing, wpos, glMesh.bones);
+            this.setupBoneThings(thing, wpos, this.instance.mesh.getBones());
         
-        this.recalculateStaticInverses(thing, glMesh.bones, wpos);
+        this.recalculateStaticInverses(thing, this.instance.mesh.getBones(), wpos);
         
         if (this.anim != null) {
             // No need to recalculate if we haven't changed animation position
             if (this.animPos == this.animPosOld || (this.animPos >= 1.0f && !this.animLoop)) {
-                glMesh.draw(global, this.renderMatrices, Colors.RGBA32.fromARGB(this.editorColor));
+                this.instance.draw(this.boneModels, Colors.RGBA32.fromARGB(this.editorColor), regionIDsToHide);
                 return;
             }
 
@@ -153,7 +158,7 @@ public class PRenderMesh implements Serializable {
 
             if (animation != null) {
                 this.animPosOld = this.animPos;
-                this.animPos += (((animation.getFPS() * CraftworldRenderer.INSTANCE.getDeltaTime()) / animation.getNumFrames()) * this.animSpeed);
+                this.animPos += (((animation.getFPS() * RenderSystem.getDeltaTime()) / animation.getNumFrames()) * this.animSpeed);
                 
                 if (this.animLoop) {
                     float x = this.animPos, y = this.loopEnd;
@@ -165,27 +170,27 @@ public class PRenderMesh implements Serializable {
 
                 for (Thing boneThing : this.boneThings) {
                     PPos bonePos = boneThing.getPart(Part.POS);
-                    Bone bone = Bone.getByHash(glMesh.bones, bonePos.animHash);
+                    Bone bone = Bone.getByHash(this.instance.mesh.getBones(), bonePos.animHash);
                     if (bone == null || bone.parent != -1) continue;
                     Matrix4f pos = bonePos.worldPosition.mul(bone.invSkinPoseMatrix, new Matrix4f());
-                    calculateBoneTransform(animation, this.animPos, this.renderMatrices, glMesh.bones, bone, pos);
+                    calculateBoneTransform(animation, this.animPos, this.boneModels, this.instance.mesh.getBones(), bone, pos);
                 }
             }
         }
 
-        glMesh.draw(global, this.renderMatrices, Colors.RGBA32.fromARGB(this.editorColor));
+        this.instance.draw(this.boneModels, Colors.RGBA32.fromARGB(this.editorColor), regionIDsToHide);
     }
 
     private void recalculateStaticInverses(Thing thing, Bone[] bones, Matrix4f wpos) {
         if (!this.isDirty) return;
 
-        this.renderMatrices = new Matrix4f[bones.length];
-        this.renderMatrices[0] = wpos.mul(bones[0].invSkinPoseMatrix, new Matrix4f());
+        this.boneModels = new Matrix4f[bones.length];
+        this.boneModels[0] = wpos.mul(bones[0].invSkinPoseMatrix, new Matrix4f());
 
         // If a bone doesn't exist (usually with preloaded levels)
         // then use the root bone's inverses.
-        for (int i = 0; i < this.renderMatrices.length; ++i)
-            this.renderMatrices[i] = this.renderMatrices[0];
+        for (int i = 0; i < this.boneModels.length; ++i)
+            this.boneModels[i] = this.boneModels[0];
 
         for (Thing bone : this.boneThings) {
             if (bone == null || bone == thing || !bone.hasPart(Part.POS)) continue;
@@ -197,7 +202,7 @@ public class PRenderMesh implements Serializable {
 
             if (index == -1) continue;
 
-            this.renderMatrices[index] = pos.getWorldPosition().mul(bones[index].invSkinPoseMatrix, new Matrix4f());
+            this.boneModels[index] = pos.getWorldPosition().mul(bones[index].invSkinPoseMatrix, new Matrix4f());
         }
 
         this.isDirty = false;

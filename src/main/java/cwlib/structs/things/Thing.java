@@ -3,30 +3,36 @@ package cwlib.structs.things;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
 import cwlib.enums.Part;
 import cwlib.enums.PartHistory;
+import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.components.CostumePiece;
+import cwlib.structs.things.parts.PCostume;
 import cwlib.structs.things.parts.PGeneratedMesh;
+import cwlib.structs.things.parts.PInstrument;
 import cwlib.structs.things.parts.PJoint;
 import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
 import cwlib.util.Colors;
-import toolkit.gl.Mesh;
-import toolkit.gl.StaticMesh;
+import editor.gl.MeshInstance;
+import editor.gl.objects.Mesh;
 
 /**
  * Represents an object in the game world.
@@ -188,28 +194,59 @@ public class Thing implements Serializable {
         return thing;
     }
 
-    public void render(PLevelSettings lighting) {
+    public void render() {
         PPos pos = this.getPart(Part.POS);
         if (pos == null) return;
 
         PRenderMesh mesh = this.getPart(Part.RENDER_MESH);
-        if (mesh != null) mesh.update(this, pos.getWorldPosition(), lighting);
+        PCostume costume = this.getPart(Part.COSTUME);
+
+        int[] regionIDsToHide = null;
+        if (costume != null) regionIDsToHide = costume.meshPartsHidden;
+        if (mesh != null) mesh.update(this, pos.getWorldPosition(), regionIDsToHide);
 
         PShape shape = this.getPart(Part.SHAPE);
         PGeneratedMesh generatedMesh = this.getPart(Part.GENERATED_MESH);
         if (shape != null && generatedMesh != null) {
-            if (shape.glMesh == null)
-                shape.glMesh = new Mesh(generatedMesh, shape);
-            shape.glMesh.draw(lighting, new Matrix4f[] { pos.getWorldPosition() }, Colors.RGBA32.fromARGB(shape.color));
+            if (generatedMesh.instance == null)
+                generatedMesh.instance = new MeshInstance(Mesh.getProceduralMesh(generatedMesh, shape));
+            generatedMesh.instance.draw(new Matrix4f[] { pos.getWorldPosition() }, Colors.RGBA32.fromARGB(shape.color));
         }
 
         PLevelSettings settings = this.getPart(Part.LEVEL_SETTINGS);
         if (settings != null && settings.backdropMesh != null) {
-            StaticMesh glMesh = StaticMesh.get(settings.backdropMesh);
-            if (glMesh != null)
-                glMesh.draw(settings);
+            if (settings.backdropInstance == null) {
+                Mesh glMesh = Mesh.getStaticMesh(settings.backdropMesh);
+                if (glMesh != null)
+                    settings.backdropInstance = new MeshInstance(glMesh);
+            }
+            else settings.backdropInstance.draw(new Matrix4f[] { new Matrix4f().identity().invert() }, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
         }
-        
+
+        PInstrument instrument = this.getPart(Part.INSTRUMENT);
+        if (instrument != null && mesh != null && mesh.instance != null)
+            mesh.instance.texture = instrument.icon;
+
+
+        ResourceDescriptor base = new ResourceDescriptor(9698, ResourceType.GFX_MATERIAL);
+        if (costume != null && mesh != null && mesh.instance != null) {
+            mesh.instance.override(base, costume.material);
+            for (CostumePiece piece : costume.costumePieces) {
+                if (piece == null || piece.mesh == null) continue;
+                if (piece.mesh.isGUID()) {
+                    long guid = piece.mesh.getGUID().getValue();
+                    if (guid == 9876 || guid == 9877) continue;
+                }
+                if (piece.instance == null) {
+                    Mesh glMesh = Mesh.getSkinnedMesh(piece.mesh);
+                    if (glMesh != null)
+                        piece.instance = new MeshInstance(glMesh);
+                } else {
+                    piece.instance.override(base, costume.material);
+                    piece.instance.draw(mesh.boneModels, Colors.RGBA32.fromARGB(mesh.editorColor));
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

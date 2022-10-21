@@ -536,8 +536,12 @@ public class Revisions {
     public static final int MZ_CGC_SWIZZLE = 0x4; // Swizzled color vector in RShaderCache
     public static final int MZ_CGC_SHORT_FLAGS = 0x5; // Use short flags in RShaderCache
     public static final int MZ_SCENE_GRAPH = 0x6; // RSceneGraph added, fields removed in PWorld that are now stored in scene graph, removed thing createdBy indices, add name field to Things
+    public static final int MZ_REMOVE_ASPECT = 0x7; // Remove aspectRatio from Camera serialization
+    public static final int MZ_REMOVE_GFX_CODE = 0x8; // Removes code from RGfxMaterial for generation on the fly
+    public static final int MZ_SCE_DEFAULT_LIGHTING = 0x9; // Serializes lighting in RSceneGraph to use as default.
+    public static final int MZ_SCE_PACKED_DATA = 0xa; // Allows storing data in scene graph caches.
     
-    public static final int MZ_MAX = 0x6; // last revision for toolkit revisions
+    public static final int MZ_MAX = 0xa; // last revision for toolkit revisions
 
     // Legacy mod revisions
     // Somewhat weird, but apparently Toolkit started with mod

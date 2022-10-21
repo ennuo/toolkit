@@ -8,6 +8,7 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.mesh.Primitive;
 import cwlib.types.data.ResourceDescriptor;
+import editor.gl.MeshInstance;
 
 public class CostumePiece implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
@@ -17,6 +18,8 @@ public class CostumePiece implements Serializable {
     public byte[] morphParamRemap;
     public Primitive[] primitives;
     @GsonRevision(min=0x19a) public ResourceDescriptor plan;
+
+    public transient MeshInstance instance;
     
     @SuppressWarnings("unchecked")
     @Override public CostumePiece serialize(Serializer serializer, Serializable structure) {

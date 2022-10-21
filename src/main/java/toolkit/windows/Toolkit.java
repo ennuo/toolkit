@@ -15,6 +15,7 @@ import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.util.Nodes;
 import cwlib.util.Strings;
+import editor.gl.RenderSystem;
 import cwlib.types.swing.SearchParameters;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.SaveArchive;
@@ -192,16 +193,17 @@ public class Toolkit extends javax.swing.JFrame {
     
     private void renderer() {
         scenePanel.setLayout(new BorderLayout());
-        scenePanel.add(new CraftworldRenderer());
+        CraftworldRenderer renderer = new CraftworldRenderer();
+        scenePanel.add(renderer);
         scenePanel.setPreferredSize(new Dimension(850, 292));
         
         Runnable loop = new Runnable() {
             @Override public void run() {
-                if (!CraftworldRenderer.INSTANCE.isValid()) {
+                if (!renderer.isValid()) {
                     GL.setCapabilities(null);
                     return;
                 }
-                CraftworldRenderer.INSTANCE.update();
+                renderer.render();
                 SwingUtilities.invokeLater(this);
             }
         };
@@ -2436,13 +2438,13 @@ public class Toolkit extends javax.swing.JFrame {
         if (info == null) return;
         RLevel level = info.getResource();
         if (level == null) return;
-        CraftworldRenderer.INSTANCE.setLevel(level);
+        RenderSystem.setLevel(level);
     }//GEN-LAST:event_loadLevelContextActionPerformed
 
     private void loadMeshContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadMeshContextActionPerformed
         FileEntry entry = ResourceSystem.getSelected().getEntry();
         ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
-        CraftworldRenderer.SCENE_GRAPH.addMesh(descriptor);
+        RenderSystem.getSceneGraph().addMesh(descriptor);
     }//GEN-LAST:event_loadMeshContextActionPerformed
 
     private void exportWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldActionPerformed
@@ -2450,7 +2452,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (file == null) return;
 
         Revision revision = new Revision(0x272, 0x4c44, 0x0008);
-        byte[] levelData = CraftworldRenderer.INSTANCE.getSceneGraph().toLevelData(revision, CompressionFlags.USE_NO_COMPRESSION);
+        byte[] levelData = RenderSystem.getSceneGraph().toLevelData(revision, CompressionFlags.USE_NO_COMPRESSION);
         FileIO.write(levelData, file.getAbsolutePath());
     }//GEN-LAST:event_exportWorldActionPerformed
 
@@ -2462,15 +2464,16 @@ public class Toolkit extends javax.swing.JFrame {
             if (planData == null) continue;
             level.addPlan(new Resource(planData).loadResource(RPlan.class));
         }
-        CraftworldRenderer.INSTANCE.setLevel(level);
+        RenderSystem.setLevel(level);
     }//GEN-LAST:event_loadPaletteContextActionPerformed
 
     private void exportSceneGraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportSceneGraphActionPerformed
-        File file = FileChooser.openFile("scene.scenegraph", "scenegraph", true);
+        File file = FileChooser.openFile("scene.sg", "sg", true);
         if (file == null) return;
+        RenderSystem.getSceneGraph().packAssets();
         Revision revision = new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision());
         FileIO.write(
-                Resource.compress(CraftworldRenderer.SCENE_GRAPH.build(revision, CompressionFlags.USE_ALL_COMPRESSION)), 
+                Resource.compress(RenderSystem.getSceneGraph().build(revision, CompressionFlags.USE_ALL_COMPRESSION)), 
                 file.getAbsolutePath()
         );
     }//GEN-LAST:event_exportSceneGraphActionPerformed

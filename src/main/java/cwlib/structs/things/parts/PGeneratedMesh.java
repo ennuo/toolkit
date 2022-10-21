@@ -11,6 +11,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import editor.gl.MeshInstance;
 
 /**
  * This part functionally serves as the rendering
@@ -19,6 +20,11 @@ import cwlib.types.data.Revision;
  */
 public class PGeneratedMesh implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
+
+    /**
+     * Instance of this mesh used for rendering.
+     */
+    public transient MeshInstance instance;
 
     /**
      * The material used to render this mesh.

@@ -100,7 +100,7 @@ public enum ResourceType implements ValueEnum<Integer> {
 
     BONE_SET("BST", 128, RBoneSet.class, "bonesets/", ".boneset"),
     SHADER_CACHE("CGC", 129, RShaderCache.class, "shader_caches/", ".shadercache"),
-    SCENE_GRAPH("SCE", 130, RSceneGraph.class, "scenes/", ".scenegraph");
+    SCENE_GRAPH("SCE", 130, RSceneGraph.class, "scenes/", ".sg");
     
     private final String header;
     private final int value;
