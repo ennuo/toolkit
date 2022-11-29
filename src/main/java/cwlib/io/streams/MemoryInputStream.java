@@ -509,14 +509,14 @@ public class MemoryInputStream {
         if (offset < 0) throw new IllegalArgumentException("Can't seek to negative offsets.");
         switch (mode) {
             case Begin: {
-                if (offset >= this.length)
+                if (offset > this.length)
                     throw new IllegalArgumentException("Can't seek past stream length.");
                 this.offset = offset;
                 break;
             }
             case Relative: {
                 int newOffset = this.offset + offset;
-                if (newOffset >= this.length || newOffset < 0)
+                if (newOffset > this.length || newOffset < 0)
                     throw new IllegalArgumentException("Can't seek outside bounds of stream.");
                 this.offset = newOffset;
                 break;
