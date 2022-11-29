@@ -172,8 +172,13 @@ public class ExportCallbacks {
         if (data == null) return;
         RTranslationTable table = new RTranslationTable(data);
 
-        String header = ResourceSystem.getSelected().getName();
-        File file = FileChooser.openFile(header.substring(0, header.length() - 5), ".json", true);
+        FileNode selected = ResourceSystem.getSelected();
+        File file = FileChooser.openFile(
+            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".json",
+            "json",
+            true
+        );
+        
         if (file == null) return;
 
         table.export(file.getAbsolutePath());

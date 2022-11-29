@@ -20,11 +20,9 @@ import cwlib.types.swing.SearchParameters;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.SaveArchive;
 import cwlib.ex.SerializationException;
-import cwlib.io.serializer.Serializer;
 import cwlib.resources.*;
 import cwlib.util.FileIO;
 import cwlib.resources.RPlan;
-import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
@@ -78,7 +76,6 @@ import cwlib.enums.Part;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
 import executables.gfx.GfxGUI;
 
 import java.awt.BorderLayout;
@@ -798,7 +795,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         exportGroup.add(exportModelGroup);
 
-        exportLAMSContext.setText("Text Document");
+        exportLAMSContext.setText("JSON");
         exportLAMSContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportLAMSContextActionPerformed(evt);
