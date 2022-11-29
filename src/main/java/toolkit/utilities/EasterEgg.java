@@ -11,7 +11,7 @@ public class EasterEgg {
         put("manoplay", null);
         put("elija", "Eli's Den of Cancer");
         put("dominick", "Undertale Piracy Tool");
-        put("rueezus", "Overture");
+        put("aidan", "Overture");
         put("joele", "Acrosnus Toolkit");
         put("etleg", "GregTool");
         put("eddie", "GregTool");
