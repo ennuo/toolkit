@@ -122,7 +122,10 @@ public class MeshPrimitive {
      * Draws this primitive to current buffer.
      */
     public void draw(Texture instanceTexture, Matrix4f[] model, Vector4f color) {
-        Shader.get(this.getMaterial()).bind(instanceTexture, model, color);
+        Shader shader = RenderSystem.OVERRIDE_SHADER;
+        if (shader == null)
+            shader = Shader.get(this.getMaterial());
+        shader.bind(instanceTexture, model, color);
         glDrawElements(this.type, this.numIndices, GL_UNSIGNED_INT, this.firstIndex * 4);
     }
 

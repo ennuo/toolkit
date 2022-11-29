@@ -18,13 +18,13 @@ public class PJoint implements Serializable {
 
     public Thing a, b;
     public Vector3f aContact, bContact;
-    public float length = 0.548f, angle, offsetTime;
+    public float length = 1.01f, angle, offsetTime;
     public boolean invertAngle;
     public ResourceDescriptor settings;
-    public int[] boneIdx;
-    public Vector4f boneLengths;
-    public int type = 8;
-    public float strength = 4.7610626f;
+    public int[] boneIdx = new int[] { -1, -1 };
+    public Vector4f boneLengths = new Vector4f(0.07920773f, 0.07920773f, 0.07920773f, 1.0f);
+    public int type = 10;
+    public float strength = 0.027f;
 
     @GsonRevision(min=0x18d)
     public boolean stiff;
@@ -35,7 +35,7 @@ public class PJoint implements Serializable {
     public float animationRange = 1.0f, animationTime = 60.0f,
     animationPhase, animationSpeed, animationPause;
     public float aAngleOffset, bAngleOffset;
-    public float modStartFrames, modDeltaFrames, modScale = 1.0f;
+    public float modStartFrames = -1.0f, modDeltaFrames, modScale = 1.0f;
 
     @GsonRevision(max=0x2c3)
     @Deprecated public boolean modDriven;

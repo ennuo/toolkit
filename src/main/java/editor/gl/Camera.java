@@ -87,6 +87,8 @@ public class Camera implements Serializable {
     public Vector3f getTranslation() { return this.translation; }
     public Vector3f getEulerRotation() { return this.rotation; }
 
+    public void setEulerRotation(Vector3f rot) { this.rotation = rot; }
+
     @SuppressWarnings("unchecked")
     @Override public Camera serialize(Serializer serializer, Serializable structure) {
         Camera camera = (structure == null) ? new Camera() : (Camera) structure;

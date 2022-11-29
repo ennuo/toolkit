@@ -637,9 +637,9 @@ public class MeshExporter {
             boolean foundDiffuse = false;
             boolean foundBump = false;
             int outputBox = gmat.getOutputBox();
-            for (int i = 0; i < gmat.boxes.length; ++i) {
+            for (int i = 0; i < gmat.boxes.size(); ++i) {
                 if (foundBump && foundDiffuse) break;
-                MaterialBox box = gmat.boxes[i];
+                MaterialBox box = gmat.boxes.get(i);
                 /*
                 
                 DIFFUSE : 0,
@@ -719,7 +719,7 @@ public class MeshExporter {
                                     for (int y = 0; y < image.getHeight(); ++y) {
                                         Color c = new Color(image.getRGB(x, y), true);
                                         
-                                        Color output = new Color(c.getAlpha(), c.getGreen(), 255, 255);
+                                        Color output = new Color(255 - c.getAlpha(), c.getGreen(), 255, 255);
                                         
                                         image.setRGB(x, y, output.getRGB());
                                     }

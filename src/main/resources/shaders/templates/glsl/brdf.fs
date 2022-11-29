@@ -21,8 +21,13 @@
 #define BLEND_MODE_ADDITIVE_NO_ALPHA 3
 #define BLEND_MODE_PREMULTIPLIED_ALPHA 4
 
+#define SHADER_MODEL_BRDF 0
+#define SHADER_MODEL_PBR 1
+#define SHADER_MODEL_UNLIT 2
+
 #define PROPERTIES ENV.MATERIAL_PROPERTIES
 #define ALPHA_MODE ENV.ALPHA_MODE
+#define SHADER_MODEL ENV.SHADER_MODEL
 
 #define SAMPLE_2D(smp, uv) texture(smp, uv)
 #define SAMPLE_2D_BIAS(smp, uv, bias) texture(smp, uv, bias)

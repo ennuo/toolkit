@@ -19,7 +19,7 @@ import cwlib.types.data.Revision;
 import cwlib.types.mods.Mod;
 import executables.gfx.CgAssembler;
 import executables.gfx.GfxAssembler;
-import executables.gfx.GfxAssembler.OutputPort;
+import executables.gfx.GfxAssembler.BrdfPort;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
@@ -296,7 +296,7 @@ public class AssetExporter extends JDialog {
             RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
             
             if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
-                if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+                if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
                     gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
             }
 
@@ -312,7 +312,7 @@ public class AssetExporter extends JDialog {
             else gfx.shaders = new byte[4][];
 
             try {
-                CgAssembler.compile(GfxAssembler.generateBRDF(gfx, -1, false), gfx, isCGB, isOrbis);
+                CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, isCGB, isOrbis);
                 data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
             } catch (Exception ex)  { data = resource.compress(); }
 

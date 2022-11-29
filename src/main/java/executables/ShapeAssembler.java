@@ -21,6 +21,7 @@ import cwlib.structs.mesh.MeshShapeInfo;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PBody;
 import cwlib.structs.things.parts.PGroup;
+import cwlib.structs.things.parts.PJoint;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PShape;
@@ -31,7 +32,6 @@ import cwlib.util.FileIO;
 
 public class ShapeAssembler {
     static int UID = 0;
-    static Thing group;
 
     public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parentOrRoot) {
         Thing root = boneThings[0];
@@ -46,8 +46,12 @@ public class ShapeAssembler {
     
             Matrix4f ppos = ((PPos)parentOrRoot.getPart(Part.POS)).getWorldPosition();
             Matrix4f pos = bone.getLocalTransform(bones);
-    
-            Matrix4f wpos = ppos.mul(pos, new Matrix4f());
+
+            Matrix4f wpos;
+            if (bones[bone.parent].flags == 2)
+                wpos = pos;
+            else
+                wpos = ppos.mul(pos, new Matrix4f());
     
             boneThing.setPart(Part.POS, new PPos(root, bone.animHash, wpos, pos));
         } else boneThing = parentOrRoot;
@@ -96,15 +100,16 @@ public class ShapeAssembler {
             Thing thing = root;
             if (i != 0) {
                 Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
-                Matrix4f localPos = bone.skinPoseMatrix.mul(bones[0].invSkinPoseMatrix, new Matrix4f());
+                // Matrix4f localPos = bone.skinPoseMatrix.mul(bones[0].invSkinPoseMatrix, new Matrix4f());
                 thing = new Thing(++UID);
 
-                thing.setPart(Part.POS, new PPos(root, bone.animHash, wpos, localPos));
-                thing.setPart(Part.BODY, new PBody());
-                thing.setPart(Part.GROUP, new PGroup());
+                thing.setPart(Part.POS, new PPos(root, bone.animHash, wpos, wpos));
+                // thing.setPart(Part.BODY, new PBody());
+                // thing.setPart(Part.GROUP, new PGroup());
 
-                thing.groupHead = group;
-                thing.parent = root;
+                thing.groupHead = root;
+                thing.parent = null;
+
                 boneThings[i] = thing;
             }
 
@@ -119,6 +124,14 @@ public class ShapeAssembler {
 
     public static void main(String[] args) {
         ResourceSystem.DISABLE_LOGS = true;
+        
+        args = new String[] {
+            "C:/Users/Aidan/Desktop/gecko.mol",
+            "g6064",
+            "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
+        };
+
+        // ResourceSystem.DISABLE_LOGS = true;
         if (args.length < 3) {
             System.out.println("java -jar sass.jar <model> <descriptor> <output>");
             return;
@@ -128,12 +141,6 @@ public class ShapeAssembler {
             System.err.println("Model file doesn't exist!");
             return;
         }
-
-        // args = new String[] {
-        //     "C:/Users/Aidan/Desktop/gecko.mol",
-        //     "g6064",
-        //     "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
-        // };
 
         Resource resource = null;
         RMesh mesh = null;
@@ -145,6 +152,14 @@ public class ShapeAssembler {
             System.out.println(ex.getMessage());
         }
 
+        int rootCount = 0;
+        for (Bone bone : mesh.getBones()) {
+            if (bone.parent == -1 && bone.flags != 2)
+                rootCount++;
+        }
+        
+        System.out.println(rootCount);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(args[1], ResourceType.MESH);
 
         Thing root = new Thing(++UID);
@@ -153,10 +168,6 @@ public class ShapeAssembler {
         root.setPart(Part.GROUP, new PGroup());
         root.setPart(Part.RENDER_MESH, new PRenderMesh(descriptor));
 
-        group = new Thing(++UID);
-        group.setPart(Part.GROUP, new PGroup());
-
-        root.groupHead = group;
 
         Bone[] bones = mesh.getBones();
         Thing[] boneThings = computeBoneThings(root, new Matrix4f().identity(), bones);
@@ -172,7 +183,15 @@ public class ShapeAssembler {
         ArrayList<Thing> things = new ArrayList<>();
         for (Thing thing : boneThings)
             things.add(thing);
-        things.add(group);
+
+        for (int i = 1; i < boneThings.length; ++i) {
+            Thing jointThing = new Thing(++UID);
+            PJoint joint = new PJoint(boneThings[bones[i].parent], boneThings[i]);
+            jointThing.setPart(Part.JOINT, joint);
+            jointThing.groupHead = boneThings[0];
+            things.add(jointThing);
+        }
+
 
         plan.setThings(things.toArray(Thing[]::new));
 

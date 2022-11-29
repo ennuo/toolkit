@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -20,6 +21,8 @@ import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Colors;
+import cwlib.util.FileIO;
+import cwlib.util.GsonUtils;
 import editor.gl.MeshInstance;
 import editor.gl.RenderSystem;
 import editor.gl.objects.Mesh;
@@ -29,14 +32,14 @@ public class PRenderMesh implements Serializable {
     public static final HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
 
     public ResourceDescriptor mesh;
-    public MeshInstance instance;
+    public transient MeshInstance instance;
     public Thing[] boneThings = new Thing[0];
     public transient Matrix4f[] boneModels = new Matrix4f[0];
     public ResourceDescriptor anim;
     public float animPos = 0.0f, animSpeed = 1.0f;
     public transient float animPosOld = -1.0f;
     public boolean animLoop = true;
-    public float loopStart, loopEnd = 1.0f;
+    public float loopStart = 0.0f, loopEnd = 1.0f;
     public int editorColor = -1;
     public ShadowType castShadows = ShadowType.ALWAYS;
     public boolean RTTEnable;
@@ -46,6 +49,7 @@ public class PRenderMesh implements Serializable {
     public float parentDistanceFront, parentDistanceSide;
     public transient boolean isDirty = true;
 
+    
     public PRenderMesh() {}
     public PRenderMesh(ResourceDescriptor mesh) {
         this.mesh = mesh;
@@ -55,15 +59,26 @@ public class PRenderMesh implements Serializable {
         int index = Bone.indexOf(bones, bone.animHash);
         int frame = (int) Math.floor(position * animation.getNumFrames());
 
+        // frame = frameOverride;
+        
         Matrix4f local = animation.getFrameMatrix(bone.animHash, frame, position);
         Matrix4f global = parent.mul(local, new Matrix4f());
+
+        Vector3f translation = local.getTranslation(new Vector3f());
+        Quaternionf rotation = local.getNormalizedRotation(new Quaternionf());
+        Matrix4f childGlobal = new Matrix4f().identity().translationRotateScale(
+            new Vector3f(translation.x, translation.y, translation.z),
+            rotation,
+            new Vector3f(1.0f, 1.0f, 1.0f)
+        );
+        childGlobal = parent.mul(childGlobal, new Matrix4f());
 
         Matrix4f inverse = global.mul(bone.invSkinPoseMatrix, new Matrix4f());
         transforms[index] = inverse;
 
         for (Bone child : bones) {
             if (child.parent == index)
-                calculateBoneTransform(animation, position, transforms, bones, child, global);
+                calculateBoneTransform(animation, position, transforms, bones, child, childGlobal);
         }
 
     }

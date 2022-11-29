@@ -23,6 +23,7 @@ import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import de.javagl.jgltf.impl.v1.Material;
 
 /**
  * Resource that controls how meshes get rendered,
@@ -65,8 +66,8 @@ public class RGfxMaterial implements Serializable, Compressable {
     public TextureWrap[] wrapS;
     public TextureWrap[] wrapT;
 
-    public MaterialBox[] boxes;
-    public MaterialWire[] wires;
+    public ArrayList<MaterialBox> boxes = new ArrayList<>();
+    public ArrayList<MaterialWire> wires = new ArrayList<>();
 
     public AudioMaterial soundEnum = AudioMaterial.NONE;
 
@@ -181,8 +182,8 @@ public class RGfxMaterial implements Serializable, Compressable {
 
         gmat.wrapS = serializer.enumarray(gmat.wrapS, TextureWrap.class);
         gmat.wrapT = serializer.enumarray(gmat.wrapT, TextureWrap.class);
-        gmat.boxes = serializer.array(gmat.boxes, MaterialBox.class);
-        gmat.wires = serializer.array(gmat.wires, MaterialWire.class);
+        gmat.boxes = serializer.arraylist(gmat.boxes, MaterialBox.class);
+        gmat.wires = serializer.arraylist(gmat.wires, MaterialWire.class);
 
         if (version >= Revisions.GFXMATERIAL_SOUND_ENUM)
             gmat.soundEnum = serializer.enum32(gmat.soundEnum);
@@ -284,8 +285,8 @@ public class RGfxMaterial implements Serializable, Compressable {
      * @return Index of output box
      */
     public int getOutputBox() {
-        for (int i = 0; i < this.boxes.length; ++i) {
-            MaterialBox box = this.boxes[i];
+        for (int i = 0; i < this.boxes.size(); ++i) {
+            MaterialBox box = this.boxes.get(i);
             if (box.type == BoxType.OUTPUT)
                 return i;
         }
@@ -293,8 +294,8 @@ public class RGfxMaterial implements Serializable, Compressable {
     }
 
     public int getBoxIndex(MaterialBox box) {
-        for (int i = 0; i < this.boxes.length; ++i)
-            if (box == this.boxes[i]) return i;
+        for (int i = 0; i < this.boxes.size(); ++i)
+            if (box == this.boxes.get(i)) return i;
         return -1;
     }
 
@@ -315,7 +316,7 @@ public class RGfxMaterial implements Serializable, Compressable {
         ArrayList<MaterialBox> boxes = new ArrayList<>();
         for (MaterialWire wire : this.wires) {
             if (wire.boxTo == box)
-                boxes.add(this.boxes[wire.boxFrom]);
+                boxes.add(this.boxes.get(wire.boxFrom));
         }
         return boxes.toArray(MaterialBox[]::new);
     }
@@ -327,11 +328,110 @@ public class RGfxMaterial implements Serializable, Compressable {
     public MaterialBox getBoxConnectedToPort(int box, int port) {
         for (MaterialWire wire : this.wires) {
             if (wire.boxTo == box && (wire.portTo & 0xff) == port)
-                return this.boxes[wire.boxFrom];
+                return this.boxes.get(wire.boxFrom);
         }
         return null;
     }
 
-    public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes[wire.boxFrom]; }
-    public MaterialBox getBoxTo(MaterialWire wire) { return this.boxes[wire.boxTo]; }
+    public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes.get(wire.boxFrom); }
+    public MaterialBox getBoxTo(MaterialWire wire) { return this.boxes.get(wire.boxTo); }
+
+    public MaterialBox getBoxByID(int id) {
+        for (MaterialBox box : this.boxes) {
+            if (box.id == id)
+                return box;
+        }
+        return null;
+    }
+    
+    public void removeWire(int ID) {
+        MaterialWire wire = null;
+        for (MaterialWire wireList : this.wires) {
+            if (wireList.id == ID) {
+                wire = wireList;
+                break;
+            }
+        }
+        if (wire != null)
+            this.wires.remove(wire);
+    }
+
+    public int isWireConnected(int portID) {
+        for (MaterialWire wire : this.wires) {
+            if (this.boxes.get(wire.boxTo).inputs[wire.portTo] == portID)
+                return wire.id;
+        }
+        return -1;
+    }
+
+    public void removeBox(int ID) {
+        int index = -1;
+        for (int i = 0; i < this.boxes.size(); ++i) {
+            if (this.boxes.get(i).id == ID) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) return;
+
+        ArrayList<MaterialWire> wiresToRemove = new ArrayList<>();
+        for (MaterialWire wire : this.wires) {
+            if (wire.boxFrom == index || wire.boxTo == index) {
+                wiresToRemove.add(wire);
+                continue;
+            }
+
+            if (wire.boxFrom > index) wire.boxFrom--;
+            if (wire.boxTo > index) wire.boxTo--;
+        }
+
+        for (MaterialWire wire : wiresToRemove)
+            this.wires.remove(wire);
+
+        this.boxes.remove(index);
+    }
+
+    public void addWire(int aID, int bID) {
+        int connectedWireID = this.isWireConnected(bID);
+        if (connectedWireID != -1) 
+            this.removeWire(connectedWireID);
+
+        int aBox = -1, bBox = -1;
+        int aPort = -1, bPort = -1;
+
+        for (int i = 0; i < this.boxes.size(); ++i) {
+            MaterialBox box = this.boxes.get(i);
+            int portIndex = 0;
+            for (int input : box.inputs) {
+                if (input == bID) {
+                    bPort = portIndex;
+                    bBox = i;
+                    continue;
+                }
+                portIndex++;
+            }
+
+            portIndex = 0;
+            for (int output : box.outputs) {
+                if (output == aID) {
+                    aPort = portIndex;
+                    aBox = i;
+                    continue;
+                }
+                portIndex++;
+            }
+        }
+
+        MaterialWire wire = new MaterialWire();
+        wire.boxFrom = aBox;
+        wire.portFrom = (byte) aPort;
+
+        wire.boxTo = bBox;
+        wire.portTo = (byte) bPort;
+        
+        if (this.boxes.get(aBox).type == BoxType.TEXTURE_SAMPLE && aPort == 1)
+            wire.swizzle[0] = 0x77;
+        
+        this.wires.add(wire);
+    }
 }

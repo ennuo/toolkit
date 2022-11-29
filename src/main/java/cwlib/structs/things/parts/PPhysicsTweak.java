@@ -2,52 +2,130 @@ package cwlib.structs.things.parts;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
 import org.joml.Vector3f;
 
 public class PPhysicsTweak implements Serializable {
+    @GsonRevision(max = 0x2c3)
     @Deprecated public float activation;
+
     public float tweakGravity;
+
+    @GsonRevision(min=0x300)
     public float tweakBuoyancy;
+
+    @GsonRevision(max=0x280)
+    @Deprecated public float legacyTweakDampening;
+
+    @GsonRevision(min=0x281)
     public Vector3f tweakDampening;
+
     public Vector3f input;
     public Vector3f middleVel;
-    public float velRange;
-    public float accelStrength;
+
+    @GsonRevision(max = 0x280)
+    @Deprecated public Vector3f legacyVelRange, legacyAcceleration, legacyDeceleration;
+
+    @GsonRevision(max = 0x280)
+    @Deprecated public int legacyTurnToFace;
+
+    @GsonRevision(min=0x281)
+    public float velRange, accelStrength;
+
+    @GsonRevision(min=0x286)
     public float decelStrength;
-    public byte directionModifier;
-    public byte movementModifier;
+
+    @GsonRevision(lbp3=true, min=0xa4)
+    public byte directionModifier, movementModifier;
+
     public boolean localSpace;
+
+    @GsonRevision(min=0x279)
     public int configuration;
+
+    @GsonRevision(min=0x283)
     public boolean hideInPlayMode;
+
+    @GsonRevision(min=0x28e)
     public int colorIndex;
+
+    @GsonRevision(min=0x2dc)
     public String name;
+
+    @GsonRevision(lbp3=true, min=0x133)
     public int followerPlayerMode;
+
+    @GsonRevision(min=0x2ae)
     @Deprecated public int teamFilter;
+
+    @GsonRevision(min=0x2c6)
     public int behavior;
+
+    @GsonRevision(min=0x2dd)
     public boolean allowInOut, allowUpDown;
+
+    @GsonRevision(min=0x2dd)
     public float minRange, maxRange;
+
+    @GsonRevision(min=0x2dd)
     public boolean followKey;
+
+    @GsonRevision(min=0x382)
     public float angleRange;
-    public boolean flee, stabiliser;
+
+    @GsonRevision(min=0x2ff)
+    public boolean flee;
+    
+    @GsonRevision(lbp3=true, min=0x70)
+    public boolean stabiliser;
+
+    @GsonRevision(lbp3=true, min=0x130)
     public boolean shardDephysicalised, shardPhysicsAudio;
+
+    @GsonRevision(lbp3=true, min=0x44)
     public boolean isLBP2PhysicsTweak;
+
+    @GsonRevision(min=0x36b)
     public float maximumMass;
+
+    @GsonRevision(min=0x36b)
     public boolean canPush;
+
+    @GsonRevision(min=0x36b)
     public int zBehavior;
+
+    @GsonRevision(min=0x36b)
     public float lastKnownActivation;
+
+    @GsonRevision(min=0x36b)
     public boolean waitingToMove;
 
+    @GsonRevision(lbp3=true, min=0xf7)
     public byte zPhase;
+
+    @GsonRevision(lbp3=true, min=0x57)
     public short gridSnap, gridStrength;
+
+    @GsonRevision(lbp3=true, min=0x9a)
     public float gridGoalW;
+
+    @GsonRevision(lbp3=true, min=0x99)
     public Vector3f gridGoal;
 
     /* Vita */
-    public int usePanel, followType;
+    @GsonRevision(branch=0x4c44, min=0x11)
+    public int usePanel;
+
+    @GsonRevision(branch=0x4c44, min=0x1f)
+    public int followType;
+
+    @GsonRevision(branch=0x4c44, min=0x4b)
     public float followerDeceleration;
+
+    @GsonRevision(branch=0x4c44, min=0x55)
     public byte playerFilter;
 
     @SuppressWarnings("unchecked")
@@ -66,7 +144,7 @@ public class PPhysicsTweak implements Serializable {
             tweak.tweakBuoyancy = serializer.f32(tweak.tweakBuoyancy);
 
         if (version < 0x281)
-            serializer.f32(0);
+            tweak.legacyTweakDampening = serializer.f32(tweak.legacyTweakDampening);
         
         if (version > 0x280)
             tweak.tweakDampening = serializer.v3(tweak.tweakDampening);
@@ -74,11 +152,11 @@ public class PPhysicsTweak implements Serializable {
         tweak.middleVel = serializer.v3(tweak.middleVel);
 
         if (version < 0x281)
-            serializer.v3(null);
+            tweak.legacyDeceleration = serializer.v3(tweak.legacyDeceleration);
         if (version > 0x280)
             tweak.velRange = serializer.f32(tweak.velRange);
         if (version < 0x281)
-            serializer.v3(null);
+            tweak.legacyAcceleration = serializer.v3(tweak.legacyAcceleration);
 
         if (version > 0x280) {
             tweak.accelStrength = serializer.f32(tweak.accelStrength);
@@ -87,8 +165,8 @@ public class PPhysicsTweak implements Serializable {
         }
 
         if (version < 0x281) {
-            serializer.v3(null);
-            serializer.i32(0);
+            tweak.legacyDeceleration = serializer.v3(tweak.legacyDeceleration);
+            tweak.legacyTurnToFace = serializer.i32(tweak.legacyTurnToFace);
         }
 
         if (subVersion > 0xa3) {

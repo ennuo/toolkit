@@ -363,6 +363,24 @@ public final class Bytes {
         return new Vector3f(x, y, z);
     }
 
+    // Unpacks a 11/11/10 normal value.
+
+    /**
+     * Packs a 11/11/10 normal value.
+     * @param normal Vertex normal to pack
+     * @return Packed normal
+     */
+    public static int packNormal32(Vector3f normal) {
+        if (normal == null)
+            throw new NullPointerException("Can't pack null vertex normal!");
+
+        int x = Math.round(normal.x * 0x3ff) & 0x7ff;
+        int y = Math.round(normal.y * 0x3ff) & 0x7ff;
+        int z = Math.round(normal.z * 0x1ff) & 0x3ff;
+
+        return (x | (y << 11) | (z << 22));
+    }
+
     /**
      * Packs a 12/11/1 normal value.
      * @param normal Vertex normal to pack

@@ -19,7 +19,6 @@ import javax.swing.ImageIcon;
 
 import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.external.DDSReader;
-import toolkit.windows.Toolkit;
 
 import org.imgscalr.Scalr;
 
@@ -169,49 +168,9 @@ public class Images {
     }
 
     public static BufferedImage toImage(byte[] image) {
-        InputStream stream = new ByteArrayInputStream(image);
-        BufferedImage output = null;
-        try {
-            output = ImageIO.read(stream);
-            stream.close();
-        } catch (IOException ex) {
-            Logger.getLogger(Toolkit.class.getName()).log(Level.SEVERE, (String) null, ex);
-            return null;
-        }
-        return output;
-    }
-    
-    public static BufferedImage multiply(BufferedImage source, BufferedImage sample) {
-        if (sample.getWidth() != source.getWidth() || sample.getHeight() != source.getHeight())
-            sample = Scalr.resize(sample, Scalr.Mode.FIT_EXACT, source.getWidth(), source.getHeight());
-        for (int x = 0; x < source.getWidth(); ++x) {
-            for (int y = 0; y < source.getHeight(); ++y) {
-                Color sourceColor = new Color(source.getRGB(x, y), true);
-                Color sampleColor = new Color(sample.getRGB(x, y), true);
-                Color o = new Color(
-                        Math.round(sourceColor.getRed() * (float)(sampleColor.getRed() / 255f)),
-                        Math.round(sourceColor.getGreen() * (float)(sampleColor.getGreen() / 255f)),
-                        Math.round(sourceColor.getBlue() * (float)(sampleColor.getBlue() / 255f)),
-                        sourceColor.getAlpha()
-                );
-                source.setRGB(x, y, o.getRGB());
-            }
-        }
-        
-        return source;
-    }
-    
-    public static BufferedImage getTiledImage(BufferedImage image, int scaleX, int scaleY) {
-        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        int scaledWidth = image.getWidth() / scaleX;
-        int scaledHeight = image.getHeight() / scaleY;
-        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, scaledWidth, scaledHeight);
-        Graphics2D graphics = output.createGraphics();
-        for (int x = 0; x < scaleX; ++x)
-            for (int y = 0; y < scaleY; ++y)
-                graphics.drawImage(image, x * scaledWidth, y * scaledHeight, null);
-        graphics.dispose();
-        return output;
+        try (InputStream stream = new ByteArrayInputStream(image)) {
+            return ImageIO.read(stream);
+        } catch (IOException ex) { return null; }
     }
 
     public static BufferedImage getOverlayedImage(BufferedImage background, BufferedImage foreground, int x, int y, boolean drawForegroundRelative) {
@@ -249,7 +208,7 @@ public class Images {
     public static ImageIcon getGroupIcon(BufferedImage master) {
         BufferedImage res = null;
         try {
-            BufferedImage image = ImageIO.read(Toolkit.class.getResource("/images/slots/polaroid.png"));
+            BufferedImage image = ImageIO.read(Images.class.getResource("/images/slots/polaroid.png"));
             if (master == null) return new ImageIcon(image);
             master = getBufferedImageScaled(master, 104, 104);
             res = Images.getOverlayedImage(image, master, 73, 65, true);
@@ -264,7 +223,7 @@ public class Images {
     public static ImageIcon getSlotIcon(BufferedImage master, int revision) {
         if (master == null) {
             try {
-                master = ImageIO.read(Toolkit.class.getResource("/images/slots/backdrop.png"));
+                master = ImageIO.read(Images.class.getResource("/images/slots/backdrop.png"));
             } catch (IOException ex) {
                 Logger.getLogger(Images.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -297,7 +256,7 @@ public class Images {
                 else path = "/images/slots/lbp3.png";
             }
 
-            BufferedImage image = ImageIO.read(Toolkit.class.getResource(path));
+            BufferedImage image = ImageIO.read(Images.class.getResource(path));
             res = Images.getOverlayedImage(masked, image, 48, 51, false);
 
         } catch (IOException ex) {

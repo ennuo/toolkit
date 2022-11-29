@@ -19,7 +19,7 @@ public class PCostume implements Serializable {
     public int[] meshPartsHidden;
     public Primitive[] primitives;
     public byte creatureFilter;
-    public CostumePiece[] costumePieces;
+    public CostumePiece[] costumePieces = new CostumePiece[14];
     public CostumePiece[] temporaryCostumePiece;
 
     @SuppressWarnings("unchecked")

@@ -9,7 +9,7 @@ import cwlib.util.FileIO;
 import editor.gl.RenderSystem;
 import editor.gl.RenderSystem.RenderMode;
 import executables.gfx.GfxAssembler;
-import executables.gfx.GfxAssembler.OutputPort;
+import executables.gfx.GfxAssembler.BrdfPort;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -101,10 +101,10 @@ public class Shader {
         this.alphaMode = gfx.alphaMode & 0xff;
         this.alphaLayer = gfx.alphaLayer & 0xff;
 
-        if (this.alphaLayer == 0 && gfx.getBoxConnectedToPort(gfx.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+        if (this.alphaLayer == 0 && gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
             this.alphaLayer = 0x1;
         
-        String source = GfxAssembler.generateBRDF(gfx, 0xDEADBEEF, false);
+        String source = GfxAssembler.generateShaderSource(gfx, 0xDEADBEEF, false);
         int fragmentID = Shader.compileSource(source, GL_FRAGMENT_SHADER);
         this.programID = Shader.compileProgram(RenderSystem.getVertexShader(), fragmentID);
         glDeleteShader(fragmentID);

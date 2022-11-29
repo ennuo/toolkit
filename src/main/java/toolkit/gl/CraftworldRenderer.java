@@ -48,8 +48,10 @@ public class CraftworldRenderer extends AWTGLCanvas {
 
         ResourceSystem.DISABLE_LOGS = true;
         
-        byte[] data = FileIO.getResourceFile("/binary/default.sg");
-        RSceneGraph graph = new Resource(data).loadResource(RSceneGraph.class);
+        // byte[] data = FileIO.getResourceFile("/binary/default.sg");
+        // RSceneGraph graph = new Resource(data).loadResource(RSceneGraph.class);
+
+        RSceneGraph graph = new RSceneGraph();
 
         RenderSystem.setSceneGraph(graph);
 

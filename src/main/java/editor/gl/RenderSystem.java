@@ -82,6 +82,8 @@ public class RenderSystem {
     private static Shader fallback;
     private static int composition;
 
+    public static boolean RENDER_TO_FRAMEBUFFER = true;
+
     private static int SCREEN_VAO, SCREEN_VBO;
 
     private static int PRT_C_BUFFER, PRT_SHADOW_MAP;
@@ -97,6 +99,8 @@ public class RenderSystem {
 
     private static boolean waitForGarbageCollect = false;
     private static boolean initialized = false;
+
+    public static Shader OVERRIDE_SHADER = null;
 
     public static void queue(DrawCall call) { DRAW_CALLS.add(call); }
 
@@ -235,11 +239,14 @@ public class RenderSystem {
         glViewport(0, 0, w, h);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(composition);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, C_BUF_TEX);
-        glBindVertexArray(SCREEN_VAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        if (RENDER_TO_FRAMEBUFFER) {
+            glUseProgram(composition);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, C_BUF_TEX);
+            glBindVertexArray(SCREEN_VAO);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+
         glBindVertexArray(0);
         glUseProgram(0);
     }

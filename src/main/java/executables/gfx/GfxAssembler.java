@@ -16,8 +16,11 @@ import cwlib.structs.gmat.MaterialWire;
 import cwlib.util.FileIO;
 
 public class GfxAssembler {
-    public static String BRDF = FileIO.getResourceFileAsString("/shaders/brdf.cg");
-    public static String GLSL = FileIO.getResourceFileAsString("/shaders/default.fs");
+    public static String BRDF_CG = FileIO.getResourceFileAsString("/shaders/templates/cg/brdf.cg");
+    public static String BRDF_GLSL = FileIO.getResourceFileAsString("/shaders/templates/glsl/brdf.fs");
+
+    public static String UNLIT_CG = FileIO.getResourceFileAsString("/shaders/templates/cg/unlit.cg");
+    public static String UNLIT_GLSL = FileIO.getResourceFileAsString("/shaders/templates/glsl/unlit.fs");
 
     public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
     
@@ -25,7 +28,7 @@ public class GfxAssembler {
     public static boolean IS_GLSL = false;
     public static int CURRENT_ATTRIBUTE = 0;
 
-    public static class OutputPort {
+    public static class BrdfPort {
         public static final int DIFFUSE = 0;
         public static final int ALPHA_CLIP = 1;
         public static final int SPECULAR = 2;
@@ -41,6 +44,19 @@ public class GfxAssembler {
         public static final int FUZZ = 173;
         public static final int BRDF_REFLECTANCE = 174;
         public static final int TOON_RAMP = 175;
+    }
+
+    public static class UnlitPort {
+        public static final int DIFFUSE = 0;
+    }
+
+    public static class PbrPort {
+        public static final int ALBEDO = 0;
+        public static final int NORMAL = 1;
+        public static final int SPECULAR = 2;
+        public static final int ROUGHNESS = 3;
+        public static final int METALLIC = 4;
+        public static final int AMBIENT_OCCLUSION = 5;
     }
 
     public static class GfxFlags {
@@ -85,14 +101,14 @@ public class GfxAssembler {
     public static final Variable getWithSwizzle(StringBuilder shader, RGfxMaterial gfx, MaterialBox box, int port, int type) {
         MaterialWire wire = gfx.getWireConnectedToPort(box, port);
         if (wire == null) return null;
-        Variable variable = resolve(shader, gfx, gfx.boxes[wire.boxFrom], type);
+        Variable variable = resolve(shader, gfx, gfx.boxes.get(wire.boxFrom), type, wire.portFrom);
         String swizzle = new String(wire.swizzle).replaceAll("\0", "");
         if (swizzle.length() != 0)
             return new Variable(variable.value + "." + swizzle, swizzle.length());
         return variable;      
     }
 
-    public static final Variable resolve(StringBuilder shader, RGfxMaterial gmat, MaterialBox box, int type) {
+    public static final Variable resolve(StringBuilder shader, RGfxMaterial gmat, MaterialBox box, int type, int port) {
         if (LOOKUP.containsKey(box))
             return LOOKUP.get(box);
         
@@ -106,7 +122,7 @@ public class GfxAssembler {
                 String texVar = "s" + params[5];
                 variableName = "smp" + index;
                 String channel = (params[4] == 1 || params[4] == 256) ? "zw" : "xy";
-                if (type == OutputPort.REFLECTION) {
+                if (type == BrdfPort.REFLECTION) {
 
                     if (IS_GLSL)
                         assignment = String.format("SAMPLE_2D_BIAS(%s, iReflectCoord, ReflectionBlur)", texVar);
@@ -139,12 +155,25 @@ public class GfxAssembler {
 
                 assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);
 
-                if (type == OutputPort.FUZZ) {
+                if (type == BrdfPort.FUZZ) {
                     shader.append(String.format("\tfloat4 %s = float4(%s.x, SAMPLE_2D(%s, iUV.zw).yz, 0.0);\n", variableName, assignment, texVar));
                     return new Variable(variableName, 4);
                 }
 
                 break;
+            }
+            case BoxType.NORMALS: return new Variable("float4(iNormal.xyz, 0.0)", 4); 
+            case BoxType.VERTEX_TANGENTS: return new Variable("float4(iTangent.xyz, 1.0)", 4);
+            case BoxType.TEXTURE_COORDINATE: {
+                if (params[1] == 1)
+                    return new Variable("iUV.zw", 2);
+                else if (params[2] == 2)
+                    return new Variable("iDecalUV.xy", 2);
+                else
+                    return new Variable("iUV.xy)", 2);
+            }
+            case BoxType.VIEW_VECTOR: {
+                return new Variable("iVec2Eye.xyz", 3);
             }
             case BoxType.THING_COLOR: return new Variable("iColor", 4);
             case BoxType.COLOR: {
@@ -291,6 +320,47 @@ public class GfxAssembler {
                 // INPUT[2] = MASK
                 // return v;
             }
+            case BoxType.MATH: {
+                String a = String.format("%f", Float.intBitsToFloat(params[0]));
+                String b = String.format("%f", Float.intBitsToFloat(params[1]));
+                String c = String.format("%f", Float.intBitsToFloat(params[2]));
+
+                Variable aInput = getWithSwizzle(shader, gmat, box, 0, type);
+                if (aInput != null)
+                    a = aInput.toString();
+
+                Variable bInput = getWithSwizzle(shader, gmat, box, 1, type);
+                if (bInput != null)
+                    b = bInput.toString();
+
+                Variable cInput = getWithSwizzle(shader, gmat, box, 2, type);
+                if (cInput != null)
+                    c = cInput.toString();
+
+                returnType = 1;
+                if (aInput != null && (aInput.type > returnType))
+                    returnType = aInput.type;
+                if (bInput != null && (bInput.type > returnType))
+                    returnType = bInput.type;
+                if (cInput != null && (cInput.type > returnType))
+                    returnType = cInput.type;
+                
+                variableName = "mth" + index;
+
+                switch (params[6]) {
+                    case 0: assignment = String.format("(%s + %s)", a, b); break;
+                    case 1: assignment = String.format("(%s - %s)", a, b); break;
+                    case 2: assignment = String.format("(%s * %s)", a, b); break;
+                    case 3: assignment = String.format("(%s / %s)", a, b); break;
+                    case 4: assignment = String.format("((%s * %s) + %s)", a, b, c); break;
+                    case 5: assignment = String.format("(pow(%s, %s))", a, b); break;
+                    default: throw new RuntimeException("Invalid math type!");
+                }
+
+                // System.out.println(assignment);
+                
+                break;
+            }
             case BoxType.EXPONENT: {
                 MaterialBox node = gmat.getBoxConnectedToPort(box, 0);
                 if (node == null) 
@@ -326,79 +396,97 @@ public class GfxAssembler {
         if (box != null) {
 
             StringBuilder builder = new StringBuilder(1000);
-            Variable variable = resolve(builder, gfx, box, port);
+            // MaterialWire wire = gfx.getWireConnectedToPort(box, port);
+            Variable variable = resolve(builder, gfx, box, port, 0);
 
-            if (port == OutputPort.BUMP) {
+            if (port == BrdfPort.BUMP) {
                 String function = USE_NORMAL_MAPS ? "NormalMap" : "BumpMap";
                 builder.append(String.format("\treturn %s(iNormal, iTangent, %s);", function, variable));
             } else
-                builder.append(String.format("\treturn %s;", variable));
+                builder.append(String.format("\treturn float4(%s);", variable));
 
             return builder.toString();
         }
         
-        if (port == OutputPort.BUMP && IS_GLSL)
+        if (port == BrdfPort.BUMP && IS_GLSL)
             return "\treturn float4(normalize(normal), 1.0);";
-        if (port == OutputPort.ALPHA_CLIP)
+        if (port == BrdfPort.ALPHA_CLIP)
             return "\treturn float4(1.0); // This material does not have alpha masking";
         return "\treturn float4(0.0); // This material doesn't use this.";
     }
 
-    public static final String generateBRDF(RGfxMaterial material, int flags, boolean useEnvironmentVariables) {
+    public static final String generateShaderSource(RGfxMaterial material, int flags, boolean useEnvironmentVariables) {
         IS_GLSL = (flags == 0xDEADBEEF);
 
-        MaterialBox normal = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.BUMP);
-        MaterialBox diffuse = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.DIFFUSE);
-        MaterialBox alpha = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ALPHA_CLIP);
-        MaterialBox fuzz = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.FUZZ);
-        MaterialBox aniso = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.ANISO);
-        MaterialBox cc = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.COLOR_CORRECTION);
-        MaterialBox ramp = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.TOON_RAMP);
-        MaterialBox unknown = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.UNKNOWN);
-        MaterialBox specular = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.SPECULAR);
-        MaterialBox glow = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.GLOW);
-        MaterialBox reflection = material.getBoxConnectedToPort(material.getOutputBox(), OutputPort.REFLECTION);
+        String shader = null;
+        int output = material.getOutputBox();
 
-        String shader = BRDF;
-        if (IS_GLSL) shader = GLSL;
+        int model = output == -1 ? 2 : material.boxes.get(output).getParameters()[0]; 
+        switch (model) {
+            case 0: shader = IS_GLSL ? BRDF_GLSL : BRDF_CG; break;
+            case 1: throw new RuntimeException("PBR is unhandled!");
+            case 2: shader = IS_GLSL ? UNLIT_GLSL : UNLIT_CG; break;
+            default: throw new RuntimeException("Unhandled shader model!");
+        }
 
         ArrayList<String> properties = new ArrayList<>();
 
-        if (alpha != null) properties.add("ALPHA");
-        else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
-            alpha = diffuse;
-            properties.add("ALPHA");
+        if (model == 0) {
+            MaterialBox normal = material.getBoxConnectedToPort(output, BrdfPort.BUMP);
+            MaterialBox diffuse = material.getBoxConnectedToPort(output, BrdfPort.DIFFUSE);
+            MaterialBox alpha = material.getBoxConnectedToPort(output, BrdfPort.ALPHA_CLIP);
+            MaterialBox fuzz = material.getBoxConnectedToPort(output, BrdfPort.FUZZ);
+            MaterialBox aniso = material.getBoxConnectedToPort(output, BrdfPort.ANISO);
+            MaterialBox cc = material.getBoxConnectedToPort(output, BrdfPort.COLOR_CORRECTION);
+            MaterialBox ramp = material.getBoxConnectedToPort(output, BrdfPort.TOON_RAMP);
+            MaterialBox unknown = material.getBoxConnectedToPort(output, BrdfPort.UNKNOWN);
+            MaterialBox specular = material.getBoxConnectedToPort(output, BrdfPort.SPECULAR);
+            MaterialBox glow = material.getBoxConnectedToPort(output, BrdfPort.GLOW);
+            MaterialBox reflection = material.getBoxConnectedToPort(output, BrdfPort.REFLECTION);
+
+            if (alpha != null) properties.add("ALPHA");
+            else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
+                alpha = diffuse;
+                properties.add("ALPHA");
+            }
+    
+            if (specular != null) properties.add("SPECULAR");
+            if (normal != null) properties.add("NORMAL");
+            if (glow != null) properties.add("GLOW");
+            if (reflection != null) properties.add("REFRACT");
+            if (material.alphaLayer == 0xc0) 
+                properties.add("GLASS");
+            if (unknown != null) properties.add("ST7");
+            if (aniso != null) properties.add("ANISO");
+            if (cc != null) properties.add("COLOR_CORRECTION");
+            if (fuzz != null) properties.add("FUZZ");
+            if (ramp != null) properties.add("LIGHTING_RAMP");
+
+            if (properties.size() == 0)
+                properties.add("NO_FLAGS");
+
+            shader = shader.replace("ENV.AUTO_NORMAL_SETUP", setupPath(material, normal, BrdfPort.BUMP));
+            shader = shader.replace("ENV.AUTO_REFLECTION_SETUP", setupPath(material, reflection, BrdfPort.REFLECTION));
+            shader = shader.replace("ENV.AUTO_SPECULAR_SETUP", setupPath(material, specular, BrdfPort.SPECULAR));
+            shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, BrdfPort.DIFFUSE));
+            shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, BrdfPort.GLOW));
+            shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, BrdfPort.ALPHA_CLIP));
+            shader = shader.replace("ENV.AUTO_ST7_SETUP", setupPath(material, unknown, BrdfPort.UNKNOWN));
+            shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, BrdfPort.FUZZ));
+            shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, BrdfPort.ANISO));
+            shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, BrdfPort.COLOR_CORRECTION));
+            shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, BrdfPort.TOON_RAMP));
+        } else if (model == 2) {
+            MaterialBox diffuse = material.getBoxConnectedToPort(output, UnlitPort.DIFFUSE);
+            shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, BrdfPort.DIFFUSE));
         }
 
-        if (specular != null) properties.add("SPECULAR");
-        if (normal != null) properties.add("NORMAL");
-        if (glow != null) properties.add("GLOW");
-        if (reflection != null) properties.add("REFRACT");
-        if (material.alphaLayer == 0xc0) 
-            properties.add("GLASS");
-        if (unknown != null) properties.add("ST7");
-        if (aniso != null) properties.add("ANISO");
-        if (cc != null) properties.add("COLOR_CORRECTION");
-        if (fuzz != null) properties.add("FUZZ");
-        if (ramp != null) properties.add("LIGHTING_RAMP");
 
-        if (properties.size() == 0)
-            properties.add("NO_FLAGS");
 
+        shader = shader.replace("ENV.SHADER_MODEL", "" + model);
         if (flags != -1)
             shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
         shader = shader.replace("ENV.MATERIAL_PROPERTIES", String.format("(%s)", String.join(" | ", properties)));
-        shader = shader.replace("ENV.AUTO_NORMAL_SETUP", setupPath(material, normal, OutputPort.BUMP));
-        shader = shader.replace("ENV.AUTO_REFLECTION_SETUP", setupPath(material, reflection, OutputPort.REFLECTION));
-        shader = shader.replace("ENV.AUTO_SPECULAR_SETUP", setupPath(material, specular, OutputPort.SPECULAR));
-        shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, OutputPort.DIFFUSE));
-        shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, OutputPort.GLOW));
-        shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, OutputPort.ALPHA_CLIP));
-        shader = shader.replace("ENV.AUTO_ST7_SETUP", setupPath(material, unknown, OutputPort.UNKNOWN));
-        shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, OutputPort.FUZZ));
-        shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, OutputPort.ANISO));
-        shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, OutputPort.COLOR_CORRECTION));
-        shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, OutputPort.TOON_RAMP));
 
         if (!useEnvironmentVariables) {
             shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", material.alphaTestLevel));
@@ -427,6 +515,8 @@ public class GfxAssembler {
             shader = shader.replaceAll("float3", "vec3");
             shader = shader.replaceAll("float4", "vec4");
             shader = shader.replaceAll("iUV", "uv");
+            shader = shader.replaceAll("iDecalUV", "decal_uv");
+            shader = shader.replaceAll("iVec2Eye", "vec2eye");
             shader = shader.replaceAll("iTangent", "tangent");
             shader = shader.replaceAll("iNormal", "normal");
             shader = shader.replaceAll("iColor", "thing_color");

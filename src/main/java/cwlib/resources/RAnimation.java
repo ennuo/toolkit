@@ -355,30 +355,30 @@ public class RAnimation implements Serializable, Compressable {
                 quaternion = new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w);
             }
 
-            if (frame + 1 != this.numFrames) {
-                rotation = this.packedRotation[this.bones.length + (frame * this.rotBonesAnimated.length) + rotationIndex];
-                quaternion = quaternion.slerp(new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w), scaleFactor);
-            }
+            // if (frame + 1 != this.numFrames) {
+            //     rotation = this.packedRotation[this.bones.length + (frame * this.rotBonesAnimated.length) + rotationIndex];
+            //     quaternion = quaternion.slerp(new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w), scaleFactor);
+            // }
         }
 
         if (translationIndex != -1 && frame < this.numFrames) {
             if (frame != 0)
                 translation = this.packedPosition[this.bones.length + ((frame - 1) * this.posBonesAnimated.length) + translationIndex];
             
-            if (frame + 1 != this.numFrames) {
-                Vector4f nextFrame = this.packedPosition[this.bones.length + ((frame) * this.posBonesAnimated.length) + translationIndex];
-                translation = translation.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
-            }
+            // if (frame + 1 != this.numFrames) {
+            //     Vector4f nextFrame = this.packedPosition[this.bones.length + ((frame) * this.posBonesAnimated.length) + translationIndex];
+            //     translation = translation.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
+            // }
         }
 
         if (scaleIndex != -1 && frame < this.numFrames) {
             if (frame != 0)
                 scale = this.packedScale[this.bones.length + ((frame - 1) * this.scaledBonesAnimated.length) + scaleIndex];
             
-            if (frame + 1 != this.numFrames) {
-                Vector4f nextFrame = this.packedScale[this.bones.length + ((frame) * this.scaledBonesAnimated.length) + scaleIndex];
-                scale = scale.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
-            }
+            // if (frame + 1 != this.numFrames) {
+            //     Vector4f nextFrame = this.packedScale[this.bones.length + ((frame) * this.scaledBonesAnimated.length) + scaleIndex];
+            //     scale = scale.mul(1 - scaleFactor).add(nextFrame.mul(scaleFactor));
+            // }
         }
 
         return new Matrix4f().identity().translationRotateScale(
@@ -399,6 +399,7 @@ public class RAnimation implements Serializable, Compressable {
     }
 
     public int getBoneIndex(int animHash) {
+        if (animHash == 0) return 0;
         for (int i = 0; i < this.bones.length; ++i) {
             AnimBone bone = this.bones[i];
             if (bone.animHash == animHash)
@@ -411,6 +412,17 @@ public class RAnimation implements Serializable, Compressable {
         for (byte index : this.morphsAnimated)
             if (index == morph)
                 return true;
+        return false;
+    }
+
+    public boolean isAnimatedAtAll(int animHash) {
+        byte index = (byte) this.getBoneIndex(animHash);
+        for (byte animated : this.posBonesAnimated)
+            if (animated == index) return true;
+        for (byte animated : this.rotBonesAnimated)
+            if (animated == index) return true;
+        for (byte animated : this.scaledBonesAnimated)
+            if (animated == index) return true;
         return false;
     }
 

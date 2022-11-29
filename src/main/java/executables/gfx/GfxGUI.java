@@ -14,7 +14,7 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
-import executables.gfx.GfxAssembler.OutputPort;
+import executables.gfx.GfxAssembler.BrdfPort;
 import executables.gfx.dialogues.ErrorDialogue;
 import executables.gfx.dialogues.TextureDialogue;
 
@@ -149,7 +149,7 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         try {
-            this.brdf = GfxAssembler.generateBRDF(this.gmat, -1, true);
+            this.brdf = GfxAssembler.generateShaderSource(this.gmat, -1, true);
             
             this.brdfShaderPathLabel.setText(name + ".cg");
 
@@ -159,7 +159,7 @@ public class GfxGUI extends javax.swing.JFrame {
                     FileIO.write(this.brdf.getBytes(), dest.getAbsolutePath());
             }
 
-            if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(), OutputPort.ALPHA_CLIP) != null)
+            if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
                 this.gmat.flags |= GfxMaterialFlags.ALPHA_CLIP;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Invalid shader graph configuration! Can't generate shader.", "Error", JOptionPane.WARNING_MESSAGE);
