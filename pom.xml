@@ -249,20 +249,5 @@
          <artifactId>earcut4j</artifactId>
          <version>2.2.2</version>
       </dependency>
-      <dependency>
-         <groupId>io.github.spair</groupId>
-         <artifactId>imgui-java-binding</artifactId>
-         <version>${imgui.java.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>io.github.spair</groupId>
-         <artifactId>imgui-java-lwjgl3</artifactId>
-         <version>${imgui.java.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>io.github.spair</groupId>
-         <artifactId>imgui-java-natives-windows</artifactId>
-         <version>${imgui.java.version}</version>
-      </dependency>
    </dependencies>
 </project>
