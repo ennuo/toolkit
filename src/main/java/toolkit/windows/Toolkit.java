@@ -215,30 +215,13 @@ public class Toolkit extends javax.swing.JFrame {
         SwingUtilities.invokeLater(loop);
     }
 
-    @SuppressWarnings("unused")
-    private void enable3DView() {        
-        this.previewContainer.setTopComponent(this.renderPane);
-        this.renderPane.removeAll();
-
-        this.renderPane.addTab("Overview", this.overviewPane);
-        this.renderPane.addTab("Scene", this.scenePanel);
-        this.renderPane.setSelectedIndex(1);
-
-        this.workspace.setLeftComponent(this.resourceTabs);
-        this.resourceTabs.removeAll();
-        this.resourceTabs.addTab("Assets", this.treeContainer);
-        this.resourceTabs.addTab("Hierachy", this.hierachyPanel);
-        this.resourceTabs.setSelectedIndex(0);
-
-        this.previewContainer.setDividerLocation(400);
-        this.workspace.setDividerLocation(275);
-        this.details.setDividerLocation(850);
-    }
-
     private void disable3DView() {
-        this.previewContainer.setTopComponent(this.overviewPane);
-        this.workspace.setLeftComponent(this.treeContainer);
+        this.renderPane.removeTabAt(1);
+        this.resourceTabs.removeTabAt(1);
+
+        // Disable 3D specific tools
         this.exportWorld.setVisible(false);
+        this.exportSceneGraph.setVisible(false);
     }
     
     private MouseListener showContextMenu = new MouseAdapter() {
@@ -1284,7 +1267,7 @@ public class Toolkit extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        entryModifiers.addTab("Metadata", itemMetadata);
+        entryModifiers.addTab("Inspector", itemMetadata);
 
         fileDataPane.setRightComponent(entryModifiers);
 
