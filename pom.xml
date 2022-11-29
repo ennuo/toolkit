@@ -8,6 +8,7 @@
    <packaging>jar</packaging>
    <properties>
       <lwjgl.version>3.3.1</lwjgl.version>
+      <imgui.java.version>1.86.4</imgui.java.version>
       <lwjgl3-awt.version>0.1.8</lwjgl3-awt.version>
       <joml.version>1.10.5</joml.version>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,7 +40,7 @@
          <properties>
             <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
          </properties>
-         </profile>
+      </profile>
       <profile>
          <id>lwjgl-natives-macos-x86_64</id>
          <activation>
@@ -96,8 +97,8 @@
             <version>2.3.2</version>
             <configuration>
                <showDeprecation>true</showDeprecation>
-                <source>11</source>
-                <target>11</target>
+               <source>11</source>
+               <target>11</target>
             </configuration>
          </plugin>
       </plugins>
@@ -233,12 +234,12 @@
          <artifactId>lwjgl-tinyfd</artifactId>
          <classifier>${lwjgl.natives}</classifier>
       </dependency>
-         <dependency>
+      <dependency>
          <groupId>org.lwjglx</groupId>
          <artifactId>lwjgl3-awt</artifactId>
          <version>${lwjgl3-awt.version}</version>
       </dependency>
-         <dependency>
+      <dependency>
          <groupId>org.joml</groupId>
          <artifactId>joml</artifactId>
          <version>${joml.version}</version>
@@ -247,6 +248,21 @@
          <groupId>io.github.earcut4j</groupId>
          <artifactId>earcut4j</artifactId>
          <version>2.2.2</version>
+      </dependency>
+      <dependency>
+         <groupId>io.github.spair</groupId>
+         <artifactId>imgui-java-binding</artifactId>
+         <version>${imgui.java.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>io.github.spair</groupId>
+         <artifactId>imgui-java-lwjgl3</artifactId>
+         <version>${imgui.java.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>io.github.spair</groupId>
+         <artifactId>imgui-java-natives-windows</artifactId>
+         <version>${imgui.java.version}</version>
       </dependency>
    </dependencies>
 </project>
