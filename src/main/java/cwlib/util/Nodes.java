@@ -28,7 +28,7 @@ public class Nodes {
         Enumeration<TreeNode> children = node.children();
         while (children.hasMoreElements()) {
             FileNode child = (FileNode) children.nextElement();
-            if (!node.isVisible() && isFiltered)
+            if (!child.isVisible() && isFiltered)
                 continue;
             nodes.add(child);
             Nodes.loadChildren(nodes, child, isFiltered);
