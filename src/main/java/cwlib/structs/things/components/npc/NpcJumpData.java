@@ -3,6 +3,7 @@ package cwlib.structs.things.components.npc;
 import org.joml.Vector3f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class NpcJumpData implements Serializable {
@@ -10,8 +11,14 @@ public class NpcJumpData implements Serializable {
 
     public float a, b, c;
     public Vector3f min, max;
+
+    @GsonRevision(min=0x273)
     public boolean flipped;
+
+    @GsonRevision(min=0x273)
     public NpcMoveCmd[] commandList;
+
+    @GsonRevision(min=0x273)
     public Vector3f apex;
 
     @SuppressWarnings("unchecked")

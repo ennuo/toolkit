@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import cwlib.enums.Branch;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
@@ -15,24 +16,68 @@ public class NpcBehavior implements Serializable {
     public int type, attributes;
     public float maxMoveSpeed;
     public int maxWaitTime;
+
+    @GsonRevision(min=0x2e6)
     public String waypointKeyName, poiKeyName;
-    public int waypointKeyColorIndex, poiKeyColorIndex;
+
+    @GsonRevision(min=0x2d5)
+    public int waypointKeyColorIndex;
+
+    @GsonRevision(min=0x2e6)
+    public int poiKeyColorIndex;
+
+    @GsonRevision(min=0x296)
     public ActingData actingData;
+
+    @GsonRevision(min=0x2ad)
     public float awarenessRadius;
+
+    @GsonRevision(min=0x2ad)
     public int sharedStateTimer;
-    public Vector3f idleLookAtPos, lastGoodPosition;
+
+    @GsonRevision(min=0x2ad)
+    public Vector3f idleLookAtPos;
+    
+    @GsonRevision(min=0x2d8)
+    public Vector3f lastGoodPosition;
+
+    @GsonRevision(min=0x2d9)
     public boolean lastPositionValid;
+
+    @GsonRevision(min=0x2cf)
     public Vector3f patrolDirection;
+
+    @GsonRevision(min=0x2cf)
     public int lastPatrolGridX, lastPatrolGridZ;
+
+    @GsonRevision(min=0x2cf)
     public int targetPatrolGridX, targetPatrolGridZ;
+
+    @GsonRevision(min=0x2cf)
     public int gridDirectionX, gridDirectionZ;
+
+    @GsonRevision(min=0x2cf)
     public int patrolStationaryCounter, patrolUnblockedCounter;
+
+    @GsonRevision(min=0x2e7)
     public int animSet;
+
+    @GsonRevision(min=0x372)
     public byte expressionType, expressionLevel;
+
+    @GsonRevision(min=0x376)
     public boolean willRecordAudio;
+
+    @GsonRevision(branch=0x4c44, min=0x17)
     public byte multiJumpLevel; // Vita 
+
+    @GsonRevision(lbp3=true, min=0xc7)
     public int awarenessRange;
+
+    @GsonRevision(lbp3=true, min=0x10f)
     public float lookAtSpeed;
+
+    @GsonRevision(lbp3=true, min=0x176)
     public boolean showAdvancedOptions;
 
 

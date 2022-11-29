@@ -3,18 +3,31 @@ package cwlib.structs.things.components.npc;
 import org.joml.Vector3f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class NpcJumpSolver implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
+    @GsonRevision(min=0x2ce)
     public boolean isCurrentJumpFlipped;
+
+    @GsonRevision(min=0x2ce)
     public Vector3f curSource, curTarget0, curTarget1;
+
+    @GsonRevision(min=0x2ce)
     public int currentJump, currentJumpPos;
 
+    @GsonRevision(max=0x2c6)
     @Deprecated public NpcJumpData[] jumpData;
+
+    @GsonRevision(max=0x2c6)
     @Deprecated public float maxEffectiveJumpHeight;
+
+    @GsonRevision(max=0x2c6)
     @Deprecated public boolean trained;
+
+    @GsonRevision(max=0x2c6)
     @Deprecated public NpcJumpData standingJump;
 
     @SuppressWarnings("unchecked")

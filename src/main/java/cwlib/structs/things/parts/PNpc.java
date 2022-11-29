@@ -4,8 +4,11 @@ import org.joml.Vector3f;
 
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.npc.BehaviourAct;
+import cwlib.structs.things.components.npc.BehaviourFollow;
 import cwlib.structs.things.components.npc.Input;
 import cwlib.structs.things.components.npc.NpcBehavior;
 import cwlib.structs.things.components.npc.NpcJumpSolver;
@@ -19,13 +22,43 @@ public class PNpc implements Serializable {
     public int soundRecordingPacket;
     public int soundRecordingPacketOffset;
     public int[] sackbotRecordingTimes;
+
+    @GsonRevision(min=0x287, max=0x292)
+    @Deprecated public BehaviourFollow follow;
+
+    @GsonRevision(min=0x287, max=0x292)
+    @Deprecated public BehaviourAct act;
+
+
+    @GsonRevision(min=0x2db)
+    @GsonRevision(min=0x295, max=0x29b)
     public NpcBehavior recordingBehavior;
+
+    @GsonRevision(min=0x2ad)
     public int flags;
-    public Thing behaviorThing, rootBehaviorThing;
+
+    @GsonRevision(min=0x29b)
+    public Thing behaviorThing;
+    
+    @GsonRevision(min=0x2d6)
+    public Thing rootBehaviorThing;
+
+    @GsonRevision(min=0x2ad)
     public Vector3f moveTarget;
-    public int waitTime, playerNumber;
+
+    @GsonRevision(min=0x2ad)
+    public int waitTime;
+    
+    @GsonRevision(min=0x2af)
+    public int playerNumber;
+
+    @GsonRevision(min=0x339)
     public String actorName;
+
+    @GsonRevision(min=0x354)
     public int lastTimeThrown, lastTimeHitTheGround, lastThrower;
+
+    @GsonRevision(min=0x392)
     public byte costumeToCopy;
 
     @SuppressWarnings("unchecked")
@@ -54,9 +87,8 @@ public class PNpc implements Serializable {
         npc.sackbotRecordingTimes = serializer.intvector(npc.sackbotRecordingTimes);
 
         if (version > 0x286 && version < 0x293) {
-            throw new SerializationException("Serialization of CBehaviourFollow and CBehaviourAct are not supported!");
-            // CBehaviourFollow
-            // CBehaviourAct
+            npc.follow = serializer.reference(npc.follow, BehaviourFollow.class);
+            npc.act = serializer.reference(npc.act, BehaviourAct.class);
         }
 
         if (version > 0x2da || (version < 0x29b && version > 0x294))

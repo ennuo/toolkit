@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 
 import cwlib.enums.Branch;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class InputRecording implements Serializable {
@@ -13,11 +14,23 @@ public class InputRecording implements Serializable {
     public byte[] inputBuffer;
     public int[] offsetBuffer;
     public int[] absoluteExpressionBuffer;
+
+    @GsonRevision(min=0x2de)
     public Matrix4f startWorldTransform;
+
+    @GsonRevision(min=0x2de)
     public Matrix4f[] startLocalSceneGraph;
+
+    @GsonRevision(min=0x2e0)
     public Vector3f startFootPos;
+
+    @GsonRevision(min=0x2e1)
     public Vector3f[] startVelocities;
+
+    @GsonRevision(min=0x3c5)
     public boolean recordingContainsMoveData;
+
+    @GsonRevision(branch=0x4c44, min=0x3a)
     public boolean recordingContainsVitaData; // Vita, perhaps obviously
 
     @SuppressWarnings("unchecked")
