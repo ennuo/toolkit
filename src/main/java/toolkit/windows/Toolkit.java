@@ -609,6 +609,7 @@ public class Toolkit extends javax.swing.JFrame {
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
         loadVitaProfile = new javax.swing.JMenuItem();
+        loadProfileBackup = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         manageProfile = new javax.swing.JMenuItem();
@@ -659,7 +660,6 @@ public class Toolkit extends javax.swing.JFrame {
         exportWorld = new javax.swing.JMenuItem();
         exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
-        debugLoadProfileBackup = new javax.swing.JMenuItem();
 
         extractContextMenu.setText("Extract");
 
@@ -1457,6 +1457,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         savedataMenu.add(loadVitaProfile);
 
+        loadProfileBackup.setText("Profile Backup");
+        loadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadProfileBackupActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadProfileBackup);
+
         loadGroupMenu.add(savedataMenu);
 
         loadMod.setText("Mod");
@@ -1759,15 +1767,6 @@ public class Toolkit extends javax.swing.JFrame {
         navigation.add(toolsMenu);
 
         debugMenu.setText("Debug");
-
-        debugLoadProfileBackup.setText("Load Profile Backup");
-        debugLoadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debugLoadProfileBackupActionPerformed(evt);
-            }
-        });
-        debugMenu.add(debugLoadProfileBackup);
-
         navigation.add(debugMenu);
 
         setJMenuBar(navigation);
@@ -2389,14 +2388,14 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.delete();
     }//GEN-LAST:event_editMenuDeleteActionPerformed
 
-    private void debugLoadProfileBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugLoadProfileBackupActionPerformed
+    private void loadProfileBackupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadProfileBackupActionPerformed
         String directoryString = FileChooser.openDirectory();
         if (directoryString == null) return;
         File directory = new File(directoryString);
         Pattern regex = Pattern.compile("BIG\\d+");
         File[] fragments = directory.listFiles((dir, name) -> regex.matcher(name).matches());
         if (fragments.length == 0) {
-            System.out.println("Couldn't find a profile backup in this directory!");
+            JOptionPane.showMessageDialog(this, "Couldn't find a profile backup in this directory!", "An error occurred", JOptionPane.ERROR_MESSAGE);
             return;
         }
         byte[][] data = new byte[fragments.length + 1][];
@@ -2411,7 +2410,7 @@ public class Toolkit extends javax.swing.JFrame {
         save.deleteOnExit();
         FileIO.write(Bytes.combine(data), save.getAbsolutePath());
         ProfileCallbacks.loadProfile(save);
-    }//GEN-LAST:event_debugLoadProfileBackupActionPerformed
+    }//GEN-LAST:event_loadProfileBackupActionPerformed
 
     private void manageProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageProfileActionPerformed
         ProfileManager manager = new ProfileManager(this);
@@ -2782,7 +2781,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel creatorLabel;
     private javax.swing.JMenuItem customCollector;
     private javax.swing.JMenu databaseMenu;
-    private javax.swing.JMenuItem debugLoadProfileBackup;
     public javax.swing.JMenu debugMenu;
     private javax.swing.JMenuItem decompressResource;
     private javax.swing.JMenuItem deleteContext;
@@ -2866,6 +2864,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem loadMeshContext;
     private javax.swing.JMenuItem loadMod;
     private javax.swing.JMenuItem loadPaletteContext;
+    private javax.swing.JMenuItem loadProfileBackup;
     private javax.swing.JMenuItem loadVitaProfile;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;

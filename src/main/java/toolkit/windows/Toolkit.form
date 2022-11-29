@@ -534,6 +534,14 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadVitaProfileActionPerformed"/>
                       </Events>
                     </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="loadProfileBackup">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Profile Backup"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadProfileBackupActionPerformed"/>
+                      </Events>
+                    </MenuItem>
                   </SubComponents>
                 </Menu>
                 <MenuItem class="javax.swing.JMenuItem" name="loadMod">
@@ -908,16 +916,6 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
           </AuxValues>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="debugLoadProfileBackup">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Load Profile Backup"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="debugLoadProfileBackupActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>
