@@ -13,20 +13,6 @@ public class MaterialBox implements Serializable {
 
     public static final int PARAMETER_COUNT = 0x8;
 
-    public static int lastUID = 0;
-
-    public transient int id = ++lastUID;
-    public transient int[] inputs = new int[] { 
-        ++lastUID, ++lastUID, ++lastUID, ++lastUID,
-        ++lastUID, ++lastUID, ++lastUID, ++lastUID,
-        ++lastUID, ++lastUID, ++lastUID, ++lastUID,
-        ++lastUID, ++lastUID, ++lastUID, ++lastUID 
-    };
-
-    public transient int[] outputs = new int[] { 
-        ++lastUID, ++lastUID, ++lastUID, ++lastUID 
-    };
-
     public int type;
     private int[] params = new int[PARAMETER_COUNT];
     public float x, y, w, h;

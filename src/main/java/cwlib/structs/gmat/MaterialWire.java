@@ -10,10 +10,7 @@ import cwlib.io.serializer.Serializer;
 public class MaterialWire implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x10;
     public static final int SWIZZLE_ELEMENT_COUNT = 5;
-
-    public static int lastUID = 0;
-    public int id = ++lastUID;
-
+    
     public int boxFrom, boxTo;
     public byte portFrom, portTo;
     public byte[] swizzle = new byte[SWIZZLE_ELEMENT_COUNT];

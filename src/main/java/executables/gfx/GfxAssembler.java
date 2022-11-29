@@ -19,9 +19,6 @@ public class GfxAssembler {
     public static String BRDF_CG = FileIO.getResourceFileAsString("/shaders/templates/cg/brdf.cg");
     public static String BRDF_GLSL = FileIO.getResourceFileAsString("/shaders/templates/glsl/brdf.fs");
 
-    public static String UNLIT_CG = FileIO.getResourceFileAsString("/shaders/templates/cg/unlit.cg");
-    public static String UNLIT_GLSL = FileIO.getResourceFileAsString("/shaders/templates/glsl/unlit.fs");
-
     public static HashMap<MaterialBox, Variable> LOOKUP = new HashMap<>();
     
     public static boolean USE_NORMAL_MAPS = false;
@@ -44,19 +41,6 @@ public class GfxAssembler {
         public static final int FUZZ = 173;
         public static final int BRDF_REFLECTANCE = 174;
         public static final int TOON_RAMP = 175;
-    }
-
-    public static class UnlitPort {
-        public static final int DIFFUSE = 0;
-    }
-
-    public static class PbrPort {
-        public static final int ALBEDO = 0;
-        public static final int NORMAL = 1;
-        public static final int SPECULAR = 2;
-        public static final int ROUGHNESS = 3;
-        public static final int METALLIC = 4;
-        public static final int AMBIENT_OCCLUSION = 5;
     }
 
     public static class GfxFlags {
@@ -161,19 +145,6 @@ public class GfxAssembler {
                 }
 
                 break;
-            }
-            case BoxType.NORMALS: return new Variable("float4(iNormal.xyz, 0.0)", 4); 
-            case BoxType.VERTEX_TANGENTS: return new Variable("float4(iTangent.xyz, 1.0)", 4);
-            case BoxType.TEXTURE_COORDINATE: {
-                if (params[1] == 1)
-                    return new Variable("iUV.zw", 2);
-                else if (params[2] == 2)
-                    return new Variable("iDecalUV.xy", 2);
-                else
-                    return new Variable("iUV.xy)", 2);
-            }
-            case BoxType.VIEW_VECTOR: {
-                return new Variable("iVec2Eye.xyz", 3);
             }
             case BoxType.THING_COLOR: return new Variable("iColor", 4);
             case BoxType.COLOR: {
@@ -320,47 +291,6 @@ public class GfxAssembler {
                 // INPUT[2] = MASK
                 // return v;
             }
-            case BoxType.MATH: {
-                String a = String.format("%f", Float.intBitsToFloat(params[0]));
-                String b = String.format("%f", Float.intBitsToFloat(params[1]));
-                String c = String.format("%f", Float.intBitsToFloat(params[2]));
-
-                Variable aInput = getWithSwizzle(shader, gmat, box, 0, type);
-                if (aInput != null)
-                    a = aInput.toString();
-
-                Variable bInput = getWithSwizzle(shader, gmat, box, 1, type);
-                if (bInput != null)
-                    b = bInput.toString();
-
-                Variable cInput = getWithSwizzle(shader, gmat, box, 2, type);
-                if (cInput != null)
-                    c = cInput.toString();
-
-                returnType = 1;
-                if (aInput != null && (aInput.type > returnType))
-                    returnType = aInput.type;
-                if (bInput != null && (bInput.type > returnType))
-                    returnType = bInput.type;
-                if (cInput != null && (cInput.type > returnType))
-                    returnType = cInput.type;
-                
-                variableName = "mth" + index;
-
-                switch (params[6]) {
-                    case 0: assignment = String.format("(%s + %s)", a, b); break;
-                    case 1: assignment = String.format("(%s - %s)", a, b); break;
-                    case 2: assignment = String.format("(%s * %s)", a, b); break;
-                    case 3: assignment = String.format("(%s / %s)", a, b); break;
-                    case 4: assignment = String.format("((%s * %s) + %s)", a, b, c); break;
-                    case 5: assignment = String.format("(pow(%s, %s))", a, b); break;
-                    default: throw new RuntimeException("Invalid math type!");
-                }
-
-                // System.out.println(assignment);
-                
-                break;
-            }
             case BoxType.EXPONENT: {
                 MaterialBox node = gmat.getBoxConnectedToPort(box, 0);
                 if (node == null) 
@@ -418,72 +348,57 @@ public class GfxAssembler {
     public static final String generateShaderSource(RGfxMaterial material, int flags, boolean useEnvironmentVariables) {
         IS_GLSL = (flags == 0xDEADBEEF);
 
-        String shader = null;
+        String shader = IS_GLSL ? BRDF_GLSL : BRDF_CG;
         int output = material.getOutputBox();
-
-        int model = output == -1 ? 2 : material.boxes.get(output).getParameters()[0]; 
-        switch (model) {
-            case 0: shader = IS_GLSL ? BRDF_GLSL : BRDF_CG; break;
-            case 1: throw new RuntimeException("PBR is unhandled!");
-            case 2: shader = IS_GLSL ? UNLIT_GLSL : UNLIT_CG; break;
-            default: throw new RuntimeException("Unhandled shader model!");
-        }
 
         ArrayList<String> properties = new ArrayList<>();
 
-        if (model == 0) {
-            MaterialBox normal = material.getBoxConnectedToPort(output, BrdfPort.BUMP);
-            MaterialBox diffuse = material.getBoxConnectedToPort(output, BrdfPort.DIFFUSE);
-            MaterialBox alpha = material.getBoxConnectedToPort(output, BrdfPort.ALPHA_CLIP);
-            MaterialBox fuzz = material.getBoxConnectedToPort(output, BrdfPort.FUZZ);
-            MaterialBox aniso = material.getBoxConnectedToPort(output, BrdfPort.ANISO);
-            MaterialBox cc = material.getBoxConnectedToPort(output, BrdfPort.COLOR_CORRECTION);
-            MaterialBox ramp = material.getBoxConnectedToPort(output, BrdfPort.TOON_RAMP);
-            MaterialBox unknown = material.getBoxConnectedToPort(output, BrdfPort.UNKNOWN);
-            MaterialBox specular = material.getBoxConnectedToPort(output, BrdfPort.SPECULAR);
-            MaterialBox glow = material.getBoxConnectedToPort(output, BrdfPort.GLOW);
-            MaterialBox reflection = material.getBoxConnectedToPort(output, BrdfPort.REFLECTION);
+        MaterialBox normal = material.getBoxConnectedToPort(output, BrdfPort.BUMP);
+        MaterialBox diffuse = material.getBoxConnectedToPort(output, BrdfPort.DIFFUSE);
+        MaterialBox alpha = material.getBoxConnectedToPort(output, BrdfPort.ALPHA_CLIP);
+        MaterialBox fuzz = material.getBoxConnectedToPort(output, BrdfPort.FUZZ);
+        MaterialBox aniso = material.getBoxConnectedToPort(output, BrdfPort.ANISO);
+        MaterialBox cc = material.getBoxConnectedToPort(output, BrdfPort.COLOR_CORRECTION);
+        MaterialBox ramp = material.getBoxConnectedToPort(output, BrdfPort.TOON_RAMP);
+        MaterialBox unknown = material.getBoxConnectedToPort(output, BrdfPort.UNKNOWN);
+        MaterialBox specular = material.getBoxConnectedToPort(output, BrdfPort.SPECULAR);
+        MaterialBox glow = material.getBoxConnectedToPort(output, BrdfPort.GLOW);
+        MaterialBox reflection = material.getBoxConnectedToPort(output, BrdfPort.REFLECTION);
 
-            if (alpha != null) properties.add("ALPHA");
-            else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
-                alpha = diffuse;
-                properties.add("ALPHA");
-            }
-    
-            if (specular != null) properties.add("SPECULAR");
-            if (normal != null) properties.add("NORMAL");
-            if (glow != null) properties.add("GLOW");
-            if (reflection != null) properties.add("REFRACT");
-            if (material.alphaLayer == 0xc0) 
-                properties.add("GLASS");
-            if (unknown != null) properties.add("ST7");
-            if (aniso != null) properties.add("ANISO");
-            if (cc != null) properties.add("COLOR_CORRECTION");
-            if (fuzz != null) properties.add("FUZZ");
-            if (ramp != null) properties.add("LIGHTING_RAMP");
-
-            if (properties.size() == 0)
-                properties.add("NO_FLAGS");
-
-            shader = shader.replace("ENV.AUTO_NORMAL_SETUP", setupPath(material, normal, BrdfPort.BUMP));
-            shader = shader.replace("ENV.AUTO_REFLECTION_SETUP", setupPath(material, reflection, BrdfPort.REFLECTION));
-            shader = shader.replace("ENV.AUTO_SPECULAR_SETUP", setupPath(material, specular, BrdfPort.SPECULAR));
-            shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, BrdfPort.DIFFUSE));
-            shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, BrdfPort.GLOW));
-            shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, BrdfPort.ALPHA_CLIP));
-            shader = shader.replace("ENV.AUTO_ST7_SETUP", setupPath(material, unknown, BrdfPort.UNKNOWN));
-            shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, BrdfPort.FUZZ));
-            shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, BrdfPort.ANISO));
-            shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, BrdfPort.COLOR_CORRECTION));
-            shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, BrdfPort.TOON_RAMP));
-        } else if (model == 2) {
-            MaterialBox diffuse = material.getBoxConnectedToPort(output, UnlitPort.DIFFUSE);
-            shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, BrdfPort.DIFFUSE));
+        if (alpha != null) properties.add("ALPHA");
+        else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0) {
+            alpha = diffuse;
+            properties.add("ALPHA");
         }
 
+        if (specular != null) properties.add("SPECULAR");
+        if (normal != null) properties.add("NORMAL");
+        if (glow != null) properties.add("GLOW");
+        if (reflection != null) properties.add("REFRACT");
+        if (material.alphaLayer == 0xc0) 
+            properties.add("GLASS");
+        if (unknown != null) properties.add("ST7");
+        if (aniso != null) properties.add("ANISO");
+        if (cc != null) properties.add("COLOR_CORRECTION");
+        if (fuzz != null) properties.add("FUZZ");
+        if (ramp != null) properties.add("LIGHTING_RAMP");
+
+        if (properties.size() == 0)
+            properties.add("NO_FLAGS");
+
+        shader = shader.replace("ENV.AUTO_NORMAL_SETUP", setupPath(material, normal, BrdfPort.BUMP));
+        shader = shader.replace("ENV.AUTO_REFLECTION_SETUP", setupPath(material, reflection, BrdfPort.REFLECTION));
+        shader = shader.replace("ENV.AUTO_SPECULAR_SETUP", setupPath(material, specular, BrdfPort.SPECULAR));
+        shader = shader.replace("ENV.AUTO_DIFFUSE_SETUP", setupPath(material, diffuse, BrdfPort.DIFFUSE));
+        shader = shader.replace("ENV.AUTO_GLOW_SETUP", setupPath(material, glow, BrdfPort.GLOW));
+        shader = shader.replace("ENV.AUTO_ALPHA_SETUP", setupPath(material, alpha, BrdfPort.ALPHA_CLIP));
+        shader = shader.replace("ENV.AUTO_ST7_SETUP", setupPath(material, unknown, BrdfPort.UNKNOWN));
+        shader = shader.replace("ENV.AUTO_FUZZ_SETUP", setupPath(material, fuzz, BrdfPort.FUZZ));
+        shader = shader.replace("ENV.AUTO_ANISO_SETUP", setupPath(material, aniso, BrdfPort.ANISO));
+        shader = shader.replace("ENV.AUTO_COLOR_CORRECTION_SETUP", setupPath(material, cc, BrdfPort.COLOR_CORRECTION));
+        shader = shader.replace("ENV.AUTO_RAMP_SETUP", setupPath(material, ramp, BrdfPort.TOON_RAMP));
 
 
-        shader = shader.replace("ENV.SHADER_MODEL", "" + model);
         if (flags != -1)
             shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
         shader = shader.replace("ENV.MATERIAL_PROPERTIES", String.format("(%s)", String.join(" | ", properties)));

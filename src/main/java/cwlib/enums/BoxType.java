@@ -24,13 +24,4 @@ public class BoxType {
     // 17, something with fur
     // 18 ??? 
     public static final int EXPONENT = 19;
-
-    public static final int PBR = 0x80;
-    public static final int VERTEX_TANGENTS = 0x81;
-    public static final int TEXTURE_COORDINATE = 0x82;
-    public static final int VIEW_VECTOR = 0x83;
-    public static final int NORMALS = 0x84;
-    public static final int NORMAL_MAP = 0x85;
-    public static final int BUMP_MAP = 0x86;
-    public static final int MATH = 0x89;
 }
