@@ -66,6 +66,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 import javax.swing.tree.TreePath;
 
@@ -73,6 +74,8 @@ import configurations.Config;
 import configurations.Profile;
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.Part;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
@@ -349,6 +352,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportTextureGroupContext.setVisible(false);
         editSlotContext.setVisible(false);
         exportLAMSContext.setVisible(false);
+        exportPaletteContext.setVisible(false);
         loadLAMSContext.setVisible(false);
         replaceContext.setVisible(false);
         newFolderContext.setVisible(false);
@@ -430,8 +434,16 @@ public class Toolkit extends javax.swing.JFrame {
 
                 if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
                 if (info.getResource() != null) {
-                    if (type == ResourceType.PALETTE && ApplicationFlags.ENABLE_3D)
-                        loadPaletteContext.setVisible(true);
+                    if (type == ResourceType.PALETTE) {
+                        
+                        if (ApplicationFlags.ENABLE_3D)
+                            loadPaletteContext.setVisible(true);
+                        
+                        exportGroup.setVisible(true);
+                        exportPaletteContext.setVisible(true);
+                        
+                    }
+                        
                    
                     if (type == ResourceType.LEVEL && ApplicationFlags.ENABLE_3D)
                         loadLevelContext.setVisible(true);
@@ -532,6 +544,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportBackupGroup = new javax.swing.JMenu();
         exportAsBackup = new javax.swing.JMenuItem();
         exportAsBackupGUID = new javax.swing.JMenuItem();
+        exportPaletteContext = new javax.swing.JMenuItem();
         replaceContext = new javax.swing.JMenu();
         replaceCompressed = new javax.swing.JMenuItem();
         replaceDecompressed = new javax.swing.JMenuItem();
@@ -870,6 +883,14 @@ public class Toolkit extends javax.swing.JFrame {
         exportBackupGroup.add(exportAsBackupGUID);
 
         exportGroup.add(exportBackupGroup);
+
+        exportPaletteContext.setText("BIN");
+        exportPaletteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPaletteContextActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportPaletteContext);
 
         entryContext.add(exportGroup);
 
@@ -2499,7 +2520,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         
         SaveArchive[] archives = new SaveArchive[fragments.length];
-        SaveArchive master = null;
+        HashMap<Integer, SaveArchive> archiveIDs = new HashMap<>(fragments.length);
         
         for (int i = 0; i < fragments.length; ++i) {
             File fragment = fragments[i];
@@ -2511,14 +2532,19 @@ public class Toolkit extends javax.swing.JFrame {
             }
             
             archives[i] = archive;
-            if (master == null) master = archive;
-            else if (archive.getID() > master.getID())
-                master = archive;
+            archiveIDs.put(archive.getID(), archive);
         }
+
+        SaveArchive master = archives[fragments.length - 1];
         
-        // Patch all other archives into master archive
-        for (SaveArchive archive  : archives) {
-            if (master == archive) continue;
+        // Patch all relevant archives into master
+        for (int id  : master.getFragmentIDs()) {
+            if (id == master.getID()) continue;
+            SaveArchive archive = archiveIDs.get(id);
+            if (archive == null) {
+                JOptionPane.showMessageDialog(this, "An archive is missing from your savedata!", "Error!", JOptionPane.ERROR_MESSAGE);
+                continue;
+            }
             master.add(archive);
         }
         
@@ -2562,6 +2588,40 @@ public class Toolkit extends javax.swing.JFrame {
         Toolkit.INSTANCE.addTab(profile);
         Toolkit.INSTANCE.updateWorkspace();
     }//GEN-LAST:event_loadVitaProfileActionPerformed
+
+    private void exportPaletteContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPaletteContextActionPerformed
+        RPalette palette = ResourceSystem.getSelectedResource();
+        if (palette == null) return;
+        
+        FileEntry entry = ResourceSystem.getSelected().getEntry();
+        ResourceInfo info = entry.getInfo();
+        
+        File file = FileChooser.openFile(entry.getName() + ".bin", "bin", true);
+        if (file == null) return;
+        
+        Revision revision = info.getRevision();
+        byte compressionFlags = info.getCompressionFlags();
+        
+        RLevel level = new RLevel();
+        
+        PWorld world = (PWorld) level.world.getPart(Part.WORLD);
+        ArrayList<Thing> things = world.things;
+        
+        for (ResourceDescriptor descriptor : palette.planList) {
+            byte[] planData = ResourceSystem.extract(descriptor);
+            if (planData == null) continue;
+            RPlan plan = new Resource(planData).loadResource(RPlan.class);
+            Thing[] planThings = plan.getThings();
+            for (Thing thing : planThings) {
+                if (thing == null) continue;
+                thing.UID = ++world.thingUIDCounter;
+                things.add(thing);
+            }
+        }
+        
+        byte[] levelData = Resource.compress(level.build(revision, compressionFlags));
+        FileIO.write(levelData, file.getAbsolutePath());
+    }//GEN-LAST:event_exportPaletteContextActionPerformed
 
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
@@ -2793,6 +2853,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportOBJTEXCOORD1;
     private javax.swing.JMenuItem exportOBJTEXCOORD2;
     private javax.swing.JMenuItem exportPNG;
+    private javax.swing.JMenuItem exportPaletteContext;
     private javax.swing.JMenuItem exportSceneGraph;
     private javax.swing.JMenu exportTextureGroupContext;
     private javax.swing.JMenuItem exportWorld;
