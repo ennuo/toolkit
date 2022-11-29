@@ -3,6 +3,7 @@ package toolkit.utilities.services;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.databases.FileEntry;
 import toolkit.windows.Toolkit;
@@ -18,7 +19,20 @@ public class PlanService implements ResourceService  {
         RPlan plan = info.getResource();
         JTree selected = ResourceSystem.getSelectedDatabase().getTree();
         if (ResourceSystem.getSelected().getEntry() != entry || selected != tree) return;
-        Toolkit.INSTANCE.populateMetadata(plan);
+
+        if (plan.inventoryData == null) {
+            ResourceSystem.println("Attempting to guess icon of RPlan, this may not be accurate.");
+            try {
+                for (ResourceDescriptor dependency : info.getDependencies()) {
+                    if (dependency.getType().equals(ResourceType.TEXTURE))
+                        Toolkit.INSTANCE.loadImage(dependency, plan);
+                }
+            } catch (Exception ex) {
+                ResourceSystem.println("An error occurred processing texture for plan icon. Exiting.");
+            }
+        }
+        else Toolkit.INSTANCE.populateMetadata(plan);
+        
     }
 
     @Override public int[] getSupportedHeaders() { return HEADERS; }

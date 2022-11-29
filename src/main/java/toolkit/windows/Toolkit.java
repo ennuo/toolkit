@@ -2625,25 +2625,25 @@ public class Toolkit extends javax.swing.JFrame {
 
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
-        InventoryItemDetails metadata = item.inventoryData;
-        if (metadata == null) return;
+        InventoryItemDetails details = item.inventoryData;
+        if (details == null) return;
 
         iconField.setText("");
-        if (metadata.icon != null)
-            loadImage(metadata.icon, item);
+        if (details.icon != null)
+            loadImage(details.icon, item);
 
         if (ResourceSystem.getSelected().getEntry().getInfo().getResource() != item) return;
 
-        setPlanDescriptions(metadata);
+        setPlanDescriptions(details);
 
-        if (metadata.type.isEmpty())
+        if (details.type.isEmpty())
             pageCombo.setSelectedItem(InventoryObjectType.NONE);
         else 
-            pageCombo.setSelectedItem(metadata.type.iterator().next());
-        subCombo.setText(InventoryObjectSubType.getTypeString(metadata.type, metadata.subType));
+            pageCombo.setSelectedItem(details.type.iterator().next());
+        subCombo.setText(InventoryObjectSubType.getTypeString(details.type, details.subType));
         
-        if (metadata.creator != null)
-            creatorField.setText(metadata.creator.toString());
+        if (details.creator != null)
+            creatorField.setText(details.creator.toString());
         else creatorField.setText("");
         
         entryModifiers.setEnabledAt(1, true);
@@ -2692,25 +2692,15 @@ public class Toolkit extends javax.swing.JFrame {
     }
 
     public void loadImage(ResourceDescriptor resource, RPlan item) {
-        // TODO: FIX LOADING IMAGE PREVIEWS
-        // if (resource == null) return;
-        // iconField.setText(resource.toString());
-        // FileEntry entry = ResourceSystem.findEntry(resource);
-        
-        // if (entry == null) return;
+        if (resource == null) return;
+        iconField.setText(resource.toString());
+        FileEntry entry = ResourceSystem.get(resource);
+        if (entry == null) return;
 
-        // RTexture texture = entry.getResource("texture");
-        // if (entry != null && texture != null)
-        //     setImage(texture.getImageIcon(320, 320));
-        // else {
-        //     byte[] data = ResourceSystem.extract(resource);
-        //     if (data == null) return;
-        //     texture = new RTexture(data);
-        //     if (entry != null) entry.setResource("texture", texture);
-        //     if (texture.parsed == true)
-        //         if (ResourceSystem.getSelected().getEntry().<RPlan>getResource("item") == item)
-        //             setImage(texture.getImageIcon(320, 320));
-        // }
+        byte[] data = ResourceSystem.extract(resource);
+        if (data == null) return;
+        RTexture texture = new RTexture(data);
+        setImage(texture.getImageIcon(320, 320));
     }
 
     public void setImage(ImageIcon image) {
