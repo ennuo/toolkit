@@ -28,7 +28,7 @@ public class RAdventureCreateProfile implements Serializable, Compressable {
     private HashMap<SlotID, Slot> adventureSlots = new HashMap<>();
 
     private byte[] unparsedData;
-    private HashSet<ResourceDescriptor> dependencyCache;
+    private HashSet<ResourceDescriptor> dependencyCache = new HashSet<>();
     
     @SuppressWarnings("unchecked")
     @Override public RAdventureCreateProfile serialize(Serializer serializer, Serializable structure) {
