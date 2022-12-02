@@ -2,7 +2,6 @@ package cwlib.structs.things.parts;
 
 import org.joml.Vector3f;
 
-import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;

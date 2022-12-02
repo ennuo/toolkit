@@ -698,6 +698,7 @@ public class MeshExporter {
                             foundDiffuse = true;
                             pbr.setBaseColorTexture(textureInfo);
                             if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
+                                @SuppressWarnings("unchecked")
                                 HashMap<String, Object> map = (HashMap<String, Object>) material.getExtensions().get("KHR_materials_pbrSpecularGlossiness");  
                                 if (!map.containsKey("diffuseTexture"))
                                     map.put("diffuseTexture", textureInfo);
@@ -749,6 +750,7 @@ public class MeshExporter {
                         float[] color = new float[] { Float.intBitsToFloat((int) params[0]) / 255f, Float.intBitsToFloat((int) params[1]) / 255f, Float.intBitsToFloat((int) params[2]) / 255f, Float.intBitsToFloat((int) params[3]) / 255f};
                         if (wire.portTo == 0) {
                             if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
+                                @SuppressWarnings("unchecked")
                                 HashMap<String, Object> map = (HashMap<String, Object>) material.getExtensions().get("KHR_materials_pbrSpecularGlossiness");  
                                 if (!map.containsKey("diffuseFactor"))
                                     map.put("diffuseFactor", color);

@@ -23,7 +23,6 @@ import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
-import de.javagl.jgltf.impl.v1.Material;
 
 /**
  * Resource that controls how meshes get rendered,

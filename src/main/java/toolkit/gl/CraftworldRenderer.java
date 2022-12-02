@@ -2,8 +2,6 @@ package toolkit.gl;
 
 import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
-import cwlib.types.Resource;
-import cwlib.util.FileIO;
 import editor.gl.Camera;
 import editor.gl.RenderSystem;
 

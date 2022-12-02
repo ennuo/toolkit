@@ -41,4 +41,12 @@ public enum ModifierType {
                 bitset.add(type);
         return bitset;
     }
+
+    public static String toModifierString(EnumSet<ModifierType> set) {
+        String[] modifiers = new String[set.size()];
+        int i = 0;
+        for (ModifierType type : set) 
+            modifiers[i++] = type.toString().toLowerCase();
+        return String.join(" ", modifiers);
+    }
 }

@@ -341,12 +341,29 @@ public class Revisions {
     public static final int ARCADE = 0x273; // Robo boots (wall jump), custom guns, recordings, logic
     public static final int INPUT_UPDATE_TYPE = 0x274; // added updateType to PSwitchInput
     public static final int INPUT_LETHAL_TYPE = 0x275; // added lethalType to PSwitchInput
+    // 0x276, ???
+    // 0x277, add port thing to PSwitch, removed in 0x327
+    // 0x278, add fromWaterLevel to PWorld, portThing to PSwitchInput, removed in 0x327
+    // 0x279, add configuration to PPhysicsTweak
+    // 0x27a, add unknown thing field to PPhysicsTweak, removed in 0x327
     public static final int MATERIAL_CIRCUITBOARD = 0x27b; // Add circuitboard and disableCSG to RMaterial
     public static final int GENERATEDMESH_VISIBILITY = 0x27c; // add visible to PGeneratedMesh
-    public static final int THING_SWAP_UID_PARENT = 0x27f; // swap thing UID and thing parent fields in serialization
-    public static final int INPUT_RIGID_CONNECTORS = 0x288; // added includeRigidConnectors to PSwitchInput
     public static final int SWITCHKEY_TYPE = 0x27d; // added type to PSwitchKey
-    public static final int MICROCHIP_VISIBILITY = 0x283; // Added hideInPlayMode to PMicrochip
+    // 0x27e, add switchConnectorUID to PoppetEditState
+    public static final int THING_SWAP_UID_PARENT = 0x27f; // swap thing UID and thing parent fields in serialization
+    // 0x280, remove unknown field in NpcMoveCmd
+    // 0x281, replace PPhysicsTweak inputs with vector types, switch tweak target length to floats in PJoint
+    // 0x282, add unknown structure to PWorld, removed in 0x287
+    public static final int MICROCHIP_VISIBILITY = 0x283; // Added hideInPlayMode to PMicrochip and PPhysicsTweak
+    // 0x284, add includeRigidConnectors to PSwitch
+    // 0x285, customPortOffset to PSwitch
+    // 0x286, add decelStrength to PPhysicsTweak
+    // 0x287, add BehaviorFollow/Act to PNpc, removed in 0x293, also removes some struct in PWorld
+    public static final int INPUT_RIGID_CONNECTORS = 0x288; // added includeRigidConnectors to PSwitchInput
+    // 0x289, added scuba gear / headpiece to PCreature
+    // 0x28a, 
+    // 0x28b, added ActivationFrame/Inverted to PSwitchInput
+    // 0x28c, added hidden categories in RLocalProfile
     public static final int SWITCHINPUT_VISIBILITY = 0x297; // Added hideInPlayMode to PSwitchInput
     public static final int THING_TEST_MARKER = 0x2a1; // Adds test serialization marker to CThing
     public static final int PARAMETER_ANIMATIONS = 0x2a2; // Added parameter animations to RGfxMaterial

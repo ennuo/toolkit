@@ -430,9 +430,34 @@ public class PWorld implements Serializable {
 
         if (version >= 0x29c || revision.has(Branch.LEERDAMMER, Revisions.LD_WATER_WAVE))
             world.currWavePos = serializer.f32(world.currWavePos);
+        
 
-        if (0x281 < version && version < 0x287)
-            throw new SerializationException("Unsupported structure in serialization");
+        if ((version > 0x288 && version < 0x29c) || (revision.isLeerdammer() && revision.before(Branch.LEERDAMMER, Revisions.LD_WATER_WAVE))) {
+            serializer.f32(0);
+            serializer.bool(false);
+        }
+
+        // CBreadLoaf
+        if (0x281 < version && version < 0x287) {
+            if (serializer.i32(0) != 0)
+                throw new SerializationException("CBreadLoaf serialization not supported!");
+
+            // serializer.i32(0); // loafAlloc.numHandles
+            // serializer.i32(0); // loafAlloc.freehead
+            // serializer.i32(0); // loafAlloc.numUsed
+            // // handles?
+
+            // // reflect array 2, loafMin floats
+            // serializer.i32(0); // loafSize
+            // serializer.u16(0); // maxDepth
+            // serializer.u16(0); // first
+
+            // // reflect array, x via numHandles float
+            // // reflect array, y via numHandles float
+            // // reflect 4 LoafHandle's short?
+            // // firstcrumb short
+            // // depth, bytearray?
+        }
 
         if (version >= 0x2a3) world.gameMode = serializer.enum32(world.gameMode);
     

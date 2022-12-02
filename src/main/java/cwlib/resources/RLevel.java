@@ -28,7 +28,6 @@ import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PBody;
 import cwlib.structs.things.parts.PEffector;
 import cwlib.structs.things.parts.PGameplayData;
-import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PScript;

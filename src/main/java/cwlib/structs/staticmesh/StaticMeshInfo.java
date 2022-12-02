@@ -3,11 +3,7 @@ package cwlib.structs.staticmesh;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
-import cwlib.resources.RStaticMesh;
-import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.FileIO;
-import cwlib.util.GsonUtils;
 
 import org.joml.Vector3f;
 
@@ -81,27 +77,5 @@ public class StaticMeshInfo implements Serializable {
         if (this.unknown != null)
             size += (this.unknown.length * UnknownStruct.BASE_ALLOCATION_SIZE);
         return size;
-    }
-
-    public static void main(String[] args) {
-        Resource resource = new Resource("C:/Users/Aidan/Desktop/env_default_background_template.smh");
-        RStaticMesh mesh = new RStaticMesh(resource);
-        
-        // Vector3f[] vertices = mesh.getVertices();
-        // int index = 0;
-        // for (UnknownStruct struct : resource.getMeshInfo().unknown) {
-        //     if (struct.s4 != 0) {
-        //         StringBuilder obj = new StringBuilder();
-        //         for (int i = struct.s3; i < struct.s3 + struct.s4; ++i) {
-        //             StaticPrimitive primitive = resource.getMeshInfo().primitives[i];
-        //             for (int j = primitive.)
-
-
-        //         }
-        //     }
-        // }
-        // index++;
-
-        FileIO.write(GsonUtils.toJSON(resource.getMeshInfo()).getBytes(), "C:/Users/Aidan/Desktop/mesh.info.json");
     }
 }

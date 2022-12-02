@@ -1,8 +1,6 @@
 package cwlib.structs.things.components.world;
 
-import cwlib.enums.Branch;
 import cwlib.io.Serializable;
-import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class GameCamera implements Serializable {

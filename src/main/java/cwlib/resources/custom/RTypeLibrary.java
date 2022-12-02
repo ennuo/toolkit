@@ -12,8 +12,13 @@ import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.structs.custom.typelibrary.ClassVariable;
 import cwlib.structs.custom.typelibrary.ScriptVariable;
+import cwlib.types.Resource;
+import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import cwlib.util.FileIO;
 
 public class RTypeLibrary implements Compressable, Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x10;
@@ -65,6 +70,20 @@ public class RTypeLibrary implements Compressable, Serializable {
         return library;
     }
 
+    public String getNameByDescriptor(ResourceDescriptor descriptor) {
+        HashMap<String, ScriptVariable> std = this.namespaces.get("std");
+        for (ScriptVariable member : std.values()) {
+            if (member.getVariableType() == ScriptVariableType.CLASS) {
+                ClassVariable variable = (ClassVariable) member;
+                if (variable.classType.script != null && variable.classType.script.equals(descriptor))
+                    return variable.classType.name;
+            }
+        }
+        return null;
+    }
+
+    public static final RTypeLibrary LBP1 = new Resource(FileIO.getResourceFile("/libraries/lbp1.lib")).loadResource(RTypeLibrary.class);
+    public static final RTypeLibrary LBP3 = new Resource(FileIO.getResourceFile("/libraries/lbp3.lib")).loadResource(RTypeLibrary.class);
 
     @Override public int getAllocatedSize() {
         int size = RTypeLibrary.BASE_ALLOCATION_SIZE;

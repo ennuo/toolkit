@@ -725,6 +725,7 @@ public class Serializer {
 
             long bytes = Arrays.stream(value).max().orElse(0);
             if (bytes == 0) {
+                this.output.i32(value.length);
                 this.output.i32(0);
                 return value;
             }

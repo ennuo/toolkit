@@ -313,9 +313,9 @@ public class RAnimation implements Serializable, Compressable {
     public Matrix4f getFrameMatrix(int animHash, int frame, float position) {
         int index = this.getBoneIndex(animHash);
 
-        float lastTime = frame * ((float) (1.0f / this.numFrames));
-        float nextTime = (frame + 1) * ((float) (1.0f / this.numFrames));
-        float scaleFactor = (position - lastTime) / (nextTime - lastTime);
+        // float lastTime = frame * ((float) (1.0f / this.numFrames));
+        // float nextTime = (frame + 1) * ((float) (1.0f / this.numFrames));
+        // float scaleFactor = (position - lastTime) / (nextTime - lastTime);
 
         int translationIndex = -1, scaleIndex = -1, rotationIndex = -1;
 
