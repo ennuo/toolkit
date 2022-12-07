@@ -73,6 +73,9 @@ import configurations.Profile;
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.Part;
+import cwlib.io.Serializable;
+import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
@@ -653,6 +656,7 @@ public class Toolkit extends javax.swing.JFrame {
         collectAllItemDependencies = new javax.swing.JMenuItem();
         customCollector = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        fixDependencyTable = new javax.swing.JMenuItem();
         generateDiff = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
@@ -1698,6 +1702,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(jMenu2);
 
         collectionD.setText("Collectors");
+        collectionD.setToolTipText("");
 
         collectorPresets.setText("Presets");
 
@@ -1730,7 +1735,17 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(collectionD);
         toolsMenu.add(jSeparator3);
 
+        fixDependencyTable.setText("Calculate Dependency Table");
+        fixDependencyTable.setToolTipText("Takes any compressed resource and attempts to automatically generate the dependency table");
+        fixDependencyTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fixDependencyTableActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(fixDependencyTable);
+
         generateDiff.setText("Get FileDB diffs");
+        generateDiff.setToolTipText("Generates a text file showing differences between two FileDB's");
         generateDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateDiffActionPerformed(evt);
@@ -1740,6 +1755,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(jSeparator5);
 
         installProfileMod.setText("Install Mod(s)");
+        installProfileMod.setToolTipText("Installs mod file(s) to currently selected database");
         installProfileMod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 installProfileModActionPerformed(evt);
@@ -1748,6 +1764,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(installProfileMod);
 
         exportWorld.setText("Export RLevel");
+        exportWorld.setToolTipText("Exports the current scene graph as a level");
         exportWorld.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportWorldActionPerformed(evt);
@@ -1756,6 +1773,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(exportWorld);
 
         exportSceneGraph.setText("Export Scene Graph");
+        exportSceneGraph.setToolTipText("Dumps the current scene graph to a file");
         exportSceneGraph.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportSceneGraphActionPerformed(evt);
@@ -2601,6 +2619,50 @@ public class Toolkit extends javax.swing.JFrame {
         FileIO.write(levelData, file.getAbsolutePath());
     }//GEN-LAST:event_exportPaletteContextActionPerformed
 
+    private void fixDependencyTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixDependencyTableActionPerformed
+        File file = FileChooser.openFile("resource.bin", null, false);
+        if (file == null) return;
+
+        byte[] data = FileIO.read(file.getAbsolutePath());
+        if (data == null) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Failed to read file, is it protected?", "Calculate Dependency Table", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Resource resource = null;
+        try { resource = new Resource(data); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Failed to deserialize resource!", "Calculate Dependency Table", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        Serializer serializer = resource.getSerializer();
+        Class<? extends Serializable> type = resource.getResourceType().getCompressable();
+        if (type == null) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "This resource is unsupported!", "Calculate Dependency Table", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try { serializer.struct(null, type); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Failed to deserialize resource!", "Calculate Dependency Table", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        data = Resource.compress(new SerializationData(
+            resource.getStream().getBuffer(),
+            resource.getRevision(),
+            resource.getCompressionFlags(),
+            resource.getResourceType(),
+            resource.getSerializationType(),
+            serializer.getDependencies()
+        ));
+        
+        File out = FileChooser.openFile(file.getName(), null, true);
+        if (out != null)
+            FileIO.write(data, out.getAbsolutePath());
+    }//GEN-LAST:event_fixDependencyTableActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -2832,6 +2894,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JSplitPane fileDataPane;
     public javax.swing.JTabbedPane fileDataTabs;
     public javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem fixDependencyTable;
     private javax.swing.JMenu gamedataMenu;
     private javax.swing.JMenuItem generateDiff;
     private tv.porst.jhexview.JHexView hex;

@@ -836,6 +836,7 @@
             <Menu class="javax.swing.JMenu" name="collectionD">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Collectors"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
               </Properties>
               <SubComponents>
                 <Menu class="javax.swing.JMenu" name="collectorPresets">
@@ -873,9 +874,19 @@
             </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="fixDependencyTable">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Calculate Dependency Table"/>
+                <Property name="toolTipText" type="java.lang.String" value="Takes any compressed resource and attempts to automatically generate the dependency table"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fixDependencyTableActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="generateDiff">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Get FileDB diffs"/>
+                <Property name="toolTipText" type="java.lang.String" value="Generates a text file showing differences between two FileDB&apos;s"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDiffActionPerformed"/>
@@ -886,6 +897,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="installProfileMod">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Install Mod(s)"/>
+                <Property name="toolTipText" type="java.lang.String" value="Installs mod file(s) to currently selected database"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="installProfileModActionPerformed"/>
@@ -894,6 +906,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exportWorld">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Export RLevel"/>
+                <Property name="toolTipText" type="java.lang.String" value="Exports the current scene graph as a level"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportWorldActionPerformed"/>
@@ -902,6 +915,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exportSceneGraph">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Export Scene Graph"/>
+                <Property name="toolTipText" type="java.lang.String" value="Dumps the current scene graph to a file"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportSceneGraphActionPerformed"/>
