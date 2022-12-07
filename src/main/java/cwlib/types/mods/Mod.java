@@ -115,6 +115,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
             // Prefer the model of the FileDB
             this.model = this.database.getModel();
             this.root = this.database.getRoot();
+            this.getTree().setModel(this.model);
 
             for (FileDBRow entry : database) {
                 if (this.archive != null && archive.exists(entry.getSHA1())) continue;

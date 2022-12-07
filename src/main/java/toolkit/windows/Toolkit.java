@@ -383,7 +383,7 @@ public class Toolkit extends javax.swing.JFrame {
                 }
                 if (entry != null) {
                     duplicateContext.setVisible(true);
-                    if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE && !isDependencyTree)
+                    if (ResourceSystem.getDatabaseType().hasGUIDs() && !isDependencyTree)
                         editMenuContext.setVisible(true);
                 }
             }
@@ -424,7 +424,6 @@ public class Toolkit extends javax.swing.JFrame {
                         
                     }
                         
-                   
                     if (type == ResourceType.LEVEL && ApplicationFlags.ENABLE_3D)
                         loadLevelContext.setVisible(true);
                     
