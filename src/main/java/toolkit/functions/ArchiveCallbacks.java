@@ -162,7 +162,6 @@ public class ArchiveCallbacks {
 
     public static void extract(boolean decompress) {
         FileNode[] selected = ResourceSystem.getAllSelected();
-        System.out.println(selected.length);
         if (selected.length == 0) return;
         if (selected.length > 1) {
             int success = 0;

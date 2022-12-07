@@ -577,6 +577,8 @@ public class SlotManager extends javax.swing.JFrame {
     }
     
     private void updateIcon(boolean force) {
+        // TODO: Re-add rendering icons
+        
         // if (force || this.selectedSlot.renderedIcon == null) {
         //     this.selectedSlot.renderedIcon = null;
         //     this.selectedSlot.renderIcon(this.entry);

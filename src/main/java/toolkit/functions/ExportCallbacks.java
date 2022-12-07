@@ -211,6 +211,8 @@ public class ExportCallbacks {
 
         mod.getConfig().title = name;
         
+        // TODO: Re-add merging mods
+        
         // if (file.exists()) {
         //     int result = JOptionPane.showConfirmDialog(null, "This mod already exists, do you want to merge them?", "Existing mod!", JOptionPane.YES_NO_CANCEL_OPTION);
         //     if (result == JOptionPane.YES_OPTION) {
