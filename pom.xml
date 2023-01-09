@@ -169,7 +169,7 @@
       <dependency>
          <groupId>com.github.javagl.JglTF</groupId>
          <artifactId>jgltf-model</artifactId>
-         <version>306ff0a</version>
+         <version>bf213f0</version>
       </dependency>
       <dependency>
          <groupId>org.lwjgl</groupId>
