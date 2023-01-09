@@ -377,6 +377,31 @@ public class MemoryOutputStream {
     }
 
     /**
+     * Writes a 3-dimensional floating point vector to the stream.
+     * @param value Vector3f to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream v3(float x, float y, float z) {
+        this.f32(x);
+        this.f32(y);
+        this.f32(z);
+        return this;
+    }
+
+    /**
+     * Writes a 3-dimensional floating point vector to the stream.
+     * @param value Vector3f to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream v3(Vector4f value) {
+        if (value == null) value = new Vector4f().zero();
+        this.f32(value.x);
+        this.f32(value.y);
+        this.f32(value.z);
+        return this;
+    }
+
+    /**
      * Writes a 4-dimensional floating point vector to the stream.
      * @param value Vector4f to write
      * @return This output stream
