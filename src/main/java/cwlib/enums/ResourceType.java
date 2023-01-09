@@ -2,24 +2,8 @@ package cwlib.enums;
 
 import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
-import cwlib.resources.RAdventureCreateProfile;
-import cwlib.resources.RAnimation;
-import cwlib.resources.RBevel;
-import cwlib.resources.RBigProfile;
-import cwlib.resources.RGfxMaterial;
-import cwlib.resources.RInstrument;
-import cwlib.resources.RJoint;
-import cwlib.resources.RLevel;
-import cwlib.resources.RLocalProfile;
-import cwlib.resources.RMaterial;
-import cwlib.resources.RMesh;
-import cwlib.resources.RPacks;
-import cwlib.resources.RPalette;
-import cwlib.resources.RPlan;
-import cwlib.resources.RSlotList;
-import cwlib.resources.custom.RBoneSet;
-import cwlib.resources.custom.RSceneGraph;
-import cwlib.resources.custom.RShaderCache;
+import cwlib.resources.*;
+import cwlib.resources.custom.*;
 
 /**
  * All valid resource types used by the
@@ -44,7 +28,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     SETTINGS_SOFT_PHYS("SSP", 14, "softphys_settings/", ".sph"),
     FONTFACE("FNT", 15, "fonts/", ".fnt"),
     MATERIAL("MAT", 16, RMaterial.class, "physics_materials/", ".mat"),
-    DOWNLOADABLE_CONTENT("DLC", 17, "dlc/", ".dlc"),
+    DOWNLOADABLE_CONTENT("DLC", 17, RDLC.class, "dlc/", ".dlc"),
     EDITOR_SETTINGS(null, 18, "editor_settings/", ".edset"),
     JOINT("JNT", 19, RJoint.class, "joints/", ".joint"),
     GAME_CONSTANTS("CON", 20, "constants/", ".con"),
