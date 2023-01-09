@@ -12,6 +12,7 @@ import cwlib.types.Resource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.Fat;
 import cwlib.types.archives.FileArchive;
+import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.swing.FileData;
@@ -77,9 +78,8 @@ public class UtilityCallbacks {
         final int CACHE_SIZE = 268_435_456;
         
         SlowOpGUI.performSlowOperation(Toolkit.INSTANCE, "Merging Archives", patch.getEntryCount(), new SlowOp() {
-            private int current = 0;
-            
             @Override public int run(SlowOpGUI state) {
+                int current = 0;
                 for (Fat fat : patch) {
                     if (state.wantQuit()) return -1;
                     
@@ -87,17 +87,17 @@ public class UtilityCallbacks {
                     if (cache.getQueueSize() >= CACHE_SIZE)
                         cache.save();
                     
-                    cache.add(patch.extract(fat.getSHA1()));
+                    SHA1 sha1 = fat.getSHA1();
+                    if (!cache.exists(sha1))
+                        cache.add(patch.extract(sha1));
                     
-                    current++;
+                    state.setProgress(current++);
                 }
                 
                 cache.save();
                 
                 return 0;
             }
-            
-            @Override public int getProgress() { return this.current; }
         });
     }
     

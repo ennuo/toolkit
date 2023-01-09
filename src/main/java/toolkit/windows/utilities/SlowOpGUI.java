@@ -5,6 +5,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
 import toolkit.utilities.SlowOp;
 
 public class SlowOpGUI extends javax.swing.JDialog {
@@ -22,8 +24,6 @@ public class SlowOpGUI extends javax.swing.JDialog {
         this.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent event) { return; }
         });
-        
-        this.setVisible(true);
     }
     
     public static void performSlowOperation(Frame parent, String message, int max, SlowOp operation) {
@@ -32,20 +32,20 @@ public class SlowOpGUI extends javax.swing.JDialog {
 
         gui.progressBar.setMaximum(max);
         gui.progressBar.setIndeterminate(max == -1);
-        
-        Thread thread = new Thread(() -> {
-            gui.code = gui.operation.run(gui);
-            gui.wantQuit = true;
-        });
-        
-        thread.start();
-        while (!gui.wantQuit) {
-            SwingUtilities.invokeLater(() -> {
-                gui.progressBar.setValue(gui.operation.getProgress());
-            });
-        }
-        
-        gui.dispose();
+
+        SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
+            @Override protected Void doInBackground() throws Exception {
+                gui.code = operation.run(gui);
+                return null;
+            }
+
+            @Override protected void done() {
+                gui.dispose();
+            }
+        };
+
+        sw.execute();
+        gui.setVisible(true);
         
         if (gui.code != 0)
             JOptionPane.showMessageDialog(parent, "An error occurred during the operation!", "SlowOp Task", JOptionPane.ERROR_MESSAGE);
@@ -53,6 +53,7 @@ public class SlowOpGUI extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(parent, "Success!", "SlowOp Task", JOptionPane.INFORMATION_MESSAGE); 
     }
     
+    public void setProgress(int progress) { this.progressBar.setValue(progress); }
     public boolean wantQuit() { return this.wantQuit; }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
