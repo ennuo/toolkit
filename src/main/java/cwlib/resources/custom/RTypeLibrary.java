@@ -15,7 +15,6 @@ import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.custom.typelibrary.ClassVariable;
 import cwlib.structs.custom.typelibrary.ScriptVariable;
 import cwlib.types.Resource;
-import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
@@ -43,7 +42,7 @@ public class RTypeLibrary implements Compressable, Serializable {
                     stream.str(member);
                     ScriptVariable variable = namespace.get(member);
                     serializer.enum8(variable.getVariableType());
-                    serializer.struct(variable, (Class<Serializable>) variable.getClass());
+                    variable.serialize(serializer, variable);
                 }
             }
         } else {
