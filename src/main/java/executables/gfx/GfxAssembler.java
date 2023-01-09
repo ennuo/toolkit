@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.BoxType;
+import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
 import cwlib.singleton.ResourceSystem;
@@ -460,37 +461,37 @@ public class GfxAssembler {
     }
 
 
-    public static byte[] getShader(String string) { return getShader(string, false, false); }
-    public static byte[] getShader(String string, boolean cgb, boolean orbis) {
+    public static byte[] getShader(String source) { return getShader(source, GameShader.LBP1); }
+    public static byte[] getShader(String source, GameShader shader) {
         File directory = ResourceSystem.getWorkingDirectory();
 
-        File shader = new File(directory, "shader");
-        File compiled = new File(directory, "compiled");
+        File inputFile = new File(directory, "shader");
+        File outputFile = new File(directory, "compiled");
 
-        if (shader.exists()) shader.delete();
-        if (compiled.exists()) compiled.delete();
+        if (inputFile.exists()) inputFile.delete();
+        if (outputFile.exists()) outputFile.delete();
 
-        FileIO.write(string.getBytes(), shader.getAbsolutePath());
+        FileIO.write(source.getBytes(), inputFile.getAbsolutePath());
     
         String profile = "sce_fp_rsx";
         File compiler = ApplicationFlags.SCE_CGC_EXECUTABLE;
-        if (orbis) {
+        if (shader == GameShader.LBP3_PS4) {
             compiler = ApplicationFlags.SCE_PSSL_EXECUTABLE;
             profile = "sce_ps_orbis";
         }
 
         String msg;
-        if (orbis)
-            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-nodx10clamp", "-write-constant-block", "-sbiversion", "0", "-dont-strip-default-cb");
-        else if (cgb)
-            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath(), "-mcgb");
+        if (shader == GameShader.LBP3_PS4)
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-nodx10clamp", "-write-constant-block", "-sbiversion", "0", "-dont-strip-default-cb");
+        else if (shader != GameShader.LBP1)
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-mcgb");
         else
-            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", compiled.getAbsolutePath(), shader.getAbsolutePath());
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath());
 
-        shader.delete();
-        if (compiled.exists()) {
-            byte[] data = FileIO.read(compiled.getAbsolutePath());
-            compiled.delete();
+        inputFile.delete();
+        if (outputFile.exists()) {
+            byte[] data = FileIO.read(outputFile.getAbsolutePath());
+            outputFile.delete();
             return data;
         } 
         

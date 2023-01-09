@@ -372,7 +372,7 @@ public class SlotManager extends javax.swing.JFrame {
     
     private void setupSettingsListeners() {
         this.levelTypeCombo.addActionListener(e -> this.selectedSlot.developerLevelType = (LevelType) this.levelTypeCombo.getSelectedItem());
-        this.gameModeCombo.addActionListener(e -> this.selectedSlot.gameMode = (GameMode) this.gameModeCombo.getSelectedItem());
+        this.gameModeCombo.addActionListener(e -> this.selectedSlot.gameMode = ((GameMode) this.gameModeCombo.getSelectedItem()).getValue());
         
         this.badgeSizeSpinner.addChangeListener(e -> this.selectedSlot.customBadgeSize = (byte) this.badgeSizeSpinner.getValue());
         
@@ -628,7 +628,7 @@ public class SlotManager extends javax.swing.JFrame {
         this.linkCombo.setSelectedItem(this.getLink(slot.primaryLinkLevel));
 
         this.levelTypeCombo.setSelectedItem(slot.developerLevelType);
-        this.gameModeCombo.setSelectedItem(slot.gameMode);
+        this.gameModeCombo.setSelectedItem(GameMode.fromValue(slot.gameMode));
         this.badgeSizeSpinner.setValue(slot.customBadgeSize);
         this.minPlayerSpinner.setValue(slot.minPlayers);
         this.maxPlayerSpinner.setValue(slot.maxPlayers);

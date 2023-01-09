@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RGfxMaterial;
@@ -113,11 +114,11 @@ public class CgAssembler {
         LEGACY | WATER_TWEAKS
     };
 
-    public static byte[] compileShaderVariant(String shader, int gmatFlags, int index, boolean legacy, boolean orbis) {
-        int flags = (legacy) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
+    public static byte[] compileShaderVariant(String source, int gmatFlags, int index, GameShader shader) {
+        int flags = (shader == GameShader.LBP1) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
+        if (shader == GameShader.LBP3_PS4) flags |= ORBIS;
+        if (shader == GameShader.LBP2_PRE_ALPHA) flags |= WATER_TWEAKS;
         
-        if (orbis) flags |= ORBIS;
-
         if ((gmatFlags & GfxMaterialFlags.RECEIVE_SHADOWS) != 0)
             flags |= (1 << 22);
         if ((gmatFlags & GfxMaterialFlags.RECEIVE_SUN) != 0)
@@ -125,15 +126,15 @@ public class CgAssembler {
         if ((gmatFlags & GfxMaterialFlags.RECEIVE_SPRITELIGHTS) != 0)
             flags |= (1 << 24);
         
-        shader = shader.replace("ENV.COMPILE_FLAGS", "" + flags);
+        source = source.replace("ENV.COMPILE_FLAGS", "" + flags);
 
-        return GfxAssembler.getShader(shader, !legacy, orbis);
+        return GfxAssembler.getShader(source, shader);
     }
 
-    public static void compile(String template, RGfxMaterial gmat, boolean cgb, boolean orbis) {
+    public static void compile(String template, RGfxMaterial gmat, GameShader shader) {
         HashSet<Long> pool = new HashSet<>();
         for (int i = 0; i < gmat.shaders.length; ++i) {
-            gmat.shaders[i] = compileShaderVariant(template, gmat.flags, i, !cgb, orbis);
+            gmat.shaders[i] = compileShaderVariant(template, gmat.flags, i, shader);
             long[] code = getBytecode(gmat.shaders[i]);
             for (long c : code)
                 pool.add(c);
@@ -142,7 +143,7 @@ public class CgAssembler {
         ArrayList<Long> code = new ArrayList<>(pool);
         code.sort((l, r) -> Long.compareUnsigned(l, r));
 
-        if (cgb && !orbis) {
+        if (shader == GameShader.LBP2) {
             for (int i = 0; i < gmat.shaders.length; ++i)
                 gmat.shaders[i] = convert(gmat.shaders[i], code);
             MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);

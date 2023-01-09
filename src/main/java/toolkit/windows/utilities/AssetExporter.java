@@ -2,6 +2,7 @@ package toolkit.windows.utilities;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
@@ -300,19 +301,22 @@ public class AssetExporter extends JDialog {
                     gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
             }
 
-            boolean isCGB = remap != MaterialLibrary.LBP1;
-            boolean isOrbis = remap == MaterialLibrary.LBP_PS4;
-
             gfx.flags = gfx.flags & ~(0x10000);
             Revision revision = new Revision(0x272, 0x4c44, 0x13);
-            if (isCGB) {
+            if (remap != MaterialLibrary.LBP1) {
                 revision = new Revision(0x393);
                 gfx.shaders = new byte[10][];
             }
             else gfx.shaders = new byte[4][];
 
+            GameShader shader = GameShader.LBP2;
+            if (remap == MaterialLibrary.LBP1)
+                shader = GameShader.LBP1;
+            else if (remap == MaterialLibrary.LBP_PS4)
+                shader = GameShader.LBP3_PS4;
+
             try {
-                CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, isCGB, isOrbis);
+                CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, shader);
                 data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
             } catch (Exception ex)  { data = resource.compress(); }
 

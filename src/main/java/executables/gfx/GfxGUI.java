@@ -5,6 +5,7 @@ import com.github.weisj.darklaf.theme.DarculaTheme;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShadowCastMode;
@@ -483,7 +484,7 @@ public class GfxGUI extends javax.swing.JFrame {
 
         gameLabel.setText("Game:");
 
-        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1", "LBP2/3", "LBP3 PS4" }));
+        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1", "LBP2 Pre-Alpha", "LBP2/3", "LBP3 PS4" }));
         gameComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 gameComboBoxActionPerformed(evt);
@@ -707,7 +708,8 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0;
-        boolean isPS4 = this.gameComboBox.getSelectedIndex() == 2;
+        boolean isPreAlpha = this.gameComboBox.getSelectedIndex() == 1;
+        boolean isPS4 = this.gameComboBox.getSelectedIndex() == 3;
         
         if (isPS4 && !ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS) {
             JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-PSSL compiler! Cannot compile! (Expected location is %s)", ApplicationFlags.SCE_PSSL_EXECUTABLE.getAbsolutePath()), "Error", JOptionPane.WARNING_MESSAGE);
@@ -739,9 +741,11 @@ public class GfxGUI extends javax.swing.JFrame {
         this.gmat.refractiveIndex = (float) this.refractiveIndexSpinner.getValue();
         if (isLBP2)
             this.gmat.alphaMode = (byte) this.alphaModeCombo.getSelectedIndex();
+
         
-        this.gmat.shaders = new byte[isLBP2 ? 10 : 4][];
-        try { CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, isLBP2, isPS4); }
+        
+        this.gmat.shaders = new byte[isLBP2 ? ((isPreAlpha) ? 4 : 10) : 4][];
+        try { CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, GameShader.values()[this.gameComboBox.getSelectedIndex()]); }
         catch (Exception ex) {
             new ErrorDialogue(this, true, "An error occurred while compiling BRDF shader.", ex.getMessage());
             return;
@@ -758,7 +762,9 @@ public class GfxGUI extends javax.swing.JFrame {
         }
         
         Revision revision;
-        if (isLBP2) revision = new Revision(0x393);
+
+        if (isPreAlpha) revision = new Revision(0x332);
+        else if (isLBP2) revision = new Revision(0x393);
         else revision = new Revision(0x272, 0x4c44, 0x0013);
         
         byte[] resource = Resource.compress(gmat.build(revision, CompressionFlags.USE_ALL_COMPRESSION));

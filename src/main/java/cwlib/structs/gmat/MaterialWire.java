@@ -15,6 +15,21 @@ public class MaterialWire implements Serializable {
     public byte portFrom, portTo;
     public byte[] swizzle = new byte[SWIZZLE_ELEMENT_COUNT];
 
+    /**
+     * Empty constructor for serialization.
+     */
+    public MaterialWire() {};
+
+    /**
+     * Creates a connection between two boxes.
+     */
+    public MaterialWire(int boxFrom, int boxTo, int portFrom, int portTo) {
+        this.boxFrom = boxFrom;
+        this.boxTo = boxTo;
+        this.portFrom = (byte) portFrom;
+        this.portTo = (byte) portTo;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public MaterialWire serialize(Serializer serializer, Serializable structure) {
         MaterialWire wire = (structure == null) ? new MaterialWire() : (MaterialWire) structure;

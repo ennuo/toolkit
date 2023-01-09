@@ -686,10 +686,11 @@
         <Component class="javax.swing.JComboBox" name="gameComboBox">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="3">
+              <StringArray count="4">
                 <StringItem index="0" value="LBP1"/>
-                <StringItem index="1" value="LBP2/3"/>
-                <StringItem index="2" value="LBP3 PS4"/>
+                <StringItem index="1" value="LBP2 Pre-Alpha"/>
+                <StringItem index="2" value="LBP2/3"/>
+                <StringItem index="3" value="LBP3 PS4"/>
               </StringArray>
             </Property>
           </Properties>

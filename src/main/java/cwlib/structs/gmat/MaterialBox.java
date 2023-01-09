@@ -1,5 +1,9 @@
 package cwlib.structs.gmat;
 
+import org.joml.Vector2f;
+import org.joml.Vector4f;
+
+import cwlib.enums.BoxType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -19,6 +23,35 @@ public class MaterialBox implements Serializable {
     public int subType;
     public MaterialParameterAnimation anim = new MaterialParameterAnimation();
     public MaterialParameterAnimation anim2 = new MaterialParameterAnimation();
+
+    /**
+     * Creates an output node
+     */
+    public MaterialBox() {};
+
+    /**
+     * Creates a texture sample node
+     */
+    public MaterialBox(Vector2f scale, Vector2f offset, int channel, int texture) {
+        this.type = BoxType.TEXTURE_SAMPLE;
+        this.params[0] = Float.floatToIntBits(scale.x);
+        this.params[1] = Float.floatToIntBits(scale.y);
+        this.params[2] = Float.floatToIntBits(offset.x);
+        this.params[3] = Float.floatToIntBits(offset.y);
+        this.params[4] = 0;
+        this.params[5] = 0;
+    }
+
+    /***
+     * Creates a color node
+     */
+    public MaterialBox(Vector4f color) {
+        this.type = BoxType.COLOR;
+        this.params[0] = Float.floatToIntBits(color.x);
+        this.params[1] = Float.floatToIntBits(color.y);
+        this.params[2] = Float.floatToIntBits(color.z);
+        this.params[3] = Float.floatToIntBits(color.w);
+    }
 
     @SuppressWarnings("unchecked")
     @Override public MaterialBox serialize(Serializer serializer, Serializable structure) {

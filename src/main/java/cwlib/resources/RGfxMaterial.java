@@ -3,6 +3,9 @@ package cwlib.resources;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.joml.Vector2f;
+import org.joml.Vector4f;
+
 import cwlib.enums.AudioMaterial;
 import cwlib.enums.BoxType;
 import cwlib.enums.Branch;
@@ -23,6 +26,7 @@ import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import executables.gfx.GfxAssembler.BrdfPort;
 
 /**
  * Resource that controls how meshes get rendered,
@@ -334,4 +338,24 @@ public class RGfxMaterial implements Serializable, Compressable {
 
     public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes.get(wire.boxFrom); }
     public MaterialBox getBoxTo(MaterialWire wire) { return this.boxes.get(wire.boxTo); }
+
+    public static RGfxMaterial getDiffuseLayout(Vector2f scale, Vector2f offset, ResourceDescriptor texture, boolean doubleSided, boolean alphaClip) {
+        RGfxMaterial gfx = new RGfxMaterial();
+        gfx.textures[0] = texture;
+        gfx.boxes.add(new MaterialBox());
+        gfx.boxes.add(new MaterialBox(scale, offset, 0, 0));
+        gfx.boxes.add(new MaterialBox(new Vector4f(0.09f, 0.09f, 0.09f, 1.0f)));
+
+        gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.DIFFUSE));
+        gfx.wires.add(new MaterialWire(2, 0, 0, BrdfPort.SPECULAR));
+        
+        gfx.flags = GfxMaterialFlags.DEFAULT;
+        if (doubleSided)
+            gfx.flags |= GfxMaterialFlags.TWO_SIDED;
+
+        if (alphaClip)
+            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.ALPHA_CLIP));
+        
+        return gfx;
+    }
 }
