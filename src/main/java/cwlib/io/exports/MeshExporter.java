@@ -144,19 +144,24 @@ public class MeshExporter {
 
                 glb.gltf.addSkins(skin);
             } else {
-                throw new RuntimeException("lol");
-                // glb = GLB.FromMesh(mesh);
-                // byte[] dataBuffer = glb.getBufferFromAnimation(animation);
-                // glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
-                // glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
-                // for (AnimBone bone : animation.bones) {
-                //     System.out.println(bone.animHash);
-                //     System.out.println(mesh.getBoneName(bone.animHash));
-                //     Node node = glb.getNode(mesh.getBoneName(bone.animHash));
-                //     node.setTranslation(new float[] { bone.initialPosition.x, bone.initialPosition.y, bone.initialPosition.z });
-                //     node.setRotation(new float[] { bone.initialRotation.x, bone.initialRotation.y, bone.initialRotation.z, bone.initialRotation.w });
-                //     node.setScale(new float[] { bone.initialScale.x, bone.initialScale.y, bone.initialScale.z });
-                // }
+                glb = GLB.FromMesh(mesh);
+                byte[] dataBuffer = glb.getBufferFromAnimation(animation);
+                glb.buffer = Bytes.combine(glb.buffer, dataBuffer);
+                glb.gltf.getBuffers().get(0).setByteLength(glb.buffer.length);
+                for (AnimBone bone : animation.bones) {
+                    String name = Bone.getNameFromHash(mesh.getBones(), bone.animHash);
+                    int boneIndex = animation.getBoneIndex(bone.animHash);
+
+                    Node node = glb.getNode(name);
+
+                    Vector4f pos = animation.getBasePosition(boneIndex);
+                    Vector4f rot = animation.getBaseRotation(boneIndex);
+                    Vector4f scale = animation.getBaseScale(boneIndex);
+
+                    node.setTranslation(new float[] { pos.x, pos.y, pos.z });
+                    node.setRotation(new float[] { rot.x, rot.y, rot.z, rot.w });
+                    node.setScale(new float[] { scale.x, scale.y, scale.z });
+                }
             }
             
             if (animation.getMorphCount() != 0)
@@ -203,8 +208,8 @@ public class MeshExporter {
             for (byte pos : animation.getPosAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                // if (mesh != null)
-                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(bones[rot].animHash)));
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(Bone.getNameFromHash(mesh.getBones(), animation.bones[pos].animHash)));
                 target.setNode(pos + 1);
                 target.setPath("translation");
                 channel.setTarget(target);
@@ -221,8 +226,8 @@ public class MeshExporter {
             for (byte scale : animation.getScaleAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                // if (mesh != null)
-                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[scale].animHash)));
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(Bone.getNameFromHash(mesh.getBones(), animation.bones[scale].animHash)));
                 target.setNode(scale + 1);
                 target.setPath("scale");
                 channel.setTarget(target);
@@ -239,10 +244,9 @@ public class MeshExporter {
             for (byte rot : animation.getRotAnimated()) {
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
-                // if (mesh != null)
-                //     target.setNode(glb.getNodeIndex(mesh.getBoneName(animation.bones[rot].animHash)));
-                // else target.setNode(rot + 1);
-                target.setNode(rot + 1);
+                if (mesh != null)
+                    target.setNode(glb.getNodeIndex(Bone.getNameFromHash(mesh.getBones(), animation.bones[rot].animHash)));
+                else target.setNode(rot + 1);
                 target.setPath("rotation");
                 channel.setTarget(target);
                 AnimationSampler sampler = new AnimationSampler();
@@ -254,11 +258,8 @@ public class MeshExporter {
                 glAnim.addChannels(channel);
                 glAnim.addSamplers(sampler);
             }
-            
+
             glb.gltf.addAnimations(glAnim);
-            
-            
-            
             
             return glb;
         }
@@ -550,33 +551,25 @@ public class MeshExporter {
             }
         }
         
-        private Matrix4f getMatrix(Matrix4f matrix) {
-            float[] components = new float[16];
-            matrix.get(components);
-            Matrix4f output = new Matrix4f();
-            output.set(components);
-            return output;
-        }
-        
         private int createChildren(RMesh mesh, Bone bone) {
             Matrix4f transform;
             if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
-                transform = getMatrix(bone.skinPoseMatrix);
-            else {
-                transform = getMatrix(mesh.getBones()[bone.parent].skinPoseMatrix)
-                        .invert()
-                        .mul(getMatrix(bone.skinPoseMatrix));
-            }
+                transform = new Matrix4f(bone.skinPoseMatrix);
+            else 
+                transform = bone.getLocalTransform(mesh.getBones());
             
             int index = createNode(bone.getName(), transform);
             Node root = this.gltf.getNodes().get(index);
+            
             Bone[] children = bone.getChildren(mesh.getBones());
             if (children.length == 0) return index;
-            for (Bone child : children)
+
+            for (Bone child : children) {
                 root.addChildren(createChildren(
                         mesh, 
                         child
                 ));
+            }
             return index;
         }
         
@@ -598,6 +591,14 @@ public class MeshExporter {
             
             this.gltf.addNodes(node);
             return this.gltf.getNodes().size() - 1;
+        }
+
+        private Node getNode(String name) {
+            List<Node> nodes = this.gltf.getNodes();
+            for (Node node : nodes)
+                if (node.getName().equals(name))
+                    return node;
+            return null;
         }
         
         private int getNodeIndex(String name) {
