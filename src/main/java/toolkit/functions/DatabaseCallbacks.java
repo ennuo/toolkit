@@ -258,6 +258,7 @@ public class DatabaseCallbacks {
             }
             database.remove(entry);
         }
+        database.setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
         ResourceSystem.reloadSelectedModel();
     }
