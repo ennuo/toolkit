@@ -38,9 +38,4 @@ public class ProfileCallbacks {
         byte[] entry = save.getArchive().extract(save.getArchive().getKey().getRootHash());
         FileIO.write(new Resource(entry).getStream().getBuffer(), file.getAbsolutePath());
     }
-    
-    public static void addKey() {                                       
-
-
-    } 
 }
