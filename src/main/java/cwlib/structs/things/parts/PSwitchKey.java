@@ -27,7 +27,7 @@ public class PSwitchKey implements Serializable {
         int version = serializer.getRevision().getVersion();
         int subVersion = serializer.getRevision().getSubVersion();
 
-        key.colorIndex = serializer.i32(key.colorIndex);
+        key.colorIndex = serializer.s32(key.colorIndex);
         if (version >= 0x2dc)
             key.name = serializer.wstr(key.name);
 
