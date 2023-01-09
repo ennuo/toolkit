@@ -66,12 +66,14 @@ public abstract class FileData {
             this.name = this.file.getName();
 
             File base = this.file.getParentFile();
-            if (base != null) {
-                File parent = base.getParentFile();
-                if (parent != null && parent.getName().toUpperCase().equals("USRDIR"))
-                    base = parent;
+            while (base != null) {
+                base = base.getParentFile();
+                if (base != null && base.getName().toUpperCase().equals("USRDIR"))
+                    break;
             }
-            this.base = base;
+
+            if (base == null) this.base = this.file.getParentFile();
+            else this.base = base;
         }
         this.model = new FileModel(new FileNode(type.name(), null, null, this));
         this.root = (FileNode) this.model.getRoot();
