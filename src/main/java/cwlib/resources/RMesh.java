@@ -44,6 +44,8 @@ import cwlib.util.Bytes;
 public class RMesh implements Compressable, Serializable {
     public static final int STREAM_POS_BONEINDICES = 0x0;
     public static final int STREAM_BONEWEIGHTS_NORM_TANGENT_SMOOTH_NORM = 0x1;
+    public static final int STREAM_MORPHS0 = 0x2;
+    
     public static final int MAX_MORPHS = 0x20;
 
     private static final int BASE_ALLOCATION_SIZE = 0x400 + SoftbodyClusterData.BASE_ALLOCATION_SIZE;
@@ -311,7 +313,14 @@ public class RMesh implements Compressable, Serializable {
             Arrays.fill(this.mirrorBoneFlipTypes, FlipType.MAX);
         }
         this.bones = bones;
-
+        this.cullBones = new CullBone[bones.length];
+        for (int i = 0; i < bones.length; ++i) {
+            CullBone bone = new CullBone();
+            bone.boundBoxMax = bones[i].boundBoxMax;
+            bone.boundBoxMin = bones[i].boundBoxMin;
+            bone.invSkinPoseMatrix = bones[i].invSkinPoseMatrix;
+        }
+        
         this.vertexColors = new int[this.numVerts];
         for (int i = 0; i < this.numVerts; ++i)
             this.vertexColors[i] = 0xFFFFFFFF;
