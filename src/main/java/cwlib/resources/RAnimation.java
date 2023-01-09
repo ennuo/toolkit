@@ -28,7 +28,7 @@ public class RAnimation implements Serializable, Compressable {
 
     public AnimBone[] bones;
 
-    public short numFrames, fps, loopStart;
+    public short numFrames, fps = 30, loopStart;
     public byte morphCount;
 
     public byte[] rotBonesAnimated;
@@ -134,7 +134,7 @@ public class RAnimation implements Serializable, Compressable {
         anim.morphCount = serializer.i8(anim.morphCount);
 
         if (isWriting) {
-            MemoryOutputStream stream = new MemoryOutputStream(0x8000);
+            MemoryOutputStream stream = new MemoryOutputStream(0x50000);
             for (AnimBone bone : this.bones) {
                 stream.i32(bone.animHash);
                 stream.u8(bone.parent);
@@ -432,30 +432,39 @@ public class RAnimation implements Serializable, Compressable {
     }
 
     public boolean isAnimated(int animHash, AnimationType type) {
+        return this.getAnimationIndex(animHash, type) != -1;
+    }
+
+    public int getAnimationIndex(int animHash, AnimationType type) {
         byte[] indices = null;
         switch (type) {
             case ROTATION: indices = this.rotBonesAnimated; break;
             case POSITION: indices = this.posBonesAnimated; break;
             case SCALE: indices = this.scaledBonesAnimated; break;
         }
-        if (indices == null) return false;
-        int index = this.getBoneIndex(animHash);
-        if (index == -1) return false;
-        for (byte animated : indices) {
-            if (((int)animated & 0xff) == index)
-                return true;
+
+        if (indices == null) return -1;
+        int boneIndex = this.getBoneIndex(animHash);
+        if (boneIndex == -1) return -1;
+
+        for (int i = 0; i < indices.length; ++i) {
+            int animBoneIndex = indices[i] & 0xff;
+            if (animBoneIndex == boneIndex)
+                return i;
         }
-        return false;
+        
+        return -1;
     }
 
     public Vector3f getTranslationFrame(int animHash, int frame) {
         int index = this.getBoneIndex(animHash);
         if (index == -1) return new Vector3f();
         Vector4f translation = null;
-        if (frame == 0 || !this.isAnimated(animHash, AnimationType.POSITION)) 
-            translation = this.packedPosition[index];
-        else
-            translation = this.packedPosition[this.bones.length + ((frame - 1) * this.posBonesAnimated.length) + index];
+        int animIndex = this.getAnimationIndex(animHash, AnimationType.POSITION);
+        if (frame == 0 || animIndex == -1) translation = this.packedPosition[index];
+        else 
+            translation = this.packedPosition[this.bones.length + ((frame - 1) * this.posBonesAnimated.length) + animIndex];
+        
         return new Vector3f(translation.x, translation.y, translation.z);
     }
 
@@ -463,10 +472,11 @@ public class RAnimation implements Serializable, Compressable {
         int index = this.getBoneIndex(animHash);
         if (index == -1) return new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f);
         Vector4f rotation = null;
-        if (frame == 0 || !this.isAnimated(animHash, AnimationType.ROTATION)) 
+        int animIndex = this.getAnimationIndex(animHash, AnimationType.ROTATION);
+        if (frame == 0 || animIndex == -1) 
             rotation = this.packedRotation[index];
         else
-            rotation = this.packedRotation[this.bones.length + ((frame - 1) * this.rotBonesAnimated.length) + index];
+            rotation = this.packedRotation[this.bones.length + ((frame - 1) * this.rotBonesAnimated.length) + animIndex];
 
         return new Quaternionf(rotation.x, rotation.y, rotation.z, rotation.w);
     }
@@ -475,17 +485,21 @@ public class RAnimation implements Serializable, Compressable {
         int index = this.getBoneIndex(animHash);
         if (index == -1) return new Vector3f(1.0f, 1.0f, 1.0f);
         Vector4f scale = null;
-        if (frame == 0 || !this.isAnimated(animHash, AnimationType.SCALE)) 
+        int animIndex = this.getAnimationIndex(animHash, AnimationType.SCALE);
+        if (frame == 0 || animIndex == -1) 
             scale = this.packedScale[index];
         else
-            scale = this.packedScale[this.bones.length + ((frame - 1) * this.scaledBonesAnimated.length) + index];
+            scale = this.packedScale[this.bones.length + ((frame - 1) * this.scaledBonesAnimated.length) + animIndex];
+        
         return new Vector3f(scale.x, scale.y, scale.z);
     }
     
     private Vector4f[] getFrames(int animHash, AnimationType type) {
-        if (!this.isAnimated(animHash, type)) return null;
-        int index = this.getBoneIndex(animHash);
-        if (index == -1) return null;
+        int animIndex = this.getAnimationIndex(animHash, type);
+        if (animIndex == -1) return null;
+
+        int boneIndex = this.getBoneIndex(animHash);
+        if (boneIndex == -1) return null;
 
         Vector4f[] pack = null;
         int animated = 0;
@@ -509,9 +523,9 @@ public class RAnimation implements Serializable, Compressable {
         }
 
         Vector4f[] frames = new Vector4f[this.numFrames];
-        frames[0] = pack[index];
+        frames[0] = pack[boneIndex];
         for (int i = 1; i < this.numFrames; ++i)
-            frames[i] = pack[this.bones.length + ((i - 1) * animated) + index];
+            frames[i] = pack[this.bones.length + ((i - 1) * animated) + animIndex];
         
         return frames;
     }
