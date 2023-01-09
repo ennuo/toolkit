@@ -5,6 +5,7 @@ import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.decals.Decal;
 import cwlib.structs.things.components.decals.PaintControlPoint;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.structs.inventory.EyetoyData;
 
 /**
@@ -35,6 +36,11 @@ public class PStickers implements Serializable {
      */
     @GsonRevision(min=0x15d)
     public EyetoyData[] eyetoyData;
+
+    public PStickers() {};
+    public PStickers(ResourceDescriptor sticker) {
+        this.decals = new Decal[] { new Decal(sticker) };
+    }
 
     @SuppressWarnings("unchecked")
     @Override public PStickers serialize(Serializer serializer, Serializable structure) {

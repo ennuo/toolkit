@@ -46,11 +46,26 @@ public class RPlan implements Compressable, Serializable {
         this.setThing(thing);
         this.inventoryData = new InventoryItemDetails(metadata);
     }
+
     public RPlan(Revision revision, byte compressionFlags, Thing[] things, PMetadata metadata) {
         this.revision = revision;
         this.compressionFlags = compressionFlags;
         this.setThings(things);
         this.inventoryData = new InventoryItemDetails(metadata);
+    }
+
+    public RPlan(Revision revision, byte compressionFlags, Thing thing, InventoryItemDetails details) {
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
+        this.setThing(thing);
+        this.inventoryData = details;
+    }
+
+    public RPlan(Revision revision, byte compressionFlags, Thing[] things, InventoryItemDetails details) {
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
+        this.setThings(things);
+        this.inventoryData = details;
     }
 
     @SuppressWarnings("unchecked")
