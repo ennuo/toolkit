@@ -102,8 +102,8 @@ public class PWorld implements Serializable {
     public float currWavePos = 0.0186706f;
 
 
-    @GsonRevision(min=0x2a3) public GameMode gameMode = GameMode.NONE;
-    @GsonRevision(lbp3=true,min=0x218) public GameMode gameModeRequested = GameMode.NONE;
+    @GsonRevision(min=0x2a3) public int gameMode = 0;
+    @GsonRevision(lbp3=true,min=0x218) public int gameModeRequested = 0;
 
     @GsonRevision(min=0x2b0) public int nextSackbotPlayerNumber = -2;
     @GsonRevision(min=0x2ee) public CutsceneCameraManager cutsceneCameraManager = new CutsceneCameraManager();
@@ -459,10 +459,10 @@ public class PWorld implements Serializable {
             // // depth, bytearray?
         }
 
-        if (version >= 0x2a3) world.gameMode = serializer.enum32(world.gameMode);
+        if (version >= 0x2a3) world.gameMode = serializer.i32(world.gameMode);
     
         if (subVersion >= 0x218) 
-            world.gameModeRequested = serializer.enum32(world.gameModeRequested);
+            world.gameModeRequested = serializer.i32(world.gameModeRequested);
 
         if (version >= 0x2b0) 
             world.nextSackbotPlayerNumber = serializer.s32(world.nextSackbotPlayerNumber);

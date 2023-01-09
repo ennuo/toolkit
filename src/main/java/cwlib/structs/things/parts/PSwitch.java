@@ -24,6 +24,8 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PSwitch implements Serializable {
+    public static final int BASE_ALLOCATION_SIZE = 0x200;
+    
     public boolean inverted;
     public float radius;
     @GsonRevision(min=0x382) public float minRadius;

@@ -4,7 +4,6 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.enums.Branch;
-import cwlib.enums.GameMode;
 import cwlib.enums.GameProgressionStatus;
 import cwlib.enums.LevelType;
 import cwlib.enums.ResourceType;
@@ -58,7 +57,7 @@ public class Slot implements Serializable {
     @GsonRevision(lbp3=true,min=533) 
     public boolean enforceMinMaxPlayers;
 
-    @GsonRevision(lbp3=true,min=18) public GameMode gameMode = GameMode.NONE;
+    @GsonRevision(lbp3=true,min=18) public int gameMode = 0;
     @GsonRevision(lbp3=true,min=210)  public boolean isGameKit;
     @GsonRevision(lbp3=true,min=283) public String entranceName;
     @GsonRevision(lbp3=true,min=283) public SlotID originalSlotID = new SlotID();
@@ -220,11 +219,8 @@ public class Slot implements Serializable {
 
         if (!revision.isLBP3()) return slot;
 
-        if (subVersion >= Revisions.SLOT_GAME_MODE) {
-            if (serializer.isWriting()) {
-                serializer.getOutput().u8(slot.gameMode == null ? 0 : slot.gameMode.getValue());
-            } else slot.gameMode = GameMode.fromValue(serializer.getInput().u8());
-        }
+        if (subVersion >= Revisions.SLOT_GAME_MODE)
+            slot.gameMode = serializer.u8(slot.gameMode);
 
         if (subVersion >= Revisions.SLOT_GAME_KIT)
             slot.isGameKit = serializer.bool(slot.isGameKit);

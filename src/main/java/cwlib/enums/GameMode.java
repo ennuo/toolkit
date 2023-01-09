@@ -3,10 +3,12 @@ package cwlib.enums;
 import cwlib.io.ValueEnum;
 
 public enum GameMode implements ValueEnum<Integer> {
-    NONE(0),
-    VERSUS(1),
-    CUTSCENE(2),
-    TEAM_VERSUS(3);
+    NORMAL(0),
+    COMPETITIVE(1),
+    CUT_SCENE(2),
+    SINGLE_PLAYER(3),
+    SOCIAL(4),
+    TEAMS(5);
 
     // old enum
     // normal 0
@@ -31,6 +33,6 @@ public enum GameMode implements ValueEnum<Integer> {
             if (mode.value == value) 
                 return mode;
         }
-        return GameMode.NONE;
+        return GameMode.NORMAL;
     }
 }
