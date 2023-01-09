@@ -440,8 +440,11 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream str(String value, int size) {
         if (value == null) return this.bytes(new byte[size]);
-        this.bytes(value.getBytes());
-        this.pad(size - value.length());
+        byte[] data = value.getBytes(StandardCharsets.US_ASCII);
+        if (data.length > size)
+            data = Arrays.copyOf(data, size);
+        this.bytes(data);
+        this.pad(size - data.length);
         return this;
     }
 
