@@ -77,30 +77,30 @@ public class DatabaseCallbacks {
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
-    public static void newEntry() {                                               
+    public static FileEntry newEntry() {                                               
         String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
-        if (file == null) return;
+        if (file == null) return null;
             
         FileData database = ResourceSystem.getSelectedDatabase();
 
-        if (!database.getType().hasGUIDs()) return;
+        if (!database.getType().hasGUIDs()) return null;
         
         long nextGUID = database.getNextGUID().getValue();
         
         String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
-        if (input == null) return;
+        if (input == null) return null;
         input = input.replaceAll("\\s", "");
         
         
         GUID guid = Strings.getGUID(input);
         if (guid == null) {
             System.err.println("You inputted an invalid GUID!");
-            return;
+            return null;
         }
 
         if (database.get(guid) != null) {
             System.err.println("This GUID already exists!");
-            return;
+            return null;
         }
 
         String path = ResourceSystem.getSelected().getFilePath() + ResourceSystem.getSelected().getName() + "/" + file;
@@ -121,6 +121,8 @@ public class DatabaseCallbacks {
         tree.scrollPathToVisible(treePath);
 
         System.out.println("Added entry! -> " + entry.getPath());
+        
+        return entry;
     } 
     
     public static void newFolder() {                                                 

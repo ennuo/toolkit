@@ -2146,9 +2146,9 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.duplicateItem();
     }//GEN-LAST:event_duplicateContextActionPerformed
 
-    private void newEntryContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileContextActionPerformed
+    private void newEntryContextActionPerformed(java.awt.event.ActionEvent evt) {                                               
         DatabaseCallbacks.newEntry();
-    }//GEN-LAST:event_newEntryContextActionPerformed
+    }                                               
 
     private void replaceDecompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedActionPerformed
         ReplacementCallbacks.replaceDecompressed();
@@ -2698,7 +2698,17 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_fixDependencyTableActionPerformed
 
     private void newTextureContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTextureContextActionPerformed
-        // TODO add your handling code here:
+        byte[] texture = null;
+        try { texture = TextureImporter.getTexture(); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Texture failed to convert!", "Texture Importer", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        FileEntry entry = DatabaseCallbacks.newEntry();
+        if (entry == null) return;
+        
+        ResourceSystem.replace(entry, texture);
     }//GEN-LAST:event_newTextureContextActionPerformed
 
     public void populateMetadata(RPlan item) {
