@@ -16,6 +16,7 @@ public class EasterEgg {
         put("etleg", "GregTool");
         put("eddie", "GregTool");
         put("madbrine", "farctool3");
+        put("swous", "Abandoned by Disney");
     }};
 
     public static void initialize(Toolkit toolkit) {
