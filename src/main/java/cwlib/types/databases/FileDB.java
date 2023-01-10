@@ -304,17 +304,9 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
     }
 
     @Override public GUID getNextGUID() {
-        long lastGUID = this.entries
-            .stream()
-            .mapToLong(entry -> entry.getGUID().getValue())
-            .reduce(0, (last, curr) -> {
-                if (last < curr)
-                    return curr;
-                return last;
-            });
-        if (lastGUID < FileDB.MIN_SAFE_GUID)
-            lastGUID = FileDB.MIN_SAFE_GUID;
-        return new GUID(++lastGUID);
+        long lastGUID = FileDB.MIN_SAFE_GUID;
+        while (this.lookup.containsKey(new GUID(lastGUID))) lastGUID++;
+        return new GUID(lastGUID);
     }
 
     /**
