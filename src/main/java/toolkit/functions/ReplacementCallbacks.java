@@ -3,6 +3,8 @@ package toolkit.functions;
 import cwlib.util.FileIO;
 import cwlib.util.Images;
 import toolkit.utilities.FileChooser;
+import toolkit.windows.Toolkit;
+import toolkit.windows.bundlers.TextureImporter;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.databases.FileEntry;
@@ -10,29 +12,22 @@ import cwlib.types.databases.FileEntry;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
 public class ReplacementCallbacks {
     public static void replaceImage() {
         FileEntry entry = ResourceSystem.getSelected().getEntry();
-        File file = FileChooser.openFile("image.png", "png,jpeg,jpg,dds", false);
-        if (file == null) return;
 
-        BufferedImage image;
-        if (file.getAbsolutePath().toLowerCase().endsWith(".dds"))
-            image = Images.fromDDS(FileIO.read(file.getAbsolutePath()));
-        else image = FileIO.readBufferedImage(file.getAbsolutePath());
-
-        if (image == null) {
-            System.err.println("Image was null, cancelling replacement operation.");
+        byte[] texture = null;
+        try { texture = TextureImporter.getTexture(); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Texture failed to convert!", "Texture Importer", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        byte[] newImage = Images.toTEX(image);
-        if (newImage != null) {
-            ResourceSystem.replace(entry, newImage);
-            return;
-        }
+        if (texture == null) return;
 
-        System.out.println("Could not replace texture.");
+        ResourceSystem.replace(entry, texture);
     }
 
     public static void replaceDecompressed() {

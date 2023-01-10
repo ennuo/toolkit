@@ -1,6 +1,9 @@
 package cwlib.util;
 
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.structs.texture.CellGcmTexture;
+import cwlib.types.Resource;
+import cwlib.io.serializer.SerializationData;
 import cwlib.io.streams.MemoryInputStream;
 import gr.zdimensions.jsquish.Squish;
 import java.awt.AlphaComposite;
@@ -11,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -22,41 +26,6 @@ import cwlib.external.DDSReader;
 import org.imgscalr.Scalr;
 
 public class Images {
-    public static byte[] toGTF(BufferedImage image) {
-        MemoryInputStream data = new MemoryInputStream(toDDS(image));
-        if (data.getBuffer() == null) return null;
-
-        data.seek(0x80);
-
-        byte[] DDS = data.bytes(data.getLength() - 0x80);
-
-        if (DDS == null)
-            return null;
-
-        DDS = Compressor.deflateData(DDS);
-
-        if (DDS == null) {
-            System.err.println("Failed to compress DDS!");
-            return null;
-        }
-
-        MemoryOutputStream output = new MemoryOutputStream(0x1C + DDS.length);
-        output.str("GTF ");
-        if (image.getColorModel().hasAlpha()) output.u8(0x88);
-        else output.u8(0x86);
-
-        output.bytes(new byte[] { 0x0A, 0x02, 0x00, 0x00, 0x00, (byte) 0xAA, (byte) 0xE4 });
-
-        output.i16((short) image.getWidth());
-        output.i16((short) image.getHeight());
-
-        output.bytes(new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-
-        output.bytes(DDS);
-
-        return output.getBuffer();
-    }
-    
     private static int toNearest(int x) {
         x |= x >> 1;
         x |= x >> 2;
@@ -79,29 +48,33 @@ public class Images {
     }
 
 
-    private static byte[] toDDS(BufferedImage image) {
+    private static byte[] toDDS(BufferedImage image, Squish.CompressionType type, boolean generateMips) {
         int width = toNearest(image.getWidth());
         int height = toNearest(image.getHeight());
         
         int originalWidth = width, originalHeight = height;
-        
-        Squish.CompressionType type = Squish.CompressionType.DXT1;
-        CellGcmEnumForGtf format = CellGcmEnumForGtf.DXT1;
-        if (image.getColorModel().hasAlpha()) {
-            format = CellGcmEnumForGtf.DXT5;
-            type = Squish.CompressionType.DXT5;
+
+        CellGcmEnumForGtf format = null;
+        switch (type) {
+            case DXT1: format = CellGcmEnumForGtf.DXT1; break;
+            case DXT3: format = CellGcmEnumForGtf.DXT3; break;
+            case DXT5: format = CellGcmEnumForGtf.DXT5; break;
         }
 
-        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, height);
+        if (image.getWidth() != width || image.getHeight() != height)
+            image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, height);
         byte[] dds = Squish.compressImage(getRGBA(image), width, height, null, type);
-        int mipCount = 0;
-        while (true) {
-            width = toNearest(width - 1);
-            height = toNearest(height - 1);
-            image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
-            dds = Bytes.combine(dds, Squish.compressImage(getRGBA(image), width, height, null, type));
-            mipCount += 1;
-            if (width == 1|| height == 1) break;
+
+        int mipCount = 1;
+        if (generateMips) {
+            while (true) {
+                width = toNearest(width - 1);
+                height = toNearest(height - 1);
+                image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
+                dds = Bytes.combine(dds, Squish.compressImage(getRGBA(image), width, height, null, type));
+                mipCount += 1;
+                if (width == 1|| height == 1) break;
+            }
         }
         
         return Bytes.combine(
@@ -110,26 +83,18 @@ public class Images {
         );
     }
 
-    public static byte[] toTEX(BufferedImage image) {
-        byte[] DDS = toDDS(image);
+    public static byte[] toGTF(BufferedImage image, Squish.CompressionType type, boolean noSRGB, boolean generateMips) {
+        byte[] dds = toDDS(image, type, generateMips);
+        CellGcmTexture info = new CellGcmTexture(dds, noSRGB);
+        dds = Arrays.copyOfRange(dds, 0x80, dds.length);
+        return Resource.compress(new SerializationData(dds, info));
+    }
 
-        if (DDS == null) {
-            System.err.println("Failed to convert BufferedImage to DDS!");
-            return null;
-        }
-
-        DDS = Compressor.getCompressedStream(DDS, true);
-
-        if (DDS == null) {
-            System.err.println("Failed to compress DDS!");
-            return null;
-        }
-
-        MemoryOutputStream output = new MemoryOutputStream(0x4 + DDS.length);
-        output.str("TEX ");
-        output.bytes(DDS);
-
-        return output.getBuffer();
+    public static byte[] toTEX(BufferedImage image, Squish.CompressionType type, boolean noSRGB, boolean generateMips) {
+        byte[] dds = toDDS(image, type, generateMips);
+        if (noSRGB)
+            dds = Bytes.combine(dds, "BUMP".getBytes());
+        return Resource.compress(new SerializationData(dds));
     }
 
     public static BufferedImage fromDDS(byte[] DDS) {

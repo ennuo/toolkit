@@ -307,14 +307,60 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <MenuItem class="javax.swing.JMenuItem" name="newItemContext">
+        <Menu class="javax.swing.JMenu" name="newEntryGroup">
           <Properties>
-            <Property name="text" type="java.lang.String" value="New Item"/>
+            <Property name="label" type="java.lang.String" value="New"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newItemContextActionPerformed"/>
-          </Events>
-        </MenuItem>
+          <SubComponents>
+            <Menu class="javax.swing.JMenu" name="newResourceGroup">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Resource"/>
+              </Properties>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="newTextureContext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Texture"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newTextureContextActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="newAnimationContext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Animation"/>
+                  </Properties>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="newModelContext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Model"/>
+                  </Properties>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="newItemGroup">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Item"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
+              </Properties>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="newStickerContext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Sticker"/>
+                  </Properties>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <MenuItem class="javax.swing.JMenuItem" name="newEntryContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Entry"/>
+                <Property name="actionCommand" type="java.lang.String" value="File"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newEntryContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="newFolderContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="New Folder"/>

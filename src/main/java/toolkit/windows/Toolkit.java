@@ -7,6 +7,7 @@ import toolkit.windows.utilities.AssetExporter;
 import toolkit.windows.utilities.Dependinator;
 import toolkit.windows.managers.ModManager;
 import toolkit.windows.managers.ProfileManager;
+import toolkit.windows.bundlers.TextureImporter;
 import toolkit.windows.managers.ArchiveManager;
 import toolkit.windows.managers.ItemManager;
 import toolkit.windows.managers.SlotManager;
@@ -343,7 +344,7 @@ public class Toolkit extends javax.swing.JFrame {
         zeroContext.setVisible(false);
         duplicateContext.setVisible(false);
         extractContextMenu.setVisible(false);
-        newItemContext.setVisible(false);
+        newItemGroup.setVisible(false);
         renameFolder.setVisible(false);
         replaceDecompressed.setVisible(false);
         replaceDependencies.setVisible(false);
@@ -375,7 +376,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0) {
             if ((useContext && entry == null) && !isDependencyTree) {
-                newItemContext.setVisible(true);
+                newItemGroup.setVisible(true);
                 newFolderContext.setVisible(true);
                 renameFolder.setVisible(true);
             } else if (!useContext) newFolderContext.setVisible(true);
@@ -535,7 +536,14 @@ public class Toolkit extends javax.swing.JFrame {
         dependencyGroup = new javax.swing.JMenu();
         removeDependencies = new javax.swing.JMenuItem();
         removeMissingDependencies = new javax.swing.JMenuItem();
-        newItemContext = new javax.swing.JMenuItem();
+        newEntryGroup = new javax.swing.JMenu();
+        newResourceGroup = new javax.swing.JMenu();
+        newTextureContext = new javax.swing.JMenuItem();
+        newAnimationContext = new javax.swing.JMenuItem();
+        newModelContext = new javax.swing.JMenuItem();
+        newItemGroup = new javax.swing.JMenu();
+        newStickerContext = new javax.swing.JMenuItem();
+        newEntryContext = new javax.swing.JMenuItem();
         newFolderContext = new javax.swing.JMenuItem();
         renameFolder = new javax.swing.JMenuItem();
         duplicateContext = new javax.swing.JMenuItem();
@@ -933,13 +941,44 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(dependencyGroup);
 
-        newItemContext.setText("New Item");
-        newItemContext.addActionListener(new java.awt.event.ActionListener() {
+        newEntryGroup.setLabel("New");
+
+        newResourceGroup.setText("Resource");
+
+        newTextureContext.setText("Texture");
+        newTextureContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newItemContextActionPerformed(evt);
+                newTextureContextActionPerformed(evt);
             }
         });
-        entryContext.add(newItemContext);
+        newResourceGroup.add(newTextureContext);
+
+        newAnimationContext.setText("Animation");
+        newResourceGroup.add(newAnimationContext);
+
+        newModelContext.setText("Model");
+        newResourceGroup.add(newModelContext);
+
+        newEntryGroup.add(newResourceGroup);
+
+        newItemGroup.setText("Item");
+        newItemGroup.setToolTipText("");
+
+        newStickerContext.setText("Sticker");
+        newItemGroup.add(newStickerContext);
+
+        newEntryGroup.add(newItemGroup);
+
+        newEntryContext.setText("Entry");
+        newEntryContext.setActionCommand("File");
+        newEntryContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newEntryContextActionPerformed(evt);
+            }
+        });
+        newEntryGroup.add(newEntryContext);
+
+        entryContext.add(newEntryGroup);
 
         newFolderContext.setText("New Folder");
         newFolderContext.addActionListener(new java.awt.event.ActionListener() {
@@ -2107,9 +2146,9 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.duplicateItem();
     }//GEN-LAST:event_duplicateContextActionPerformed
 
-    private void newItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newItemContextActionPerformed
-        DatabaseCallbacks.newItem();
-    }//GEN-LAST:event_newItemContextActionPerformed
+    private void newEntryContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileContextActionPerformed
+        DatabaseCallbacks.newEntry();
+    }//GEN-LAST:event_newEntryContextActionPerformed
 
     private void replaceDecompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedActionPerformed
         ReplacementCallbacks.replaceDecompressed();
@@ -2333,22 +2372,17 @@ public class Toolkit extends javax.swing.JFrame {
     }                                              
 
     private void convertTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertTextureActionPerformed
-
-        File file = FileChooser.openFile("image.png", "png,jpg,jpeg,dds", false);
-        if (file == null) return;
+        byte[] texture = null;
+        try { texture = TextureImporter.getTexture(); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Texture failed to convert!", "Texture Importer", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
+        if (texture == null) return;
+
         File save = FileChooser.openFile("image.tex", "tex", true);
         if (save == null) return;
-        
-        BufferedImage image;
-        if (file.getAbsolutePath().toLowerCase().endsWith(".dds"))
-            image = Images.fromDDS(FileIO.read(file.getAbsolutePath()));
-        else image = FileIO.readBufferedImage(file.getAbsolutePath());
-
-        if (image == null) { System.err.println("Image was null!"); return; }
-        
-        byte[] texture = Images.toTEX(image);
-        if (texture == null) { System.err.println("Conversion was null!"); return; }
         
         FileIO.write(texture, save.getAbsolutePath());        
     }//GEN-LAST:event_convertTextureActionPerformed
@@ -2663,6 +2697,10 @@ public class Toolkit extends javax.swing.JFrame {
             FileIO.write(data, out.getAbsolutePath());
     }//GEN-LAST:event_fixDependencyTableActionPerformed
 
+    private void newTextureContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTextureContextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_newTextureContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -2937,13 +2975,20 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.ButtonGroup metadataButtonGroup;
     public javax.swing.JMenu modMenu;
     private javax.swing.JMenuBar navigation;
+    private javax.swing.JMenuItem newAnimationContext;
+    private javax.swing.JMenuItem newEntryContext;
+    private javax.swing.JMenu newEntryGroup;
     public javax.swing.JMenu newFileDBGroup;
     private javax.swing.JMenuItem newFolderContext;
     private javax.swing.JMenu newGamedataGroup;
-    private javax.swing.JMenuItem newItemContext;
+    private javax.swing.JMenu newItemGroup;
     private javax.swing.JMenuItem newLegacyDB;
     private javax.swing.JMenuItem newMod;
+    private javax.swing.JMenuItem newModelContext;
     private javax.swing.JMenuItem newModernDB;
+    private javax.swing.JMenu newResourceGroup;
+    private javax.swing.JMenuItem newStickerContext;
+    private javax.swing.JMenuItem newTextureContext;
     private javax.swing.JMenuItem newVitaDB;
     private javax.swing.JMenuItem openCompressinator;
     private javax.swing.JMenuItem openGfxCompiler;

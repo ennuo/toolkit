@@ -161,7 +161,7 @@ public final class DDSReader {
         return pixels;
     }
 
-    private static int getType(byte[] buffer) {
+    public static int getType(byte[] buffer) {
         int type = 0;
         int flags = getPixelFormatFlags(buffer);
         if ((flags & 0x4) != 0) {

@@ -77,8 +77,8 @@ public class DatabaseCallbacks {
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
-    public static void newItem() {                                               
-        String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Item", "");
+    public static void newEntry() {                                               
+        String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
         if (file == null) return;
             
         FileData database = ResourceSystem.getSelectedDatabase();

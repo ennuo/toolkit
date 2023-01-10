@@ -2,6 +2,7 @@ package cwlib.structs.texture;
 
 import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.SerializationType;
+import cwlib.external.DDSReader;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 
@@ -19,6 +20,32 @@ public final class CellGcmTexture {
     private final byte flags;
     private final int pitch, offset;
     private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
+
+    public CellGcmTexture(byte[] dds, boolean noSRGB) {
+        int type = DDSReader.getType(dds);
+        switch (type) {
+            case 0xFF: this.format = CellGcmEnumForGtf.B8; break;
+            case 1146639409: this.format = CellGcmEnumForGtf.DXT1; break;
+            case 1146639411: this.format = CellGcmEnumForGtf.DXT3; break;
+            case 1146639413: this.format = CellGcmEnumForGtf.DXT5; break;
+            case 65538: this.format = CellGcmEnumForGtf.A1R5G5B5; break;
+            case 196610: this.format = CellGcmEnumForGtf.A4R4G4B4; break;
+            case 327682: this.format = CellGcmEnumForGtf.R5G5B5; break;
+            case 196612: this.format = CellGcmEnumForGtf.A8R8G8B8; break;
+            default: throw new IllegalArgumentException("Invalid format!");
+        }
+        this.mipmap = (byte) DDSReader.getMipmap(dds);
+        this.dimension = 2;
+        this.cubemap = 0;
+        this.remap = 0xaae4;
+        this.width = (short) DDSReader.getWidth(dds);
+        this.height = (short) DDSReader.getHeight(dds);
+        this.depth = 1;
+        this.location = 0;
+        this.flags = (byte) ((noSRGB) ? 0x1 : 0x0);
+        this.pitch = 0;
+        this.offset = 0;
+    }
 
     public CellGcmTexture(CellGcmEnumForGtf format, short width, short height, byte mips, boolean noSRGB) {
         this.format = format;
