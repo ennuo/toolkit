@@ -75,6 +75,7 @@ import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
+import cwlib.io.imports.AnimationImporter;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PWorld;
@@ -954,6 +955,11 @@ public class Toolkit extends javax.swing.JFrame {
         newResourceGroup.add(newTextureContext);
 
         newAnimationContext.setText("Animation");
+        newAnimationContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newAnimationContextActionPerformed(evt);
+            }
+        });
         newResourceGroup.add(newAnimationContext);
 
         newModelContext.setText("Model");
@@ -2147,7 +2153,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_duplicateContextActionPerformed
 
     private void newEntryContextActionPerformed(java.awt.event.ActionEvent evt) {                                               
-        DatabaseCallbacks.newEntry();
+        DatabaseCallbacks.newEntry(null);
     }                                               
 
     private void replaceDecompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedActionPerformed
@@ -2705,11 +2711,29 @@ public class Toolkit extends javax.swing.JFrame {
             return;
         }
         
-        FileEntry entry = DatabaseCallbacks.newEntry();
-        if (entry == null) return;
+        if (texture == null) return;
         
-        ResourceSystem.replace(entry, texture);
+        DatabaseCallbacks.newEntry(texture);
     }//GEN-LAST:event_newTextureContextActionPerformed
+
+    private void newAnimationContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newAnimationContextActionPerformed
+        File file = FileChooser.openFile("animation.glb", "glb", false);
+        if (file == null) return;
+        
+        byte[] resource = null;
+        try {
+            AnimationImporter importer = new AnimationImporter(file.getAbsolutePath());
+            RAnimation animation = importer.getAnimation();
+            resource = Resource.compress(animation.build(new Revision(0x132), CompressionFlags.USE_NO_COMPRESSION));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Animation failed to convert!", "Animation Importer", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (resource == null) return;
+        
+        DatabaseCallbacks.newEntry(resource);
+    }//GEN-LAST:event_newAnimationContextActionPerformed
 
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;

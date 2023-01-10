@@ -253,6 +253,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
 
     public void setIcon(ImageIcon icon) { this.icon = icon; }
     
+    public void add(byte[] data) { this.archive.add(data); }
     public FileDBRow add(String path, byte[] data) { return this.add(path, data, null); }
     public FileDBRow add(String path, byte[] data, GUID guid) {
         if (guid == null) guid = this.database.getNextGUID();
@@ -266,6 +267,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
 
     @Override public Iterator<FileDBRow> iterator() { return this.database.iterator(); }
 
+    @Override public GUID getNextGUID() { return this.database.getNextGUID(); }
     @Override public void remove(FileEntry entry) { this.database.remove(entry); }
     @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }
     @Override public FileDBRow get(SHA1 sha1) { return this.database.get(sha1); }

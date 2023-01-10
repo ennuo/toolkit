@@ -219,7 +219,7 @@ public class ResourceSystem {
     }
     
     public static boolean add(byte[] data, FileData database) {
-        if (database.getType().containsData() && !database.getType().hasGUIDs()) {
+        if (database.getType().containsData()) {
             database.add(data);
             return true;
         }
@@ -244,10 +244,7 @@ public class ResourceSystem {
         entry.setDetails(data);
         entry.setInfo(null);
 
-        if (!source.getType().containsData())
-            return ResourceSystem.add(data, entry.getSource());
-
-        return true;
+        return ResourceSystem.add(data, entry.getSource());
     }
 
     public static ArrayList<FileData> getDatabases() { return ResourceSystem.databases; }

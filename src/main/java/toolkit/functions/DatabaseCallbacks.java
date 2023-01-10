@@ -77,7 +77,7 @@ public class DatabaseCallbacks {
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
-    public static FileEntry newEntry() {                                               
+    public static FileEntry newEntry(byte[] data) {                                               
         String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
         if (file == null) return null;
             
@@ -103,13 +103,20 @@ public class DatabaseCallbacks {
             return null;
         }
 
-        String path = ResourceSystem.getSelected().getFilePath() + ResourceSystem.getSelected().getName() + "/" + file;
-
+        FileNode node = ResourceSystem.getSelected();
+        String path;
+        if (node == null) path = file;
+        else path = node.getFilePath() + node.getName() + "/" + file;
+        
         FileEntry entry = null;
-        if (database instanceof FileDB)
+        if (database instanceof FileDB) {
+            if (data != null)
+                ResourceSystem.add(data);
             entry = ((FileDB)database).newFileDBRow(path, guid);
+            entry.setDetails(data);
+        }
         else
-            entry = ((Mod)database).add(path, null, guid);
+            entry = ((Mod)database).add(path, data, guid);
 
         database.setHasChanges();
         ResourceSystem.reloadModel(database);
