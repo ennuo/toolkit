@@ -345,7 +345,7 @@ public class Toolkit extends javax.swing.JFrame {
         zeroContext.setVisible(false);
         duplicateContext.setVisible(false);
         extractContextMenu.setVisible(false);
-        newItemGroup.setVisible(false);
+        newEntryGroup.setVisible(false);
         renameFolder.setVisible(false);
         replaceDecompressed.setVisible(false);
         replaceDependencies.setVisible(false);
@@ -377,7 +377,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0) {
             if ((useContext && entry == null) && !isDependencyTree) {
-                newItemGroup.setVisible(true);
+                newEntryGroup.setVisible(true);
                 newFolderContext.setVisible(true);
                 renameFolder.setVisible(true);
             } else if (!useContext) newFolderContext.setVisible(true);
