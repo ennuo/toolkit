@@ -251,7 +251,6 @@
                               </Group>
                               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="iconTextEntry" max="32767" attributes="0"/>
                                   <Component id="creatorTextEntry" alignment="0" max="32767" attributes="0"/>
                                   <Component id="titleDescPane" alignment="0" max="32767" attributes="0"/>
                                   <Component id="locationTextEntry" alignment="1" max="32767" attributes="0"/>
@@ -259,6 +258,11 @@
                                   <Component id="jPanel1" alignment="1" pref="422" max="32767" attributes="0"/>
                                   <Component id="categoryTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="translationKeyTextEntry" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="iconTextEntry" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="selectIconButon" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                           <Group type="102" attributes="0">
@@ -275,6 +279,7 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="iconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="iconTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="selectIconButon" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -697,6 +702,14 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="javax.swing.JButton" name="selectIconButon">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Select"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectIconButonActionPerformed"/>
+                      </Events>
+                    </Component>
                   </SubComponents>
                 </Container>
               </SubComponents>

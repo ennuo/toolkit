@@ -31,6 +31,7 @@ import cwlib.types.databases.FileEntry;
 import cwlib.types.save.BigSave;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Bytes;
+import cwlib.util.Resources;
 import cwlib.util.Strings;
 
 import java.awt.event.WindowAdapter;
@@ -43,8 +44,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.joml.Vector4f;
 import toolkit.windows.Toolkit;
+import toolkit.windows.utilities.ResourcePicker;
 
 public class ItemManager extends javax.swing.JFrame {
     private static final String DEFAULT_TITLE = "Some kind of object";
@@ -324,6 +328,10 @@ public class ItemManager extends javax.swing.JFrame {
             this.eyetoyDataPane.setVisible(this.eyetoyDataCheckbox.isSelected());
         });
         
+        this.iconTextEntry.addActionListener(e -> {
+            this.updateIcon();
+        });
+        
         this.itemList.setSelectedIndex(0);
     }
     
@@ -444,11 +452,6 @@ public class ItemManager extends javax.swing.JFrame {
         this.updateTranslations();
     }
     
-    private void resetIcon() {
-        this.itemIcon.setIcon(null);
-        this.itemIcon.setText("No icon available.");
-    }
-    
     private void updateSubTypeVisibility() {
         boolean isCostume = this.costumesCheckbox.isSelected();
         boolean isColour = this.playerColorsCheckbox.isSelected();
@@ -479,6 +482,33 @@ public class ItemManager extends javax.swing.JFrame {
         this.toolTypeLabel.setVisible(isTool);
         this.toolTypeCombo.setVisible(isTool);
         
+    }
+    
+    private void resetIcon() {
+        this.itemIcon.setIcon(null);
+        this.itemIcon.setText("No icon available.");
+    }
+    
+    private void updateIcon() {
+        this.resetIcon();
+        
+        ResourceDescriptor descriptor = null;
+        String text = this.iconTextEntry.getText();
+        if (!Strings.isGUID(text) && !Strings.isSHA1(text)) return;
+        descriptor = new ResourceDescriptor(text, ResourceType.TEXTURE);
+        
+        byte[] data = ResourceSystem.extract(descriptor);
+        if (data == null) return;
+        
+        ResourceType type = Resources.getResourceType(data);
+        if (type != ResourceType.TEXTURE && type != ResourceType.GTF_TEXTURE) return;
+        
+        RTexture texture = null;
+        try { texture = new RTexture(data); }
+        catch (Exception ex) { return; }
+        
+        this.itemIcon.setText(null);
+        this.itemIcon.setIcon(texture.getImageIcon(128, 128));
     }
     
     private void initializeSubTypes() {
@@ -553,19 +583,8 @@ public class ItemManager extends javax.swing.JFrame {
         
         // Details tab
         
-        this.resetIcon();
-        if (details.icon != null) {
-            this.iconTextEntry.setText(details.icon.toString());
-            byte[] data = ResourceSystem.extract(details.icon);
-            if (data != null) {
-                RTexture texture = new RTexture(data);
-                if (texture != null) {
-                    this.itemIcon.setText(null);
-                    this.itemIcon.setIcon(texture.getImageIcon(128, 128));
-                }
-            }
-        }
-        else this.iconTextEntry.setText("");
+        this.iconTextEntry.setText(details.icon == null ? "" : details.icon.toString());
+        this.updateIcon();
         
         if (details.creator != null)
             this.creatorTextEntry.setText(details.creator.toString());
@@ -981,6 +1000,7 @@ public class ItemManager extends javax.swing.JFrame {
         creatorsList = new javax.swing.JList<>();
         addCreatorButton = new javax.swing.JButton();
         removeCreatorButton = new javax.swing.JButton();
+        selectIconButon = new javax.swing.JButton();
         typeScrollPane = new javax.swing.JScrollPane();
         typesPane = new javax.swing.JPanel();
         generalTypesLabel = new javax.swing.JLabel();
@@ -1385,6 +1405,13 @@ public class ItemManager extends javax.swing.JFrame {
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
+        selectIconButon.setText("Select");
+        selectIconButon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectIconButonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -1402,14 +1429,17 @@ public class ItemManager extends javax.swing.JFrame {
                     .addComponent(iconLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(15, 15, 15)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(iconTextEntry)
                     .addComponent(creatorTextEntry)
                     .addComponent(titleDescPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(locationTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(catLocPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
                     .addComponent(categoryTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(translationKeyTextEntry)))
+                    .addComponent(translationKeyTextEntry)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(iconTextEntry)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(selectIconButon))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(creationHistoryCheckbox)
                 .addGap(0, 0, Short.MAX_VALUE))
@@ -1421,7 +1451,8 @@ public class ItemManager extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(iconLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(iconTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iconTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(selectIconButon))
                 .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2992,6 +3023,15 @@ public class ItemManager extends javax.swing.JFrame {
         this.photoUsers.addElement(new PhotoUser(user));
     }//GEN-LAST:event_addPhotoUserButtonActionPerformed
 
+    private void selectIconButonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectIconButonActionPerformed
+        this.iconTextEntry.setText(ResourcePicker.getResourceString(
+                this, 
+                this.iconTextEntry.getText(), 
+                ResourceType.TEXTURE
+        ));
+        this.updateIcon();
+    }//GEN-LAST:event_selectIconButonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCreatorButton;
     private javax.swing.JButton addItemButton;
@@ -3174,6 +3214,7 @@ public class ItemManager extends javax.swing.JFrame {
     private javax.swing.JCheckBox sackbotMeshCheckbox;
     private javax.swing.JButton saveButton;
     private javax.swing.JButton savePhotoUserButton;
+    private javax.swing.JButton selectIconButon;
     private javax.swing.JCheckBox sequencerCheckbox;
     private javax.swing.JCheckBox shapesCheckbox;
     private javax.swing.JScrollPane slotContainer;

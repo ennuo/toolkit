@@ -15,11 +15,23 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utilities for operations on resources.
  */
 public class Resources {
+    /**
+     * Gets the resource type of a resource without any of the overhead
+     * of the Resource class
+     * @param resource Resource data
+     * @return Resource type
+     */
+    public static ResourceType getResourceType(byte[] resource) {
+        if (resource == null || resource.length < 4) return ResourceType.INVALID;
+        return ResourceType.fromMagic(new String(resource, 0, 3, StandardCharsets.US_ASCII));   
+    }
+    
     /**
      * Gets the revision of a resource without any of the overhead
      * of the Resource class

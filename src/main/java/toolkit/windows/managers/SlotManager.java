@@ -435,14 +435,14 @@ public class SlotManager extends javax.swing.JFrame {
             String text = this.iconTextEntry.getText();
             if (text.isEmpty()) {
                 this.selectedSlot.icon = null;
-                this.updateIcon(true);
+                this.updateIcon();
                 return;
             }
             if (Strings.isGUID(text) || Strings.isSHA1(text)) {
                 ResourceDescriptor descriptor = new ResourceDescriptor(text, ResourceType.TEXTURE);
                 if (descriptor.equals(this.selectedSlot.icon)) return;
                 this.selectedSlot.icon = descriptor;
-                this.updateIcon(true);
+                this.updateIcon();
             }
         });
         
@@ -587,11 +587,14 @@ public class SlotManager extends javax.swing.JFrame {
          this.slotIcon.setText("No icon available.");
     }
     
-    private void updateIcon(boolean force) {
+    private void updateIcon() {
        Slot slot = this.selectedSlot;
        
        byte[] data = ResourceSystem.extract(slot.icon);
        if (data == null) { this.resetIcon(); return; }
+       
+       ResourceType type = Resources.getResourceType(data);
+       if (type != ResourceType.TEXTURE && type != ResourceType.GTF_TEXTURE) return;
        
        RTexture texture = null;
        try { texture = new RTexture(data); }
@@ -628,9 +631,8 @@ public class SlotManager extends javax.swing.JFrame {
         if (slot.icon != null) 
             this.iconTextEntry.setText(slot.icon.toString());
         else this.iconTextEntry.setText("");
-        this.updateIcon(false);
+        this.updateIcon();
         
-
         this.creatorTextEntry.setText(slot.authorName);
         this.translationKeyTextEntry.setText(slot.translationTag);
         this.updateTranslations();
