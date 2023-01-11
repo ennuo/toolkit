@@ -10,13 +10,14 @@ import cwlib.types.swing.FileData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import toolkit.windows.Toolkit;
 
 public class ResourcePicker extends javax.swing.JDialog {
     private final ResourceType type;
@@ -24,11 +25,12 @@ public class ResourcePicker extends javax.swing.JDialog {
     private boolean submit;
     private final TableRowSorter<TableModel> sorter;
     
-    private ResourcePicker(ResourceType type) {
-        super(Toolkit.INSTANCE, true);
+    private ResourcePicker(JFrame frame, ResourceType type) {
+        super(frame, true);
         this.initComponents();
         this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setTitle("Resource Picker");
+        this.setLocationRelativeTo(frame);
         this.getRootPane().setDefaultButton(this.selectButton);
         this.type = type;
         
@@ -110,8 +112,8 @@ public class ResourcePicker extends javax.swing.JDialog {
         else sorter.setRowFilter(filter);
     }
     
-    public static ResourceDescriptor getResource(ResourceDescriptor descriptor, ResourceType type) {
-        ResourcePicker picker = new ResourcePicker(type);
+    public static ResourceDescriptor getResource(JFrame frame, ResourceDescriptor descriptor, ResourceType type) {
+        ResourcePicker picker = new ResourcePicker(frame, type);
         return picker.submit ? picker.selected : descriptor;
     }
     
