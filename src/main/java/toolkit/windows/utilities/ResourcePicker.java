@@ -7,6 +7,7 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.swing.FileData;
+import cwlib.util.Strings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.ImageIcon;
@@ -34,11 +35,7 @@ public class ResourcePicker extends javax.swing.JDialog {
         this.getRootPane().setDefaultButton(this.selectButton);
         this.type = type;
         
-        try { Thread.sleep(1000); }
-        catch (Exception ex) {};
-        
         this.sorter = new TableRowSorter<>(this.resourceTable.getModel());
-        
         this.resourceTable.setRowSorter(this.sorter);
         
         this.resourceTable.getColumnModel().getSelectionModel().addListSelectionListener(event -> {
@@ -98,7 +95,7 @@ public class ResourcePicker extends javax.swing.JDialog {
     }
     
     private void onTextChange() {
-        String text = this.searchText.getText();
+        String text = this.searchText.getText().toLowerCase();
         
         RowFilter<TableModel, Integer> filter = new RowFilter<>() {
             @Override
@@ -115,6 +112,15 @@ public class ResourcePicker extends javax.swing.JDialog {
     public static ResourceDescriptor getResource(JFrame frame, ResourceDescriptor descriptor, ResourceType type) {
         ResourcePicker picker = new ResourcePicker(frame, type);
         return picker.submit ? picker.selected : descriptor;
+    }
+    
+    public static String getResourceString(JFrame frame, String text, ResourceType type) {
+        ResourceDescriptor descriptor = null;
+        if (Strings.isGUID(text) || Strings.isSHA1(text))
+            descriptor = new ResourceDescriptor(text, ResourceType.TEXTURE);
+        descriptor = ResourcePicker.getResource(frame, descriptor, type);
+        if (descriptor == null) return "";
+        return descriptor.toString();
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
