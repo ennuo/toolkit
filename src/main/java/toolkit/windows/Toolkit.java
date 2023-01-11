@@ -995,6 +995,7 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(newFolderContext);
 
         renameFolder.setText("Rename Folder");
+        renameFolder.setEnabled(false);
         renameFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renameFolderActionPerformed(evt);
