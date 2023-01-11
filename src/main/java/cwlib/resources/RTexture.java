@@ -30,7 +30,7 @@ public class RTexture {
     public RTexture(Resource resource) { this.process(resource); }
     public RTexture(byte[] data) {
         if (data == null || data.length < 4) {
-            System.out.println("No data provided to Texture constructor");
+            // System.out.println("No data provided to Texture constructor");
             return;
         }
 
@@ -64,14 +64,14 @@ public class RTexture {
         switch (resource.getSerializationType()) {
             case COMPRESSED_TEXTURE:
                 if (type == ResourceType.TEXTURE) {
-                    ResourceSystem.println("Texture", "Detected COMPRESSED_TEXTURE, decompressing to DDS");
+                    // ResourceSystem.println("Texture", "Detected COMPRESSED_TEXTURE, decompressing to DDS");
                     this.cached = Images.fromDDS(this.data);
 
                     byte[] footer = Arrays.copyOfRange(this.data, this.data.length - 4, this.data.length);
                     if (Bytes.toIntegerBE(footer) == 0x42554D50)
                         noSRGB = true;
                 } else {
-                    ResourceSystem.println("Texture", "Detected GTF_TEXTURE, generating DDS header");
+                    // ResourceSystem.println("Texture", "Detected GTF_TEXTURE, generating DDS header");
                     this.parseGTF();
                 }
                 break;
@@ -79,7 +79,7 @@ public class RTexture {
             case GXT_SWIZZLED:
                 if (type != ResourceType.GTF_TEXTURE)
                     throw new SerializationException("Invalid ResourceType in GXT/GTF swizzled load");
-                ResourceSystem.println("Texture", "Converting GXT texture to DDS.");
+                // ResourceSystem.println("Texture", "Converting GXT texture to DDS.");
                 this.parseGXT();
                 break;
             default: throw new SerializationException("Invalid serialization type in RTexture resource!");
