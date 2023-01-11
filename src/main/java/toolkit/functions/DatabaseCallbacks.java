@@ -79,7 +79,7 @@ public class DatabaseCallbacks {
     
     public static FileEntry newEntry(byte[] data) {                                               
         String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
-        if (file == null) return null;
+        if (file == null || file.isEmpty()) return null;
             
         FileData database = ResourceSystem.getSelectedDatabase();
 
