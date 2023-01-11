@@ -37,6 +37,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import toolkit.windows.Toolkit;
+import toolkit.windows.utilities.ResourcePicker;
 
 public class SlotManager extends javax.swing.JFrame {
     private static Slot EMPTY_SLOT;
@@ -692,6 +693,7 @@ public class SlotManager extends javax.swing.JFrame {
         creatorTextEntry = new javax.swing.JTextField();
         translationKeyLabel = new javax.swing.JLabel();
         translationKeyTextEntry = new javax.swing.JTextField();
+        selectIconButon = new javax.swing.JButton();
         dataPane = new javax.swing.JPanel();
         dataContainer = new javax.swing.JPanel();
         rootLevelLabel = new javax.swing.JLabel();
@@ -708,6 +710,8 @@ public class SlotManager extends javax.swing.JFrame {
         linkLabel = new javax.swing.JLabel();
         groupCombo = new javax.swing.JComboBox<>();
         linkCombo = new javax.swing.JComboBox<>();
+        selectRootLevelButton = new javax.swing.JButton();
+        selectAdventureButton = new javax.swing.JButton();
         settingsPane = new javax.swing.JPanel();
         levelTypeLabel = new javax.swing.JLabel();
         gameModeLabel = new javax.swing.JLabel();
@@ -778,6 +782,13 @@ public class SlotManager extends javax.swing.JFrame {
 
         translationKeyLabel.setText("Translation Key:");
 
+        selectIconButon.setText("Select");
+        selectIconButon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectIconButonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout detailsPaneLayout = new javax.swing.GroupLayout(detailsPane);
         detailsPane.setLayout(detailsPaneLayout);
         detailsPaneLayout.setHorizontalGroup(
@@ -806,7 +817,10 @@ public class SlotManager extends javax.swing.JFrame {
                         .addGroup(detailsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(creatorTextEntry, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(translationKeyTextEntry)
-                            .addComponent(iconTextEntry))))
+                            .addGroup(detailsPaneLayout.createSequentialGroup()
+                                .addComponent(iconTextEntry)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(selectIconButon, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         detailsPaneLayout.setVerticalGroup(
@@ -826,7 +840,8 @@ public class SlotManager extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(detailsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(iconLabel)
-                    .addComponent(iconTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iconTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(selectIconButon))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(detailsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(creatorLabel)
@@ -867,7 +882,7 @@ public class SlotManager extends javax.swing.JFrame {
                             .addComponent(slotTypeLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(slotIDPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(slotTypeCombo, 0, 387, Short.MAX_VALUE)
+                            .addComponent(slotTypeCombo, 0, 388, Short.MAX_VALUE)
                             .addComponent(slotNumberSpinner))))
                 .addContainerGap())
         );
@@ -891,6 +906,20 @@ public class SlotManager extends javax.swing.JFrame {
 
         linkLabel.setText("Link:");
 
+        selectRootLevelButton.setText("Select");
+        selectRootLevelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectRootLevelButtonActionPerformed(evt);
+            }
+        });
+
+        selectAdventureButton.setText("Select");
+        selectAdventureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectAdventureButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout dataContainerLayout = new javax.swing.GroupLayout(dataContainer);
         dataContainer.setLayout(dataContainerLayout);
         dataContainerLayout.setHorizontalGroup(
@@ -906,7 +935,11 @@ public class SlotManager extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(dataContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(adventureTextEntry)
-                            .addComponent(rootLevelTextEntry)))
+                            .addComponent(rootLevelTextEntry))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(dataContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(selectRootLevelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(selectAdventureButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(dataContainerLayout.createSequentialGroup()
                         .addGroup(dataContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(linkLabel)
@@ -923,11 +956,13 @@ public class SlotManager extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(dataContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rootLevelTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(rootLevelLabel))
+                    .addComponent(rootLevelLabel)
+                    .addComponent(selectRootLevelButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(dataContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adventureLabel)
-                    .addComponent(adventureTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(adventureTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(selectAdventureButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(slotIDPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1234,6 +1269,31 @@ public class SlotManager extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void selectIconButonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectIconButonActionPerformed
+        this.iconTextEntry.setText(ResourcePicker.getResourceString(
+                this, 
+                this.iconTextEntry.getText(), 
+                ResourceType.TEXTURE
+        ));
+    }//GEN-LAST:event_selectIconButonActionPerformed
+
+    private void selectRootLevelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectRootLevelButtonActionPerformed
+        this.rootLevelTextEntry.setText(ResourcePicker.getResourceString(
+                this, 
+                this.rootLevelTextEntry.getText(), 
+                ResourceType.LEVEL
+        ));
+    }//GEN-LAST:event_selectRootLevelButtonActionPerformed
+
+    private void selectAdventureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAdventureButtonActionPerformed
+        this.adventureTextEntry.setText(ResourcePicker.getResourceString(
+                this, 
+                this.adventureTextEntry.getText(), 
+                ResourceType.ADVENTURE_CREATE_PROFILE
+        ));
+    }//GEN-LAST:event_selectAdventureButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSlotButton;
     private javax.swing.JLabel adventureLabel;
@@ -1288,6 +1348,9 @@ public class SlotManager extends javax.swing.JFrame {
     private javax.swing.JButton removeSlotButton;
     private javax.swing.JLabel rootLevelLabel;
     private javax.swing.JTextField rootLevelTextEntry;
+    private javax.swing.JButton selectAdventureButton;
+    private javax.swing.JButton selectIconButon;
+    private javax.swing.JButton selectRootLevelButton;
     private javax.swing.JPanel settingsPane;
     private javax.swing.JCheckBox shareableCheckbox;
     private javax.swing.JScrollPane slotContainer;

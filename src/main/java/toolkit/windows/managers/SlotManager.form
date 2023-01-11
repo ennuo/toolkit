@@ -149,7 +149,11 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="creatorTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="translationKeyTextEntry" max="32767" attributes="0"/>
-                                  <Component id="iconTextEntry" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="iconTextEntry" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="selectIconButon" min="-2" pref="90" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -178,6 +182,7 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="iconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="iconTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="selectIconButon" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -251,6 +256,14 @@
             </Component>
             <Component class="javax.swing.JTextField" name="translationKeyTextEntry">
             </Component>
+            <Component class="javax.swing.JButton" name="selectIconButon">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Select"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectIconButonActionPerformed"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="dataPane">
@@ -294,6 +307,11 @@
                                       <Component id="adventureTextEntry" max="32767" attributes="0"/>
                                       <Component id="rootLevelTextEntry" max="32767" attributes="0"/>
                                   </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="selectRootLevelButton" min="-2" pref="90" max="-2" attributes="0"/>
+                                      <Component id="selectAdventureButton" alignment="1" min="-2" pref="90" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -318,11 +336,13 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="rootLevelTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="rootLevelLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="selectRootLevelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="adventureLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="adventureTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="selectAdventureButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="slotIDPane" min="-2" max="-2" attributes="0"/>
@@ -373,7 +393,7 @@
                                       </Group>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="slotTypeCombo" pref="387" max="32767" attributes="0"/>
+                                          <Component id="slotTypeCombo" pref="388" max="32767" attributes="0"/>
                                           <Component id="slotNumberSpinner" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
@@ -467,6 +487,22 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;SlotEntry&gt;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="selectRootLevelButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Select"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectRootLevelButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="selectAdventureButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Select"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectAdventureButtonActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
