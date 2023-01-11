@@ -963,12 +963,14 @@ public class Toolkit extends javax.swing.JFrame {
         newResourceGroup.add(newAnimationContext);
 
         newModelContext.setText("Model");
+        newModelContext.setEnabled(false);
         newResourceGroup.add(newModelContext);
 
         newEntryGroup.add(newResourceGroup);
 
         newItemGroup.setText("Item");
         newItemGroup.setToolTipText("");
+        newItemGroup.setEnabled(false);
 
         newStickerContext.setText("Sticker");
         newItemGroup.add(newStickerContext);

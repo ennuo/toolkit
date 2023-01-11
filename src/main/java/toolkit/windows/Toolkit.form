@@ -336,6 +336,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="newModelContext">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Model"/>
+                    <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                 </MenuItem>
               </SubComponents>
@@ -344,6 +345,7 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Item"/>
                 <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <SubComponents>
                 <MenuItem class="javax.swing.JMenuItem" name="newStickerContext">
