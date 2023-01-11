@@ -16,11 +16,15 @@ import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
 import cwlib.io.Compressable;
+import cwlib.resources.RTexture;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.BigSave;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.ResourceInfo;
+import cwlib.types.data.Revision;
+import cwlib.util.Images;
+import cwlib.util.Resources;
 import cwlib.util.Strings;
 
 import java.awt.event.ItemEvent;
@@ -28,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -577,23 +582,39 @@ public class SlotManager extends javax.swing.JFrame {
         }
     }
     
+    private void resetIcon() {
+         this.slotIcon.setIcon(null);
+         this.slotIcon.setText("No icon available.");
+    }
+    
     private void updateIcon(boolean force) {
-        // TODO: Re-add rendering icons
-        
-        // if (force || this.selectedSlot.renderedIcon == null) {
-        //     this.selectedSlot.renderedIcon = null;
-        //     this.selectedSlot.renderIcon(this.entry);
-        // }
-        
-        // if (this.selectedSlot.renderedIcon == null) {
-        //     this.slotIcon.setIcon(null);
-        //     this.slotIcon.setText("No icon available.");
-        //     return;
-        // }
-        // this.slotIcon.setText("");
-        // this.slotIcon.setIcon(this.selectedSlot.renderedIcon);
-
-        this.slotIcon.setIcon(null);
+       Slot slot = this.selectedSlot;
+       
+       byte[] data = ResourceSystem.extract(slot.icon);
+       if (data == null) { this.resetIcon(); return; }
+       
+       RTexture texture = null;
+       try { texture = new RTexture(data); }
+       catch (Exception ex) { this.resetIcon(); return; }
+       
+       BufferedImage image = texture.getImage();
+       if (image == null) { this.resetIcon(); return; }
+       
+       ImageIcon icon = null;
+       if (slot.id.slotType.equals(SlotType.DEVELOPER_GROUP) || slot.id.slotType.equals(SlotType.DLC_PACK))
+           icon = Images.getGroupIcon(image);
+       else {
+            Revision levelRevision = Resources.getRevision(ResourceSystem.extract(slot.root));
+            if (levelRevision == null)
+                levelRevision = this.entry.getInfo().getRevision();
+            
+            icon = Images.getSlotIcon(image, levelRevision.getHead());
+       }
+       
+       if (icon == null) { this.resetIcon(); return; }
+       
+       this.slotIcon.setText("");
+       this.slotIcon.setIcon(icon);
     }
     
     private void setSlotData() {

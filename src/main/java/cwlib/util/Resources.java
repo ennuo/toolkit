@@ -12,6 +12,7 @@ import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
 import cwlib.types.data.GatherData;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
 
@@ -19,6 +20,28 @@ import cwlib.types.databases.FileEntry;
  * Utilities for operations on resources.
  */
 public class Resources {
+    /**
+     * Gets the revision of a resource without any of the overhead
+     * of the Resource class
+     * @param resource Resource data
+     * @return Resource revision
+     */
+    public static Revision getRevision(byte[] resource) {
+        if (resource == null) return null;
+        MemoryInputStream stream = new MemoryInputStream(resource);
+        ResourceType type = ResourceType.fromMagic(stream.str(3));
+        if (type == ResourceType.INVALID) return null;
+        SerializationType method = SerializationType.fromValue(stream.str(1));
+        if (method != SerializationType.BINARY && method != SerializationType.ENCRYPTED_BINARY)
+            return null;
+        int head = stream.i32();
+        if (head < 0x272) return new Revision(head);
+        stream.i32(); // dependency table offset
+        int branch = stream.i32();
+        return new Revision(head, branch);
+    }
+    
+    
     /**
      * Gets the dependency table of a resource without any of the overhead
      * of the Resource class
