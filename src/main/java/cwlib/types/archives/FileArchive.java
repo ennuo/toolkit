@@ -101,6 +101,9 @@ public class FileArchive extends Fart {
         // Update state of the archive in memory.
         this.entries = fat;
         this.queue.clear();
+        this.lookup.clear();
+        for (Fat row : this.entries)
+            this.lookup.put(row.getSHA1(), row);
         this.fatOffset = offset;
         this.lastModified = this.file.lastModified();
 
