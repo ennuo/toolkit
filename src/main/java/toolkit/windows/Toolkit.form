@@ -263,6 +263,9 @@
                     <Property name="text" type="java.lang.String" value="JSON"/>
                     <Property name="toolTipText" type="java.lang.String" value="Import resource from exported JSON data"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importJSONContextActionPerformed"/>
+                  </Events>
                 </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="newTextureContext">
                   <Properties>
@@ -376,6 +379,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceImageContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="replaceJSONContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="JSON"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceJSONContextActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

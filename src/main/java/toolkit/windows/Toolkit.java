@@ -529,6 +529,7 @@ public class Toolkit extends javax.swing.JFrame {
                 this.entryContext.add(this.replaceGroup);
                 this.replaceImageContext.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
                 this.replaceDecompressedContext.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
+                this.replaceJSONContext.setVisible(type != ResourceType.INVALID && info.getMethod() == SerializationType.BINARY && info.getResource() != null);
                 boolean hasDependencies = isCompressed && info.getDependencies().length != 0;
                 this.replaceDependenciesContext.setVisible(hasDependencies);
                 if (hasDependencies)
@@ -631,6 +632,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceDecompressedContext = new javax.swing.JMenuItem();
         replaceDependenciesContext = new javax.swing.JMenuItem();
         replaceImageContext = new javax.swing.JMenuItem();
+        replaceJSONContext = new javax.swing.JMenuItem();
         dependencyGroup = new javax.swing.JMenu();
         removeDependenciesContext = new javax.swing.JMenuItem();
         removeMissingDependenciesContext = new javax.swing.JMenuItem();
@@ -980,6 +982,11 @@ public class Toolkit extends javax.swing.JFrame {
 
         importJSONContext.setText("JSON");
         importJSONContext.setToolTipText("Import resource from exported JSON data");
+        importJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importJSONContextActionPerformed(evt);
+            }
+        });
         newResourceGroup.add(importJSONContext);
 
         newTextureContext.setText("Texture");
@@ -1085,6 +1092,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         replaceGroup.add(replaceImageContext);
+
+        replaceJSONContext.setText("JSON");
+        replaceJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceJSONContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceJSONContext);
 
         entryContext.add(replaceGroup);
 
@@ -2821,6 +2836,40 @@ public class Toolkit extends javax.swing.JFrame {
             FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), file.getAbsolutePath());
     }//GEN-LAST:event_exportJSONContextActionPerformed
 
+    private byte[] loadWrappedResource() {
+        File file = FileChooser.openFile("resource.json", "json", false);
+        if (file == null) return null;
+        
+        byte[] data = null;
+        ResourceSystem.DISABLE_LOGS = true;
+        try {
+            WrappedResource wrapper = GsonUtils.fromJSON(
+                FileIO.readString(Path.of(file.getAbsolutePath())),
+                WrappedResource.class
+            );
+            
+            data = wrapper.build();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An error occurred loaded wrapped resource, could not import.", "An error occurred", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        ResourceSystem.DISABLE_LOGS = false;
+        
+        return data;
+    }
+    
+    private void importJSONContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importJSONContextActionPerformed
+        byte[] data = this.loadWrappedResource();
+        if (data == null) return;
+        DatabaseCallbacks.newEntry(data);
+    }//GEN-LAST:event_importJSONContextActionPerformed
+
+    private void replaceJSONContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceJSONContextActionPerformed
+        byte[] data = this.loadWrappedResource();
+        if (data == null) return;
+        ResourceSystem.replace(ResourceSystem.getSelected().getEntry(), data);
+    }//GEN-LAST:event_replaceJSONContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -3126,6 +3175,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem replaceDependenciesContext;
     private javax.swing.JMenu replaceGroup;
     private javax.swing.JMenuItem replaceImageContext;
+    private javax.swing.JMenuItem replaceJSONContext;
     private javax.swing.JTabbedPane resourceTabs;
     public javax.swing.JMenuItem saveAs;
     private javax.swing.JPopupMenu.Separator saveDivider;
