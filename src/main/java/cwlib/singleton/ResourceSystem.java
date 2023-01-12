@@ -239,8 +239,6 @@ public class ResourceSystem {
     public static boolean replace(FileEntry entry, byte[] data) {
         if (entry == null) return false;
 
-        FileData source = entry.getSource();
-
         entry.setDetails(data);
         entry.setInfo(null);
 

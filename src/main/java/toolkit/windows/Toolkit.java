@@ -395,7 +395,7 @@ public class Toolkit extends javax.swing.JFrame {
             contextSize = this.entryContext.getComponentCount();
         }
         
-        if (canExtract) {
+        if (canExtract && isTreeRowSelected) {
             this.entryContext.add(this.extractContextMenu);
             
             // Maybe I should check if at least one resource is compressed?
