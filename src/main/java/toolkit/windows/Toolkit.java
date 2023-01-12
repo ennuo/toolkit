@@ -499,8 +499,8 @@ public class Toolkit extends javax.swing.JFrame {
             this.entryContext.add(new JSeparator());
             contextSize = this.entryContext.getComponentCount();
         }
-        
-        if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0 && !isDependencyTree) {
+       
+        if ((ResourceSystem.getDatabaseType().containsData() || ResourceSystem.getDatabases().size() != 0) && !isDependencyTree) {
             if (!isFile)
                 this.entryContext.add(this.newEntryGroup);
            
@@ -561,8 +561,9 @@ public class Toolkit extends javax.swing.JFrame {
             contextSize = this.entryContext.getComponentCount();
         }
         
-        if (isTreeRowSelected && !isDependencyTree && ResourceSystem.getSelectedDatabase().getType().hasGUIDs()) {
-            this.entryContext.add(this.zeroContext);
+        if (isTreeRowSelected && !isDependencyTree) {
+            if (ResourceSystem.getSelectedDatabase().getType().hasGUIDs())
+                this.entryContext.add(this.zeroContext);
             this.entryContext.add(this.deleteContext);
         }
         
@@ -2243,6 +2244,10 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_duplicateContextActionPerformed
 
     private void newEntryContextActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
+            ArchiveCallbacks.addFile();
+            return;
+        }
         DatabaseCallbacks.newEntry(null);
     }                                               
 

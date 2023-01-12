@@ -97,14 +97,21 @@ public class DatabaseCallbacks {
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
-    public static FileEntry newEntry(byte[] data) {                                               
+    public static FileEntry newEntry(byte[] data) {  
+        FileData database = ResourceSystem.getSelectedDatabase();
+        if (!database.getType().hasGUIDs()) {
+            if (data != null && database.getType().containsData()) {
+                database.add(data);
+                database.setHasChanges();
+                ResourceSystem.reloadModel(database);
+                Toolkit.INSTANCE.updateWorkspace();
+            }
+            return null;
+        }
+        
         String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
         if (file == null || file.isEmpty()) return null;
             
-        FileData database = ResourceSystem.getSelectedDatabase();
-
-        if (!database.getType().hasGUIDs()) return null;
-        
         long nextGUID = database.getNextGUID().getValue();
         
         String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
