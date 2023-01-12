@@ -122,8 +122,8 @@ public class AnimationImporter {
 
     private String getAnimationName() { return this.animation.getName(); }
     public RAnimation getAnimation() {
-        // this.getAnimBones();
-        this.getSackboyAnimBones();
+        this.getAnimBones();
+        //this.getSackboyAnimBones();
 
         ArrayList<Integer> posBonesAnimated = new ArrayList<>();
         ArrayList<Integer> rotBonesAnimated = new ArrayList<>();
@@ -242,9 +242,9 @@ public class AnimationImporter {
             this.resource.scaledBonesAnimated[i] = scaleBonesAnimated.get(i).byteValue();
         
         this.resource.morphsAnimated = new byte[0];
-        // this.resource.packedMorph = new float[0];
-        this.resource.packedMorph = SACKBOY.packedMorph;
-        this.resource.morphCount = SACKBOY.morphCount;
+        this.resource.packedMorph = new float[0];
+        //this.resource.packedMorph = SACKBOY.packedMorph;
+        //this.resource.morphCount = SACKBOY.morphCount;
         
         return this.resource;
     }
