@@ -65,6 +65,9 @@ public class DatabaseCallbacks {
     }
     
     public static void zero() {
+        int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to zero this?", "Confirm erase", JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.NO_OPTION) return;
+        
         int zeroed = 0;
         for (FileNode node : ResourceSystem.getAllSelected()) {
             FileEntry entry = node.getEntry();
@@ -257,6 +260,9 @@ public class DatabaseCallbacks {
     }
     
     public static void delete() {      
+        int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this?", "Confirm deletion", JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.NO_OPTION) return;
+        
         FileData database = ResourceSystem.getSelectedDatabase();
         FileNode[] selections = ResourceSystem.getAllSelected();
         for (FileNode node : selections) {
