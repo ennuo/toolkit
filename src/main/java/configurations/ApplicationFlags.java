@@ -46,18 +46,20 @@ public class ApplicationFlags {
     public static boolean CAN_COMPILE_ORBIS_SHADERS = false;
     
     /**
+     * Whether or not Toolkit is running on Windows
+     */
+    public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+    
+    /**
      * 3D is only supported on Windows (and maybe Linux)
      */
-    public static boolean CAN_USE_3D = false;
+    public static boolean CAN_USE_3D = !IS_WINDOWS;
 
     static {
         if (SCE_PSSL_EXECUTABLE != null)
             ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS = SCE_PSSL_EXECUTABLE.exists();
         if (SCE_CGC_EXECUTABLE != null)
             ApplicationFlags.CAN_COMPILE_CELL_SHADERS = SCE_CGC_EXECUTABLE.exists();
-        
-        ApplicationFlags.CAN_USE_3D = 
-                System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
         if (ApplicationFlags.ENABLE_3D_VIEWPORT && !ApplicationFlags.CAN_USE_3D)
             ApplicationFlags.ENABLE_3D_VIEWPORT = false;
     }

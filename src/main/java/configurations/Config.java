@@ -49,6 +49,9 @@ public class Config {
         config.currentProfile = 0;
         Profile profile = new Profile();
         profile.name = "Default";
+        if (!ApplicationFlags.IS_WINDOWS)
+            profile.useLegacyFileDialogue = true;
+        
         config.profiles.add(profile);
         
         Config.save();
