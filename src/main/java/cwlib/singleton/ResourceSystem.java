@@ -251,9 +251,13 @@ public class ResourceSystem {
         entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
         
-        boolean code = ResourceSystem.add(data, entry.getSource());
+        boolean code = true;
+        if (ResourceSystem.getSelectedDatabase().getType() != DatabaseType.BIGFART)
+            code = ResourceSystem.add(data, entry.getSource());
+        
         if (entry.getNode() == ResourceSystem.lastSelected)
             ResourceSystem.refreshEditor();
+        
         return code;
     }
     
