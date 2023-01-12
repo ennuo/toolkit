@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
@@ -27,9 +28,20 @@ public class DatabaseCallbacks {
     public static void loadFileDB(File file) {
         Toolkit toolkit = Toolkit.INSTANCE;
         ResourceSystem.getDatabaseService().submit(() -> {
+            
+            JProgressBar bar = Toolkit.INSTANCE.progressBar;
+            bar.setVisible(true);
+            bar.setIndeterminate(true);
+            
             FileDB database = null;
             try { database = new FileDB(file); }
-            catch (Exception ex) { return; }
+            catch (Exception ex) { 
+                bar.setVisible(false);
+                return; 
+            }
+            
+            bar.setVisible(false);
+            
 
             int loadedIndex = ResourceSystem.getLoadedDatabase(file);
             if (loadedIndex != -1) {
