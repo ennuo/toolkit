@@ -84,11 +84,12 @@ import cwlib.types.data.Revision;
 import executables.gfx.GfxGUI;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import org.lwjgl.opengl.GL;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit INSTANCE;
-    private boolean useContext = false;
+    private boolean isTreeRowSelected = false;
 
     public Toolkit() {
         /* Reset the state in case of a reboot. */
@@ -233,19 +234,21 @@ public class Toolkit extends javax.swing.JFrame {
                 int selRow = tree.getRowForLocation(e.getX(), e.getY());
                 TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                 if (selPath != null) {
-                    useContext = true;
+                    isTreeRowSelected = true;
                     tree.setSelectionPath(selPath);
                 } else {
-                    useContext = false;
+                    isTreeRowSelected = false;
                     tree.setSelectionPath(null);
                     ResourceSystem.resetSelections();
                 }
                 if (selRow > -1) {
                     tree.setSelectionRow(selRow);
-                    useContext = true;
-                } else useContext = false;
+                    isTreeRowSelected = true;
+                } else isTreeRowSelected = false;
                 ResourceSystem.updateSelections(tree);
-                generateEntryContext(tree, e.getX(), e.getY());
+                generateEntryContext2(tree);
+                if (entryContext.getComponentCount() != 0)
+                    entryContext.show(tree, e.getX(), e.getY());
             }
         }
     };
@@ -332,168 +335,198 @@ public class Toolkit extends javax.swing.JFrame {
 
         modMenu.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.MOD);
     }
-
-    private void generateEntryContext(JTree tree, int x, int y) {
-        exportTextureGroupContext.setVisible(false);
-        editSlotContext.setVisible(false);
-        exportLAMSContext.setVisible(false);
-        exportPaletteContext.setVisible(false);
-        loadLAMSContext.setVisible(false);
-        replaceContext.setVisible(false);
-        newFolderContext.setVisible(false);
-        deleteContext.setVisible(false);
-        zeroContext.setVisible(false);
-        duplicateContext.setVisible(false);
-        extractContextMenu.setVisible(false);
-        newEntryGroup.setVisible(false);
-        renameFolder.setVisible(false);
-        replaceDecompressed.setVisible(false);
-        replaceDependencies.setVisible(false);
-        dependencyGroup.setVisible(false);
-        exportModGroup.setVisible(false);
-        exportBackupGroup.setVisible(false);
-        exportAsBackupGUID.setVisible(false);
-        exportAnimation.setVisible(false);
-        exportModelGroup.setVisible(false);
-        exportGroup.setVisible(false);
-        replaceImage.setVisible(false);
-        editMenuContext.setVisible(false);
-        editItemContext.setVisible(false);
-        loadLevelContext.setVisible(false);
-        loadMeshContext.setVisible(false);
-        loadPaletteContext.setVisible(false);
+    
+    public void generateEntryContext2(JTree tree) {
+        this.entryContext.removeAll();
+        this.exportGroup.removeAll();
+        this.copyGroup.removeAll();
         
         boolean isDependencyTree = tree == this.dependencyTree;
         
-        if (!useContext && isDependencyTree) return;
-
-        if (!isDependencyTree || (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && useContext)) 
-            deleteContext.setVisible(true);
-
+        if (!isTreeRowSelected && isDependencyTree) return;
+        
         FileNode node = ResourceSystem.getSelected();
         FileEntry entry = node == null ? null : node.getEntry();
         ResourceInfo info = entry == null ? null : entry.getInfo();
         ResourceType type = info == null ? ResourceType.INVALID : info.getType();
-
-        if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0) {
-            if ((useContext && entry == null) && !isDependencyTree) {
-                newEntryGroup.setVisible(true);
-                newFolderContext.setVisible(true);
-                renameFolder.setVisible(true);
-            } else if (!useContext) newFolderContext.setVisible(true);
-            if (useContext) {
-                if (!isDependencyTree) {
-                    zeroContext.setVisible(true);
-                    deleteContext.setVisible(true);
+        
+        boolean canExtract = ResourceSystem.canExtract() && ResourceSystem.canExtractSelected();
+        boolean isFolder = (isTreeRowSelected && entry == null);
+        boolean isFile = (isTreeRowSelected && entry != null);
+        boolean isLoadedResource = isFile && (info != null && (info.getResource() != null));
+        boolean isCompressed = info != null && info.isCompressedResource();
+        
+        int contextSize = 0;
+        
+        if (!isDependencyTree && isLoadedResource) {
+            switch (type) {
+                case TRANSLATION: {
+                    this.entryContext.add(this.loadLAMSContext);
+                    break;
                 }
-                if (entry != null) {
-                    duplicateContext.setVisible(true);
-                    if (ResourceSystem.getDatabaseType().hasGUIDs() && !isDependencyTree)
-                        editMenuContext.setVisible(true);
+                case PLAN: {
+                    this.entryContext.add(this.editItemContext);
+                    break;
+                }
+                case SLOT_LIST: case PACKS: {
+                    this.entryContext.add(this.editSlotContext);
+                    break;
+                }
+                case PALETTE: {
+                    if (ApplicationFlags.ENABLE_3D)
+                        this.entryContext.add(this.loadPaletteContext);
+                    break;
+                }
+                case LEVEL: {
+                    if (ApplicationFlags.ENABLE_3D)
+                        this.entryContext.add(this.loadLevelContext);
+                    break;
+                }
+                case MESH: {
+                    if (ApplicationFlags.ENABLE_3D)
+                        this.entryContext.add(this.loadMeshContext);
+                    break;
                 }
             }
         }
-
-        if (ResourceSystem.canExtract() && node != null && entry != null) {
-            replaceContext.setVisible(true);
-            if (node.getName().endsWith(".tex") || (info != null && info.getType() == ResourceType.TEXTURE))
-                replaceImage.setVisible(true);
+        
+        if (contextSize != this.entryContext.getComponentCount()) {
+            this.entryContext.add(new JSeparator());
+            contextSize = this.entryContext.getComponentCount();
         }
+        
+        if (canExtract) {
+            this.entryContext.add(this.extractContextMenu);
+            
+            // Maybe I should check if at least one resource is compressed?
+            this.extractDecompressedContext.setVisible(!isFile || (isCompressed && type != ResourceType.STATIC_MESH));
+            
+            if (isFile && info != null) {
+                switch (type) {
+                    case TEXTURE: case GTF_TEXTURE: {
+                        this.exportGroup.add(this.exportTextureGroupContext);
+                        break;
+                    }
+                    case STATIC_MESH: {
+                        this.exportGroup.add(this.exportModelGroup);
+                        this.exportOBJ.setVisible(false);
+                        break;
+                    }
+                    case MESH: {
+                        this.exportGroup.add(this.exportModelGroup);
 
-        if (ResourceSystem.canExtract() && ResourceSystem.canExtractSelected() && useContext) {
-            extractContextMenu.setVisible(true);
-            if (info != null && info.isResource() && type != ResourceType.FONTFACE && type != ResourceType.TRANSLATION) {
-                if ((ResourceSystem.getDatabaseType() == DatabaseType.BIGFART || ResourceSystem.getDatabases().size() != 0) && info.isCompressedResource()) {
-                    replaceDecompressed.setVisible(true);
-                    if (info.getDependencies().length != 0) {
-                        exportGroup.setVisible(true);
-                        exportModGroup.setVisible(true);
-                        if (info.getType() == ResourceType.PLAN || info.getType() == ResourceType.LEVEL) {
-                            exportBackupGroup.setVisible(true);
-                            exportAsBackupGUID.setVisible(entry.getKey() != null);
-                        }
-                        replaceDependencies.setVisible(true);
-                        dependencyGroup.setVisible(true);
-                    }
-                }
-
-                if (type == ResourceType.STATIC_MESH) replaceDecompressed.setVisible(false);
-                if (info.getResource() != null) {
-                    if (type == ResourceType.PALETTE) {
-                        
-                        if (ApplicationFlags.ENABLE_3D)
-                            loadPaletteContext.setVisible(true);
-                        
-                        exportGroup.setVisible(true);
-                        exportPaletteContext.setVisible(true);
-                        
-                    }
-                        
-                    if (type == ResourceType.LEVEL && ApplicationFlags.ENABLE_3D)
-                        loadLevelContext.setVisible(true);
-                    
-                    if (type == ResourceType.ANIMATION) {
-                        exportGroup.setVisible(true);
-                        exportAnimation.setVisible(true);
-                    }
-                    
-                    if (type == ResourceType.STATIC_MESH) {
-                        replaceDecompressed.setVisible(false);
-                        if (info.getResource() != null) {
-                            exportGroup.setVisible(true);
-                            exportModelGroup.setVisible(true);
-                            exportOBJ.setVisible(false);
-                        }
-                    }
-    
-                    if (type == ResourceType.MESH) {
-                        if (ApplicationFlags.ENABLE_3D)
-                            loadMeshContext.setVisible(true);
                         RMesh mesh = info.getResource();
-                        exportGroup.setVisible(true);
-                        exportModelGroup.setVisible(true);
                         int count = mesh.getAttributeCount();
-                        if (count != 0) 
-                            exportOBJ.setVisible(true);
-                        exportOBJTEXCOORD0.setVisible((count > 0));
-                        exportOBJTEXCOORD1.setVisible((count > 1));
-                        exportOBJTEXCOORD2.setVisible((count > 2));
-                    }
+                        this.exportOBJ.setVisible(count != 0);
+                        this.exportOBJTEXCOORD0.setVisible((count > 0));
+                        this.exportOBJTEXCOORD1.setVisible((count > 1));
+                        this.exportOBJTEXCOORD2.setVisible((count > 2));
 
-                    if ((type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE)) {
-                        exportGroup.setVisible(true);
-                        exportTextureGroupContext.setVisible(true);
-                        if (!isDependencyTree)
-                            replaceImage.setVisible(true);
+                        break;
                     }
-                    
-                    if (type == ResourceType.SLOT_LIST && !isDependencyTree) 
-                        editSlotContext.setVisible(true);
-                    
-                    if (type == ResourceType.ADVENTURE_CREATE_PROFILE && !isDependencyTree)
-                        editSlotContext.setVisible(true);
-                    
-                    if (type == ResourceType.PLAN && !isDependencyTree) 
-                        editItemContext.setVisible(true);
-                    
-                    if (type == ResourceType.PACKS && !isDependencyTree) 
-                        editSlotContext.setVisible(true);
-                    
-                    if (type == ResourceType.LEVEL && ResourceSystem.getDatabaseType() == DatabaseType.BIGFART && !isDependencyTree)
-                        editSlotContext.setVisible(true); 
+                    case TRANSLATION: {
+                        this.exportGroup.add(this.exportLAMSContext);
+                        break;
+                    }
+                    case ANIMATION: {
+                        this.exportGroup.add(this.exportAnimation);
+                        break;
+                    }
+                    case PALETTE: {
+                        this.exportGroup.add(this.exportPaletteContext);
+                        break;
+                    }
+                    case PLAN: case LEVEL: {
+                        this.exportGroup.add(this.exportModGroup);
+                        this.exportGroup.add(this.exportBackupGroup);
+                        break;
+                    }
                 }
             }
+            
+            if (this.exportGroup.getMenuComponentCount() != 0)
+                this.entryContext.add(this.exportGroup);
+        }
+        
+        if (contextSize != this.entryContext.getComponentCount()) {
+            this.entryContext.add(new JSeparator());
+            contextSize = this.entryContext.getComponentCount();
+        }
+        
+        if (!(ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) && ResourceSystem.getDatabases().size() != 0 && !isDependencyTree) {
+            if (!isFile)
+                this.entryContext.add(this.newEntryGroup);
+           
+            boolean canAddItems = ResourceSystem.getSelectedDatabase().getType().containsData();
+            if (!canAddItems)
+                canAddItems = ResourceSystem.getArchives().size() != 0;
 
-            if (node.getName().endsWith(".trans")) {
-                exportGroup.setVisible(true);
-                loadLAMSContext.setVisible(true);
-                exportLAMSContext.setVisible(true);
+            this.newResourceGroup.setVisible(canAddItems);
+            this.newItemGroup.setVisible(canAddItems);
+
+            if (!isTreeRowSelected || isFolder)
+                this.entryContext.add(this.newFolderContext);
+            if (isFolder)
+                this.entryContext.add(this.renameFolder);
+        }
+        
+        if (contextSize != this.entryContext.getComponentCount()) {
+            this.entryContext.add(new JSeparator());
+            contextSize = this.entryContext.getComponentCount();
+        }
+        
+        if (isFile && !isDependencyTree) {
+            if (ResourceSystem.getDatabaseType().hasGUIDs())
+                this.entryContext.add(editMenuContext);
+            if (isFile && canExtract) {
+                this.entryContext.add(this.replaceContext);
+                this.replaceImage.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
+                this.replaceDecompressed.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
+                boolean hasDependencies = isCompressed && info.getDependencies().length != 0;
+                this.replaceDependencies.setVisible(hasDependencies);
+                if (hasDependencies)
+                    this.entryContext.add(this.dependencyGroup);
             }
         }
-
-        entryContext.show(tree, x, y);
+        
+        if (contextSize != this.entryContext.getComponentCount()) {
+            this.entryContext.add(new JSeparator());
+            contextSize = this.entryContext.getComponentCount();
+        }
+        
+        if (isFile) 
+            this.entryContext.add(this.duplicateContext);
+        //if (isTreeRowSelected)
+        //    this.entryContext.add(this.copyGroup);
+        
+        if (contextSize != this.entryContext.getComponentCount()) {
+            this.entryContext.add(new JSeparator());
+            contextSize = this.entryContext.getComponentCount();
+        }
+        
+        if (isTreeRowSelected && !isDependencyTree) {
+            this.entryContext.add(this.zeroContext);
+            this.entryContext.add(this.deleteContext);
+        }
+        
+        // Remove any extra separators if they exist.
+        while (true) {
+            int count = this.entryContext.getComponentCount();
+            if (count == 0) break;
+            Component component = this.entryContext.getComponent(count - 1);
+            if (component instanceof JSeparator) {
+                this.entryContext.remove(component);
+                continue;
+            }
+            break;
+        }
+        
+        if (this.entryContext.isVisible()) {
+            this.entryContext.pack();
+            this.entryContext.repaint();
+        }
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -553,6 +586,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadLevelContext = new javax.swing.JMenuItem();
         loadMeshContext = new javax.swing.JMenuItem();
         loadPaletteContext = new javax.swing.JMenuItem();
+        copyGroup = new javax.swing.JMenu();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
@@ -673,7 +707,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
 
-        extractContextMenu.setText("Extract");
+        extractContextMenu.setText("Extract...");
 
         extractContext.setText("Extract");
         extractContext.addActionListener(new java.awt.event.ActionListener() {
@@ -693,7 +727,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(extractContextMenu);
 
-        editMenuContext.setText("Edit");
+        editMenuContext.setText("Edit...");
 
         renameItemContext.setText("Path");
         renameItemContext.addActionListener(new java.awt.event.ActionListener() {
@@ -745,7 +779,7 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(loadLAMSContext);
 
-        exportGroup.setText("Export");
+        exportGroup.setText("Export...");
 
         exportTextureGroupContext.setText("Textures");
 
@@ -886,7 +920,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(exportGroup);
 
-        replaceContext.setText("Replace");
+        replaceContext.setText("Replace...");
 
         replaceCompressed.setText("Replace");
         replaceCompressed.addActionListener(new java.awt.event.ActionListener() {
@@ -922,7 +956,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(replaceContext);
 
-        dependencyGroup.setText("Dependencies");
+        dependencyGroup.setText("Dependencies...");
 
         removeDependencies.setText("Remove Dependencies");
         removeDependencies.addActionListener(new java.awt.event.ActionListener() {
@@ -942,7 +976,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(dependencyGroup);
 
-        newEntryGroup.setLabel("New");
+        newEntryGroup.setText("New...");
 
         newResourceGroup.setText("Resource");
 
@@ -1052,6 +1086,9 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(loadPaletteContext);
+
+        copyGroup.setText("Copy To...");
+        entryContext.add(copyGroup);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -2912,6 +2949,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JScrollPane consoleContainer;
     private javax.swing.JPopupMenu consolePopup;
     private javax.swing.JMenuItem convertTexture;
+    private javax.swing.JMenu copyGroup;
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;

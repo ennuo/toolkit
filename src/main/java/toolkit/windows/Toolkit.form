@@ -10,7 +10,7 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="extractContextMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Extract"/>
+            <Property name="text" type="java.lang.String" value="Extract..."/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="extractContext">
@@ -33,7 +33,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="editMenuContext">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Edit"/>
+            <Property name="text" type="java.lang.String" value="Edit..."/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="renameItemContext">
@@ -88,7 +88,7 @@
         </MenuItem>
         <Menu class="javax.swing.JMenu" name="exportGroup">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Export"/>
+            <Property name="text" type="java.lang.String" value="Export..."/>
           </Properties>
           <SubComponents>
             <Menu class="javax.swing.JMenu" name="exportTextureGroupContext">
@@ -247,7 +247,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="replaceContext">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Replace"/>
+            <Property name="text" type="java.lang.String" value="Replace..."/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="replaceCompressed">
@@ -286,7 +286,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="dependencyGroup">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Dependencies"/>
+            <Property name="text" type="java.lang.String" value="Dependencies..."/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
@@ -309,7 +309,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="newEntryGroup">
           <Properties>
-            <Property name="label" type="java.lang.String" value="New"/>
+            <Property name="text" type="java.lang.String" value="New..."/>
           </Properties>
           <SubComponents>
             <Menu class="javax.swing.JMenu" name="newResourceGroup">
@@ -431,6 +431,11 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadPaletteContextActionPerformed"/>
           </Events>
         </MenuItem>
+        <Menu class="javax.swing.JMenu" name="copyGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Copy To..."/>
+          </Properties>
+        </Menu>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPopupMenu" name="consolePopup">

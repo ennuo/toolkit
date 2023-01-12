@@ -347,28 +347,4 @@ public class ResourceSystem {
         ResourceSystem.lastSelected = selected;
         return selected;
     }
-
-    // public int registerDependencies(Resource resource, boolean recursive) {
-    //     if (this.method != SerializationType.BINARY) return 0;
-    //     int missingDependencies = 0;
-    //     for (ResourceDescriptor dependency : this.dependencies) {
-    //         FileEntry entry = ResourceSystem.findEntry(dependency);
-    //         if (entry == null) {
-    //             missingDependencies++;
-    //             continue;
-    //         }
-    //         if (recursive && this.type != ResourceType.SCRIPT) {
-    //             byte[] data = ResourceSystem.extract(dependency);
-    //             if (data != null) {
-    //                 Resource resource = new Resource(data);
-    //                 if (resource.method == SerializationType.BINARY) {
-    //                     entry.hasMissingDependencies = resource.registerDependencies(recursive) != 0;
-    //                     entry.canReplaceDecompressed = true;
-    //                     entry.dependencies = resource.dependencies;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return missingDependencies;
-    // }
 }

@@ -79,6 +79,9 @@ public class TreeSelectionListener {
             
             if (services.containsKey(magic))
                 ((ResourceService)services.get(magic)).process(tree, entry, data);
+            
+            if (info != null)
+                Toolkit.INSTANCE.generateEntryContext2(tree);
         });
     }
 }
