@@ -11,11 +11,13 @@
         <Menu class="javax.swing.JMenu" name="extractGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Extract..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Extract selected entries"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="extractContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Extract"/>
+                <Property name="toolTipText" type="java.lang.String" value="Extract entries as-is"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="extractContextActionPerformed"/>
@@ -24,6 +26,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="extractDecompressedContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Decompress"/>
+                <Property name="toolTipText" type="java.lang.String" value="Extract entries and decompress where possible"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="extractDecompressedContextActionPerformed"/>
@@ -34,11 +37,13 @@
         <Menu class="javax.swing.JMenu" name="editGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Edit entry details"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="editPathContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Path"/>
+                <Property name="toolTipText" type="java.lang.String" value="Move this entry"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editPathContextActionPerformed"/>
@@ -47,6 +52,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="editHashContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Hash"/>
+                <Property name="toolTipText" type="java.lang.String" value="Edit the hash this entry loads"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editHashContextActionPerformed"/>
@@ -55,6 +61,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="editGUIDContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="GUID"/>
+                <Property name="toolTipText" type="java.lang.String" value="Change the unique GUID for this entry"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editGUIDContextActionPerformed"/>
@@ -65,11 +72,13 @@
         <Menu class="javax.swing.JMenu" name="exportGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Export..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Export resource to different formats"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="exportJSONContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="JSON"/>
+                <Property name="toolTipText" type="java.lang.String" value="Converts resource to JSON file"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportJSONContextActionPerformed"/>
@@ -78,11 +87,13 @@
             <Menu class="javax.swing.JMenu" name="exportTextureGroupContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Textures"/>
+                <Property name="toolTipText" type="java.lang.String" value="Export texture file as image"/>
               </Properties>
               <SubComponents>
                 <MenuItem class="javax.swing.JMenuItem" name="exportPNG">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="PNG"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export texture as PNG file"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPNGActionPerformed"/>
@@ -91,6 +102,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="exportDDS">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="DDS"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export texture as DDS file"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportDDSActionPerformed"/>
@@ -101,16 +113,19 @@
             <Menu class="javax.swing.JMenu" name="exportModelGroup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Model"/>
+                <Property name="toolTipText" type="java.lang.String" value="Export model file"/>
               </Properties>
               <SubComponents>
                 <Menu class="javax.swing.JMenu" name="exportOBJ">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Wavefront"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export model as Wavefront OBJ"/>
                   </Properties>
                   <SubComponents>
                     <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD0">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="TEXCOORD0"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Export as OBJ with first UV channel"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD0ActionPerformed"/>
@@ -119,6 +134,7 @@
                     <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD1">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="TEXCOORD1"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Export as OBJ with second UV channel"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD1ActionPerformed"/>
@@ -127,6 +143,7 @@
                     <MenuItem class="javax.swing.JMenuItem" name="exportOBJTEXCOORD2">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="TEXCOORD2"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Export as OBJ with third UV channel"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportOBJTEXCOORD2ActionPerformed"/>
@@ -137,6 +154,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="exportGLTF">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="glTF 2.0"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export model as glTF 2.0"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportGLTFActionPerformed"/>
@@ -144,21 +162,15 @@
                 </MenuItem>
               </SubComponents>
             </Menu>
-            <MenuItem class="javax.swing.JMenuItem" name="exportLAMSContext">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="JSON"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportLAMSContextActionPerformed"/>
-              </Events>
-            </MenuItem>
             <Menu class="javax.swing.JMenu" name="exportModGroup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Mod"/>
+                <Property name="toolTipText" type="java.lang.String" value="Exports selected resource as a mod file"/>
               </Properties>
               <SubComponents>
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsModCustom">
                   <Properties>
+                    <Property name="toolTipText" type="java.lang.String" value="Manual mod export, choose which resources get exported as hash/GUID, as well as re-generating gmats"/>
                     <Property name="actionCommand" type="java.lang.String" value="Custom"/>
                     <Property name="label" type="java.lang.String" value="Custom"/>
                   </Properties>
@@ -169,7 +181,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsMod">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Hash"/>
-                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export mod with GUID references replaced with hashes. You should use this if you&apos;re exporting custom content for others to use"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModActionPerformed"/>
@@ -178,6 +190,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsModGUID">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="GUID"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export mod without modifying resource references"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsModGUIDActionPerformed"/>
@@ -188,6 +201,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exportAnimation">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Animation"/>
+                <Property name="toolTipText" type="java.lang.String" value="Export selected animation as glTF2.0 file"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAnimationActionPerformed"/>
@@ -196,12 +210,13 @@
             <Menu class="javax.swing.JMenu" name="exportBackupGroup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Backup"/>
+                <Property name="toolTipText" type="java.lang.String" value="Convert this resource into a level backup."/>
               </Properties>
               <SubComponents>
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsBackup">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Hash"/>
-                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export backup with GUID references replaced with hashes. You should use this if you&apos;re exporting custom content for others to use"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAsBackupActionPerformed"/>
@@ -210,6 +225,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="exportAsBackupGUID">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="GUID"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Export backup without modifying resource references"/>
                     <Property name="actionCommand" type="java.lang.String" value="exportAsBackupGUID"/>
                     <Property name="name" type="java.lang.String" value="" noResource="true"/>
                   </Properties>
@@ -222,6 +238,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exportPaletteContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="BIN"/>
+                <Property name="toolTipText" type="java.lang.String" value="Convert this palette to a level"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPaletteContextActionPerformed"/>
@@ -232,16 +249,25 @@
         <Menu class="javax.swing.JMenu" name="newEntryGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="New..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Add new entries to the database"/>
           </Properties>
           <SubComponents>
             <Menu class="javax.swing.JMenu" name="newResourceGroup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Resource"/>
+                <Property name="toolTipText" type="java.lang.String" value="Import resources from local files"/>
               </Properties>
               <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="importJSONContext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="JSON"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import resource from exported JSON data"/>
+                  </Properties>
+                </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="newTextureContext">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Texture"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import texture resource from JPG/PNG/DDS"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newTextureContextActionPerformed"/>
@@ -250,6 +276,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="newAnimationContext">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Animation"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import animation from glTF2.0 file"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newAnimationContextActionPerformed"/>
@@ -258,6 +285,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="newModelContext">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Model"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import model from glTF2.0 file"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                 </MenuItem>
@@ -266,7 +294,7 @@
             <Menu class="javax.swing.JMenu" name="newItemGroup">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Item"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="toolTipText" type="java.lang.String" value="Generate inventory items"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <SubComponents>
@@ -280,6 +308,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="newEntryContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Entry"/>
+                <Property name="toolTipText" type="java.lang.String" value="Create a new blank entry in this database"/>
                 <Property name="actionCommand" type="java.lang.String" value="File"/>
               </Properties>
               <Events>
@@ -291,6 +320,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="newFolderContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="New Folder"/>
+            <Property name="toolTipText" type="java.lang.String" value="Create a new folder here"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newFolderContextActionPerformed"/>
@@ -299,6 +329,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="renameFolder">
           <Properties>
             <Property name="text" type="java.lang.String" value="Rename Folder"/>
+            <Property name="toolTipText" type="java.lang.String" value="Renames selected folder"/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -308,11 +339,13 @@
         <Menu class="javax.swing.JMenu" name="replaceGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Replace..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Data replacement tools"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="replaceCompressedContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Replace"/>
+                <Property name="toolTipText" type="java.lang.String" value="Replace resource data with a selected file from disk"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceCompressedContextActionPerformed"/>
@@ -321,6 +354,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="replaceDecompressedContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Decompressed"/>
+                <Property name="toolTipText" type="java.lang.String" value="Re-compresses file selected from disk and replaces this entry&apos;s resource data"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDecompressedContextActionPerformed"/>
@@ -329,6 +363,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="replaceDependenciesContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Dependencies"/>
+                <Property name="toolTipText" type="java.lang.String" value="Edit the dependencies of this resource"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDependenciesContextActionPerformed"/>
@@ -337,6 +372,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="replaceImageContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Image"/>
+                <Property name="toolTipText" type="java.lang.String" value="Replaces data with image loaded from disk"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceImageContextActionPerformed"/>
@@ -347,11 +383,13 @@
         <Menu class="javax.swing.JMenu" name="dependencyGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Dependencies..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Dependency management tools"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="removeDependenciesContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
+                <Property name="toolTipText" type="java.lang.String" value="Removes all resources from dependency table. This can allow levels with missing dependencies to potentially load."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesContextActionPerformed"/>
@@ -360,6 +398,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependenciesContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
+                <Property name="toolTipText" type="java.lang.String" value="Removes only missing resources from dependency table. This can allow levels with missing dependencies to potentially load."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesContextActionPerformed"/>
@@ -370,6 +409,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="duplicateContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Duplicate"/>
+            <Property name="toolTipText" type="java.lang.String" value="Create a duplicate entry copying this one with a new GUID"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="duplicateContextActionPerformed"/>
@@ -378,11 +418,13 @@
         <Menu class="javax.swing.JMenu" name="copyGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Copy To..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Copy selected entries to another database"/>
           </Properties>
         </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="zeroContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Zero"/>
+            <Property name="toolTipText" type="java.lang.String" value="Removes resource hash. Allows files to be loaded from disk rather than the FARC"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="zeroContextActionPerformed"/>
@@ -391,6 +433,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="deleteContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Delete"/>
+            <Property name="toolTipText" type="java.lang.String" value="Deletes selected entries from the database"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteContextActionPerformed"/>
@@ -576,6 +619,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="manageProfile">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Manage Profiles"/>
+                <Property name="toolTipText" type="java.lang.String" value="Manage boot profiles and settings"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageProfileActionPerformed"/>
@@ -589,6 +633,7 @@
                   <KeyStroke key="Shift+Ctrl+S"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Save as..."/>
+                <Property name="toolTipText" type="java.lang.String" value="Save a copy of selected database"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveAsActionPerformed"/>
@@ -603,6 +648,7 @@
                   <KeyStroke key="Ctrl+S"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Save"/>
+                <Property name="toolTipText" type="java.lang.String" value="Save selected database and any archives that may have changes"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveMenuActionPerformed"/>
@@ -619,6 +665,7 @@
                   <KeyStroke key="Ctrl+W"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Close Tab"/>
+                <Property name="toolTipText" type="java.lang.String" value="Close currently selected tab"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeTabActionPerformed"/>
@@ -630,6 +677,7 @@
                   <KeyStroke key="Ctrl+R"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Reboot"/>
+                <Property name="toolTipText" type="java.lang.String" value="Restart Toolkit"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rebootActionPerformed"/>
@@ -648,6 +696,7 @@
                   <KeyStroke key="DELETE"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Delete"/>
+                <Property name="toolTipText" type="java.lang.String" value="Deletes selected entries from the database"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editMenuDeleteActionPerformed"/>
@@ -666,6 +715,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="manageArchives">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Manage Archives"/>
+                <Property name="toolTipText" type="java.lang.String" value="Add/Remove/Save loaded archives"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageArchivesActionPerformed"/>
@@ -679,6 +729,7 @@
                   <KeyStroke key="Ctrl+A"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Add..."/>
+                <Property name="toolTipText" type="java.lang.String" value="Add files to a loaded archive"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addFileActionPerformed"/>
@@ -687,6 +738,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="addFolder">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add Folder"/>
+                <Property name="toolTipText" type="java.lang.String" value="Add all files in a folder to a loaded archive"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addFolderActionPerformed"/>
@@ -702,6 +754,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="patchMAP">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Patch"/>
+                <Property name="toolTipText" type="java.lang.String" value="Patch another FileDB on-top of this one"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="patchMAPActionPerformed"/>
@@ -712,6 +765,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="dumpRLST">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Dump RLST"/>
+                <Property name="toolTipText" type="java.lang.String" value="Dump all entries to RLST"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dumpRLSTActionPerformed"/>
@@ -727,6 +781,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="extractBigProfile">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Extract Profile"/>
+                <Property name="toolTipText" type="java.lang.String" value="Extract RBigProfile from save, mostly used for debugging."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="extractBigProfileActionPerformed"/>
@@ -737,6 +792,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="editProfileSlots">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Edit Slots"/>
+                <Property name="toolTipText" type="java.lang.String" value="Edit and add levels to this profile"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editProfileSlotsActionPerformed"/>
@@ -745,6 +801,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="editProfileItems">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Edit Items"/>
+                <Property name="toolTipText" type="java.lang.String" value="Edit and add collected items to this profile"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editProfileItemsActionPerformed"/>
@@ -781,6 +838,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="openCompressinator">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Compressinator GUI"/>
+                <Property name="toolTipText" type="java.lang.String" value="Compress files to resources"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openCompressinatorActionPerformed"/>
@@ -789,6 +847,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="openGfxCompiler">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Gfx Compiler GUI"/>
+                <Property name="toolTipText" type="java.lang.String" value="Compile GMATs from source shaders"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openGfxCompilerActionPerformed"/>
@@ -804,6 +863,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="fileArchiveIntegrityCheck">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="FARC Integrity Check"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Verify that all data in the FARC matches hash table"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileArchiveIntegrityCheckActionPerformed"/>
@@ -812,6 +872,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="mergeFARCs">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Merge Archives"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Merge two archives together"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mergeFARCsActionPerformed"/>
@@ -820,6 +881,7 @@
                 <MenuItem class="javax.swing.JMenuItem" name="swapProfilePlatform">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Swap FAR4 Endianness (PS3/PS4)"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Switch big/littlefart endianness, used for converting profile saves between PS3 and PS4"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="swapProfilePlatformActionPerformed"/>

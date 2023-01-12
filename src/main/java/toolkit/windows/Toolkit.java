@@ -370,30 +370,67 @@ public class Toolkit extends javax.swing.JFrame {
         if (!isDependencyTree && isLoadedResource) {
             switch (type) {
                 case TRANSLATION: {
-                    Swing.createMenuItem("Load", LoadCallbacks::loadTranslationTable, this.entryContext);
+                    Swing.createMenuItem(
+                            "Load", 
+                            "Uses this translation table to translate LAMS keys in other resources in Toolkit, such as in plans and slots", 
+                            LoadCallbacks::loadTranslationTable, 
+                            this.entryContext
+                    );
                     break;
                 }
                 case PLAN: {
-                    Swing.createMenuItem("Edit Item Details", EditCallbacks::editItem, this.entryContext);
+                    Swing.createMenuItem(
+                            "Edit Item Details",
+                            "Edit the properties of this item",
+                            EditCallbacks::editItem, 
+                            this.entryContext
+                    );
                     break;
                 }
                 case SLOT_LIST: case PACKS: {
-                   Swing.createMenuItem("Edit Slots", EditCallbacks::editSlot, this.entryContext);
+                   String tooltip = "Add and edit levels in this slot list";
+                   if (type == ResourceType.PACKS)
+                       tooltip = "Add and edit DLC packs";
+                   
+                   Swing.createMenuItem(
+                           "Edit Slots",
+                           tooltip,
+                           EditCallbacks::editSlot, 
+                           this.entryContext
+                   );
                    break;
                 }
                 case PALETTE: {
-                    if (ApplicationFlags.ENABLE_3D)
-                        Swing.createMenuItem("Load", LoadCallbacks::loadPalette3D, this.entryContext);
+                    if (ApplicationFlags.ENABLE_3D) {
+                        Swing.createMenuItem(
+                                "Load", 
+                                "Loads this palette into the 3D viewer",
+                                LoadCallbacks::loadPalette3D,
+                                this.entryContext
+                        );
+                    }
                     break;
                 }
                 case LEVEL: {
-                    if (ApplicationFlags.ENABLE_3D)
-                        Swing.createMenuItem("Load", LoadCallbacks::loadLevel3D, this.entryContext);
+                    if (ApplicationFlags.ENABLE_3D) {
+                        Swing.createMenuItem(
+                                "Load", 
+                                "Loads this level into the 3D viewer",
+                                LoadCallbacks::loadLevel3D, 
+                                this.entryContext
+                        );
+                    }
                     break;
                 }
                 case MESH: {
-                    if (ApplicationFlags.ENABLE_3D)
-                        Swing.createMenuItem("Load", LoadCallbacks::loadModel3D, this.entryContext);
+                    if (ApplicationFlags.ENABLE_3D) {
+                        Swing.createMenuItem(
+                                "Load", 
+                                "Load this model into the 3D viewer at origin",
+                                LoadCallbacks::loadModel3D, 
+                                this.entryContext
+                        );
+                    }
                     break;
                 }
             }
@@ -434,10 +471,6 @@ public class Toolkit extends javax.swing.JFrame {
 
                         break;
                     }
-                    case TRANSLATION: {
-                        this.exportGroup.add(this.exportLAMSContext);
-                        break;
-                    }
                     case ANIMATION: {
                         this.exportGroup.add(this.exportAnimation);
                         break;
@@ -454,7 +487,7 @@ public class Toolkit extends javax.swing.JFrame {
                 }
             }
             
-            boolean canExportJSON = isLoadedResource && info.getMethod().equals(SerializationType.BINARY);
+            boolean canExportJSON = type == ResourceType.TRANSLATION || (isLoadedResource && info.getMethod().equals(SerializationType.BINARY));
             if (canExportJSON)
                 this.exportGroup.add(this.exportJSONContext);
             
@@ -573,7 +606,6 @@ public class Toolkit extends javax.swing.JFrame {
         exportOBJTEXCOORD1 = new javax.swing.JMenuItem();
         exportOBJTEXCOORD2 = new javax.swing.JMenuItem();
         exportGLTF = new javax.swing.JMenuItem();
-        exportLAMSContext = new javax.swing.JMenuItem();
         exportModGroup = new javax.swing.JMenu();
         exportAsModCustom = new javax.swing.JMenuItem();
         exportAsMod = new javax.swing.JMenuItem();
@@ -585,6 +617,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportPaletteContext = new javax.swing.JMenuItem();
         newEntryGroup = new javax.swing.JMenu();
         newResourceGroup = new javax.swing.JMenu();
+        importJSONContext = new javax.swing.JMenuItem();
         newTextureContext = new javax.swing.JMenuItem();
         newAnimationContext = new javax.swing.JMenuItem();
         newModelContext = new javax.swing.JMenuItem();
@@ -726,8 +759,10 @@ public class Toolkit extends javax.swing.JFrame {
         debugMenu = new javax.swing.JMenu();
 
         extractGroup.setText("Extract...");
+        extractGroup.setToolTipText("Extract selected entries");
 
         extractContext.setText("Extract");
+        extractContext.setToolTipText("Extract entries as-is");
         extractContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractContextActionPerformed(evt);
@@ -736,6 +771,7 @@ public class Toolkit extends javax.swing.JFrame {
         extractGroup.add(extractContext);
 
         extractDecompressedContext.setText("Decompress");
+        extractDecompressedContext.setToolTipText("Extract entries and decompress where possible");
         extractDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractDecompressedContextActionPerformed(evt);
@@ -746,8 +782,10 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(extractGroup);
 
         editGroup.setText("Edit...");
+        editGroup.setToolTipText("Edit entry details");
 
         editPathContext.setText("Path");
+        editPathContext.setToolTipText("Move this entry");
         editPathContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editPathContextActionPerformed(evt);
@@ -756,6 +794,7 @@ public class Toolkit extends javax.swing.JFrame {
         editGroup.add(editPathContext);
 
         editHashContext.setText("Hash");
+        editHashContext.setToolTipText("Edit the hash this entry loads");
         editHashContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editHashContextActionPerformed(evt);
@@ -764,6 +803,7 @@ public class Toolkit extends javax.swing.JFrame {
         editGroup.add(editHashContext);
 
         editGUIDContext.setText("GUID");
+        editGUIDContext.setToolTipText("Change the unique GUID for this entry");
         editGUIDContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editGUIDContextActionPerformed(evt);
@@ -774,8 +814,10 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(editGroup);
 
         exportGroup.setText("Export...");
+        exportGroup.setToolTipText("Export resource to different formats");
 
         exportJSONContext.setText("JSON");
+        exportJSONContext.setToolTipText("Converts resource to JSON file");
         exportJSONContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportJSONContextActionPerformed(evt);
@@ -784,8 +826,10 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.add(exportJSONContext);
 
         exportTextureGroupContext.setText("Textures");
+        exportTextureGroupContext.setToolTipText("Export texture file as image");
 
         exportPNG.setText("PNG");
+        exportPNG.setToolTipText("Export texture as PNG file");
         exportPNG.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportPNGActionPerformed(evt);
@@ -794,6 +838,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportTextureGroupContext.add(exportPNG);
 
         exportDDS.setText("DDS");
+        exportDDS.setToolTipText("Export texture as DDS file");
         exportDDS.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportDDSActionPerformed(evt);
@@ -804,10 +849,13 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.add(exportTextureGroupContext);
 
         exportModelGroup.setText("Model");
+        exportModelGroup.setToolTipText("Export model file");
 
         exportOBJ.setText("Wavefront");
+        exportOBJ.setToolTipText("Export model as Wavefront OBJ");
 
         exportOBJTEXCOORD0.setText("TEXCOORD0");
+        exportOBJTEXCOORD0.setToolTipText("Export as OBJ with first UV channel");
         exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD0ActionPerformed(evt);
@@ -816,6 +864,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportOBJ.add(exportOBJTEXCOORD0);
 
         exportOBJTEXCOORD1.setText("TEXCOORD1");
+        exportOBJTEXCOORD1.setToolTipText("Export as OBJ with second UV channel");
         exportOBJTEXCOORD1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD1ActionPerformed(evt);
@@ -824,6 +873,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportOBJ.add(exportOBJTEXCOORD1);
 
         exportOBJTEXCOORD2.setText("TEXCOORD2");
+        exportOBJTEXCOORD2.setToolTipText("Export as OBJ with third UV channel");
         exportOBJTEXCOORD2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD2ActionPerformed(evt);
@@ -834,6 +884,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportModelGroup.add(exportOBJ);
 
         exportGLTF.setText("glTF 2.0");
+        exportGLTF.setToolTipText("Export model as glTF 2.0");
         exportGLTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportGLTFActionPerformed(evt);
@@ -843,16 +894,10 @@ public class Toolkit extends javax.swing.JFrame {
 
         exportGroup.add(exportModelGroup);
 
-        exportLAMSContext.setText("JSON");
-        exportLAMSContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportLAMSContextActionPerformed(evt);
-            }
-        });
-        exportGroup.add(exportLAMSContext);
-
         exportModGroup.setText("Mod");
+        exportModGroup.setToolTipText("Exports selected resource as a mod file");
 
+        exportAsModCustom.setToolTipText("Manual mod export, choose which resources get exported as hash/GUID, as well as re-generating gmats");
         exportAsModCustom.setActionCommand("Custom");
         exportAsModCustom.setLabel("Custom");
         exportAsModCustom.addActionListener(new java.awt.event.ActionListener() {
@@ -863,7 +908,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportModGroup.add(exportAsModCustom);
 
         exportAsMod.setText("Hash");
-        exportAsMod.setToolTipText("");
+        exportAsMod.setToolTipText("Export mod with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
         exportAsMod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModActionPerformed(evt);
@@ -872,6 +917,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportModGroup.add(exportAsMod);
 
         exportAsModGUID.setText("GUID");
+        exportAsModGUID.setToolTipText("Export mod without modifying resource references");
         exportAsModGUID.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModGUIDActionPerformed(evt);
@@ -882,6 +928,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.add(exportModGroup);
 
         exportAnimation.setText("Animation");
+        exportAnimation.setToolTipText("Export selected animation as glTF2.0 file");
         exportAnimation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAnimationActionPerformed(evt);
@@ -890,9 +937,10 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.add(exportAnimation);
 
         exportBackupGroup.setText("Backup");
+        exportBackupGroup.setToolTipText("Convert this resource into a level backup.");
 
         exportAsBackup.setText("Hash");
-        exportAsBackup.setToolTipText("");
+        exportAsBackup.setToolTipText("Export backup with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
         exportAsBackup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsBackupActionPerformed(evt);
@@ -901,6 +949,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportBackupGroup.add(exportAsBackup);
 
         exportAsBackupGUID.setText("GUID");
+        exportAsBackupGUID.setToolTipText("Export backup without modifying resource references");
         exportAsBackupGUID.setActionCommand("exportAsBackupGUID");
         exportAsBackupGUID.setName(""); // NOI18N
         exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener() {
@@ -913,6 +962,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportGroup.add(exportBackupGroup);
 
         exportPaletteContext.setText("BIN");
+        exportPaletteContext.setToolTipText("Convert this palette to a level");
         exportPaletteContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportPaletteContextActionPerformed(evt);
@@ -923,10 +973,17 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(exportGroup);
 
         newEntryGroup.setText("New...");
+        newEntryGroup.setToolTipText("Add new entries to the database");
 
         newResourceGroup.setText("Resource");
+        newResourceGroup.setToolTipText("Import resources from local files");
+
+        importJSONContext.setText("JSON");
+        importJSONContext.setToolTipText("Import resource from exported JSON data");
+        newResourceGroup.add(importJSONContext);
 
         newTextureContext.setText("Texture");
+        newTextureContext.setToolTipText("Import texture resource from JPG/PNG/DDS");
         newTextureContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newTextureContextActionPerformed(evt);
@@ -935,6 +992,7 @@ public class Toolkit extends javax.swing.JFrame {
         newResourceGroup.add(newTextureContext);
 
         newAnimationContext.setText("Animation");
+        newAnimationContext.setToolTipText("Import animation from glTF2.0 file");
         newAnimationContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newAnimationContextActionPerformed(evt);
@@ -943,13 +1001,14 @@ public class Toolkit extends javax.swing.JFrame {
         newResourceGroup.add(newAnimationContext);
 
         newModelContext.setText("Model");
+        newModelContext.setToolTipText("Import model from glTF2.0 file");
         newModelContext.setEnabled(false);
         newResourceGroup.add(newModelContext);
 
         newEntryGroup.add(newResourceGroup);
 
         newItemGroup.setText("Item");
-        newItemGroup.setToolTipText("");
+        newItemGroup.setToolTipText("Generate inventory items");
         newItemGroup.setEnabled(false);
 
         newStickerContext.setText("Sticker");
@@ -958,6 +1017,7 @@ public class Toolkit extends javax.swing.JFrame {
         newEntryGroup.add(newItemGroup);
 
         newEntryContext.setText("Entry");
+        newEntryContext.setToolTipText("Create a new blank entry in this database");
         newEntryContext.setActionCommand("File");
         newEntryContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -969,6 +1029,7 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(newEntryGroup);
 
         newFolderContext.setText("New Folder");
+        newFolderContext.setToolTipText("Create a new folder here");
         newFolderContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newFolderContextActionPerformed(evt);
@@ -977,6 +1038,7 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(newFolderContext);
 
         renameFolder.setText("Rename Folder");
+        renameFolder.setToolTipText("Renames selected folder");
         renameFolder.setEnabled(false);
         renameFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -986,8 +1048,10 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(renameFolder);
 
         replaceGroup.setText("Replace...");
+        replaceGroup.setToolTipText("Data replacement tools");
 
         replaceCompressedContext.setText("Replace");
+        replaceCompressedContext.setToolTipText("Replace resource data with a selected file from disk");
         replaceCompressedContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceCompressedContextActionPerformed(evt);
@@ -996,6 +1060,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceGroup.add(replaceCompressedContext);
 
         replaceDecompressedContext.setText("Decompressed");
+        replaceDecompressedContext.setToolTipText("Re-compresses file selected from disk and replaces this entry's resource data");
         replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceDecompressedContextActionPerformed(evt);
@@ -1004,6 +1069,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceGroup.add(replaceDecompressedContext);
 
         replaceDependenciesContext.setText("Dependencies");
+        replaceDependenciesContext.setToolTipText("Edit the dependencies of this resource");
         replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceDependenciesContextActionPerformed(evt);
@@ -1012,6 +1078,7 @@ public class Toolkit extends javax.swing.JFrame {
         replaceGroup.add(replaceDependenciesContext);
 
         replaceImageContext.setText("Image");
+        replaceImageContext.setToolTipText("Replaces data with image loaded from disk");
         replaceImageContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceImageContextActionPerformed(evt);
@@ -1022,8 +1089,10 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(replaceGroup);
 
         dependencyGroup.setText("Dependencies...");
+        dependencyGroup.setToolTipText("Dependency management tools");
 
         removeDependenciesContext.setText("Remove Dependencies");
+        removeDependenciesContext.setToolTipText("Removes all resources from dependency table. This can allow levels with missing dependencies to potentially load.");
         removeDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeDependenciesContextActionPerformed(evt);
@@ -1032,6 +1101,7 @@ public class Toolkit extends javax.swing.JFrame {
         dependencyGroup.add(removeDependenciesContext);
 
         removeMissingDependenciesContext.setText("Remove Missing Dependencies");
+        removeMissingDependenciesContext.setToolTipText("Removes only missing resources from dependency table. This can allow levels with missing dependencies to potentially load.");
         removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeMissingDependenciesContextActionPerformed(evt);
@@ -1042,6 +1112,7 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(dependencyGroup);
 
         duplicateContext.setText("Duplicate");
+        duplicateContext.setToolTipText("Create a duplicate entry copying this one with a new GUID");
         duplicateContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 duplicateContextActionPerformed(evt);
@@ -1050,9 +1121,11 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(duplicateContext);
 
         copyGroup.setText("Copy To...");
+        copyGroup.setToolTipText("Copy selected entries to another database");
         entryContext.add(copyGroup);
 
         zeroContext.setText("Zero");
+        zeroContext.setToolTipText("Removes resource hash. Allows files to be loaded from disk rather than the FARC");
         zeroContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 zeroContextActionPerformed(evt);
@@ -1061,6 +1134,7 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(zeroContext);
 
         deleteContext.setText("Delete");
+        deleteContext.setToolTipText("Deletes selected entries from the database");
         deleteContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteContextActionPerformed(evt);
@@ -1545,6 +1619,7 @@ public class Toolkit extends javax.swing.JFrame {
         fileMenu.add(jSeparator9);
 
         manageProfile.setText("Manage Profiles");
+        manageProfile.setToolTipText("Manage boot profiles and settings");
         manageProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageProfileActionPerformed(evt);
@@ -1555,6 +1630,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAs.setText("Save as...");
+        saveAs.setToolTipText("Save a copy of selected database");
         saveAs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsActionPerformed(evt);
@@ -1564,6 +1640,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenu.setText("Save");
+        saveMenu.setToolTipText("Save selected database and any archives that may have changes");
         saveMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuActionPerformed(evt);
@@ -1574,6 +1651,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeTab.setText("Close Tab");
+        closeTab.setToolTipText("Close currently selected tab");
         closeTab.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeTabActionPerformed(evt);
@@ -1583,6 +1661,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         reboot.setText("Reboot");
+        reboot.setToolTipText("Restart Toolkit");
         reboot.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rebootActionPerformed(evt);
@@ -1596,6 +1675,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         editMenuDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
         editMenuDelete.setText("Delete");
+        editMenuDelete.setToolTipText("Deletes selected entries from the database");
         editMenuDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editMenuDeleteActionPerformed(evt);
@@ -1608,6 +1688,7 @@ public class Toolkit extends javax.swing.JFrame {
         archiveMenu.setText("Archive");
 
         manageArchives.setText("Manage Archives");
+        manageArchives.setToolTipText("Add/Remove/Save loaded archives");
         manageArchives.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageArchivesActionPerformed(evt);
@@ -1618,6 +1699,7 @@ public class Toolkit extends javax.swing.JFrame {
 
         addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addFile.setText("Add...");
+        addFile.setToolTipText("Add files to a loaded archive");
         addFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addFileActionPerformed(evt);
@@ -1626,6 +1708,7 @@ public class Toolkit extends javax.swing.JFrame {
         archiveMenu.add(addFile);
 
         addFolder.setText("Add Folder");
+        addFolder.setToolTipText("Add all files in a folder to a loaded archive");
         addFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addFolderActionPerformed(evt);
@@ -1638,6 +1721,7 @@ public class Toolkit extends javax.swing.JFrame {
         databaseMenu.setText("FileDB");
 
         patchMAP.setText("Patch");
+        patchMAP.setToolTipText("Patch another FileDB on-top of this one");
         patchMAP.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 patchMAPActionPerformed(evt);
@@ -1647,6 +1731,7 @@ public class Toolkit extends javax.swing.JFrame {
         databaseMenu.add(jSeparator6);
 
         dumpRLST.setText("Dump RLST");
+        dumpRLST.setToolTipText("Dump all entries to RLST");
         dumpRLST.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dumpRLSTActionPerformed(evt);
@@ -1659,6 +1744,7 @@ public class Toolkit extends javax.swing.JFrame {
         profileMenu.setText("Profile");
 
         extractBigProfile.setText("Extract Profile");
+        extractBigProfile.setToolTipText("Extract RBigProfile from save, mostly used for debugging.");
         extractBigProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractBigProfileActionPerformed(evt);
@@ -1668,6 +1754,7 @@ public class Toolkit extends javax.swing.JFrame {
         profileMenu.add(jSeparator1);
 
         editProfileSlots.setText("Edit Slots");
+        editProfileSlots.setToolTipText("Edit and add levels to this profile");
         editProfileSlots.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editProfileSlotsActionPerformed(evt);
@@ -1676,6 +1763,7 @@ public class Toolkit extends javax.swing.JFrame {
         profileMenu.add(editProfileSlots);
 
         editProfileItems.setText("Edit Items");
+        editProfileItems.setToolTipText("Edit and add collected items to this profile");
         editProfileItems.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editProfileItemsActionPerformed(evt);
@@ -1700,6 +1788,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.setText("Tools");
 
         openCompressinator.setText("Compressinator GUI");
+        openCompressinator.setToolTipText("Compress files to resources");
         openCompressinator.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openCompressinatorActionPerformed(evt);
@@ -1708,6 +1797,7 @@ public class Toolkit extends javax.swing.JFrame {
         toolsMenu.add(openCompressinator);
 
         openGfxCompiler.setText("Gfx Compiler GUI");
+        openGfxCompiler.setToolTipText("Compile GMATs from source shaders");
         openGfxCompiler.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openGfxCompilerActionPerformed(evt);
@@ -1719,6 +1809,7 @@ public class Toolkit extends javax.swing.JFrame {
         jMenu1.setText("Archive Utilities");
 
         fileArchiveIntegrityCheck.setText("FARC Integrity Check");
+        fileArchiveIntegrityCheck.setToolTipText("Verify that all data in the FARC matches hash table");
         fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileArchiveIntegrityCheckActionPerformed(evt);
@@ -1727,6 +1818,7 @@ public class Toolkit extends javax.swing.JFrame {
         jMenu1.add(fileArchiveIntegrityCheck);
 
         mergeFARCs.setText("Merge Archives");
+        mergeFARCs.setToolTipText("Merge two archives together");
         mergeFARCs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mergeFARCsActionPerformed(evt);
@@ -1735,6 +1827,7 @@ public class Toolkit extends javax.swing.JFrame {
         jMenu1.add(mergeFARCs);
 
         swapProfilePlatform.setText("Swap FAR4 Endianness (PS3/PS4)");
+        swapProfilePlatform.setToolTipText("Switch big/littlefart endianness, used for converting profile saves between PS3 and PS4");
         swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 swapProfilePlatformActionPerformed(evt);
@@ -2038,10 +2131,6 @@ public class Toolkit extends javax.swing.JFrame {
     private void extractBigProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractBigProfileActionPerformed
         ProfileCallbacks.extractProfile();
     }//GEN-LAST:event_extractBigProfileActionPerformed
-
-    private void exportLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportLAMSContextActionPerformed
-        ExportCallbacks.exportTranslations();
-    }//GEN-LAST:event_exportLAMSContextActionPerformed
 
     private void exportDDSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDDSActionPerformed
         ExportCallbacks.exportDDS();
@@ -2691,6 +2780,15 @@ public class Toolkit extends javax.swing.JFrame {
     private void exportJSONContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportJSONContextActionPerformed
         FileEntry selected = ResourceSystem.getSelected().getEntry();
         if (selected == null) return;
+        ResourceInfo info = selected.getInfo();
+        if (info == null) return;
+        
+        if (info.getType() == ResourceType.TRANSLATION) {
+            ExportCallbacks.exportTranslations();
+            return;
+        }
+        
+        
         byte[] data = ResourceSystem.extract(selected);
         if (data == null) return;
         
@@ -2935,7 +3033,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportGLTF;
     private javax.swing.JMenu exportGroup;
     private javax.swing.JMenuItem exportJSONContext;
-    private javax.swing.JMenuItem exportLAMSContext;
     private javax.swing.JMenu exportModGroup;
     private javax.swing.JMenu exportModelGroup;
     private javax.swing.JMenu exportOBJ;
@@ -2962,6 +3059,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPanel hierachyPanel;
     private javax.swing.JTextField iconField;
     private javax.swing.JLabel iconLabel;
+    private javax.swing.JMenuItem importJSONContext;
     private javax.swing.JPanel infoCardPanel;
     private javax.swing.JPanel inspectorPane;
     private javax.swing.JMenuItem installProfileMod;
