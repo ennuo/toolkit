@@ -16,7 +16,7 @@ public class ApplicationFlags {
     /**
      * Enables 3D workspace.
      */
-    public static boolean ENABLE_3D = false;
+    public static boolean ENABLE_3D_VIEWPORT = false;
 
     /**
      * Path to PS3 shader compiler executable, you'll have to
@@ -44,11 +44,21 @@ public class ApplicationFlags {
      * SCE_PSSL_EXECUTABLE to be set.
      */
     public static boolean CAN_COMPILE_ORBIS_SHADERS = false;
+    
+    /**
+     * 3D is only supported on Windows (and maybe Linux)
+     */
+    public static boolean CAN_USE_3D = false;
 
     static {
         if (SCE_PSSL_EXECUTABLE != null)
             ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS = SCE_PSSL_EXECUTABLE.exists();
         if (SCE_CGC_EXECUTABLE != null)
             ApplicationFlags.CAN_COMPILE_CELL_SHADERS = SCE_CGC_EXECUTABLE.exists();
+        
+        ApplicationFlags.CAN_USE_3D = 
+                System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+        if (ApplicationFlags.ENABLE_3D_VIEWPORT && !ApplicationFlags.CAN_USE_3D)
+            ApplicationFlags.ENABLE_3D_VIEWPORT = false;
     }
 }
