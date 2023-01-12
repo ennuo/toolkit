@@ -29,6 +29,7 @@ import cwlib.enums.DatabaseType;
 import cwlib.enums.InventoryObjectSubType;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
+import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.structs.slot.Slot;
@@ -496,8 +497,17 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (isFile && ResourceSystem.getSelectedDatabase().getType().hasGUIDs()) 
             this.entryContext.add(this.duplicateContext);
-        //if (isTreeRowSelected)
-        //    this.entryContext.add(this.copyGroup);
+
+        FileData source = ResourceSystem.getSelectedDatabase();
+        if (isTreeRowSelected && source.getType().hasGUIDs()) {
+            for (FileData data : ResourceSystem.getDatabases()) {
+                if (data == source || !data.getType().hasGUIDs()) continue;
+                Swing.createMenuItem(data.getName(), (e) -> { DatabaseCallbacks.copyItems((FileDB) data); }, this.copyGroup);
+            }
+
+            if (this.copyGroup.getMenuComponentCount() != 0)
+                this.entryContext.add(this.copyGroup);
+        }
         
         if (contextSize != this.entryContext.getComponentCount()) {
             this.entryContext.add(new JSeparator());

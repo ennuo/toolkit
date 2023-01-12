@@ -17,6 +17,8 @@ import cwlib.types.mods.Mod;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.ArrayList;
+
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -222,6 +224,52 @@ public class DatabaseCallbacks {
         tree.scrollPathToVisible(treePath);
 
         entry.getSource().setHasChanges();
+        Toolkit.INSTANCE.updateWorkspace();
+    } 
+
+    public static void copyItems(FileDB destination) {
+        FileNode[] nodes = ResourceSystem.getAllSelected();
+
+        boolean forceOverwrite = false;
+        boolean forceSkip = false;
+
+        String[] options = new String[] { "Overwrite", "Skip", "Overwrite All", "Skip All" };
+
+        for (FileNode node : nodes) {
+            FileDBRow entry = (FileDBRow) node.getEntry();
+            if (entry == null) continue;
+
+            FileDBRow copy = destination.get(entry.getGUID());
+            if (copy != null) {
+
+                if (forceSkip) continue;
+                if (!forceOverwrite) {
+                    int response = JOptionPane.showOptionDialog(
+                        Toolkit.INSTANCE,
+                        entry.getName() + " already exists, what do you want to do?",
+                        "Conflict",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        options,
+                        options[0]
+                    );
+
+                    if (response == 1) continue;
+                    else if (response == 2) forceOverwrite = true;
+                    else if (response == 3) {
+                        forceSkip = true;
+                        continue;
+                    }
+                }
+                
+                copy.setDetails(entry);
+            }
+            else destination.newFileDBRow(entry);
+        }
+
+        destination.setHasChanges();
+        ResourceSystem.reloadModel(destination);
         Toolkit.INSTANCE.updateWorkspace();
     }
     
