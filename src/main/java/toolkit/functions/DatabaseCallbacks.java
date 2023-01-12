@@ -76,7 +76,10 @@ public class DatabaseCallbacks {
                 zeroed++;
             }
         }
+        
+        ResourceSystem.getSelectedDatabase().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
+        
         System.out.println("Successfuly zeroed " + zeroed + " entries.");
     }
     
@@ -164,7 +167,9 @@ public class DatabaseCallbacks {
         if (hash.startsWith("h")) hash = hash.substring(1);
         entry.setSHA1(new SHA1(hash));
         
+        entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
+        
         Toolkit.INSTANCE.setEditorPanel(node);
     }
     
@@ -195,8 +200,10 @@ public class DatabaseCallbacks {
         }
 
         entry.setGUID(guid);
-
+        
+        entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
+        
         Toolkit.INSTANCE.setEditorPanel(node);
     }
     
@@ -215,6 +222,7 @@ public class DatabaseCallbacks {
         tree.setSelectionPath(treePath);
         tree.scrollPathToVisible(treePath);
 
+        entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
     }
     

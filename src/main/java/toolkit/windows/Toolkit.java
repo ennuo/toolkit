@@ -478,7 +478,7 @@ public class Toolkit extends javax.swing.JFrame {
         if (isFile && !isDependencyTree) {
             if (ResourceSystem.getDatabaseType().hasGUIDs())
                 this.entryContext.add(editMenuContext);
-            if (isFile && canExtract) {
+            if (isFile && ResourceSystem.canExtract()) {
                 this.entryContext.add(this.replaceContext);
                 this.replaceImage.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
                 this.replaceDecompressed.setVisible(isCompressed && type != ResourceType.STATIC_MESH);

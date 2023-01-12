@@ -267,6 +267,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
 
     @Override public Iterator<FileDBRow> iterator() { return this.database.iterator(); }
 
+    @Override public boolean hasChanges() { return this.hasChanges || this.database.hasChanges(); }
     @Override public GUID getNextGUID() { return this.database.getNextGUID(); }
     @Override public void remove(FileEntry entry) { this.database.remove(entry); }
     @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }

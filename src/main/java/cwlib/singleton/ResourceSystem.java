@@ -221,6 +221,10 @@ public class ResourceSystem {
     public static boolean add(byte[] data, FileData database) {
         if (database.getType().containsData()) {
             database.add(data);
+            
+            database.setHasChanges();
+            Toolkit.INSTANCE.updateWorkspace();
+            
             return true;
         }
 
@@ -228,12 +232,13 @@ public class ResourceSystem {
         if (archives == null) return false;
 
         ResourceSystem.add(data, archives);
+        
         return true;
     }
 
     public static void add(byte[] data, Fart[] archives) {
-        for (Fart archive: archives) archive.add(data);
-        Toolkit.INSTANCE.updateWorkspace();
+        for (Fart archive: archives) 
+            archive.add(data);
     }
 
     public static boolean replace(FileEntry entry, byte[] data) {
@@ -241,7 +246,10 @@ public class ResourceSystem {
 
         entry.setDetails(data);
         entry.setInfo(null);
-
+        
+        entry.getSource().setHasChanges();
+        Toolkit.INSTANCE.updateWorkspace();
+        
         return ResourceSystem.add(data, entry.getSource());
     }
 
