@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
+import toolkit.utilities.TreeSelectionListener;
 
 /**
  * Global utilities for working with
@@ -250,8 +251,13 @@ public class ResourceSystem {
         entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
         
-        return ResourceSystem.add(data, entry.getSource());
+        boolean code = ResourceSystem.add(data, entry.getSource());
+        if (entry.getNode() == ResourceSystem.lastSelected)
+            ResourceSystem.refreshEditor();
+        return code;
     }
+    
+    public static void refreshEditor() { TreeSelectionListener.listener(ResourceSystem.getSelectedDatabase().getTree()); }
 
     public static ArrayList<FileData> getDatabases() { return ResourceSystem.databases; }
     public static ArrayList<Fart> getArchives() { return ResourceSystem.archives; }
