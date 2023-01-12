@@ -61,8 +61,8 @@ public class RGfxMaterial implements Serializable, Compressable {
     public byte fuzzLightingScale = 127;
     public byte iridesenceRoughness;
 
-    public transient byte[][] shaders;
-    public transient byte[] code;
+    public byte[][] shaders;
+    public byte[] code;
 
     public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
 

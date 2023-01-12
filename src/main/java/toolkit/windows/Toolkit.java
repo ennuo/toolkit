@@ -75,6 +75,7 @@ import configurations.Profile;
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.Part;
+import cwlib.enums.SerializationType;
 import cwlib.io.Serializable;
 import cwlib.io.imports.AnimationImporter;
 import cwlib.io.serializer.SerializationData;
@@ -82,6 +83,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
+import cwlib.types.data.WrappedResource;
+import cwlib.util.GsonUtils;
 import executables.gfx.GfxGUI;
 
 import java.awt.BorderLayout;
@@ -407,6 +410,7 @@ public class Toolkit extends javax.swing.JFrame {
             // Maybe I should check if at least one resource is compressed?
             this.extractDecompressedContext.setVisible(!isFile || (isCompressed && type != ResourceType.STATIC_MESH));
             
+            
             if (isFile && info != null) {
                 switch (type) {
                     case TEXTURE: case GTF_TEXTURE: {
@@ -449,6 +453,10 @@ public class Toolkit extends javax.swing.JFrame {
                     }
                 }
             }
+            
+            boolean canExportJSON = isLoadedResource && info.getMethod().equals(SerializationType.BINARY);
+            if (canExportJSON)
+                this.exportGroup.add(this.exportJSONContext);
             
             if (this.exportGroup.getMenuComponentCount() != 0)
                 this.entryContext.add(this.exportGroup);
@@ -555,6 +563,7 @@ public class Toolkit extends javax.swing.JFrame {
         editHashContext = new javax.swing.JMenuItem();
         editGUIDContext = new javax.swing.JMenuItem();
         exportGroup = new javax.swing.JMenu();
+        exportJSONContext = new javax.swing.JMenuItem();
         exportTextureGroupContext = new javax.swing.JMenu();
         exportPNG = new javax.swing.JMenuItem();
         exportDDS = new javax.swing.JMenuItem();
@@ -765,6 +774,14 @@ public class Toolkit extends javax.swing.JFrame {
         entryContext.add(editGroup);
 
         exportGroup.setText("Export...");
+
+        exportJSONContext.setText("JSON");
+        exportJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportJSONContextActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportJSONContext);
 
         exportTextureGroupContext.setText("Textures");
 
@@ -2671,6 +2688,32 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.newEntry(resource);
     }//GEN-LAST:event_newAnimationContextActionPerformed
 
+    private void exportJSONContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportJSONContextActionPerformed
+        FileEntry selected = ResourceSystem.getSelected().getEntry();
+        if (selected == null) return;
+        byte[] data = ResourceSystem.extract(selected);
+        if (data == null) return;
+        
+        Resource resource = null;
+        try { resource = new Resource(data); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to process resource, could not export.", "An error occurred", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        File file = FileChooser.openFile(
+            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".json",
+            "json",
+            true
+        );
+        
+        if (file == null) return;
+        
+        GsonUtils.REVISION = resource.getRevision();
+        WrappedResource wrapper = new WrappedResource(resource);
+        FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), file.getAbsolutePath());
+    }//GEN-LAST:event_exportJSONContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -2882,6 +2925,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportDDS;
     private javax.swing.JMenuItem exportGLTF;
     private javax.swing.JMenu exportGroup;
+    private javax.swing.JMenuItem exportJSONContext;
     private javax.swing.JMenuItem exportLAMSContext;
     private javax.swing.JMenu exportModGroup;
     private javax.swing.JMenu exportModelGroup;

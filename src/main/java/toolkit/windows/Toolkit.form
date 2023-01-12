@@ -67,6 +67,14 @@
             <Property name="text" type="java.lang.String" value="Export..."/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="exportJSONContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="JSON"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportJSONContextActionPerformed"/>
+              </Events>
+            </MenuItem>
             <Menu class="javax.swing.JMenu" name="exportTextureGroupContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Textures"/>
