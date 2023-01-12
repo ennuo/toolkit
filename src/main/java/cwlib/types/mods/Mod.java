@@ -20,6 +20,7 @@ import cwlib.types.data.SHA1;
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.DatabaseType;
+import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
@@ -56,9 +57,10 @@ public class Mod extends FileDB  {
     private ArrayList<ModPatch> patches = new ArrayList<>();
     
     private ImageIcon icon = null;
-    
-    public Mod() { 
-        super(null, DatabaseType.MOD, 0x01480100);
+
+    public Mod() { this(null, 0x01480100); }
+    private Mod(File file, int version) { 
+        super(file, DatabaseType.MOD, version);
         Revision revision = new Revision(
             Branch.MIZUKI.getHead(), 
             Branch.MIZUKI.getID(), 
@@ -131,7 +133,7 @@ public class Mod extends FileDB  {
     public static Mod fromLegacyMod(File file) {
         ResourceSystem.println("Mod", "Processing legacy mod file");
         MemoryInputStream stream = new MemoryInputStream(file.getAbsolutePath(), CompressionFlags.USE_ALL_COMPRESSION);
-        Mod mod = new Mod();
+        Mod mod = new Mod(file, 0x01480100);
 
         if (!stream.str(3).equals("MOD"))
             throw new SerializationException("Resource header is not of type MOD!");
@@ -161,7 +163,6 @@ public class Mod extends FileDB  {
         if (revision >= Revisions.LM_TYPES)
             head = Revisions.LM_HEAD;
         Serializer serializer = new Serializer(stream, new Revision(head));
-
         ModInfo config = mod.config;
         stream.i8(); // Skip compatibility
         config.version = (stream.u8()) + "." + (stream.u8());
@@ -189,6 +190,7 @@ public class Mod extends FileDB  {
         for (int i = 0; i < itemCount; ++i) {
             serializer.struct(null, InventoryItemDetails.class);
             stream.u32(); stream.u32(); // location/category
+            serializer.resource(null, ResourceType.PLAN, true);
             stream.wstr(); stream.wstr(); // translatedLocation/Category
             if (revision >= Revisions.LM_MINMAX) {
                 stream.i32(); stream.i32(); // min/max revisions
@@ -228,7 +230,8 @@ public class Mod extends FileDB  {
             InputStream input = new ByteArrayInputStream(imageData);
             try {
                 BufferedImage image = ImageIO.read(input);
-                mod.icon = Images.getImageIcon(image);
+                if (image != null)
+                    mod.icon = Images.getImageIcon(image);
             } catch (IOException ex) {
                 ResourceSystem.println("Mod", "Failed to parse image data");
             }
