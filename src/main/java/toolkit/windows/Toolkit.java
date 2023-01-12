@@ -274,17 +274,22 @@ public class Toolkit extends javax.swing.JFrame {
         closeTab.setVisible(fileDataTabs.getTabCount() != 0);
         installProfileMod.setVisible(false);
         int archiveCount = ResourceSystem.getArchives().size();
+        
+        
+        // Set save status for all databases
+        ArrayList<FileData> databases = ResourceSystem.getDatabases();
+        for (int i = 0; i < databases.size(); ++i) {
+            FileData database = databases.get(i);
+            if (database.hasChanges())
+                fileDataTabs.setTitleAt(i, database.getName() + " *");
+            else
+                fileDataTabs.setTitleAt(i, database.getName());
+        }
+        
         FileData database = ResourceSystem.getSelectedDatabase();
-
         if (database != null) {
             editMenu.setVisible(true);
-            if (database.hasChanges()) {
-                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), database.getName() + " *");
-                saveMenu.setEnabled(true);
-            } else {
-                fileDataTabs.setTitleAt(fileDataTabs.getSelectedIndex(), database.getName());
-                saveMenu.setEnabled(false);
-            }
+            saveMenu.setEnabled(database.hasChanges());
         } else editMenu.setVisible(false);
 
         if (archiveCount != 0 || database != null) {
