@@ -64,6 +64,11 @@ public final class FileDBRow extends FileEntry {
         this.date = System.currentTimeMillis() / 1000; 
     }
 
+    public void setDetails(byte[] data) {
+        super.setDetails(data);
+        this.updateDate();
+    }
+
     /**
      * Sets entry data from another entry.
      * @param entry Entry to use as base

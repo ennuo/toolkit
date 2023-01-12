@@ -115,14 +115,13 @@ public class DatabaseCallbacks {
         else path = node.getFilePath() + node.getName() + "/" + file;
         
         FileEntry entry = null;
-        if (database instanceof FileDB) {
+        if (database instanceof Mod) entry = ((Mod)database).add(path, data, guid);
+        else {
             if (data != null)
                 ResourceSystem.add(data);
             entry = ((FileDB)database).newFileDBRow(path, guid);
             entry.setDetails(data);
         }
-        else
-            entry = ((Mod)database).add(path, data, guid);
 
         database.setHasChanges();
         ResourceSystem.reloadModel(database);
@@ -250,12 +249,10 @@ public class DatabaseCallbacks {
             return;
         }
         
-        FileEntry entry = null;
-        if (database instanceof FileDB)
-            entry = ((FileDB)database).newFileDBRow(path, guid);
-        else
-            entry = ((Mod)database).add(path, null, guid);
-        entry.setDetails(source);
+        FileDBRow entry = ((FileDB)database).newFileDBRow(path, guid);
+        entry.setSHA1(source.getSHA1());
+        entry.setSize(source.getSize());
+        entry.updateDate();
         
         database.setHasChanges();
         ResourceSystem.reloadModel(database);

@@ -21,10 +21,8 @@ import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.Revisions;
-import cwlib.types.swing.FileData;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
-import cwlib.types.databases.FileEntry;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -43,17 +41,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-public class Mod extends FileData implements Iterable<FileDBRow>  {
+public class Mod extends FileDB  {
     private static final String LEGACY_PASSWORD = "purchasecollege";
 
-    private FileDB database;
     private SaveArchive archive;
     
     private ModInfo config = new ModInfo();
@@ -62,8 +58,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
     private ImageIcon icon = null;
     
     public Mod() { 
-        super(null, DatabaseType.MOD);
-        this.database = new FileDB(0x01480100);
+        super(null, DatabaseType.MOD, 0x01480100);
         Revision revision = new Revision(
             Branch.MIZUKI.getHead(), 
             Branch.MIZUKI.getID(), 
@@ -110,14 +105,9 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
             if (Files.exists(archivePath))
                 this.archive = new SaveArchive(Files.readAllBytes(archivePath));
 
-            this.database = new FileDB(Files.readAllBytes(databasePath));
+            super.process(new MemoryInputStream(Files.readAllBytes(databasePath)));
 
-            // Prefer the model of the FileDB
-            this.model = this.database.getModel();
-            this.root = this.database.getRoot();
-            this.getTree().setModel(this.model);
-
-            for (FileDBRow entry : database) {
+            for (FileDBRow entry : this.entries) {
                 if (this.archive != null && archive.exists(entry.getSHA1())) continue;
                 Path filePath = fileSystem.getPath(entry.getPath());
                 if (Files.exists(filePath)) {
@@ -188,7 +178,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
             int size = stream.i32();
             GUID guid = stream.guid();
 
-            FileDBRow entry = mod.database.newFileDBRow(path, guid);
+            FileDBRow entry = mod.newFileDBRow(path, guid);
             entry.setDate((revision >= Revisions.LM_SLOTS_TIMESTAMPS) ? stream.u32() : 0);
             entry.setSize(size);
         }
@@ -228,7 +218,7 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
         if (patchCount != 0)
             mod.patches.add(patch);
 
-        for (FileDBRow row : mod.database) {
+        for (FileDBRow row : mod) {
             SHA1 sha1 = mod.archive.add(stream.bytes((int) row.getSize()));
             row.setSHA1(sha1);
         }
@@ -252,31 +242,24 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
     public ImageIcon getIcon() { return this.icon; }
 
     public void setIcon(ImageIcon icon) { this.icon = icon; }
-    
-    public void add(byte[] data) { this.archive.add(data); }
+
+    @Override public void add(byte[] data) { this.archive.add(data); }
     public FileDBRow add(String path, byte[] data) { return this.add(path, data, null); }
     public FileDBRow add(String path, byte[] data, GUID guid) {
-        if (guid == null) guid = this.database.getNextGUID();
-        FileDBRow row = this.database.newFileDBRow(path, guid);
+        if (guid == null) guid = this.getNextGUID();
+        FileDBRow row = this.newFileDBRow(path, guid);
         if (data != null) {
             row.setSHA1(this.archive.add(data));
             row.setSize(data.length);
         }
         return row;
     }
-
-    @Override public Iterator<FileDBRow> iterator() { return this.database.iterator(); }
-
-    @Override public boolean hasChanges() { return this.hasChanges || this.database.hasChanges(); }
-    @Override public GUID getNextGUID() { return this.database.getNextGUID(); }
-    @Override public void remove(FileEntry entry) { this.database.remove(entry); }
-    @Override public FileDBRow get(GUID guid) { return this.database.get(guid); }
-    @Override public FileDBRow get(SHA1 sha1) { return this.database.get(sha1); }
+    
     @Override public byte[] extract(SHA1 sha1) { return this.archive.extract(sha1); }
     @Override public boolean save(File file) {
         if (file == null) return false;
         
-        byte[] serializedDatabase = this.database.build();
+        byte[] serializedDatabase = this.build();
         byte[] serializedArchive = this.archive.build();
         
         byte[] image = null;
@@ -333,7 +316,9 @@ public class Mod extends FileData implements Iterable<FileDBRow>  {
         try { Files.deleteIfExists(workingZip.toPath()); }
         catch (IOException ex) { System.err.println("There was an error deleting temp file."); }
         
-        if (file.equals(this.getFile())) this.hasChanges = false;
+        if (file.equals(this.getFile()))
+            this.hasChanges = false;
+        
         return true;
     }
 }

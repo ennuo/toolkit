@@ -34,9 +34,26 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
     private static final long MIN_SAFE_GUID = 0x00180000;
 
     private int revision;
-    private ArrayList<FileDBRow> entries;
+    protected ArrayList<FileDBRow> entries;
 
-    private HashMap<GUID, FileDBRow> lookup;
+    protected HashMap<GUID, FileDBRow> lookup;
+    
+    /**
+     * For databases that inherit FileDB
+     */
+    protected FileDB(File file, DatabaseType type) {
+        super(file, type);
+    };
+    
+    /**
+     * For databases that inherit FileDB
+     */
+    protected FileDB(File file, DatabaseType type, int revision) {
+        super(file, type);
+        this.revision = revision;
+        this.entries = new ArrayList<>(DEFAULT_CAPACITY);
+        this.lookup = new HashMap<>(DEFAULT_CAPACITY);
+    };
 
     /**
      * Creates a FileDB with specified version and capacity.
@@ -86,7 +103,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         this(new File(path));
     }
 
-    private void process(MemoryInputStream stream) {
+    protected void process(MemoryInputStream stream) {
         this.revision = stream.i32();
         boolean isLBP3 = (this.revision >> 0x10) >= 0x148;
         int count = stream.i32();
@@ -211,6 +228,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         if (this.lookup.containsKey(guid))
             throw new IllegalArgumentException("GUID already exists in database!");
         final FileDBRow entry = new FileDBRow(this, path, 0, 0, new SHA1(), guid);
+        entry.updateDate();
         this.entries.add(entry);
         this.lookup.put(guid, entry);
         return entry;
