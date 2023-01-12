@@ -362,30 +362,30 @@ public class Toolkit extends javax.swing.JFrame {
         if (!isDependencyTree && isLoadedResource) {
             switch (type) {
                 case TRANSLATION: {
-                    this.entryContext.add(this.loadLAMSContext);
+                    Swing.createMenuItem("Load", LoadCallbacks::loadTranslationTable, this.entryContext);
                     break;
                 }
                 case PLAN: {
-                    this.entryContext.add(this.editItemContext);
+                    Swing.createMenuItem("Edit Item Details", EditCallbacks::editItem, this.entryContext);
                     break;
                 }
                 case SLOT_LIST: case PACKS: {
-                    this.entryContext.add(this.editSlotContext);
-                    break;
+                   Swing.createMenuItem("Edit Slots", EditCallbacks::editSlot, this.entryContext);
+                   break;
                 }
                 case PALETTE: {
                     if (ApplicationFlags.ENABLE_3D)
-                        this.entryContext.add(this.loadPaletteContext);
+                        Swing.createMenuItem("Load", LoadCallbacks::loadPalette3D, this.entryContext);
                     break;
                 }
                 case LEVEL: {
                     if (ApplicationFlags.ENABLE_3D)
-                        this.entryContext.add(this.loadLevelContext);
+                        Swing.createMenuItem("Load", LoadCallbacks::loadLevel3D, this.entryContext);
                     break;
                 }
                 case MESH: {
                     if (ApplicationFlags.ENABLE_3D)
-                        this.entryContext.add(this.loadMeshContext);
+                        Swing.createMenuItem("Load", LoadCallbacks::loadModel3D, this.entryContext);
                     break;
                 }
             }
@@ -397,7 +397,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         
         if (canExtract && isTreeRowSelected) {
-            this.entryContext.add(this.extractContextMenu);
+            this.entryContext.add(this.extractGroup);
             
             // Maybe I should check if at least one resource is compressed?
             this.extractDecompressedContext.setVisible(!isFile || (isCompressed && type != ResourceType.STATIC_MESH));
@@ -478,13 +478,13 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (isFile && !isDependencyTree) {
             if (ResourceSystem.getDatabaseType().hasGUIDs())
-                this.entryContext.add(editMenuContext);
+                this.entryContext.add(editGroup);
             if (isFile && ResourceSystem.canExtract()) {
-                this.entryContext.add(this.replaceContext);
-                this.replaceImage.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
-                this.replaceDecompressed.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
+                this.entryContext.add(this.replaceGroup);
+                this.replaceImageContext.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
+                this.replaceDecompressedContext.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
                 boolean hasDependencies = isCompressed && info.getDependencies().length != 0;
-                this.replaceDependencies.setVisible(hasDependencies);
+                this.replaceDependenciesContext.setVisible(hasDependencies);
                 if (hasDependencies)
                     this.entryContext.add(this.dependencyGroup);
             }
@@ -542,16 +542,13 @@ public class Toolkit extends javax.swing.JFrame {
     private void initComponents() {
 
         entryContext = new javax.swing.JPopupMenu();
-        extractContextMenu = new javax.swing.JMenu();
+        extractGroup = new javax.swing.JMenu();
         extractContext = new javax.swing.JMenuItem();
         extractDecompressedContext = new javax.swing.JMenuItem();
-        editMenuContext = new javax.swing.JMenu();
-        renameItemContext = new javax.swing.JMenuItem();
-        changeHash = new javax.swing.JMenuItem();
-        changeGUID = new javax.swing.JMenuItem();
-        editItemContext = new javax.swing.JMenuItem();
-        editSlotContext = new javax.swing.JMenuItem();
-        loadLAMSContext = new javax.swing.JMenuItem();
+        editGroup = new javax.swing.JMenu();
+        editPathContext = new javax.swing.JMenuItem();
+        editHashContext = new javax.swing.JMenuItem();
+        editGUIDContext = new javax.swing.JMenuItem();
         exportGroup = new javax.swing.JMenu();
         exportTextureGroupContext = new javax.swing.JMenu();
         exportPNG = new javax.swing.JMenuItem();
@@ -572,14 +569,6 @@ public class Toolkit extends javax.swing.JFrame {
         exportAsBackup = new javax.swing.JMenuItem();
         exportAsBackupGUID = new javax.swing.JMenuItem();
         exportPaletteContext = new javax.swing.JMenuItem();
-        replaceContext = new javax.swing.JMenu();
-        replaceCompressed = new javax.swing.JMenuItem();
-        replaceDecompressed = new javax.swing.JMenuItem();
-        replaceDependencies = new javax.swing.JMenuItem();
-        replaceImage = new javax.swing.JMenuItem();
-        dependencyGroup = new javax.swing.JMenu();
-        removeDependencies = new javax.swing.JMenuItem();
-        removeMissingDependencies = new javax.swing.JMenuItem();
         newEntryGroup = new javax.swing.JMenu();
         newResourceGroup = new javax.swing.JMenu();
         newTextureContext = new javax.swing.JMenuItem();
@@ -590,13 +579,18 @@ public class Toolkit extends javax.swing.JFrame {
         newEntryContext = new javax.swing.JMenuItem();
         newFolderContext = new javax.swing.JMenuItem();
         renameFolder = new javax.swing.JMenuItem();
+        replaceGroup = new javax.swing.JMenu();
+        replaceCompressedContext = new javax.swing.JMenuItem();
+        replaceDecompressedContext = new javax.swing.JMenuItem();
+        replaceDependenciesContext = new javax.swing.JMenuItem();
+        replaceImageContext = new javax.swing.JMenuItem();
+        dependencyGroup = new javax.swing.JMenu();
+        removeDependenciesContext = new javax.swing.JMenuItem();
+        removeMissingDependenciesContext = new javax.swing.JMenuItem();
         duplicateContext = new javax.swing.JMenuItem();
+        copyGroup = new javax.swing.JMenu();
         zeroContext = new javax.swing.JMenuItem();
         deleteContext = new javax.swing.JMenuItem();
-        loadLevelContext = new javax.swing.JMenuItem();
-        loadMeshContext = new javax.swing.JMenuItem();
-        loadPaletteContext = new javax.swing.JMenuItem();
-        copyGroup = new javax.swing.JMenu();
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
@@ -717,7 +711,7 @@ public class Toolkit extends javax.swing.JFrame {
         exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
 
-        extractContextMenu.setText("Extract...");
+        extractGroup.setText("Extract...");
 
         extractContext.setText("Extract");
         extractContext.addActionListener(new java.awt.event.ActionListener() {
@@ -725,7 +719,7 @@ public class Toolkit extends javax.swing.JFrame {
                 extractContextActionPerformed(evt);
             }
         });
-        extractContextMenu.add(extractContext);
+        extractGroup.add(extractContext);
 
         extractDecompressedContext.setText("Decompress");
         extractDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
@@ -733,61 +727,37 @@ public class Toolkit extends javax.swing.JFrame {
                 extractDecompressedContextActionPerformed(evt);
             }
         });
-        extractContextMenu.add(extractDecompressedContext);
+        extractGroup.add(extractDecompressedContext);
 
-        entryContext.add(extractContextMenu);
+        entryContext.add(extractGroup);
 
-        editMenuContext.setText("Edit...");
+        editGroup.setText("Edit...");
 
-        renameItemContext.setText("Path");
-        renameItemContext.addActionListener(new java.awt.event.ActionListener() {
+        editPathContext.setText("Path");
+        editPathContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                renameItemContextActionPerformed(evt);
+                editPathContextActionPerformed(evt);
             }
         });
-        editMenuContext.add(renameItemContext);
+        editGroup.add(editPathContext);
 
-        changeHash.setText("Hash");
-        changeHash.addActionListener(new java.awt.event.ActionListener() {
+        editHashContext.setText("Hash");
+        editHashContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeHashActionPerformed(evt);
+                editHashContextActionPerformed(evt);
             }
         });
-        editMenuContext.add(changeHash);
+        editGroup.add(editHashContext);
 
-        changeGUID.setText("GUID");
-        changeGUID.addActionListener(new java.awt.event.ActionListener() {
+        editGUIDContext.setText("GUID");
+        editGUIDContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeGUIDActionPerformed(evt);
+                editGUIDContextActionPerformed(evt);
             }
         });
-        editMenuContext.add(changeGUID);
+        editGroup.add(editGUIDContext);
 
-        entryContext.add(editMenuContext);
-
-        editItemContext.setText("Edit Item Details");
-        editItemContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editItemContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(editItemContext);
-
-        editSlotContext.setText("Edit Slot");
-        editSlotContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editSlotContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(editSlotContext);
-
-        loadLAMSContext.setText("Load LAMS");
-        loadLAMSContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadLAMSContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(loadLAMSContext);
+        entryContext.add(editGroup);
 
         exportGroup.setText("Export...");
 
@@ -930,62 +900,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         entryContext.add(exportGroup);
 
-        replaceContext.setText("Replace...");
-
-        replaceCompressed.setText("Replace");
-        replaceCompressed.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceCompressedActionPerformed(evt);
-            }
-        });
-        replaceContext.add(replaceCompressed);
-
-        replaceDecompressed.setText("Decompressed");
-        replaceDecompressed.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceDecompressedActionPerformed(evt);
-            }
-        });
-        replaceContext.add(replaceDecompressed);
-
-        replaceDependencies.setText("Dependencies");
-        replaceDependencies.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceDependenciesActionPerformed(evt);
-            }
-        });
-        replaceContext.add(replaceDependencies);
-
-        replaceImage.setText("Image");
-        replaceImage.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceImageActionPerformed(evt);
-            }
-        });
-        replaceContext.add(replaceImage);
-
-        entryContext.add(replaceContext);
-
-        dependencyGroup.setText("Dependencies...");
-
-        removeDependencies.setText("Remove Dependencies");
-        removeDependencies.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeDependenciesActionPerformed(evt);
-            }
-        });
-        dependencyGroup.add(removeDependencies);
-
-        removeMissingDependencies.setText("Remove Missing Dependencies");
-        removeMissingDependencies.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeMissingDependenciesActionPerformed(evt);
-            }
-        });
-        dependencyGroup.add(removeMissingDependencies);
-
-        entryContext.add(dependencyGroup);
-
         newEntryGroup.setText("New...");
 
         newResourceGroup.setText("Resource");
@@ -1049,6 +963,62 @@ public class Toolkit extends javax.swing.JFrame {
         });
         entryContext.add(renameFolder);
 
+        replaceGroup.setText("Replace...");
+
+        replaceCompressedContext.setText("Replace");
+        replaceCompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceCompressedContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceCompressedContext);
+
+        replaceDecompressedContext.setText("Decompressed");
+        replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceDecompressedContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceDecompressedContext);
+
+        replaceDependenciesContext.setText("Dependencies");
+        replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceDependenciesContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceDependenciesContext);
+
+        replaceImageContext.setText("Image");
+        replaceImageContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceImageContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceImageContext);
+
+        entryContext.add(replaceGroup);
+
+        dependencyGroup.setText("Dependencies...");
+
+        removeDependenciesContext.setText("Remove Dependencies");
+        removeDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeDependenciesContextActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeDependenciesContext);
+
+        removeMissingDependenciesContext.setText("Remove Missing Dependencies");
+        removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeMissingDependenciesContextActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeMissingDependenciesContext);
+
+        entryContext.add(dependencyGroup);
+
         duplicateContext.setText("Duplicate");
         duplicateContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1056,6 +1026,9 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(duplicateContext);
+
+        copyGroup.setText("Copy To...");
+        entryContext.add(copyGroup);
 
         zeroContext.setText("Zero");
         zeroContext.addActionListener(new java.awt.event.ActionListener() {
@@ -1072,33 +1045,6 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         entryContext.add(deleteContext);
-
-        loadLevelContext.setText("Load Level");
-        loadLevelContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadLevelContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(loadLevelContext);
-
-        loadMeshContext.setText("Load Mesh");
-        loadMeshContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadMeshContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(loadMeshContext);
-
-        loadPaletteContext.setText("Load Palette");
-        loadPaletteContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadPaletteContextActionPerformed(evt);
-            }
-        });
-        entryContext.add(loadPaletteContext);
-
-        copyGroup.setText("Copy To...");
-        entryContext.add(copyGroup);
 
         clear.setText("Clear");
         clear.addActionListener(new java.awt.event.ActionListener() {
@@ -1998,14 +1944,6 @@ public class Toolkit extends javax.swing.JFrame {
         ExportCallbacks.exportOBJ(0);
     }//GEN-LAST:event_exportOBJTEXCOORD0ActionPerformed
 
-    private void loadLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLAMSContextActionPerformed
-        byte[] data = ResourceSystem.extract(ResourceSystem.getSelected().getEntry());
-        if (data == null) return;
-        RTranslationTable table = new RTranslationTable(data);
-        if (table != null) StringMetadata.setEnabled(true);
-        ResourceSystem.setLAMS(table);
-    }//GEN-LAST:event_loadLAMSContextActionPerformed
-
     private void locationFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationFieldActionPerformed
 
     }//GEN-LAST:event_locationFieldActionPerformed
@@ -2079,30 +2017,6 @@ public class Toolkit extends javax.swing.JFrame {
         ProfileCallbacks.extractProfile();
     }//GEN-LAST:event_extractBigProfileActionPerformed
 
-    private void editSlotContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSlotContextActionPerformed
-        FileEntry entry = ResourceSystem.getSelected().getEntry();
-        ResourceInfo info = entry.getInfo();
-        if (info == null  || info.getType() == ResourceType.INVALID || info.getResource() == null) return;
-
-
-        if (info.getType() == ResourceType.ADVENTURE_CREATE_PROFILE) {
-            new SlotManager(entry, (RAdventureCreateProfile) info.getResource()).setVisible(true);
-            return;
-        }
-        
-        if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
-            Slot slot = ((SaveEntry)entry).getSlot();
-            if (slot == null) return;
-            new SlotManager((BigSave)entry.getSource(), slot).setVisible(true);
-            return;
-        }
-
-        if (info.getType() == ResourceType.SLOT_LIST) 
-            new SlotManager(entry, (RSlotList) info.getResource()).setVisible(true);
-        else if (info.getType() == ResourceType.PACKS)
-            new SlotManager(entry, (RPacks) info.getResource()).setVisible(true);
-    }//GEN-LAST:event_editSlotContextActionPerformed
-
     private void exportLAMSContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportLAMSContextActionPerformed
         ExportCallbacks.exportTranslations();
     }//GEN-LAST:event_exportLAMSContextActionPerformed
@@ -2119,9 +2033,9 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.patchDatabase();
     }//GEN-LAST:event_patchMAPActionPerformed
 
-    private void replaceCompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceCompressedActionPerformed
+    private void replaceCompressedContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceCompressedContextActionPerformed
         ReplacementCallbacks.replaceCompressed();
-    }//GEN-LAST:event_replaceCompressedActionPerformed
+    }//GEN-LAST:event_replaceCompressedContextActionPerformed
 
     private void mergeFARCsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mergeFARCsActionPerformed
         UtilityCallbacks.mergeFileArchives();
@@ -2206,13 +2120,13 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.newEntry(null);
     }                                               
 
-    private void replaceDecompressedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedActionPerformed
+    private void replaceDecompressedContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDecompressedContextActionPerformed
         ReplacementCallbacks.replaceDecompressed();
-    }//GEN-LAST:event_replaceDecompressedActionPerformed
+    }//GEN-LAST:event_replaceDecompressedContextActionPerformed
 
-    private void replaceDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDependenciesActionPerformed
+    private void replaceDependenciesContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceDependenciesContextActionPerformed
         new Dependinator(this, ResourceSystem.getSelected().getEntry());
-    }//GEN-LAST:event_replaceDependenciesActionPerformed
+    }//GEN-LAST:event_replaceDependenciesContextActionPerformed
 
     private void exportAsModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsModActionPerformed
         ExportCallbacks.exportMod(true);
@@ -2222,13 +2136,13 @@ public class Toolkit extends javax.swing.JFrame {
         DatabaseCallbacks.dumpRLST();
     }//GEN-LAST:event_dumpRLSTActionPerformed
 
-    private void removeDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeDependenciesActionPerformed
+    private void removeDependenciesContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeDependenciesContextActionPerformed
         DependencyCallbacks.removeDependencies();
-    }//GEN-LAST:event_removeDependenciesActionPerformed
+    }//GEN-LAST:event_removeDependenciesContextActionPerformed
 
-    private void removeMissingDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMissingDependenciesActionPerformed
+    private void removeMissingDependenciesContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMissingDependenciesContextActionPerformed
         DependencyCallbacks.removeMissingDependencies();
-    }//GEN-LAST:event_removeMissingDependenciesActionPerformed
+    }//GEN-LAST:event_removeMissingDependenciesContextActionPerformed
 
     private void exportOBJTEXCOORD1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportOBJTEXCOORD1ActionPerformed
         ExportCallbacks.exportOBJ(1);
@@ -2238,9 +2152,9 @@ public class Toolkit extends javax.swing.JFrame {
         ExportCallbacks.exportOBJ(2);
     }//GEN-LAST:event_exportOBJTEXCOORD2ActionPerformed
 
-    private void replaceImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceImageActionPerformed
+    private void replaceImageContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceImageContextActionPerformed
         ReplacementCallbacks.replaceImage();
-    }//GEN-LAST:event_replaceImageActionPerformed
+    }//GEN-LAST:event_replaceImageContextActionPerformed
 
     private void rebootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rebootActionPerformed
         this.search.getParent().remove(this.search);
@@ -2265,17 +2179,17 @@ public class Toolkit extends javax.swing.JFrame {
         ExportCallbacks.exportMod(false);
     }//GEN-LAST:event_exportAsModGUIDActionPerformed
 
-    private void renameItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameItemContextActionPerformed
+    private void editPathContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPathContextActionPerformed
         DatabaseCallbacks.renameItem();
-    }//GEN-LAST:event_renameItemContextActionPerformed
+    }//GEN-LAST:event_editPathContextActionPerformed
 
-    private void changeGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeGUIDActionPerformed
+    private void editGUIDContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editGUIDContextActionPerformed
         DatabaseCallbacks.changeGUID();
-    }//GEN-LAST:event_changeGUIDActionPerformed
+    }//GEN-LAST:event_editGUIDContextActionPerformed
 
-    private void changeHashActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHashActionPerformed
+    private void editHashContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editHashContextActionPerformed
         DatabaseCallbacks.changeHash();
-    }//GEN-LAST:event_changeHashActionPerformed
+    }//GEN-LAST:event_editHashContextActionPerformed
 
     private void exportAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnimationActionPerformed
         ExportCallbacks.exportAnimation();
@@ -2530,14 +2444,6 @@ public class Toolkit extends javax.swing.JFrame {
         manager.setVisible(true);
     }//GEN-LAST:event_manageArchivesActionPerformed
 
-    private void editItemContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItemContextActionPerformed
-        FileEntry entry = ResourceSystem.getSelected().getEntry();
-        RPlan plan = entry.getInfo().getResource();
-        if (plan == null) return;
-        ItemManager manager = new ItemManager(entry, plan);
-        manager.setVisible(true);
-    }//GEN-LAST:event_editItemContextActionPerformed
-
     private void exportAsBackupGUIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAsBackupGUIDActionPerformed
         exportAsBackupTpl(ExportMode.GUID);
     }//GEN-LAST:event_exportAsBackupGUIDActionPerformed
@@ -2550,20 +2456,6 @@ public class Toolkit extends javax.swing.JFrame {
         new GfxGUI().setVisible(true);
     }//GEN-LAST:event_openGfxCompilerActionPerformed
 
-    private void loadLevelContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadLevelContextActionPerformed
-        ResourceInfo info = ResourceSystem.getSelected().getEntry().getInfo();
-        if (info == null) return;
-        RLevel level = info.getResource();
-        if (level == null) return;
-        RenderSystem.setLevel(level);
-    }//GEN-LAST:event_loadLevelContextActionPerformed
-
-    private void loadMeshContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadMeshContextActionPerformed
-        FileEntry entry = ResourceSystem.getSelected().getEntry();
-        ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
-        RenderSystem.getSceneGraph().addMesh(descriptor);
-    }//GEN-LAST:event_loadMeshContextActionPerformed
-
     private void exportWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportWorldActionPerformed
         File file = FileChooser.openFile("level.bin", "bin", true);
         if (file == null) return;
@@ -2572,17 +2464,6 @@ public class Toolkit extends javax.swing.JFrame {
         byte[] levelData = RenderSystem.getSceneGraph().toLevelData(revision, CompressionFlags.USE_NO_COMPRESSION);
         FileIO.write(levelData, file.getAbsolutePath());
     }//GEN-LAST:event_exportWorldActionPerformed
-
-    private void loadPaletteContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadPaletteContextActionPerformed
-        RLevel level = new RLevel();
-        RPalette palette = ResourceSystem.getSelectedResource();
-        for (ResourceDescriptor descriptor : palette.planList) {
-            byte[] planData = ResourceSystem.extract(descriptor);
-            if (planData == null) continue;
-            level.addPlan(new Resource(planData).loadResource(RPlan.class));
-        }
-        RenderSystem.setLevel(level);
-    }//GEN-LAST:event_loadPaletteContextActionPerformed
 
     private void exportSceneGraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportSceneGraphActionPerformed
         File file = FileChooser.openFile("scene.sg", "sg", true);
@@ -2947,8 +2828,6 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JSpinner cameraPosZ;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
-    private javax.swing.JMenuItem changeGUID;
-    private javax.swing.JMenuItem changeHash;
     private javax.swing.JMenuItem clear;
     private javax.swing.JMenuItem closeTab;
     private javax.swing.JMenuItem collectAllItemDependencies;
@@ -2977,13 +2856,14 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
-    private javax.swing.JMenuItem editItemContext;
+    private javax.swing.JMenuItem editGUIDContext;
+    private javax.swing.JMenu editGroup;
+    private javax.swing.JMenuItem editHashContext;
     private javax.swing.JMenu editMenu;
-    private javax.swing.JMenu editMenuContext;
     private javax.swing.JMenuItem editMenuDelete;
+    private javax.swing.JMenuItem editPathContext;
     private javax.swing.JMenuItem editProfileItems;
     private javax.swing.JMenuItem editProfileSlots;
-    private javax.swing.JMenuItem editSlotContext;
     private javax.swing.JPopupMenu entryContext;
     public javax.swing.JTabbedPane entryModifiers;
     public javax.swing.JTable entryTable;
@@ -3011,8 +2891,8 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenuItem exportWorld;
     private javax.swing.JMenuItem extractBigProfile;
     private javax.swing.JMenuItem extractContext;
-    private javax.swing.JMenu extractContextMenu;
     private javax.swing.JMenuItem extractDecompressedContext;
+    private javax.swing.JMenu extractGroup;
     private javax.swing.JMenuItem fileArchiveIntegrityCheck;
     private javax.swing.JSplitPane fileDataPane;
     public javax.swing.JTabbedPane fileDataTabs;
@@ -3044,11 +2924,7 @@ public class Toolkit extends javax.swing.JFrame {
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
     private javax.swing.JMenu loadGroupMenu;
-    private javax.swing.JMenuItem loadLAMSContext;
-    private javax.swing.JMenuItem loadLevelContext;
-    private javax.swing.JMenuItem loadMeshContext;
     private javax.swing.JMenuItem loadMod;
-    private javax.swing.JMenuItem loadPaletteContext;
     private javax.swing.JMenuItem loadProfileBackup;
     private javax.swing.JMenuItem loadVitaProfile;
     private javax.swing.JTextField locationField;
@@ -3085,16 +2961,15 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu profileMenu;
     public javax.swing.JProgressBar progressBar;
     private javax.swing.JMenuItem reboot;
-    private javax.swing.JMenuItem removeDependencies;
-    private javax.swing.JMenuItem removeMissingDependencies;
+    private javax.swing.JMenuItem removeDependenciesContext;
+    private javax.swing.JMenuItem removeMissingDependenciesContext;
     private javax.swing.JMenuItem renameFolder;
-    private javax.swing.JMenuItem renameItemContext;
     private javax.swing.JTabbedPane renderPane;
-    private javax.swing.JMenuItem replaceCompressed;
-    private javax.swing.JMenu replaceContext;
-    private javax.swing.JMenuItem replaceDecompressed;
-    private javax.swing.JMenuItem replaceDependencies;
-    private javax.swing.JMenuItem replaceImage;
+    private javax.swing.JMenuItem replaceCompressedContext;
+    private javax.swing.JMenuItem replaceDecompressedContext;
+    private javax.swing.JMenuItem replaceDependenciesContext;
+    private javax.swing.JMenu replaceGroup;
+    private javax.swing.JMenuItem replaceImageContext;
     private javax.swing.JTabbedPane resourceTabs;
     public javax.swing.JMenuItem saveAs;
     private javax.swing.JPopupMenu.Separator saveDivider;

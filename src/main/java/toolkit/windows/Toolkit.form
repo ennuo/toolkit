@@ -8,7 +8,7 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="extractContextMenu">
+        <Menu class="javax.swing.JMenu" name="extractGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Extract..."/>
           </Properties>
@@ -31,61 +31,37 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="editMenuContext">
+        <Menu class="javax.swing.JMenu" name="editGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit..."/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="renameItemContext">
+            <MenuItem class="javax.swing.JMenuItem" name="editPathContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Path"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renameItemContextActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editPathContextActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="changeHash">
+            <MenuItem class="javax.swing.JMenuItem" name="editHashContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Hash"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeHashActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editHashContextActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="changeGUID">
+            <MenuItem class="javax.swing.JMenuItem" name="editGUIDContext">
               <Properties>
                 <Property name="text" type="java.lang.String" value="GUID"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeGUIDActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editGUIDContextActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
-        <MenuItem class="javax.swing.JMenuItem" name="editItemContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Edit Item Details"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editItemContextActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="editSlotContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Edit Slot"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editSlotContextActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="loadLAMSContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Load LAMS"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadLAMSContextActionPerformed"/>
-          </Events>
-        </MenuItem>
         <Menu class="javax.swing.JMenu" name="exportGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Export..."/>
@@ -245,68 +221,6 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="replaceContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Replace..."/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="replaceCompressed">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Replace"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceCompressedActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="replaceDecompressed">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Decompressed"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDecompressedActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="replaceDependencies">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Dependencies"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDependenciesActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="replaceImage">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Image"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceImageActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
-        <Menu class="javax.swing.JMenu" name="dependencyGroup">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Dependencies..."/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="removeDependencies">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependencies">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
         <Menu class="javax.swing.JMenu" name="newEntryGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="New..."/>
@@ -383,6 +297,68 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renameFolderActionPerformed"/>
           </Events>
         </MenuItem>
+        <Menu class="javax.swing.JMenu" name="replaceGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Replace..."/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="replaceCompressedContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Replace"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceCompressedContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="replaceDecompressedContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Decompressed"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDecompressedContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="replaceDependenciesContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceDependenciesContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="replaceImageContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Image"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceImageContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="dependencyGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Dependencies..."/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="removeDependenciesContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeDependenciesContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="removeMissingDependenciesContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Missing Dependencies"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeMissingDependenciesContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="duplicateContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Duplicate"/>
@@ -391,6 +367,11 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="duplicateContextActionPerformed"/>
           </Events>
         </MenuItem>
+        <Menu class="javax.swing.JMenu" name="copyGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Copy To..."/>
+          </Properties>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="zeroContext">
           <Properties>
             <Property name="text" type="java.lang.String" value="Zero"/>
@@ -407,35 +388,6 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteContextActionPerformed"/>
           </Events>
         </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="loadLevelContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Load Level"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadLevelContextActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="loadMeshContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Load Mesh"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadMeshContextActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="loadPaletteContext">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Load Palette"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadPaletteContextActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <Menu class="javax.swing.JMenu" name="copyGroup">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Copy To..."/>
-          </Properties>
-        </Menu>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPopupMenu" name="consolePopup">
