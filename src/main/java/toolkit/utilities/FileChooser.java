@@ -105,8 +105,12 @@ public class FileChooser {
         chooser.resetChoosableFileFilters();
         chooser.setSelectedFile(new File(""));
         chooser.setCurrentDirectory(new File(getHomePath("")));
+        
         if (dirs)
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        else
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        
         if (name != null && !name.equals(""))
             chooser.setSelectedFile(new File(name));
         chooser.setMultiSelectionEnabled(mult);
