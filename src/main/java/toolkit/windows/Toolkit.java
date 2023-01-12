@@ -494,7 +494,7 @@ public class Toolkit extends javax.swing.JFrame {
             contextSize = this.entryContext.getComponentCount();
         }
         
-        if (isFile) 
+        if (isFile && ResourceSystem.getSelectedDatabase().getType().hasGUIDs()) 
             this.entryContext.add(this.duplicateContext);
         //if (isTreeRowSelected)
         //    this.entryContext.add(this.copyGroup);
@@ -504,7 +504,7 @@ public class Toolkit extends javax.swing.JFrame {
             contextSize = this.entryContext.getComponentCount();
         }
         
-        if (isTreeRowSelected && !isDependencyTree) {
+        if (isTreeRowSelected && !isDependencyTree && ResourceSystem.getSelectedDatabase().getType().hasGUIDs()) {
             this.entryContext.add(this.zeroContext);
             this.entryContext.add(this.deleteContext);
         }
