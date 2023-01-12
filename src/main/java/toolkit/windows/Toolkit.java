@@ -2710,8 +2710,17 @@ public class Toolkit extends javax.swing.JFrame {
         if (file == null) return;
         
         GsonUtils.REVISION = resource.getRevision();
-        WrappedResource wrapper = new WrappedResource(resource);
-        FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), file.getAbsolutePath());
+        
+        WrappedResource wrapper = null;
+        ResourceSystem.DISABLE_LOGS = true;
+        try { wrapper = new WrappedResource(resource); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An error occurred wrapping resource, could not export.", "An error occurred", JOptionPane.ERROR_MESSAGE);
+        }
+        ResourceSystem.DISABLE_LOGS = false;
+        
+        if (wrapper != null)
+            FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), file.getAbsolutePath());
     }//GEN-LAST:event_exportJSONContextActionPerformed
 
     public void populateMetadata(RPlan item) {
