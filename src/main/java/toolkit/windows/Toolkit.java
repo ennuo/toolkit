@@ -510,11 +510,13 @@ public class Toolkit extends javax.swing.JFrame {
 
             this.newResourceGroup.setVisible(canAddItems);
             this.newItemGroup.setVisible(canAddItems);
-
-            if (!isTreeRowSelected || isFolder)
-                this.entryContext.add(this.newFolderContext);
-            if (isFolder)
-                this.entryContext.add(this.renameFolder);
+            
+            if (ResourceSystem.getDatabaseType().hasGUIDs()) {
+                if (!isTreeRowSelected || isFolder)
+                    this.entryContext.add(this.newFolderContext);
+                if (isFolder)
+                    this.entryContext.add(this.renameFolder);
+            }
         }
         
         if (contextSize != this.entryContext.getComponentCount()) {
