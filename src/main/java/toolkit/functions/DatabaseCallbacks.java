@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
+import toolkit.dialogues.EntryDialogue;
 
 public class DatabaseCallbacks {
     public static void loadFileDB(File file) {
@@ -109,31 +110,13 @@ public class DatabaseCallbacks {
             return null;
         }
         
-        String file = JOptionPane.showInputDialog(Toolkit.INSTANCE, "New Entry", "");
-        if (file == null || file.isEmpty()) return null;
-            
-        long nextGUID = database.getNextGUID().getValue();
-        
-        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
-        if (input == null) return null;
-        input = input.replaceAll("\\s", "");
-        
-        
-        GUID guid = Strings.getGUID(input);
-        if (guid == null) {
-            System.err.println("You inputted an invalid GUID!");
-            return null;
-        }
-
-        if (database.get(guid) != null) {
-            System.err.println("This GUID already exists!");
-            return null;
-        }
-
         FileNode node = ResourceSystem.getSelected();
-        String path;
-        if (node == null) path = file;
-        else path = node.getFilePath() + node.getName() + "/" + file;
+        String path = node == null ? "" : node.getFilePath() + node.getName() + "/";
+        
+        EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, (FileDB) database, path, null);
+        if (!dialogue.wasSubmitted()) return null;
+        path = dialogue.getPath();
+        GUID guid = dialogue.getGUID();
         
         FileEntry entry = null;
         if (database instanceof Mod) entry = ((Mod)database).add(path, data, guid);
@@ -244,7 +227,7 @@ public class DatabaseCallbacks {
 
         entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
-    } 
+    }
 
     public static void copyItems(FileDB destination) {
         FileNode[] nodes = ResourceSystem.getAllSelected();
@@ -252,9 +235,10 @@ public class DatabaseCallbacks {
         boolean forceOverwrite = false;
         boolean forceSkip = false;
 
-        String[] options = new String[] { "Overwrite", "Skip", "Overwrite All", "Skip All" };
-
-        for (FileNode node : nodes) {
+        String[] options = new String[] { "Overwrite", "Skip", "Duplicate", "Overwrite All", "Skip All" };
+        
+        for (int i = 0; i < nodes.length; ++i) {
+            FileNode node = nodes[i];
             FileDBRow entry = (FileDBRow) node.getEntry();
             if (entry == null) continue;
 
@@ -263,9 +247,15 @@ public class DatabaseCallbacks {
 
                 if (forceSkip) continue;
                 if (!forceOverwrite) {
+                    String message;
+                    if (copy.getPath().equals(entry.getPath()))
+                        message = String.format("Path: %s\nGUID: %s\nThis entry already exists in the database, what do you want to do?", entry.getPath(), entry.getGUID());
+                    else
+                        message = String.format("Source Path: %s\nDestination Path: %s\nGUID: %s\nThis entry already exists in the database, what do you want to do?", entry.getPath(), copy.getPath(), entry.getGUID());
+                    
                     int response = JOptionPane.showOptionDialog(
                         Toolkit.INSTANCE,
-                        entry.getName() + " already exists, what do you want to do?",
+                        message,
                         "Conflict",
                         JOptionPane.DEFAULT_OPTION,
                         JOptionPane.WARNING_MESSAGE,
@@ -275,8 +265,25 @@ public class DatabaseCallbacks {
                     );
 
                     if (response == 1) continue;
-                    else if (response == 2) forceOverwrite = true;
-                    else if (response == 3) {
+                    else if (response == 2) {
+                        EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, (FileDB) destination, entry.getPath(), null);
+                        if (!dialogue.wasSubmitted()) {
+                            i--;
+                            continue;
+                        }
+                        
+                        String path = dialogue.getPath();
+                        GUID guid = dialogue.getGUID();
+                        
+                        FileDBRow row = destination.newFileDBRow(path, guid);
+                        row.setDate(entry.getDate());
+                        row.setSize(entry.getSize());
+                        row.setSHA1(entry.getSHA1());
+                        
+                        continue;
+                    }
+                    else if (response == 3) forceOverwrite = true;
+                    else if (response == 4) {
                         forceSkip = true;
                         continue;
                     }
@@ -296,26 +303,12 @@ public class DatabaseCallbacks {
         FileData database = ResourceSystem.getSelectedDatabase();
         if (!database.getType().hasGUIDs()) return;
         FileEntry source = ResourceSystem.getSelected().getEntry();
-
-        String path = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Duplicate", source.getPath());
-        if (path == null) return;
-
-        long nextGUID = database.getNextGUID().getValue();
-        String input = JOptionPane.showInputDialog(Toolkit.INSTANCE, "File GUID", "g" + nextGUID);
-        if (input == null) return;
-        input = input.replaceAll("\\s", "");
         
-        GUID guid = Strings.getGUID(input);
-        if (guid == null) {
-            System.err.println("You inputted an invalid GUID!");
-            return;
-        }
+        EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, (FileDB) database, source.getPath(), null);
+        if (!dialogue.wasSubmitted()) return;
+        String path = dialogue.getPath();
+        GUID guid = dialogue.getGUID();
 
-        if (database.get(guid) != null) {
-            System.err.println("This GUID already exists!");
-            return;
-        }
-        
         FileDBRow entry = ((FileDB)database).newFileDBRow(path, guid);
         entry.setSHA1(source.getSHA1());
         entry.setSize(source.getSize());

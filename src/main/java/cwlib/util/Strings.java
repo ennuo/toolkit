@@ -101,6 +101,7 @@ public final class Strings {
         if (path == null) return null;
         path = path.trim();
         path = path.replaceAll("\\\\", "/");
+        path = path.replaceAll("[//]+", "/");
         if (path.startsWith("/"))
             path = path.substring(1);
         if (path.endsWith("/"))
