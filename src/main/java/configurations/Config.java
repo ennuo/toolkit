@@ -29,6 +29,7 @@ public class Config {
     public boolean displayWarningOnDeletingEntry = true;
     public boolean displayWarningOnZeroEntry = true;
     public boolean addToArchiveOnCopy = true;
+    public boolean enable3D = false;
     
     public static Profile newProfile() {
         Profile profile = new Profile();
@@ -56,7 +57,9 @@ public class Config {
     public static void initialize() {
         if (Files.exists(Config.path)) {
             try { 
-                Config.instance = new Gson().fromJson(FileIO.readString(Config.path), Config.class); 
+                Config.instance = new Gson().fromJson(FileIO.readString(Config.path), Config.class);
+                if (!ApplicationFlags.IS_WINDOWS)
+                    Config.instance.enable3D = false;
                 // Generate default profiles if they don't exist.
                 if (Config.instance.profiles == null || Config.instance.profiles.size() == 0)
                     Config.generate();

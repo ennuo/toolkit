@@ -12,11 +12,6 @@ public class ApplicationFlags {
      * Enables Ghostbusters resource loading.
      */
     public static boolean ENABLE_GHOSTBUSTERS = false;
-    
-    /**
-     * Enables 3D workspace.
-     */
-    public static boolean ENABLE_3D_VIEWPORT = false;
 
     /**
      * Path to PS3 shader compiler executable, you'll have to
@@ -60,7 +55,5 @@ public class ApplicationFlags {
             ApplicationFlags.CAN_COMPILE_ORBIS_SHADERS = SCE_PSSL_EXECUTABLE.exists();
         if (SCE_CGC_EXECUTABLE != null)
             ApplicationFlags.CAN_COMPILE_CELL_SHADERS = SCE_CGC_EXECUTABLE.exists();
-        if (ApplicationFlags.ENABLE_3D_VIEWPORT && !ApplicationFlags.CAN_USE_3D)
-            ApplicationFlags.ENABLE_3D_VIEWPORT = false;
     }
 }

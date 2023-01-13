@@ -106,7 +106,7 @@ public class Toolkit extends javax.swing.JFrame {
         
         EasterEgg.initialize(this);
 
-        if (ApplicationFlags.ENABLE_3D_VIEWPORT) this.renderer();
+        if (Config.instance.enable3D) this.renderer();
         else this.disable3DView();
         
         this.entryTable.getActionMap().put("copy", new AbstractAction() {
@@ -402,7 +402,7 @@ public class Toolkit extends javax.swing.JFrame {
                    break;
                 }
                 case PALETTE: {
-                    if (ApplicationFlags.ENABLE_3D_VIEWPORT) {
+                    if (Config.instance.enable3D) {
                         Swing.createMenuItem(
                                 "Load", 
                                 "Loads this palette into the 3D viewer",
@@ -413,7 +413,7 @@ public class Toolkit extends javax.swing.JFrame {
                     break;
                 }
                 case LEVEL: {
-                    if (ApplicationFlags.ENABLE_3D_VIEWPORT) {
+                    if (Config.instance.enable3D) {
                         Swing.createMenuItem(
                                 "Load", 
                                 "Loads this level into the 3D viewer",
@@ -424,7 +424,7 @@ public class Toolkit extends javax.swing.JFrame {
                     break;
                 }
                 case MESH: {
-                    if (ApplicationFlags.ENABLE_3D_VIEWPORT) {
+                    if (Config.instance.enable3D) {
                         Swing.createMenuItem(
                                 "Load", 
                                 "Load this model into the 3D viewer at origin",

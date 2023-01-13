@@ -1,5 +1,6 @@
 package toolkit.windows.managers;
 
+import configurations.ApplicationFlags;
 import configurations.Config;
 import java.awt.Frame;
 import javax.swing.ImageIcon;
@@ -22,12 +23,16 @@ public class SettingsManager extends javax.swing.JDialog {
         this.displayWarningOnDeletingEntryCheckbox.setSelected(config.displayWarningOnDeletingEntry);
         this.displayWarningOnZeroEntryCheckbox.setSelected(config.displayWarningOnZeroEntry);
         this.addToArchiveOnCopyCheckbox.setSelected(config.addToArchiveOnCopy);
+        this.enable3DCheckbox.setSelected(config.enable3D);
         
         this.isDebugCheckbox.addActionListener(l -> config.isDebug = this.isDebugCheckbox.isSelected());
         this.useLegacyFileDialogueCheckbox.addActionListener(l -> config.useLegacyFileDialogue = this.useLegacyFileDialogueCheckbox.isSelected());
         this.displayWarningOnDeletingEntryCheckbox.addActionListener(l -> config.displayWarningOnDeletingEntry = this.displayWarningOnDeletingEntryCheckbox.isSelected());
         this.displayWarningOnZeroEntryCheckbox.addActionListener(l -> config.displayWarningOnZeroEntry = this.displayWarningOnZeroEntryCheckbox.isSelected());
         this.addToArchiveOnCopyCheckbox.addActionListener(l -> config.addToArchiveOnCopy = this.addToArchiveOnCopyCheckbox.isSelected());
+        this.enable3DCheckbox.addActionListener(l -> config.enable3D = this.enable3DCheckbox.isSelected());
+        
+        this.enable3DCheckbox.setEnabled(ApplicationFlags.IS_WINDOWS);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -45,6 +50,8 @@ public class SettingsManager extends javax.swing.JDialog {
         displayWarningOnZeroEntryLabel = new javax.swing.JLabel();
         addToArchiveOnCopyCheckbox = new javax.swing.JCheckBox();
         addToArchiveOnCopyLabel = new javax.swing.JLabel();
+        enable3DCheckbox = new javax.swing.JCheckBox();
+        enable3DLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Settings");
@@ -74,6 +81,10 @@ public class SettingsManager extends javax.swing.JDialog {
 
         addToArchiveOnCopyLabel.setText("When copying entries between databases, a prompt will appear asking if you want to copy data to a new archive.");
 
+        enable3DCheckbox.setText("Enable 3D (Experimental)");
+
+        enable3DLabel.setText("Enables 3D viewport, as well as other 3D features. This only works on Windows!");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -86,9 +97,11 @@ public class SettingsManager extends javax.swing.JDialog {
                     .addComponent(displayWarningOnDeletingEntryCheckbox)
                     .addComponent(displayWarningOnZeroEntryCheckbox)
                     .addComponent(addToArchiveOnCopyCheckbox)
+                    .addComponent(enable3DCheckbox)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(enable3DLabel)
                             .addComponent(addToArchiveOnCopyLabel)
                             .addComponent(displayWarningOnZeroEntryLabel)
                             .addComponent(displayWarningOnDeletingEntryLabel)
@@ -119,6 +132,10 @@ public class SettingsManager extends javax.swing.JDialog {
                 .addComponent(addToArchiveOnCopyCheckbox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addToArchiveOnCopyLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(enable3DCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(enable3DLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -134,7 +151,7 @@ public class SettingsManager extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -151,6 +168,8 @@ public class SettingsManager extends javax.swing.JDialog {
     private javax.swing.JLabel displayWarningOnDeletingEntryLabel;
     private javax.swing.JCheckBox displayWarningOnZeroEntryCheckbox;
     private javax.swing.JLabel displayWarningOnZeroEntryLabel;
+    private javax.swing.JCheckBox enable3DCheckbox;
+    private javax.swing.JLabel enable3DLabel;
     private javax.swing.JCheckBox isDebugCheckbox;
     private javax.swing.JLabel isDebugLabel;
     private javax.swing.JPanel jPanel1;

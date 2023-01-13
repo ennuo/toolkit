@@ -32,7 +32,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane1" min="-2" pref="260" max="-2" attributes="0"/>
+          <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -54,9 +54,11 @@
                           <Component id="displayWarningOnDeletingEntryCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="displayWarningOnZeroEntryCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="addToArchiveOnCopyCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="enable3DCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="enable3DLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="addToArchiveOnCopyLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="displayWarningOnZeroEntryLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="displayWarningOnDeletingEntryLabel" min="-2" max="-2" attributes="0"/>
@@ -92,6 +94,10 @@
                       <Component id="addToArchiveOnCopyCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="addToArchiveOnCopyLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="enable3DCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="enable3DLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -149,6 +155,16 @@
             <Component class="javax.swing.JLabel" name="addToArchiveOnCopyLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="When copying entries between databases, a prompt will appear asking if you want to copy data to a new archive."/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="enable3DCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Enable 3D (Experimental)"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="enable3DLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Enables 3D viewport, as well as other 3D features. This only works on Windows!"/>
               </Properties>
             </Component>
           </SubComponents>
