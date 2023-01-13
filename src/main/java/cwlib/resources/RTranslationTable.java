@@ -5,10 +5,16 @@ import java.util.HashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import cwlib.ex.SerializationException;
 
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.util.Bytes;
 import cwlib.util.FileIO;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Resource that holds all translations
@@ -46,13 +52,30 @@ public class RTranslationTable {
     /**
      * LAMS -> Text pairs
      */
-    private HashMap<Long, String> lookup;
+    private HashMap<Long, String> lookup = new HashMap<>();
 
     /**
      * Processes a translation table from a buffer.
      * @param data Buffer to process
      */
     public RTranslationTable(byte[] data) {
+        // Legacy RTranslationTable is just a text file.
+        if (Bytes.toShortBE(data) == ((short) 0xFEFF)) {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_16))) {
+                String key;
+                while ((key = reader.readLine()) != null) {
+                    if (key.isEmpty()) continue;
+                    String value = reader.readLine();
+                    this.lookup.put(RTranslationTable.makeLamsKeyID(key), value);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                throw new SerializationException("Failed to parse RTranslationTable due to IOException!");
+            }
+            return;
+        }
+        
         MemoryInputStream stream = new MemoryInputStream(data);
         int dataLength = stream.getLength();
 
