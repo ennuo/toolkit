@@ -2,6 +2,7 @@ package cwlib.types.swing;
 
 import cwlib.types.databases.FileEntry;
 import cwlib.util.Nodes;
+import cwlib.util.Strings;
 
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -52,6 +53,15 @@ public class FileNode extends DefaultMutableTreeNode {
         }
         throw new ArrayIndexOutOfBoundsException("Index unmatched!");
     }
+    
+    public void removeAnyEmptyNodes() {
+        if (this.entry != null) return;
+        FileNode[] nodes = this.children.toArray(FileNode[]::new);
+        for (FileNode node : nodes)
+            node.removeAnyEmptyNodes();
+        if (this.children.size() == 0)
+            this.removeFromParent();
+    }
 
     public int getChildCount(boolean isFiltered, boolean noFolders) {
         if (!isFiltered) return getChildCount();
@@ -66,22 +76,6 @@ public class FileNode extends DefaultMutableTreeNode {
         return count;
     }
 
-    /**
-     * Resets this node's position and header based on attached entry.
-     */
-    public void update() {
-        this.userObject = this.entry.getName();
-
-        String folder = this.entry.getFolder();
-        this.path = folder;
-        
-        FileNode node = Nodes.addFolder((FileNode) this.getRoot(), folder);
-        if (node == this.parent) return;
-
-        this.removeFromParent();
-        node.insert(this, node.getChildCount());
-    }
-    
     public void delete() {
         if (this.parent != null) 
             this.removeFromParent();

@@ -333,7 +333,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Rename Folder"/>
             <Property name="toolTipText" type="java.lang.String" value="Renames selected folder"/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renameFolderActionPerformed"/>

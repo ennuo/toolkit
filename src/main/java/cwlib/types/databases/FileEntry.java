@@ -6,6 +6,7 @@ import cwlib.types.data.ResourceInfo;
 import cwlib.types.data.SHA1;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
+import cwlib.util.Nodes;
 import cwlib.util.Strings;
 
 public abstract class FileEntry {
@@ -17,7 +18,7 @@ public abstract class FileEntry {
     /**
      * The node that contains this entry
      */
-    private final FileNode node;
+    private FileNode node;
     
     /**
      * Path of resource in a database.
@@ -104,7 +105,7 @@ public abstract class FileEntry {
     public String getFolder() {
         int index = this.path.lastIndexOf("/");
         if (index == -1) return "";
-        return this.path.substring(0, index) + "/";
+        return this.path.substring(0, index);
     }
 
     /**
@@ -112,14 +113,14 @@ public abstract class FileEntry {
      * @param path New path
      */
     public void setPath(String path) {
-        // Null strings are annoying, plus it works functionally the same anyway.
-        if (path == null) path = "";
         path = Strings.cleanupPath(path);
         if (path.equals(this.path)) return;
 
         this.path = path;
-        if (this.node != null) 
-            this.node.update();
+        if (this.node != null) {
+            this.node.removeFromParent();
+            this.node = Nodes.addNode((FileNode) this.getSource().getTree().getModel().getRoot(), this);
+        }
         
         this.source.setHasChanges();
     }
@@ -129,7 +130,7 @@ public abstract class FileEntry {
      * @param name New path name
      */
     public void setName(String name) {
-        this.setPath(this.getFolder() + name);
+        this.setPath(this.getFolder() + "/" + name);
     }
 
     /**
@@ -137,11 +138,10 @@ public abstract class FileEntry {
      * @param name New path folder
      */
     public void setFolder(String folder) {
-        if (folder == null) folder = "";
-        if (!folder.endsWith("/")) folder += "/";
+        folder = Strings.cleanupPath(folder);
         int index = this.path.lastIndexOf("/");
         if (index == -1) {
-            this.setPath(folder + this.path);
+            this.setPath(folder + "/" + this.path);
             return;
         }
         this.setPath(

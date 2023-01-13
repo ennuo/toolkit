@@ -367,6 +367,7 @@ public class DatabaseCallbacks {
         
         FileData database = ResourceSystem.getSelectedDatabase();
         FileNode[] selections = ResourceSystem.getAllSelected();
+        
         for (FileNode node : selections) {
             FileEntry entry = node.getEntry();
             if (entry == null) {

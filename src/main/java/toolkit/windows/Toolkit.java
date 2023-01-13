@@ -1054,7 +1054,6 @@ public class Toolkit extends javax.swing.JFrame {
 
         renameFolder.setText("Rename Folder");
         renameFolder.setToolTipText("Renames selected folder");
-        renameFolder.setEnabled(false);
         renameFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renameFolderActionPerformed(evt);
@@ -2525,29 +2524,29 @@ public class Toolkit extends javax.swing.JFrame {
         String newFolder = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Folder", parent);
         if (newFolder == null) return;
         newFolder = Strings.cleanupPath(newFolder);
-        if (newFolder == parent) return;
+        if (newFolder.equals(parent) || newFolder.isEmpty()) return;
         
         FileData database = node.getSource();
         
         for (FileNode child : selected) {
-            if (child == node) continue;
             FileEntry entry = child.getEntry();
-            if (entry != null)
-                entry.setFolder(newFolder);
-            else node.removeFromParent(); 
+            if (entry != null) {
+                String folder = entry.getFolder();
+                folder = newFolder + folder.substring(parent.length(), folder.length());
+                entry.setPath(folder + "/" + child.getName());
+            }
         }
         
+        node.removeAnyEmptyNodes();
+   
         database.setHasChanges();
-
-        // JTree tree = node.getSource().getTree();
-        // TreePath treePath = new TreePath(((FileNode) lastNode.getParent()).getPath());
         
-        FileModel m = (FileModel) node.getSource().getTree().getModel();
-        m.reload((FileNode) m.getRoot());
-
-        // tree.setSelectionPath(treePath);
-        // tree.scrollPathToVisible(treePath);
-
+        ResourceSystem.reloadSelectedModel();
+        JTree tree = node.getSource().getTree();
+        TreePath path = new TreePath(Nodes.addFolder((FileNode) tree.getModel().getRoot(), newFolder));
+        tree.setSelectionPath(path);
+        tree.scrollPathToVisible(path);
+       
         Toolkit.INSTANCE.updateWorkspace();
     }//GEN-LAST:event_renameFolderActionPerformed
 

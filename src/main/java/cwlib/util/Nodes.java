@@ -69,18 +69,17 @@ public class Nodes {
     }
 
     public static FileNode addFolder(FileNode root, String path) {
+        path = Strings.cleanupPath(path);
         if (path == null || path.isEmpty()) return root;
-        if (path.endsWith("/")) path = path.substring(0, path.length());
         
         String[] components = path.split("/");
         String parent = "";
         for (String component : components) {
             int index = Nodes.childIndex(root, component);
             if (index == -1) {
-                FileNode child = new FileNode(component, parent , null, root.getSource());
+                FileNode child = new FileNode(component, parent, null, root.getSource());
                 root.insert(child, root.getChildCount());
                 root = child;
-                continue;
             } else root = (FileNode) root.getChildAt(index);
             parent += (component + "/");
         }
