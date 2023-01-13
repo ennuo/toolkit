@@ -24,27 +24,9 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="profilesContainer" min="-2" pref="171" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="preloadTabPanel" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Component id="debugModeToggle" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="useLegacyFileDialogueToggle" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="profileNameLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="profileNameTextEntry" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="infoLabel1" min="-2" max="-2" attributes="0"/>
@@ -54,13 +36,33 @@
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="addProfileButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="removeProfileButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="selectProfileButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="closeButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="addProfileButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="removeProfileButton" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="profilesContainer" min="-2" pref="171" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="preloadTabPanel" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="profileNameLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="profileNameTextEntry" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="305" max="-2" attributes="0"/>
+                              <Component id="selectProfileButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="closeButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -77,30 +79,25 @@
               <EmptySpace max="32767" attributes="0"/>
               <Component id="profilesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="profilesContainer" min="-2" pref="214" max="-2" attributes="0"/>
-                  <Group type="102" alignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="profileNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="profileNameTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="debugModeToggle" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="useLegacyFileDialogueToggle" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="preloadTabPanel" min="-2" pref="160" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="profilesContainer" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="addProfileButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="removeProfileButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="closeButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="selectProfileButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="addProfileButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="removeProfileButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -160,18 +157,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="profileNameTextEntry">
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="debugModeToggle">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Debug Mode"/>
-        <Property name="toolTipText" type="java.lang.String" value="Reveals debug menus not normally visible."/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="useLegacyFileDialogueToggle">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Use Legacy File Dialogue"/>
-        <Property name="toolTipText" type="java.lang.String" value="Fall back to the built-in Java Swing file chooser dialogue in case tinyfd fails."/>
-      </Properties>
     </Component>
     <Container class="javax.swing.JTabbedPane" name="preloadTabPanel">
 

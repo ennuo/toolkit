@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 
 import configurations.Config;
 import configurations.Profile;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import toolkit.utilities.FileChooser;
 
 public class ProfileManager extends javax.swing.JDialog {
@@ -19,6 +21,7 @@ public class ProfileManager extends javax.swing.JDialog {
         this.initComponents();
         this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         this.setResizable(false);
+        this.setLocationRelativeTo(parent);
         this.setModal(true);
         
         for (Profile profile : Config.instance.profiles)
@@ -36,14 +39,11 @@ public class ProfileManager extends javax.swing.JDialog {
             this.selectProfile(this.profilesList.getSelectedIndex());
         });
         
-        this.profileNameTextEntry.addActionListener(e -> {
-            this.getSelectedProfile().name = this.profileNameTextEntry.getText();
-            this.profilesList.repaint();
+        this.profileNameTextEntry.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { onProfileNameChange(); }
+            @Override public void removeUpdate(DocumentEvent e) { onProfileNameChange(); }
+            @Override public void changedUpdate(DocumentEvent e) { return; }
         });
-        
-        this.debugModeToggle.addActionListener(e -> this.getSelectedProfile().debug = this.debugModeToggle.isSelected());
-        this.useLegacyFileDialogueToggle.addActionListener(e -> 
-                this.getSelectedProfile().useLegacyFileDialogue = this.useLegacyFileDialogueToggle.isSelected());
         
         this.removeProfileButton.addActionListener(e -> {
             Profile profile = this.getSelectedProfile();
@@ -114,6 +114,11 @@ public class ProfileManager extends javax.swing.JDialog {
         this.profilesList.setSelectedIndex(Config.instance.currentProfile);
     }
     
+    private void onProfileNameChange() {
+        this.getSelectedProfile().name = this.profileNameTextEntry.getText();
+        this.profilesList.repaint();
+    }
+    
     private Profile getSelectedProfile() {
         return (Profile) this.profileModel.getElementAt(this.profilesList.getSelectedIndex());
     }
@@ -124,8 +129,6 @@ public class ProfileManager extends javax.swing.JDialog {
         this.selectProfileButton.setEnabled(!(index == Config.instance.currentProfile));
         
         this.profileNameTextEntry.setText(profile.name);
-        this.debugModeToggle.setSelected(profile.debug);
-        this.useLegacyFileDialogueToggle.setSelected(profile.useLegacyFileDialogue);
         
         this.databaseModel.clear();
         if (profile.databases != null)
@@ -150,8 +153,6 @@ public class ProfileManager extends javax.swing.JDialog {
         profilesList = new javax.swing.JList<>();
         profileNameLabel = new javax.swing.JLabel();
         profileNameTextEntry = new javax.swing.JTextField();
-        debugModeToggle = new javax.swing.JCheckBox();
-        useLegacyFileDialogueToggle = new javax.swing.JCheckBox();
         preloadTabPanel = new javax.swing.JTabbedPane();
         databasePanel = new javax.swing.JPanel();
         databaseContainer = new javax.swing.JScrollPane();
@@ -188,12 +189,6 @@ public class ProfileManager extends javax.swing.JDialog {
         profilesContainer.setViewportView(profilesList);
 
         profileNameLabel.setText("Profile Name:");
-
-        debugModeToggle.setText("Debug Mode");
-        debugModeToggle.setToolTipText("Reveals debug menus not normally visible.");
-
-        useLegacyFileDialogueToggle.setText("Use Legacy File Dialogue");
-        useLegacyFileDialogueToggle.setToolTipText("Fall back to the built-in Java Swing file chooser dialogue in case tinyfd fails.");
 
         databaseContainer.setViewportView(databaseList);
 
@@ -268,33 +263,32 @@ public class ProfileManager extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(profilesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(preloadTabPanel)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(debugModeToggle)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(useLegacyFileDialogueToggle)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(profileNameLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(profileNameTextEntry))))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(infoLabel1)
                             .addComponent(infoLabel2)
                             .addComponent(profilesLabel))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(addProfileButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeProfileButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(selectProfileButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(closeButton)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(addProfileButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(removeProfileButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(profilesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(preloadTabPanel)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(profileNameLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(profileNameTextEntry))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(305, 305, 305)
+                                .addComponent(selectProfileButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(closeButton)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -307,25 +301,21 @@ public class ProfileManager extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(profilesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(profilesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(profileNameLabel)
                             .addComponent(profileNameTextEntry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(debugModeToggle)
-                            .addComponent(useLegacyFileDialogueToggle))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(preloadTabPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(preloadTabPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(profilesContainer))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addProfileButton)
-                    .addComponent(removeProfileButton)
                     .addComponent(closeButton)
-                    .addComponent(selectProfileButton))
-                .addContainerGap())
+                    .addComponent(selectProfileButton)
+                    .addComponent(addProfileButton)
+                    .addComponent(removeProfileButton))
+                .addGap(5, 5, 5))
         );
 
         pack();
@@ -346,7 +336,6 @@ public class ProfileManager extends javax.swing.JDialog {
     private javax.swing.JScrollPane databaseContainer;
     private javax.swing.JList<String> databaseList;
     private javax.swing.JPanel databasePanel;
-    private javax.swing.JCheckBox debugModeToggle;
     private javax.swing.JLabel infoLabel1;
     private javax.swing.JLabel infoLabel2;
     private javax.swing.JTabbedPane preloadTabPanel;
@@ -359,6 +348,5 @@ public class ProfileManager extends javax.swing.JDialog {
     private javax.swing.JButton removeDatabaseButton;
     private javax.swing.JButton removeProfileButton;
     private javax.swing.JButton selectProfileButton;
-    private javax.swing.JCheckBox useLegacyFileDialogueToggle;
     // End of variables declaration//GEN-END:variables
 }

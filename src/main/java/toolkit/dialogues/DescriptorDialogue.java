@@ -58,6 +58,7 @@ public class DescriptorDialogue extends javax.swing.JDialog {
         typeCombo = new javax.swing.JComboBox(ResourceType.values());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
 
         resourceLabel.setText("Resource:");
         resourceLabel.setMaximumSize(new java.awt.Dimension(55, 16));

@@ -1,8 +1,10 @@
 package toolkit.functions;
 
+import configurations.Config;
 import cwlib.singleton.ResourceSystem;
 import cwlib.util.FileIO;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.types.archives.Fart;
 import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
@@ -80,8 +82,10 @@ public class DatabaseCallbacks {
     }
     
     public static void zero() {
-        int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to zero this?", "Confirm erase", JOptionPane.YES_NO_OPTION);
-        if (result == JOptionPane.NO_OPTION) return;
+        if (Config.instance.displayWarningOnZeroEntry) {
+            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to zero this?", "Confirm erase", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.NO_OPTION) return;
+        }
         
         int zeroed = 0;
         for (FileNode node : ResourceSystem.getAllSelected()) {
@@ -231,6 +235,7 @@ public class DatabaseCallbacks {
 
     public static void copyItems(FileDB destination) {
         FileNode[] nodes = ResourceSystem.getAllSelected();
+        SHA1[] hashes = new SHA1[nodes.length];
 
         boolean forceOverwrite = false;
         boolean forceSkip = false;
@@ -292,6 +297,36 @@ public class DatabaseCallbacks {
                 copy.setDetails(entry);
             }
             else destination.newFileDBRow(entry);
+            
+            hashes[i] = entry.getSHA1();
+            
+        }
+        
+        if (Config.instance.addToArchiveOnCopy && ResourceSystem.getArchives().size() > 1) {
+            boolean canCopy = false;
+            boolean existsInAllArchives = true;
+            for (SHA1 sha1 : hashes) {
+                if (sha1 == null) continue;
+                for (Fart fart : ResourceSystem.getArchives()) {
+                    if (fart.exists(sha1)) canCopy = true;
+                    else existsInAllArchives = false;
+                }
+            }
+            
+            if (canCopy && !existsInAllArchives) {
+                int result = JOptionPane.showConfirmDialog(null, "Do you also want to copy file data to another archive?", "Copy", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION) {
+                    Fart[] archives = Toolkit.INSTANCE.getSelectedArchives();
+                    if (archives != null) {
+                        for (SHA1 sha1 : hashes) {
+                            if (sha1 == null) continue;
+                            byte[] data = ResourceSystem.extract(sha1);
+                            if (data == null) continue;
+                            ResourceSystem.add(data, archives);
+                        }
+                    }
+                }
+            }
         }
 
         destination.setHasChanges();
@@ -324,9 +359,11 @@ public class DatabaseCallbacks {
         tree.scrollPathToVisible(treePath);
     }
     
-    public static void delete() {      
-        int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this?", "Confirm deletion", JOptionPane.YES_NO_OPTION);
-        if (result == JOptionPane.NO_OPTION) return;
+    public static void delete() {
+        if (Config.instance.displayWarningOnDeletingEntry) {
+            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this?", "Confirm deletion", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.NO_OPTION) return;
+        }
         
         FileData database = ResourceSystem.getSelectedDatabase();
         FileNode[] selections = ResourceSystem.getAllSelected();

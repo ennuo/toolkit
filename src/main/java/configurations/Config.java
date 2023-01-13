@@ -17,20 +17,35 @@ public class Config {
             Config.jarDirectory = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
         } catch (Exception e) {}
     }
+    
     public static Path path = Paths.get(Config.jarDirectory.getAbsolutePath(), "config.json");
     public static Config instance;
     
     public List<Profile> profiles = new ArrayList<>();
     public int currentProfile = 0;
     
-    public static void removeProfile(int index) {
-        Config.instance.profiles.remove(index);
-    }
+    public boolean isDebug = false;
+    public boolean useLegacyFileDialogue = !ApplicationFlags.IS_WINDOWS;
+    public boolean displayWarningOnDeletingEntry = true;
+    public boolean displayWarningOnZeroEntry = true;
+    public boolean addToArchiveOnCopy = true;
     
     public static Profile newProfile() {
         Profile profile = new Profile();
         Config.instance.profiles.add(profile);
         return profile;
+    }
+    public static void removeProfile(int index) { Config.instance.profiles.remove(index); }
+    public Profile getCurrentProfile() { return this.profiles.get(this.currentProfile); }
+    
+    public static void generate() {
+        Config config = new Config();
+        
+        Config.instance = config;
+        config.currentProfile = 0;
+        config.profiles.add(new Profile("Default"));
+        
+        Config.save();
     }
     
     public static boolean save() {
@@ -38,38 +53,18 @@ public class Config {
         return FileIO.write(gson.toJson(Config.instance).getBytes(), Config.path.toString());
     }
     
-    public Profile getCurrentProfile() {
-        return this.profiles.get(this.currentProfile);
-    }
-    
-    public static void generate() {
-        Config config = new Config();
-        Config.instance = config;
-        
-        config.currentProfile = 0;
-        Profile profile = new Profile();
-        profile.name = "Default";
-        if (!ApplicationFlags.IS_WINDOWS)
-            profile.useLegacyFileDialogue = true;
-        
-        config.profiles.add(profile);
-        
-        Config.save();
-    }
-    
     public static void initialize() {
-        if (Files.notExists(Config.path)) Config.generate();
-        else {
-            try {
-                Config.instance = new Gson().fromJson(FileIO.readString(Config.path), Config.class);
-                
-                // We need at least the default profile.
+        if (Files.exists(Config.path)) {
+            try { 
+                Config.instance = new Gson().fromJson(FileIO.readString(Config.path), Config.class); 
+                // Generate default profiles if they don't exist.
                 if (Config.instance.profiles == null || Config.instance.profiles.size() == 0)
                     Config.generate();
-            } catch (Exception e) {
-                System.err.println("An error occurred reading config, attempting to generate new one.");
+            }
+            catch (Exception ex) {
+                System.err.println("Config is invalid, generating a new one.");
                 Config.generate();
             }
-        }
+        } else Config.generate();
     }
 }

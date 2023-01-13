@@ -629,11 +629,19 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="manageProfile">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Manage Profiles"/>
+                <Property name="text" type="java.lang.String" value="Profiles"/>
                 <Property name="toolTipText" type="java.lang.String" value="Manage boot profiles and settings"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageProfileActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="manageSettings">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Settings"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageSettingsActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="saveDivider">

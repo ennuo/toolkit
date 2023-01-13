@@ -20,8 +20,8 @@ public class EasterEgg {
     }};
 
     public static void initialize(Toolkit toolkit) {
-        toolkit.debugMenu.setVisible(Config.instance.getCurrentProfile().debug);
-
+        toolkit.debugMenu.setVisible(Config.instance.isDebug);
+        
         String username = System.getProperty("user.name").toLowerCase();
         for (String user : users.keySet()) {
             if (user.equals(username)) {

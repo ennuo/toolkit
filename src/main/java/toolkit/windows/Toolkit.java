@@ -90,6 +90,7 @@ import executables.gfx.GfxGUI;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import org.lwjgl.opengl.GL;
+import toolkit.windows.managers.SettingsManager;
 
 public class Toolkit extends javax.swing.JFrame {
     public static Toolkit INSTANCE;
@@ -717,6 +718,7 @@ public class Toolkit extends javax.swing.JFrame {
         loadMod = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         manageProfile = new javax.swing.JMenuItem();
+        manageSettings = new javax.swing.JMenuItem();
         saveDivider = new javax.swing.JPopupMenu.Separator();
         saveAs = new javax.swing.JMenuItem();
         saveMenu = new javax.swing.JMenuItem();
@@ -1639,7 +1641,7 @@ public class Toolkit extends javax.swing.JFrame {
         fileMenu.add(loadGroupMenu);
         fileMenu.add(jSeparator9);
 
-        manageProfile.setText("Manage Profiles");
+        manageProfile.setText("Profiles");
         manageProfile.setToolTipText("Manage boot profiles and settings");
         manageProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1647,6 +1649,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         fileMenu.add(manageProfile);
+
+        manageSettings.setText("Settings");
+        manageSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageSettingsActionPerformed(evt);
+            }
+        });
+        fileMenu.add(manageSettings);
         fileMenu.add(saveDivider);
 
         saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -2880,6 +2890,11 @@ public class Toolkit extends javax.swing.JFrame {
         ResourceSystem.replace(ResourceSystem.getSelected().getEntry(), data);
     }//GEN-LAST:event_replaceJSONContextActionPerformed
 
+    private void manageSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageSettingsActionPerformed
+        new SettingsManager(this).setVisible(true);
+        Config.save();
+    }//GEN-LAST:event_manageSettingsActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -3146,6 +3161,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JLabel locationLabel;
     private javax.swing.JMenuItem manageArchives;
     private javax.swing.JMenuItem manageProfile;
+    private javax.swing.JMenuItem manageSettings;
     private javax.swing.JMenu menuFileMenu;
     private javax.swing.JMenuItem mergeFARCs;
     private javax.swing.ButtonGroup metadataButtonGroup;

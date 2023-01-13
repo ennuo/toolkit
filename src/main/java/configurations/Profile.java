@@ -7,9 +7,10 @@ public class Profile {
     public String name = "Unnamed Profile";
     public List<String> archives = new ArrayList<>();
     public List<String> databases = new ArrayList<>();
-    public boolean useLegacyFileDialogue = false;
-    public boolean debug = false;
     public long language = 0;
+    
+    public Profile() {};
+    public Profile(String name) { this.name = name; }
     
     @Override public String toString() { return this.name; }
 }
