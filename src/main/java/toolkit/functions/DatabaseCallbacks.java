@@ -242,6 +242,12 @@ public class DatabaseCallbacks {
 
         String[] options = new String[] { "Overwrite", "Skip", "Duplicate", "Overwrite All", "Skip All" };
         
+        int OPTION_OVERWRITE = 0;
+        int OPTION_SKIP = 1;
+        int OPTION_DUPLICATE = 2;
+        int OPTION_OVERWRITE_ALL = 3;
+        int OPTION_SKIP_ALL = 4;
+        
         for (int i = 0; i < nodes.length; ++i) {
             FileNode node = nodes[i];
             FileDBRow entry = (FileDBRow) node.getEntry();
@@ -268,9 +274,9 @@ public class DatabaseCallbacks {
                         options,
                         options[0]
                     );
-
-                    if (response == 1) continue;
-                    else if (response == 2) {
+                    
+                    if (response == -1 || response == OPTION_SKIP) continue; // Treat closing dialog as skip
+                    else if (response == OPTION_DUPLICATE) {
                         EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, (FileDB) destination, entry.getPath(), null);
                         if (!dialogue.wasSubmitted()) {
                             i--;
@@ -285,13 +291,15 @@ public class DatabaseCallbacks {
                         row.setSize(entry.getSize());
                         row.setSHA1(entry.getSHA1());
                         
+                        hashes[i] = entry.getSHA1();
+                        
                         continue;
                     }
-                    else if (response == 3) forceOverwrite = true;
-                    else if (response == 4) {
+                    else if (response == OPTION_OVERWRITE_ALL) forceOverwrite = true;
+                    else if (response == OPTION_SKIP_ALL) {
                         forceSkip = true;
                         continue;
-                    }
+                    } else if (response != OPTION_OVERWRITE) continue;
                 }
                 
                 copy.setDetails(entry);
