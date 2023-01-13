@@ -535,7 +535,7 @@ public class Toolkit extends javax.swing.JFrame {
                 this.entryContext.add(this.replaceGroup);
                 this.replaceImageContext.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
                 this.replaceDecompressedContext.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
-                this.replaceJSONContext.setVisible(type != ResourceType.INVALID && info.getMethod() == SerializationType.BINARY && info.getResource() != null);
+                this.replaceJSONContext.setVisible(type == ResourceType.TRANSLATION || (type != ResourceType.INVALID && info.getMethod() == SerializationType.BINARY && info.getResource() != null));
                 boolean hasDependencies = isCompressed && info.getDependencies().length != 0;
                 this.replaceDependenciesContext.setVisible(hasDependencies);
                 if (hasDependencies)
@@ -2884,7 +2884,25 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_importJSONContextActionPerformed
 
     private void replaceJSONContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceJSONContextActionPerformed
-        byte[] data = this.loadWrappedResource();
+        FileNode selected = ResourceSystem.getSelected();
+        FileEntry entry = selected.getEntry();
+        ResourceInfo info = entry.getInfo();
+        
+        byte[] data = null;
+        if (info.getType() == ResourceType.TRANSLATION) {
+            File file = FileChooser.openFile("translations.json", "json", false);
+            if (file == null) return;
+            
+            RTranslationTable table = null;
+            try { table = RTranslationTable.fromJSON(file.getAbsolutePath()); }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "An error occurred loaded translations, could not import.", "An error occurred", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            data = table.build();
+        } else data = this.loadWrappedResource();
+        
         if (data == null) return;
         ResourceSystem.replace(ResourceSystem.getSelected().getEntry(), data);
     }//GEN-LAST:event_replaceJSONContextActionPerformed
