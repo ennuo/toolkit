@@ -84,6 +84,8 @@ import cwlib.structs.things.parts.PWorld;
 import cwlib.types.Resource;
 import cwlib.types.data.Revision;
 import cwlib.types.data.WrappedResource;
+import cwlib.types.databases.RemapDB;
+import cwlib.types.databases.RemapDB.RemapDBRow;
 import cwlib.util.GsonUtils;
 import executables.gfx.GfxGUI;
 
@@ -310,6 +312,7 @@ public class Toolkit extends javax.swing.JFrame {
             archiveMenu.setVisible(true);
             addFolder.setVisible(true);
         }
+        
         else if (ResourceSystem.canExtract() && ResourceSystem.getDatabaseType() != DatabaseType.MOD) {
             archiveMenu.setVisible(true); 
             addFolder.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE);
@@ -323,20 +326,15 @@ public class Toolkit extends javax.swing.JFrame {
             saveDivider.setVisible(false);
             saveAs.setVisible(false);
         }
-
-        if (database == null) {
-            saveDivider.setVisible(false);
-            databaseMenu.setVisible(false);
-        } else {
-            saveDivider.setVisible(true);
-            dumpRLST.setVisible(false);
-            if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE) {
-                if (archiveCount != 0)
-                    installProfileMod.setVisible(true);
-                databaseMenu.setVisible(true);
-                dumpRLST.setVisible(true);
-            }
+        
+        databaseMenu.setVisible(ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE);
+        if (ResourceSystem.getDatabaseType() == DatabaseType.FILE_DATABASE) {
+            if (archiveCount != 0)
+                installProfileMod.setVisible(true);
+            dumpRLST.setVisible(true);
         }
+
+        saveDivider.setVisible(database != null);
 
         if (ResourceSystem.getDatabaseType() == DatabaseType.BIGFART) {
             profileMenu.setVisible(true);
@@ -734,6 +732,7 @@ public class Toolkit extends javax.swing.JFrame {
         addFolder = new javax.swing.JMenuItem();
         databaseMenu = new javax.swing.JMenu();
         patchMAP = new javax.swing.JMenuItem();
+        remapDatabaseContext = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         dumpRLST = new javax.swing.JMenuItem();
         profileMenu = new javax.swing.JMenu();
@@ -1758,6 +1757,14 @@ public class Toolkit extends javax.swing.JFrame {
             }
         });
         databaseMenu.add(patchMAP);
+
+        remapDatabaseContext.setText("Remap");
+        remapDatabaseContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                remapDatabaseContextActionPerformed(evt);
+            }
+        });
+        databaseMenu.add(remapDatabaseContext);
         databaseMenu.add(jSeparator6);
 
         dumpRLST.setText("Dump RLST");
@@ -2912,6 +2919,28 @@ public class Toolkit extends javax.swing.JFrame {
         Config.save();
     }//GEN-LAST:event_manageSettingsActionPerformed
 
+    private void remapDatabaseContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_remapDatabaseContextActionPerformed
+        File file = FileChooser.openFile("blurayguids.remap", "remap", false);
+        if (file == null) return;
+        
+        RemapDB remap = null;
+        try { remap = new RemapDB(file); }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "An error occurred", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        FileDB database = (FileDB) ResourceSystem.getSelectedDatabase();
+        for (RemapDBRow row : remap) {
+            FileDBRow source = database.get(row.getFrom());
+            if (source == null) continue;
+            source.setPath(row.getPath());
+            source.setGUID(row.getTo());
+        }
+        
+        ResourceSystem.reloadSelectedModel();
+    }//GEN-LAST:event_remapDatabaseContextActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -3209,6 +3238,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JMenu profileMenu;
     public javax.swing.JProgressBar progressBar;
     private javax.swing.JMenuItem reboot;
+    private javax.swing.JMenuItem remapDatabaseContext;
     private javax.swing.JMenuItem removeDependenciesContext;
     private javax.swing.JMenuItem removeMissingDependenciesContext;
     private javax.swing.JMenuItem renameFolder;
