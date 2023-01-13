@@ -479,12 +479,15 @@ public class Toolkit extends javax.swing.JFrame {
                         this.exportGroup.add(this.exportPaletteContext);
                         break;
                     }
-                    case PLAN: case LEVEL: {
-                        this.exportGroup.add(this.exportModGroup);
+                    case LEVEL: case PLAN: {
                         this.exportGroup.add(this.exportBackupGroup);
                         break;
                     }
+                    default: break;
                 }
+
+                if (info != null && info.getDependencies().length != 0)
+                    this.exportGroup.add(this.exportModGroup);
             }
             
             boolean canExportJSON = type == ResourceType.TRANSLATION || (isLoadedResource && info.getMethod().equals(SerializationType.BINARY));
