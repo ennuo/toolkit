@@ -15,6 +15,7 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.resources.RAnimation;
+import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.Thing;
@@ -49,7 +50,6 @@ public class PRenderMesh implements Serializable {
     public float parentDistanceFront, parentDistanceSide;
     public transient boolean isDirty = true;
 
-    
     public PRenderMesh() {}
     public PRenderMesh(ResourceDescriptor mesh) {
         this.mesh = mesh;
@@ -83,13 +83,13 @@ public class PRenderMesh implements Serializable {
 
     }
 
-    public static void skeletate(Thing[] boneThings, Bone[] bones, Bone bone, Thing parentOrRoot) {
+    public static void skeletate(RSceneGraph scene, Thing[] boneThings, Bone[] bones, Bone bone, Thing parentOrRoot) {
         Thing root = boneThings[0];
 
         Thing boneThing = null;
 
         if (bone.parent != -1) {
-            boneThing = RenderSystem.getSceneGraph().addThing();
+            boneThing = scene.addThing();
 
             boneThing.groupHead = root;
             boneThing.parent = parentOrRoot;
@@ -106,12 +106,12 @@ public class PRenderMesh implements Serializable {
         for (Bone child : bones) {
             if (child == bone) boneThings[index] = boneThing;
             if (child.parent != -1 && bones[child.parent] == bone)
-                skeletate(boneThings, bones, child, boneThing);
+                skeletate(scene, boneThings, bones, child, boneThing);
             index++;
         }
     }
 
-    public void setupBoneThings(Thing root, Matrix4f transform, Bone[] bones) {
+    public void setupBoneThings(RSceneGraph scene, Thing root, Matrix4f transform, Bone[] bones) {
         Thing[] boneThings = new Thing[bones.length];
         boneThings[0] = root;
 
@@ -129,13 +129,13 @@ public class PRenderMesh implements Serializable {
             Thing thing = root;
             if (i != 0) {
                 Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
-                thing = RenderSystem.getSceneGraph().addThing();
+                thing = scene.addThing();
                 thing.setPart(Part.POS, new PPos(root, bone.animHash, wpos, new Matrix4f(wpos)));
                 thing.groupHead = root;
                 boneThings[i] = thing;
             }
 
-            skeletate(boneThings, bones, bone, thing);
+            skeletate(scene, boneThings, bones, bone, thing);
         }
 
         ((PRenderMesh)root.getPart(Part.RENDER_MESH)).boneThings = boneThings;
@@ -151,7 +151,7 @@ public class PRenderMesh implements Serializable {
         }
 
         if (this.boneThings == null || this.boneThings.length == 0)
-            this.setupBoneThings(thing, wpos, this.instance.mesh.getBones());
+            this.setupBoneThings(RenderSystem.getSceneGraph(), thing, wpos, this.instance.mesh.getBones());
         
         this.recalculateStaticInverses(thing, this.instance.mesh.getBones(), wpos);
         

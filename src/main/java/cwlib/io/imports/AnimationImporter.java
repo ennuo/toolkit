@@ -136,7 +136,7 @@ public class AnimationImporter {
             Vector4f[] channelData = this.getChannelData(channel);
             boolean isAnimated = false;
             for (int i = 1; i < channelData.length; ++i) {
-                if (!channelData[i - 1].equals(channelData[i], 0.01f)) {
+                if (!channelData[i - 1].equals(channelData[i], 0.0001f)) {
                     isAnimated = true;
                     break;
                 }
@@ -178,19 +178,12 @@ public class AnimationImporter {
             packedRotation[index] = new Vector4f(rotation);
             packedPosition[index] = new Vector4f(translation[0], translation[1], translation[2], 1.0f);
             packedScale[index] = new Vector4f(scale[0], scale[1], scale[2], 1.0f);
-
-            // packedRotation[index] = SACKBOY.getBaseRotation(index);
-            // packedPosition[index] = SACKBOY.getBasePosition(index);
-            // packedScale[index] = SACKBOY.getBaseScale(index);
         }
 
         this.resource.numFrames = (short) (frames + 1);
         this.resource.packedRotation = packedRotation;
         this.resource.packedPosition = packedPosition;
         this.resource.packedScale = packedScale;
-
-        // packedScale[0] = new Vector4f(3.7454145f, 3.7454145f, 3.7454145f, 1.0f);
-        // packedScale[1] = new Vector4f(0.2669932f, 0.2669932f, 0.2669932f, 1.0f);
 
         for (Channel channel : this.animation.getChannels()) {
             int boneIndex = this.nodeToIndex.get(channel.getNodeModel());
@@ -243,8 +236,6 @@ public class AnimationImporter {
         
         this.resource.morphsAnimated = new byte[0];
         this.resource.packedMorph = new float[0];
-        //this.resource.packedMorph = SACKBOY.packedMorph;
-        //this.resource.morphCount = SACKBOY.morphCount;
         
         return this.resource;
     }

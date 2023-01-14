@@ -498,14 +498,14 @@ public class MeshExporter {
             }
             
             Node root = new Node();
-            root.setName("mesh");
+            root.setName("Armature");
             
             glb.createSkeleton(mesh);
             Skin skin = new Skin();
             for (Bone bone : mesh.getBones()) {
                 int index = glb.getNodeIndex(bone.getName());
                 skin.addJoints(index);
-                if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
+                if (bone.parent == -1)
                     root.addChildren(index);
             }
             skin.setInverseBindMatrices(glb.createAccessor("MATRIX", 5126, "MAT4", 0, mesh.getBones().length));
@@ -552,18 +552,13 @@ public class MeshExporter {
         private void createSkeleton(RMesh mesh) {
             if (mesh.getBones().length == 0) return;
             for (Bone bone : mesh.getBones()) {
-                if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
+                if (bone.parent == -1)
                     createChildren(mesh, bone);
             }
         }
         
         private int createChildren(RMesh mesh, Bone bone) {
-            Matrix4f transform;
-            if (bone.parent == -1 || mesh.getBones()[bone.parent] == bone)
-                transform = new Matrix4f(bone.skinPoseMatrix);
-            else 
-                transform = bone.getLocalTransform(mesh.getBones());
-            
+            Matrix4f transform = bone.getLocalTransform(mesh.getBones());
             int index = createNode(bone.getName(), transform);
             Node root = this.gltf.getNodes().get(index);
             
@@ -583,16 +578,13 @@ public class MeshExporter {
             Node node = new Node();
             node.setName(name);
             
-            Vector3f translation = new Vector3f();
-            transform.getTranslation(translation);
+            Vector3f translation = transform.getTranslation(new Vector3f());
             node.setTranslation(new float[] { translation.x, translation.y, translation.z });
             
             Quaternionf rotation = new Quaternionf().setFromUnnormalized(transform);
-            
             node.setRotation(new float[] { rotation.x, rotation.y, rotation.z, rotation.w });
             
-            Vector3f scale = new Vector3f();
-            transform.getScale(scale);
+            Vector3f scale = transform.getScale(new Vector3f());
             node.setScale(new float[] { scale.x, scale.y, scale.z });
             
             this.gltf.addNodes(node);
@@ -1029,11 +1021,13 @@ public class MeshExporter {
                 }
             }
 
+            if (output.getOffset() % 0x40 != 0)
+                output.seek((0x40 - (output.getOffset() % 0x40)));
             int matrixStart = output.getOffset();
-            for (int i = 0; i < mesh.getBones().length; ++i)
-                for (int x = 0; x < 4; ++x)
-                    for (int y = 0; y < 4; ++y)
-                        output.f32(mesh.getBones()[i].invSkinPoseMatrix.get(x, y));
+            for (int i = 0; i < mesh.getBones().length; ++i) {
+                for (float v : mesh.getBones()[i].invSkinPoseMatrix.get(new float[16]))
+                    output.f32(v);
+            }
             createBufferView("MATRIX", matrixStart, output.getOffset() - matrixStart);
 
             int jointStart = output.getOffset();

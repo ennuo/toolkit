@@ -319,6 +319,7 @@ public class RMesh implements Compressable, Serializable {
             bone.boundBoxMax = bones[i].boundBoxMax;
             bone.boundBoxMin = bones[i].boundBoxMin;
             bone.invSkinPoseMatrix = bones[i].invSkinPoseMatrix;
+            this.cullBones[i] = bone;
         }
         
         this.vertexColors = new int[this.numVerts];

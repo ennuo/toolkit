@@ -11,6 +11,7 @@ import cwlib.enums.BoneFlag;
 import cwlib.io.Serializable;
 import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
+import cwlib.resources.RAnimation;
 import cwlib.structs.animation.AnimBone;
 
 /**
@@ -44,8 +45,9 @@ public class Bone extends AnimBone {
      * @param name Name of the bone
      */
     public Bone(String name) {
-        if (name != null && name.length() > MAX_BONE_NAME_LENGTH)
-            throw new IllegalArgumentException("Bone name length cannot be more than 32 characters!");
+        this.animHash = RAnimation.calculateAnimationHash(name);
+        if (name != null && name.length() >= MAX_BONE_NAME_LENGTH) // null terminated
+            name = name.substring(0, MAX_BONE_NAME_LENGTH);
         this.name = name;
     }
 
@@ -80,7 +82,7 @@ public class Bone extends AnimBone {
     public String getName() { return this.name; }
     public void setName(String name) {
         if (name != null && name.length() > MAX_BONE_NAME_LENGTH)
-            throw new IllegalArgumentException("Bone name cannot be longer than 32 characters!");
+            throw new IllegalArgumentException("Bone name cannot be longer than 31 characters!");
         this.name = name;
     }
 
@@ -130,7 +132,7 @@ public class Bone extends AnimBone {
         if (skeleton == null)
             throw new NullPointerException("Can't get bones from null skeleton!");
         for (int i = 0; i < skeleton.length; ++i)
-            if (skeleton[i].name.equals(this.name))
+            if (skeleton[i].animHash == this.animHash)
                 return i;
         return -1;
     }

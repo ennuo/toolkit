@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,19 +21,30 @@ import org.joml.Vector4f;
 
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.CostumePieceCategory;
+import cwlib.enums.InventoryObjectType;
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SkeletonType;
+import cwlib.io.exports.MeshExporter;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.resources.RAnimation;
 import cwlib.resources.RMesh;
+import cwlib.resources.RPlan;
 import cwlib.resources.custom.RBoneSet;
+import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Primitive;
+import cwlib.structs.things.Thing;
+import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.structs.things.parts.PShape;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import cwlib.types.data.SHA1;
 import cwlib.util.Bytes;
 import cwlib.util.FileIO;
 import cwlib.util.GsonUtils;
@@ -225,11 +237,13 @@ public class ModelImporter {
                     vertices.getFloat(),
                     vertices.getFloat()
                 );
-                vertex.rotate(this.config.vertexRotation);
-                vertex.mul(this.config.vertexScale);
-                vertex.add(this.config.vertexOffset);
+
+                // vertex.rotate(this.config.vertexRotation);
+                // vertex.mul(this.config.vertexScale);
+                // vertex.add(this.config.vertexOffset);
 
                 vertexCache[i] = vertex;
+
                 vertexStream.v3(vertex);
                 vertexStream.i32(0xFF, true); // We don't currently support softbody deformation
             }
@@ -276,7 +290,7 @@ public class ModelImporter {
                         jointCache[j] = 0;
                 } else {
                     for (int j = 0; j < 4; ++j)
-                        jointCache[j] = this.getJointIndex(skin.getJoints().get(joints.get()));
+                        jointCache[j] = this.getJointIndex(skin.getJoints().get(joints.get() & 0xff));
                 }
 
                 // Update min/max for bones
@@ -308,7 +322,7 @@ public class ModelImporter {
                     normals.getFloat()
                 );
 
-                normal.rotate(this.config.vertexRotation);
+                // normal.rotate(this.config.vertexRotation);
 
                 skinningStream.u24(Bytes.packNormal24(normal));
 
@@ -361,9 +375,9 @@ public class ModelImporter {
                         targetPosition.getFloat()
                     );
                     
-                    vertex.rotate(this.config.vertexRotation);
-                    vertex.mul(this.config.vertexScale);
-                    vertex.add(this.config.vertexOffset);
+                    // vertex.rotate(this.config.vertexRotation);
+                    // vertex.mul(this.config.vertexScale);
+                    // vertex.add(this.config.vertexOffset);
 
                     targetStream.v3(vertex);
 
@@ -378,7 +392,13 @@ public class ModelImporter {
             for (int i = 0; i < numIndices; ++i)
                 this.indexStream.u16(((int)(indexAccessor.get() & 0xffff) + minVert));
 
-            ResourceDescriptor descriptor = new ResourceDescriptor(10803, ResourceType.GFX_MATERIAL);
+            String materialName = meshPrimitive.getMaterialModel().getName();
+            ResourceDescriptor descriptor = null;
+            if (this.config.materialOverrides != null && this.config.materialOverrides.containsKey(materialName))
+                descriptor = this.config.materialOverrides.get(materialName);
+            else
+                descriptor = new ResourceDescriptor(10803, ResourceType.GFX_MATERIAL);
+
             Primitive primitive = new Primitive(descriptor, minVert, maxVert, firstIndex, numIndices);
             this.primitives.add(primitive);
             this.gltfMaterials.put(meshPrimitive.getMaterialModel(), primitive);
@@ -386,8 +406,72 @@ public class ModelImporter {
         }
     }
 
+    private void convertToGlobalSkinPose(Bone bone, Matrix4f parent) {
+        bone.skinPoseMatrix = parent.mul(bone.skinPoseMatrix, new Matrix4f());
+        for (Bone child : bone.getChildren(this.bones))
+            this.convertToGlobalSkinPose(child, bone.skinPoseMatrix);
+    }
+
     private void getCustomSkeleton() {
-        this.bones = new Bone[] { new Bone("BocchiTheRock!") };
+        if (this.gltf.getSkinModels().size() == 0) {
+            this.bones = new Bone[] { new Bone("BocchiTheRock!") };
+            return;
+        }
+        
+        ArrayList<Bone> bones = new ArrayList<>();
+        HashMap<NodeModel, Bone> lookup = new HashMap<>();
+        for (SkinModel skin : this.gltf.getSkinModels()) {
+            int index = 0;
+            for (NodeModel node : skin.getJoints()) {
+                Bone bone = new Bone(node.getName());
+                
+                Vector3f translation = new Vector3f();
+                Quaternionf quaternion = new Quaternionf();
+                Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);
+                
+                if (node.getTranslation() != null)
+                    translation.set(node.getTranslation());
+                float[] rotation = node.getRotation();
+                if (rotation != null)
+                    quaternion.set(rotation[0], rotation[1], rotation[2], rotation[3]);
+                if (node.getScale() != null)
+                    scale.set(node.getScale());
+                
+                bone.skinPoseMatrix = new Matrix4f().identity().translationRotateScale(
+                        translation,
+                        quaternion,
+                        scale
+                );
+                
+                bone.invSkinPoseMatrix = new Matrix4f().set(skin.getInverseBindMatrix(index, new float[16]));
+                
+                bones.add(bone);
+                lookup.put(node, bone);
+                
+                index++;
+            }
+            
+            // Second pass to set hierarchy
+            for (NodeModel model : skin.getJoints()) {
+                List<NodeModel> children = model.getChildren();
+                if (children == null || children.size() == 0) continue;
+                Bone bone = lookup.get(model);
+                index = bones.indexOf(bone);
+                bone.firstChild = bones.indexOf(lookup.get(children.get(0)));
+                for (int i = 0; i < children.size(); ++i)
+                    lookup.get(children.get(i)).parent = index;
+                for (int i = 1; i < children.size(); ++i)
+                    lookup.get(children.get(i - 1)).nextSibling = bones.indexOf(lookup.get(children.get(i)));
+            }
+        }
+
+        this.bones = bones.toArray(Bone[]::new);
+
+        // Convert all local skin pose matrices to global
+        for (Bone bone : bones) {
+            if (bone.parent == -1)
+                this.convertToGlobalSkinPose(bone, new Matrix4f().identity());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -455,6 +539,11 @@ public class ModelImporter {
             Vector3f max = this.maxVert.get(bone);
             Vector3f min = this.minVert.get(bone);
 
+            if (min.x == Float.POSITIVE_INFINITY)
+                min = new Vector3f();
+            if (max.x == Float.NEGATIVE_INFINITY)
+                max = new Vector3f();
+
             bone.boundBoxMax = new Vector4f(max, 1.0f);
             bone.boundBoxMin = new Vector4f(min, 1.0f);
             bone.obbMax = bone.boundBoxMax;
@@ -491,7 +580,7 @@ public class ModelImporter {
 
         mesh.setMinUV(this.minUV);
         mesh.setMaxUV(this.maxUV);
-
+        
         return mesh;
     }
 
@@ -500,9 +589,13 @@ public class ModelImporter {
     }
 
     public static void main(String[] args) {
+        ResourceSystem.DISABLE_LOGS = true;
+
         ModelImportConfig config = new ModelImportConfig();
-        config.glbSourcePath = "C:/Users/Aidan/Desktop/mesh.glb";
+        config.glbSourcePath = "C:/Users/Aidan/Desktop/vex.glb";
         config.skeleton = null;
+        config.materialOverrides = new HashMap<>();
+        config.materialOverrides.put("Vex_MI", new ResourceDescriptor("19b647883baf4f895994cf327a297d46ccea84f8", ResourceType.GFX_MATERIAL));
 
         ModelImporter importer = null;
         try { importer = new ModelImporter(config); }
@@ -513,9 +606,35 @@ public class ModelImporter {
 
         RMesh mesh = importer.getMesh();
         SerializationData data = mesh.build(new Revision(0x132), CompressionFlags.USE_NO_COMPRESSION);
-
         FileIO.write(data.getBuffer(), "C:/Users/Aidan/Desktop/test.mol.dec");
-        FileIO.write(Resource.compress(data), "C:/Users/Aidan/Desktop/test.mol");
+        byte[] resourceData = Resource.compress(data);
+        FileIO.write(resourceData, "C:/Users/Aidan/Desktop/test.mol");
 
+        RSceneGraph graph = new RSceneGraph();
+        Thing thing = graph.addMesh(new ResourceDescriptor(SHA1.fromBuffer(resourceData), ResourceType.MESH));
+        PRenderMesh part = thing.getPart(Part.RENDER_MESH);
+        part.setupBoneThings(graph, thing, new Matrix4f().identity().rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f)), mesh.getBones());
+        
+        byte[] animData = null;
+        try {
+            animData = Resource.compress(new AnimationImporter(config.glbSourcePath).getAnimation().build(new Revision(0x132), (byte) 0));
+        } catch (Exception ex) {};
+        
+        part.anim = new ResourceDescriptor(SHA1.fromBuffer(animData), ResourceType.ANIMATION);
+        thing.setPart(Part.SHAPE, new PShape());
+        RPlan plan = graph.getPlan();
+        plan.revision = new Revision(0x272, 0x4c440017);
+        plan.compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+        plan.inventoryData.type = EnumSet.of(InventoryObjectType.READYMADE);
+        plan.inventoryData.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
+        plan.inventoryData.userCreatedDetails = new UserCreatedDetails("Vex", "Test model import");
+        FileIO.write(Resource.compress(plan.build()), "C:/Users/Aidan/Desktop/test.plan");
+
+        MeshExporter.GLB.FromMesh(mesh).export("C:/Users/Aidan/Desktop/test.glb");
+        byte[] glbData = FileIO.read("C:/Users/Aidan/Desktop/test.glb");
+        int size = Bytes.toIntegerLE(Arrays.copyOfRange(glbData, 0xC, 0x10));
+        FileIO.write(Arrays.copyOfRange(glbData, 0x14, 0x14 + size), "C:/Users/Aidan/Desktop/generated.json");
+
+        FileIO.write(animData, "C:/Users/Aidan/Desktop/test.anim");
     }
 }

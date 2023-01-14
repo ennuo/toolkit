@@ -47,6 +47,7 @@ public class RAnimation implements Serializable, Compressable {
     public Locator[] locators;
 
     public static int calculateAnimationHash(String value) {
+        if (value == null) return 0;
         long animHash = 0, offset = 0;
 
         if (value.contains(" R ")) {

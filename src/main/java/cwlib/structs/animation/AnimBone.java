@@ -17,17 +17,17 @@ public class AnimBone implements Serializable {
     /**
      * Index of the parent of this bone.
      */
-    public int parent;
+    public int parent = -1;
 
     /**
      * Index of the first child of this bone.
      */
-    public int firstChild;
+    public int firstChild = -1;
 
     /**
      * Index of the next sibling of this bone.
      */
-    public int nextSibling;
+    public int nextSibling = -1;
 
     public AnimBone() {};
     public AnimBone(int animHash, int parent, int firstChild, int nextSibling) {

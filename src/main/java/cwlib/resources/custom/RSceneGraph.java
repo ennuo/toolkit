@@ -119,7 +119,14 @@ public class RSceneGraph implements Serializable, Compressable {
         return graph;
     }
 
-    public Thing addThing() { return new Thing(this.nextUID++); }
+    public Thing addThing() { 
+        Thing thing = new Thing(this.nextUID++);
+        synchronized(this.things) {
+            this.things.add(thing);
+        }
+        return thing;
+    }
+    
     public Thing addMesh(ResourceDescriptor mesh) {
         Thing thing = new Thing(this.nextUID++);
         thing.setPart(Part.POS, new PPos(thing, 0, new Matrix4f().identity()));
@@ -262,6 +269,12 @@ public class RSceneGraph implements Serializable, Compressable {
         world.things = things;
 
         return Resource.compress(level.build(revision, compressionFlags));
+    }
+
+    public RPlan getPlan() {
+        RPlan plan = new RPlan();
+        plan.setThings(this.things.toArray(Thing[]::new));
+        return plan;
     }
 
     @Override public int getAllocatedSize() {
