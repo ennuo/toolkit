@@ -205,7 +205,9 @@ public class MeshExporter {
             
             AnimBone[] bones = animation.getBones();
 
-            for (byte pos : animation.getPosAnimated()) {
+            for (byte bone : animation.getPosAnimated()) {
+                int pos = bone & 0xff;
+                
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
                 if (mesh != null)
@@ -223,7 +225,9 @@ public class MeshExporter {
                 glAnim.addSamplers(sampler);
             }
 
-            for (byte scale : animation.getScaleAnimated()) {
+            for (byte bone : animation.getScaleAnimated()) {
+                int scale = bone & 0xff;
+                
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
                 if (mesh != null)
@@ -241,7 +245,9 @@ public class MeshExporter {
                 glAnim.addSamplers(sampler);
             }
             
-            for (byte rot : animation.getRotAnimated()) {
+            for (byte bone : animation.getRotAnimated()) {
+                int rot = bone & 0xff;
+                
                 AnimationChannel channel = new AnimationChannel();
                 AnimationChannelTarget target = new AnimationChannelTarget();
                 if (mesh != null)
