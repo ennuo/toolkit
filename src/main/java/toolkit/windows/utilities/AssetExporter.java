@@ -5,19 +5,26 @@ import cwlib.enums.CompressionFlags;
 import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.SHA1;
+import cwlib.io.Compressable;
+import cwlib.io.serializer.SerializationData;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.resources.RGfxMaterial;
+import cwlib.resources.RMesh;
+import cwlib.resources.RPlan;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.mods.Mod;
+import cwlib.util.Bytes;
+import cwlib.util.DDS;
 import executables.gfx.CgAssembler;
 import executables.gfx.GfxAssembler;
 import executables.gfx.GfxAssembler.BrdfPort;
@@ -141,11 +148,34 @@ public class AssetExporter extends JDialog {
     // Resources that get treated as GUID by default.
     private static final HashSet<GUID> defaults = new HashSet<>();
     static {
-        defaults.add(new GUID(9877l)); // naked_to.mol
-        defaults.add(new GUID(9876l)); // naked_he.mol
-        defaults.add(new GUID(11166l)); // palette_identity.gmat
-        defaults.add(new GUID(3465l)); // general_infinite_mass.mat
-        defaults.add(new GUID(11987l)); // general_infinite_mass.mat
+        // These are all essentially just the Sackboy dependencies
+        defaults.add(new GUID(9877l)); 
+        defaults.add(new GUID(9876l));
+        defaults.add(new GUID(11166l));
+        defaults.add(new GUID(3465l));
+        defaults.add(new GUID(11987l)); 
+        defaults.add(new GUID(9698l)); 
+        defaults.add(new GUID(7572l)); 
+        defaults.add(new GUID(1340l)); 
+        defaults.add(new GUID(7570l)); 
+        defaults.add(new GUID(7569l)); 
+        defaults.add(new GUID(1081)); 
+        defaults.add(new GUID(3283)); 
+        defaults.add(new GUID(10852)); 
+        defaults.add(new GUID(10853)); 
+        defaults.add(new GUID(17023)); 
+        defaults.add(new GUID(3731)); 
+        defaults.add(new GUID(5870)); 
+        defaults.add(new GUID(5869)); 
+        defaults.add(new GUID(1748)); 
+        defaults.add(new GUID(1672)); 
+        defaults.add(new GUID(1747)); 
+        defaults.add(new GUID(1672)); 
+        defaults.add(new GUID(1673)); 
+        defaults.add(new GUID(1674)); 
+        defaults.add(new GUID(3287)); 
+        defaults.add(new GUID(1668)); 
+        defaults.add(new GUID(1087));
     }
     
     private FileEntry entry;
@@ -275,6 +305,17 @@ public class AssetExporter extends JDialog {
 
         Resource resource = new Resource(asset.data);
         if (resource.getSerializationType() != SerializationType.BINARY || asset.recursed) {
+            asset.recursed = true;
+
+            // LBP1 didn't have GTF files
+            if (remap == MaterialLibrary.LBP1 && resource.getResourceType().equals(ResourceType.GTF_TEXTURE)) {
+                byte[] header = DDS.getDDSHeader(resource.getTextureInfo());
+                byte[] data = Bytes.combine(header, resource.getStream().getBuffer());
+                if (resource.getTextureInfo().isBumpTexture())
+                    data = Bytes.combine(data, "BUMP".getBytes());
+                asset.data = Resource.compress(new SerializationData(data));
+            }
+
             if (asset.hashinate)
                 return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
             return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
@@ -292,37 +333,87 @@ public class AssetExporter extends JDialog {
         // if (resource.getResourceType() == ResourceType.PLAN && asset.hashinate && asset.entry.GUID != -1)
         //     RPlan.removePlanDescriptors(resource, asset.entry.GUID);
 
+        Revision revision = new Revision(0x272, 0x4c44, 0x13);
+        if (remap != MaterialLibrary.LBP1)
+            revision = new Revision(0x3f8);
+
         byte[] data = null;
-        if (remap != MaterialLibrary.NONE && resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
-            RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
-            
-            if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
-                if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
-                    gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
+
+        if (remap != MaterialLibrary.NONE) {
+
+            boolean shouldConvert = false;
+            if (remap == MaterialLibrary.LBP2 && (resource.getRevision().isLBP3() || resource.getRevision().isVita()))
+                shouldConvert = true;
+            else if (remap == MaterialLibrary.LBP1 && !resource.getRevision().isLBP1())
+                shouldConvert = true;
+            // The only resource revision LBP3 PS4 doesn't support would be Vita
+            else if (remap == MaterialLibrary.LBP_PS4 && resource.getRevision().isVita())
+                shouldConvert = true;
+
+            if (shouldConvert && resource.getResourceType().equals(ResourceType.PLAN)) {
+                
+                ResourceSystem.DISABLE_LOGS = true;
+                // This could get messy with Vita and LBP3 plans
+                // so leave it in a try/catch for now
+                try {
+                    RPlan plan = resource.loadResource(RPlan.class);
+                    Thing[] things = plan.getThings();
+                    plan.revision = revision;
+                    plan.compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+                    plan.setThings(things);
+                    data = Resource.compress(plan.build());
+                } catch (Exception ex) { 
+                    System.out.println("Failed to convert a plan resource!");
+                    data = resource.compress(); 
+                }
+                ResourceSystem.DISABLE_LOGS =  false;
             }
+            else if (resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
+                RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
+                
+                if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
+                    if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
+                        gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
+                }
+    
+                gfx.flags = gfx.flags & ~(0x10000);
+                if (remap != MaterialLibrary.LBP1) gfx.shaders = new byte[10][];
+                else gfx.shaders = new byte[4][];
+    
+                GameShader shader = GameShader.LBP2;
+                if (remap == MaterialLibrary.LBP1)
+                    shader = GameShader.LBP1;
+                else if (remap == MaterialLibrary.LBP_PS4)
+                    shader = GameShader.LBP3_PS4;
+    
+                try {
+                    CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, shader);
+                    data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
+                } catch (Exception ex)  { 
+                    ex.printStackTrace();
+                    data = resource.compress(); 
+                }
+    
+            } else if (shouldConvert && resource.getResourceType().getCompressable() != null) {
 
-            gfx.flags = gfx.flags & ~(0x10000);
-            Revision revision = new Revision(0x272, 0x4c44, 0x13);
-            if (remap != MaterialLibrary.LBP1) {
-                revision = new Revision(0x393);
-                gfx.shaders = new byte[10][];
+                // This surely won't cause any issues!
+                ResourceSystem.DISABLE_LOGS = true;
+                try {
+                    Compressable compressable = (Compressable) resource.loadResource(resource.getResourceType().getCompressable());
+                    data = Resource.compress(compressable.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
+                } catch (Exception ex) {
+                    System.out.println("Failed to convert a " + resource.getResourceType() + " resource!");
+                    data = resource.compress(); 
+                }
+                ResourceSystem.DISABLE_LOGS = false;
+
             }
-            else gfx.shaders = new byte[4][];
-
-            GameShader shader = GameShader.LBP2;
-            if (remap == MaterialLibrary.LBP1)
-                shader = GameShader.LBP1;
-            else if (remap == MaterialLibrary.LBP_PS4)
-                shader = GameShader.LBP3_PS4;
-
-            try {
-                CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, shader);
-                data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
-            } catch (Exception ex)  { data = resource.compress(); }
+            else data = resource.compress();
 
         } else data = resource.compress();
-        asset.data = data;
 
+        asset.data = data;
+        asset.recursed = true;
 
         if (asset.hashinate)
             return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());

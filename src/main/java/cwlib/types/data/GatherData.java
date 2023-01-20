@@ -20,6 +20,13 @@ public class GatherData {
         this.guid = descriptor.getGUID();
     }
 
+    public GatherData(String path, byte[] data) {
+        this.path = path;
+        this.data = data;
+        this.sha1 = SHA1.fromBuffer(data);
+        this.guid = null;
+    }
+
     public GatherData(String path, SHA1 sha1, byte[] data) {
         this(path, new ResourceDescriptor(sha1, ResourceType.INVALID), data);
     }
