@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,27 @@ public class Images {
         x |= x >> 8;
         x |= x >> 16;
         return x ^ (x >> 1);
+    }
+
+    public static BufferedImage toBump(BufferedImage image) {
+        Color c = new Color(image.getRGB(0, 0), true);
+        boolean isNormal = !(c.getRed() == c.getGreen() && c.getRed() == c.getBlue());
+        if (isNormal) {
+            for (int x = 0; x < image.getWidth(); ++x) {
+                for (int y = 0; y < image.getHeight(); ++y) {
+                    c = new Color(image.getRGB(x, y), true);
+                    int green = c.getGreen();
+                    int red = c.getRed();
+                    image.setRGB(x, y, new Color(
+                        green,
+                        green,
+                        green,
+                        255 - red
+                    ).getRGB());
+                }
+            }
+        }
+        return image;
     }
     
     private static byte[] getRGBA(BufferedImage image) {
