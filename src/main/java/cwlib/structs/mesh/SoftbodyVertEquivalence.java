@@ -8,6 +8,12 @@ public class SoftbodyVertEquivalence implements Serializable {
 
     public short first, count;
 
+    public SoftbodyVertEquivalence() {};
+    public SoftbodyVertEquivalence(int first, int count) {
+        this.first = (short) first;
+        this.count = (short) count;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override public SoftbodyVertEquivalence serialize(Serializer serializer, Serializable structure) {
         SoftbodyVertEquivalence equiv = 

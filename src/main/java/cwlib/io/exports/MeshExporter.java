@@ -460,6 +460,16 @@ public class MeshExporter {
                             )
                     );
 
+                    glPrimitive.addAttributes("COLOR_0", 
+                            glb.createAccessor(
+                                    "COLOR", 
+                                    5123, 
+                                    "VEC4", 
+                                    primitive.getMinVert() * 0x8, 
+                                    primitive.getMaxVert() - primitive.getMinVert() + 1
+                            )
+                    );
+
                     glPrimitive.setIndices(
                             glb.createAccessor(
                                     "INDICES_" + m + "_" + i, 
@@ -949,7 +959,7 @@ public class MeshExporter {
         }
         
         private byte[] getBufferFromMesh(RMesh mesh) {
-            MemoryOutputStream output = new MemoryOutputStream( (mesh.getNumVerts() * 0x40) + ((mesh.getNumVerts() - 1) * 8) + (mesh.getAttributeCount() * mesh.getNumVerts() * 8) + (mesh.getMorphCount() * mesh.getNumVerts() * 0x18) + (mesh.getBones().length * 0x40));
+            MemoryOutputStream output = new MemoryOutputStream( (mesh.getNumVerts() * 0x50) + ((mesh.getNumVerts() - 1) * 8) + (mesh.getAttributeCount() * mesh.getNumVerts() * 8) + (mesh.getMorphCount() * mesh.getNumVerts() * 0x18) + (mesh.getBones().length * 0x40));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices()) {
@@ -1046,6 +1056,16 @@ public class MeshExporter {
             }
             
             createBufferView("WEIGHTS", weightStart, output.getOffset() - weightStart);
+
+            int colorStart = output.getOffset();
+            for (float weight : mesh.getSoftbodyWeights(0, mesh.getNumVerts())) {
+                short c = (short) Math.round(weight * 0xFFFF);
+                output.i16(c);
+                output.i16(c);
+                output.i16(c);
+                output.i16((short) 0xFFFF);
+            }
+            createBufferView("COLOR", colorStart, output.getOffset() - colorStart);
             
             output.shrink();
             

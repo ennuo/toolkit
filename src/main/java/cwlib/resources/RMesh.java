@@ -814,6 +814,24 @@ public class RMesh implements Compressable, Serializable {
         return vertices;
     }
 
+    /**
+     * Gets all the softbody weights in a specified range
+     * @param start First vertex
+     * @param count Number of vertices
+     * @return Softbody weights of range
+     */
+    public float[] getSoftbodyWeights(int start, int count) {
+        MemoryInputStream stream = new MemoryInputStream(this.getVertexStream());
+        stream.seek(start * 0x10);
+        float[] weights = new float[count];
+        for (int i = 0; i < count; ++i) {
+            stream.seek(0xC + 0x3);
+            float c = ((float)stream.u8()) / ((float)0xff);
+            weights[i] = c;
+        }
+        return weights;
+    }
+
     public byte[][] getBlendIndices(int start, int count) {
         MemoryInputStream stream = new MemoryInputStream(this.getVertexStream());
         stream.seek(start * 0x10);
