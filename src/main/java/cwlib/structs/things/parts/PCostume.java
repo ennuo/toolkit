@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import cwlib.enums.Branch;
+import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
@@ -19,8 +20,19 @@ public class PCostume implements Serializable {
     public int[] meshPartsHidden;
     public Primitive[] primitives;
     public byte creatureFilter;
-    public CostumePiece[] costumePieces = new CostumePiece[14];
+    public CostumePiece[] costumePieces;
     public CostumePiece[] temporaryCostumePiece;
+
+    public PCostume() {
+        this.costumePieces = new CostumePiece[14];
+        for (int i = 0; i < this.costumePieces.length; ++i)
+            this.costumePieces[i] = new CostumePiece();
+        this.costumePieces[CostumePieceCategory.HEAD.getIndex()].mesh = 
+            new ResourceDescriptor(9876, ResourceType.MESH);
+        this.costumePieces[CostumePieceCategory.TORSO.getIndex()].mesh = 
+            new ResourceDescriptor(9877, ResourceType.MESH);
+        this.temporaryCostumePiece = new CostumePiece[] { new CostumePiece() };
+    }
 
     @SuppressWarnings("unchecked")
     @Override public PCostume serialize(Serializer serializer, Serializable structure) {

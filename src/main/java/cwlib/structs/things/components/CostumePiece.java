@@ -6,6 +6,7 @@ import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.resources.RMesh;
 import cwlib.structs.mesh.Primitive;
 import cwlib.types.data.ResourceDescriptor;
 import editor.gl.MeshInstance;
@@ -20,6 +21,12 @@ public class CostumePiece implements Serializable {
     @GsonRevision(min=0x19a) public ResourceDescriptor plan;
 
     public transient MeshInstance instance;
+
+    public CostumePiece() {
+        this.morphParamRemap = new byte[RMesh.MAX_MORPHS];
+        for (int i = 0; i < this.morphParamRemap.length; ++i)
+            this.morphParamRemap[i] = -1;
+    }
     
     @SuppressWarnings("unchecked")
     @Override public CostumePiece serialize(Serializer serializer, Serializable structure) {
