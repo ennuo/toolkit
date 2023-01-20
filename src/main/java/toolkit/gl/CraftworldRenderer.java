@@ -2,6 +2,7 @@ package toolkit.gl;
 
 import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
+import cwlib.types.Resource;
 import editor.gl.Camera;
 import editor.gl.RenderSystem;
 
@@ -46,9 +47,6 @@ public class CraftworldRenderer extends AWTGLCanvas {
 
         ResourceSystem.DISABLE_LOGS = true;
         
-        // byte[] data = FileIO.getResourceFile("/binary/default.sg");
-        // RSceneGraph graph = new Resource(data).loadResource(RSceneGraph.class);
-
         RSceneGraph graph = new RSceneGraph();
 
         RenderSystem.setSceneGraph(graph);

@@ -19,6 +19,12 @@ public class ApplicationFlags {
      */
     public static File SCE_CGC_EXECUTABLE = 
         new File(Config.jarDirectory, "sce/sce-cgc.exe");
+
+    /**
+     * Path to CG shader stripper, optional.
+     */
+    public static File SCE_CGC_STRIP_EXECUTABLE =
+        new File(Config.jarDirectory, "sce/sce-cgcstrip.exe");
     
     /**
      * Path to PS4 shader compiler executable, you'll have to

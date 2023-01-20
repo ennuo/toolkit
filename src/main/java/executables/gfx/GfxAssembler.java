@@ -475,9 +475,11 @@ public class GfxAssembler {
     
         String profile = "sce_fp_rsx";
         File compiler = ApplicationFlags.SCE_CGC_EXECUTABLE;
+        File stripper = ApplicationFlags.SCE_CGC_STRIP_EXECUTABLE;
         if (shader == GameShader.LBP3_PS4) {
             compiler = ApplicationFlags.SCE_PSSL_EXECUTABLE;
             profile = "sce_ps_orbis";
+            stripper = null;
         }
 
         String msg;
@@ -487,6 +489,9 @@ public class GfxAssembler {
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-mcgb");
         else
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath());
+        
+        if (stripper != null && stripper.exists())
+            run(stripper.getAbsolutePath(), "-semantic", "-param", "-sampler", "-varying", outputFile.getAbsolutePath());
 
         inputFile.delete();
         if (outputFile.exists()) {
