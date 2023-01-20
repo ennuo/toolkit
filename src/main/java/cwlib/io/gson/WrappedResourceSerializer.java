@@ -9,7 +9,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import cwlib.enums.CompressionFlags;
-import cwlib.enums.PartHistory;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RPlan;
 import cwlib.structs.inventory.InventoryItemDetails;
@@ -47,16 +46,6 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         }
 
         Revision revision = new Revision(head, branchID, branchRevision);
-
-        if (head <= 0x3e2)
-            Thing.MAX_PARTS_REVISION = PartHistory.CONTROLINATOR;
-        if (head <= 0x33a)
-            Thing.MAX_PARTS_REVISION = PartHistory.MATERIAL_OVERRIDE;
-        if (head <= 0x2c3)
-            Thing.MAX_PARTS_REVISION = PartHistory.MATERIAL_TWEAK;
-        if (head <= 0x272)
-            Thing.MAX_PARTS_REVISION = PartHistory.GROUP;
-
         byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         if (head >= 0x297 || (head == 0x272 && (branchID == 0x4c44) && ((branchRevision & 0xffff) > 1)))
             compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;

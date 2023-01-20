@@ -40,7 +40,6 @@ import editor.gl.objects.Mesh;
 @JsonAdapter(ThingSerializer.class)
 public class Thing implements Serializable {
     public static boolean SERIALIZE_WORLD_THING = true;
-    public static int MAX_PARTS_REVISION = PartHistory.STREAMING_HINT;
 
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
@@ -73,6 +72,16 @@ public class Thing implements Serializable {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
+
+        int maxPartsRevision = PartHistory.STREAMING_HINT;
+        if (version <= 0x3e2)
+            maxPartsRevision = PartHistory.CONTROLINATOR;
+        if (version <= 0x33a)
+            maxPartsRevision = PartHistory.MATERIAL_OVERRIDE;
+        if (version <= 0x2c3)
+            maxPartsRevision = PartHistory.MATERIAL_TWEAK;
+        if (version <= 0x272)
+            maxPartsRevision = PartHistory.GROUP;
 
         // Test serialization marker.
         if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) thing.name = serializer.wstr(thing.name);
@@ -163,8 +172,8 @@ public class Thing implements Serializable {
         }
 
         if (serializer.isWriting()) {
-            if (partsRevision > Thing.MAX_PARTS_REVISION)
-                partsRevision = Thing.MAX_PARTS_REVISION;
+            if (partsRevision > maxPartsRevision)
+                partsRevision = maxPartsRevision;
         }
         
         partsRevision = serializer.s32(partsRevision);

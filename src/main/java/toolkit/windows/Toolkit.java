@@ -2829,7 +2829,6 @@ public class Toolkit extends javax.swing.JFrame {
             return;
         }
         
-        
         byte[] data = ResourceSystem.extract(selected);
         if (data == null) return;
         
@@ -2848,8 +2847,6 @@ public class Toolkit extends javax.swing.JFrame {
         
         if (file == null) return;
         
-        GsonUtils.REVISION = resource.getRevision();
-        
         WrappedResource wrapper = null;
         ResourceSystem.DISABLE_LOGS = true;
         try { wrapper = new WrappedResource(resource); }
@@ -2859,7 +2856,7 @@ public class Toolkit extends javax.swing.JFrame {
         ResourceSystem.DISABLE_LOGS = false;
         
         if (wrapper != null)
-            FileIO.write(GsonUtils.toJSON(wrapper).getBytes(), file.getAbsolutePath());
+            FileIO.write(wrapper.toJSON(), file.getAbsolutePath());
     }//GEN-LAST:event_exportJSONContextActionPerformed
 
     private byte[] loadWrappedResource() {

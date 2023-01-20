@@ -1,11 +1,14 @@
 package cwlib.types.data;
 
+import java.nio.charset.StandardCharsets;
+
 import com.google.gson.annotations.JsonAdapter;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.Compressable;
 import cwlib.io.gson.WrappedResourceSerializer;
 import cwlib.types.Resource;
+import cwlib.util.GsonUtils;
 
 @JsonAdapter(WrappedResourceSerializer.class)
 public class WrappedResource {
@@ -18,6 +21,11 @@ public class WrappedResource {
         this.revision = resource.getRevision();
         this.type = resource.getResourceType();
         this.resource = resource.loadResource(this.type.getCompressable());
+    }
+
+    public byte[] toJSON() {
+        GsonUtils.REVISION = this.revision;
+        return GsonUtils.toJSON(this).getBytes(StandardCharsets.UTF_8);
     }
     
     public byte[] build() {

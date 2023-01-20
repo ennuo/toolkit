@@ -25,15 +25,6 @@ public class PlanBackporter {
         int branchDescriptor = 0;
         if (args.length == 4)
             branchDescriptor = (int) Strings.getLong(args[3]);
-        
-        if (head <= 0x3e2)
-            Thing.MAX_PARTS_REVISION = PartHistory.CONTROLINATOR;
-        if (head <= 0x33a)
-            Thing.MAX_PARTS_REVISION = PartHistory.MATERIAL_OVERRIDE;
-        if (head <= 0x2c3)
-            Thing.MAX_PARTS_REVISION = PartHistory.MATERIAL_TWEAK;
-        if (head <= 0x272)
-            Thing.MAX_PARTS_REVISION = PartHistory.GROUP;
 
         byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         if (head >= 0x297 || (head == 0x272 && (branchDescriptor >> 0x10 == 0x4c44) && ((branchDescriptor & 0xffff) > 1)))
