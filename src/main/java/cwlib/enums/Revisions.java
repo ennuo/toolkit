@@ -557,8 +557,9 @@ public class Revisions {
     public static final int MZ_REMOVE_GFX_CODE = 0x8; // Removes code from RGfxMaterial for generation on the fly
     public static final int MZ_SCE_DEFAULT_LIGHTING = 0x9; // Serializes lighting in RSceneGraph to use as default.
     public static final int MZ_SCE_PACKED_DATA = 0xa; // Allows storing data in scene graph caches.
-    
-    public static final int MZ_MAX = 0xa; // last revision for toolkit revisions
+    public static final int MZ_CGC_OFFSETS = 0xb; // Adds offsets for properties in cached shaders
+
+    public static final int MZ_MAX = 0xb; // last revision for toolkit revisions
 
     // Legacy mod revisions
     // Somewhat weird, but apparently Toolkit started with mod

@@ -13,6 +13,7 @@ public class TextureType {
     public static final int ANISO = 6;
     public static final int FUZZ = 7;
     public static final int MASK = 8;
+    public static final int DIRT = 9;
 
-    public static final int MAX = 9;
+    public static final int MAX = 10;
 }

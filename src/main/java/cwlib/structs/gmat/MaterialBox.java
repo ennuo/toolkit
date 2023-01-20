@@ -38,8 +38,21 @@ public class MaterialBox implements Serializable {
         this.params[1] = Float.floatToIntBits(scale.y);
         this.params[2] = Float.floatToIntBits(offset.x);
         this.params[3] = Float.floatToIntBits(offset.y);
-        this.params[4] = 0;
-        this.params[5] = 0;
+        this.params[4] = channel;
+        this.params[5] = texture;
+    }
+
+    /**
+     * Creates a texture sample node
+     */
+    public MaterialBox(Vector4f transform, int channel, int texture) {
+        this.type = BoxType.TEXTURE_SAMPLE;
+        this.params[0] = Float.floatToIntBits(transform.x);
+        this.params[1] = Float.floatToIntBits(transform.y);
+        this.params[2] = Float.floatToIntBits(transform.z);
+        this.params[3] = Float.floatToIntBits(transform.w);
+        this.params[4] = channel;
+        this.params[5] = texture;
     }
 
     /***
@@ -96,4 +109,7 @@ public class MaterialBox implements Serializable {
     }
 
     public int[] getParameters() { return this.params; }
+
+    public boolean isColor() { return this.type == BoxType.COLOR; }
+    public boolean isTexture() { return this.type == BoxType.TEXTURE_SAMPLE; }
 }

@@ -41,6 +41,9 @@ public class RGfxMaterial implements Serializable, Compressable {
     public static final int UV_SCALES = 0x8;
     public static final int PERF_DATA = 0x2;
 
+    public static final Vector4f SPECULAR_COLOR = new Vector4f(0.09f, 0.09f, 0.09f, 1.0f);
+    // public static final Vector4f SPECULAR_COLOR = new Vector4f(126.43f, 932.4f, 6421.2f, 632.156f);
+
     public int flags = GfxMaterialFlags.DEFAULT;
     public float alphaTestLevel = 0.5f;
     public byte alphaLayer, alphaMode;
@@ -339,12 +342,42 @@ public class RGfxMaterial implements Serializable, Compressable {
     public MaterialBox getBoxFrom(MaterialWire wire) { return this.boxes.get(wire.boxFrom); }
     public MaterialBox getBoxTo(MaterialWire wire) { return this.boxes.get(wire.boxTo); }
 
-    public static RGfxMaterial getDiffuseLayout(Vector2f scale, Vector2f offset, ResourceDescriptor texture, boolean doubleSided, boolean alphaClip) {
+    public static RGfxMaterial getBumpLayout(
+        Vector4f diffuseTransform,
+        Vector4f bumpTransform,
+        ResourceDescriptor diffuse,
+        ResourceDescriptor bump,
+        boolean doubleSided,
+        boolean alphaClip
+    ) {
+        RGfxMaterial gfx = new RGfxMaterial();
+        gfx.textures[0] = diffuse;
+        gfx.textures[1] = bump;
+        gfx.boxes.add(new MaterialBox());
+        gfx.boxes.add(new MaterialBox(diffuseTransform, 0, 0));
+        gfx.boxes.add(new MaterialBox(SPECULAR_COLOR));
+        gfx.boxes.add(new MaterialBox(bumpTransform, 0, 1));
+
+        gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.DIFFUSE));
+        gfx.wires.add(new MaterialWire(2, 0, 0, BrdfPort.SPECULAR));
+        gfx.wires.add(new MaterialWire(3, 0, 0, BrdfPort.BUMP));
+        
+        gfx.flags = GfxMaterialFlags.DEFAULT;
+        if (doubleSided)
+            gfx.flags |= GfxMaterialFlags.TWO_SIDED;
+
+        if (alphaClip)
+            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.ALPHA_CLIP));
+        
+        return gfx;
+    }
+
+    public static RGfxMaterial getDiffuseLayout(Vector4f transform, ResourceDescriptor texture, boolean doubleSided, boolean alphaClip) {
         RGfxMaterial gfx = new RGfxMaterial();
         gfx.textures[0] = texture;
         gfx.boxes.add(new MaterialBox());
-        gfx.boxes.add(new MaterialBox(scale, offset, 0, 0));
-        gfx.boxes.add(new MaterialBox(new Vector4f(0.09f, 0.09f, 0.09f, 1.0f)));
+        gfx.boxes.add(new MaterialBox(transform, 0, 0));
+        gfx.boxes.add(new MaterialBox(SPECULAR_COLOR));
 
         gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.DIFFUSE));
         gfx.wires.add(new MaterialWire(2, 0, 0, BrdfPort.SPECULAR));

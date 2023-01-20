@@ -47,6 +47,7 @@ public class ResourceSystem {
             CACHE[i] = null;
         }
         CACHE_INDEX = 0;
+        System.gc();
     }
 
     public static void addCache(FileNode node) {
