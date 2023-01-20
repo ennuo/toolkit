@@ -25,6 +25,7 @@ import cwlib.types.data.Revision;
 import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
+import cwlib.util.Resources;
 import executables.gfx.CgAssembler;
 import executables.gfx.GfxAssembler;
 import executables.gfx.GfxAssembler.BrdfPort;
@@ -303,10 +304,17 @@ public class AssetExporter extends JDialog {
     private ResourceDescriptor recurse(Asset asset, ArrayList<Asset> assets, MaterialLibrary remap) {
         if (asset.data == null) return asset.descriptor;
 
-        Resource resource = new Resource(asset.data);
-        if (resource.getSerializationType() != SerializationType.BINARY || asset.recursed) {
+        ResourceType type = Resources.getResourceType(asset.data);
+        if (asset.recursed || type == ResourceType.INVALID) {
             asset.recursed = true;
+            if (asset.hashinate)
+                return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
+            return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
+        }
 
+        Resource resource = new Resource(asset.data);
+        if (resource.getSerializationType() != SerializationType.BINARY) {
+            
             // LBP1 didn't have GTF files
             if (remap == MaterialLibrary.LBP1 && resource.getResourceType().equals(ResourceType.GTF_TEXTURE)) {
                 byte[] header = DDS.getDDSHeader(resource.getTextureInfo());
@@ -316,6 +324,7 @@ public class AssetExporter extends JDialog {
                 asset.data = Resource.compress(new SerializationData(data));
             }
 
+            asset.recursed = true;
             if (asset.hashinate)
                 return new ResourceDescriptor(SHA1.fromBuffer(asset.data), asset.descriptor.getType());
             return new ResourceDescriptor((GUID) asset.entry.getKey(), asset.descriptor.getType());
