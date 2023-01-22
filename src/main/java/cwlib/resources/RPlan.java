@@ -2,8 +2,11 @@ package cwlib.resources;
 
 import java.util.HashSet;
 
+import org.joml.Matrix4f;
+
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
@@ -14,6 +17,7 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PMetadata;
+import cwlib.structs.things.parts.PPos;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
@@ -155,7 +159,26 @@ public class RPlan implements Compressable, Serializable {
     public Thing[] getThings() {
         Serializer serializer = new Serializer(this.thingData, this.revision, this.compressionFlags);
         Thing[] things = serializer.array(null, Thing.class, true);
-        serializer.log("END");
+
+        // Fixup local positions in revisions where they were removed
+        // from serialization.
+        if (this.revision.getVersion() >= 0x341) {
+            for (Thing thing : things) {
+                if (thing == null || thing.parent == null) continue;
+
+                PPos pos = thing.getPart(Part.POS);
+                if (pos == null) continue;
+
+                PPos parent = thing.parent.getPart(Part.POS);
+
+                // This generally shouldn't happen, but make sure to check it anyway
+                if (parent == null) continue;
+
+                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
+                pos.localPosition = inv.mul(pos.worldPosition);
+            }
+        }
+
         return things;
     }
 
