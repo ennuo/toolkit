@@ -443,7 +443,12 @@ void main(
     out half4 fragColor
 ) {
     #if (PROPERTIES & ALPHA)
-        if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
+        float4 alpha = GetAlpha(iUV, iColor);
+        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+            if (GetAlpha(iUV, iColor).x < AlphaTestLevel) discard;
+        #else
+            if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
+        #endif
     #endif
 
     // First normal pass shader
