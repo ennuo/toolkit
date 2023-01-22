@@ -444,11 +444,20 @@ public class Toolkit extends javax.swing.JFrame {
             this.entryContext.add(this.extractGroup);
             
             // Maybe I should check if at least one resource is compressed?
-            this.extractDecompressedContext.setVisible(!isFile || (isCompressed && type != ResourceType.STATIC_MESH));
+            this.extractDecompressedContext.setVisible(!isFile || (isCompressed && type != ResourceType.STATIC_MESH && type != ResourceType.FONTFACE));
             
             
             if (isFile && info != null) {
                 switch (type) {
+                    case FONTFACE: {
+                        Swing.createMenuItem(
+                            "PNG",
+                            "Export all font glyphs as a PNG",
+                            ExportCallbacks::exportFont, 
+                            this.exportGroup
+                        );
+                        break;
+                    }
                     case TEXTURE: case GTF_TEXTURE: {
                         this.exportGroup.add(this.exportTextureGroupContext);
                         break;

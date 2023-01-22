@@ -10,6 +10,7 @@ import cwlib.ex.SerializationException;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.resources.RFontFace;
 import cwlib.resources.RStaticMesh;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
@@ -82,7 +83,22 @@ public class ResourceInfo {
 
         ResourceType type = ResourceType.fromMagic(new String(new byte[] { source[0], source[1], source[2] }));
         SerializationType method = SerializationType.fromValue(Character.toString((char) source[3]));
-        if (type == ResourceType.INVALID || type == ResourceType.FONTFACE || method == SerializationType.UNKNOWN) return;
+        if (type == ResourceType.INVALID || method == SerializationType.UNKNOWN) return;
+
+        if (type == ResourceType.FONTFACE) {
+
+            if (method != SerializationType.BINARY) {
+                ResourceSystem.println("RFontFace only supports binary serialization!");
+                return;
+            }
+            this.type = ResourceType.FONTFACE;
+            try { this.resource = new RFontFace(source); }
+            catch (Exception ex) {
+                ResourceSystem.println("Failed to process RFontFace, marking resource as invalid");
+                this.type = ResourceType.INVALID;
+            }
+            return;
+        }
 
         Resource resource = new Resource(source);
         this.type = resource.getResourceType();

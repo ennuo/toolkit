@@ -1,6 +1,7 @@
 package toolkit.functions;
 
 import cwlib.resources.RAnimation;
+import cwlib.resources.RFontFace;
 import cwlib.util.FileIO;
 import cwlib.util.Resources;
 import cwlib.types.Resource;
@@ -22,6 +23,7 @@ import cwlib.util.Strings;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -164,6 +166,26 @@ public class ExportCallbacks {
         if (texture == null) return;
         
         FileIO.write(texture.getData(), file.getAbsolutePath());
+    }
+
+    public static void exportFont(ActionEvent e) {
+        FileEntry selected = ResourceSystem.getSelected().getEntry();
+
+        File file = FileChooser.openFile(
+            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".png",
+            "png",
+            true
+        );
+
+        if (file == null) return;
+
+        ResourceInfo info = selected.getInfo();
+        if (info == null) return;
+
+        RFontFace font = selected.getInfo().getResource();
+        if (font == null) return;
+
+        font.export(file.getAbsolutePath());
     }
 
     public static void exportTranslations() {
