@@ -4,6 +4,7 @@ import configurations.ApplicationFlags;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
+import cwlib.enums.InventoryObjectSubType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.Thing;
 import cwlib.types.Resource;
@@ -370,6 +371,10 @@ public class AssetExporter extends JDialog {
                     plan.revision = revision;
                     plan.compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
                     plan.setThings(things);
+                    if (remap == MaterialLibrary.LBP1 && (plan.inventoryData.subType & InventoryObjectSubType.SPECIAL_COSTUME) != 0) {
+                        plan.inventoryData.subType &= ~InventoryObjectSubType.SPECIAL_COSTUME;
+                        plan.inventoryData.subType |= InventoryObjectSubType.FULL_COSTUME;
+                    }
                     data = Resource.compress(plan.build());
                 } catch (Exception ex) { 
                     System.out.println("Failed to convert a plan resource!");
