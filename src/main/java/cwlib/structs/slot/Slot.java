@@ -130,7 +130,7 @@ public class Slot implements Serializable {
             slot.backgroundGUID = serializer.guid(slot.backgroundGUID);
         }
 
-        if (version > 0x332)
+        if (version >= 0x333)
             slot.planetDecorations = serializer.resource(slot.planetDecorations, ResourceType.PLAN, true);
 
         if (version < 0x188)
@@ -139,7 +139,7 @@ public class Slot implements Serializable {
         if (version > 0x1de)
             slot.developerLevelType = serializer.enum32(slot.developerLevelType);
         else 
-            serializer.bool(false); // isStoryLevel
+            serializer.bool(false); // SideMission
 
         if (version > 0x1ad && version < 0x1b9)
             serializer.u8(0); // Unknown
@@ -149,18 +149,17 @@ public class Slot implements Serializable {
 
         if (version <= 0x2c3) return slot;
 
-        if (version > 0x33b)
+        if (version >= 0x33c)
             slot.labels = serializer.array(slot.labels, Label.class);
 
-        if (version > 0x2e9)
+        if (version >= 0x2ea)
             slot.collectabubblesRequired = serializer.array(slot.collectabubblesRequired, Collectabubble.class);
-        if (version > 0x2f3)
+        if (version >= 0x2f4)
             slot.collectabubblesContained = serializer.array(slot.collectabubblesContained, Collectabubble.class);
 
-        if (version < 0x352) return slot;
-
-        slot.isSubLevel = serializer.bool(slot.isSubLevel);
-
+        if (version >= 0x352)
+            slot.isSubLevel = serializer.bool(slot.isSubLevel);
+        
         if (version < 0x3d0) return slot;
 
         slot.minPlayers = serializer.i8(slot.minPlayers);
@@ -175,8 +174,10 @@ public class Slot implements Serializable {
         if (version >= 0x3e9)
             slot.crossCompatible = serializer.bool(slot.crossCompatible);
 
-        slot.showOnPlanet = serializer.bool(slot.showOnPlanet);
-        slot.livesOverride = serializer.i8(slot.livesOverride);
+        if (version >= 0x3d1)
+            slot.showOnPlanet = serializer.bool(slot.showOnPlanet);
+        if (version >= 0x3d2)
+            slot.livesOverride = serializer.i8(slot.livesOverride);
 
         if (revision.isVita()) {
             if (revision.has(Branch.DOUBLE11, Revisions.D1_SLOT_REWARDS)) {

@@ -7,15 +7,18 @@ import cwlib.types.archives.Fat;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.archives.SaveKey;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 import cwlib.structs.slot.Slot;
 import cwlib.enums.Crater;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.slot.SlotID;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
+import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.InventoryObjectSubType;
@@ -297,8 +300,13 @@ public class BigSave extends FileData {
         if (this.archive.getArchiveRevision() == 5) {
             throw new UnsupportedOperationException("Saving Vita profiles isn't implemented yet!");
         }
+
+        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+        Revision revision = this.archive.getGameRevision();
+        if ((revision.getVersion() >= 0x297) || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES))
+            compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
         
-        this.archive.getKey().setRootHash(this.archive.add(Resource.compress(this.profile, this.archive.getGameRevision(), CompressionFlags.USE_NO_COMPRESSION)));
+        this.archive.getKey().setRootHash(this.archive.add(Resource.compress(this.profile, revision, compressionFlags)));
         this.archive.save(file.getAbsolutePath());
         if (file == this.getFile())
             this.hasChanges = false;

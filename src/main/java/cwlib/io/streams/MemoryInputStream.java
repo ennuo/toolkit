@@ -1,7 +1,7 @@
 package cwlib.io.streams;
 
 import java.lang.reflect.Array;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -403,7 +403,7 @@ public class MemoryInputStream {
      */
     public final String wstr(int size) {
         if (size == 0) return "";
-        return new String(this.bytes(size * 2), Charset.forName("UTF-16BE")).replace("\0", "");
+        return new String(this.bytes(size * 2), StandardCharsets.UTF_16BE).replace("\0", "");
     }
 
     /**

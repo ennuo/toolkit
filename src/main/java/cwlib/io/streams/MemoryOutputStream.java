@@ -480,9 +480,13 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final MemoryOutputStream wstr(String value, int size) {
+        size *= 2;
         if (value == null) return this.bytes(new byte[size]);
-        this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
-        this.pad((size * 2) - (value.length() * 2));
+        byte[] string = value.getBytes(StandardCharsets.UTF_16BE);
+        if (string.length > size)
+            string = Arrays.copyOf(string, size);
+        this.bytes(string);
+        this.pad(size - string.length);
         return this;
     }
 
@@ -493,8 +497,9 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream str(String value) {
         if (value == null) return this.i32(0);
-        this.s32(value.length());
-        return this.bytes(value.getBytes());
+        byte[] string = value.getBytes(StandardCharsets.US_ASCII);
+        this.s32(string.length);
+        return this.bytes(string);
     }
 
     /**
@@ -504,8 +509,9 @@ public class MemoryOutputStream {
      */
     public final MemoryOutputStream wstr(String value) {
         if (value == null) return this.i32(0);
-        this.s32(value.length());
-        return this.bytes(value.getBytes(StandardCharsets.UTF_16BE));
+        byte[] string = value.getBytes(StandardCharsets.UTF_16BE);
+        this.s32(string.length / 2);
+        return this.bytes(string);
     }
 
     /**

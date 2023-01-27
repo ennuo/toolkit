@@ -320,7 +320,7 @@ public class SaveArchive extends Fart {
      * Builds this archive and returns the resulting byte array.
      * @return Built archive
      */
-    public byte[] build() {
+    public byte[] build(boolean hashinate) {
         // If the root exists, use it to filter what
         // resources are actually necessary.
         SHA1 rootHash = this.key.getRootHash();
@@ -392,7 +392,7 @@ public class SaveArchive extends Fart {
         byte[] archive = stream.getBuffer();
 
         // Compute hash and write it to the buffer
-        if (this.archiveRevision > 2) {
+        if (hashinate && this.archiveRevision > 2) {
             this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
             System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
         }
@@ -426,14 +426,14 @@ public class SaveArchive extends Fart {
     public boolean save(String path) {
         if (path == null) 
             throw new IllegalArgumentException("Can't save archive to null path!");
-        byte[] archive = this.build();
+        byte[] archive = this.build(false);
         return FileIO.write(archive, path);
     }
 
     @Override public boolean save() {
         if (this.file == null)
             throw new IllegalStateException("Can't save archive with no associated file!");
-        byte[] archive = this.build();
+        byte[] archive = this.build(false);
         return FileIO.write(archive, this.file.getAbsolutePath());
     }
 

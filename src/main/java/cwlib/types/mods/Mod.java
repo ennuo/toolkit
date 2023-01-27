@@ -263,7 +263,7 @@ public class Mod extends FileDB  {
         if (file == null) return false;
         
         byte[] serializedDatabase = this.build();
-        byte[] serializedArchive = this.archive.build();
+        byte[] serializedArchive = this.archive.build(false);
         
         byte[] image = null;
         if (this.icon != null) {
