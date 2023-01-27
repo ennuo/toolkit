@@ -621,7 +621,7 @@ public class Serializer {
             if (descriptor.isHash() && descriptor.getSHA1().equals(SHA1.EMPTY))
                 return null;
             
-            if (!(isDescriptor && type == ResourceType.PLAN))
+            if (descriptor.isHash() || (!(isDescriptor && type == ResourceType.PLAN)))
                 this.dependencies.add(descriptor);
             return descriptor;
         }
@@ -723,7 +723,7 @@ public class Serializer {
                 return value;
             }
 
-            long bytes = Arrays.stream(value).max().orElse(0);
+            long bytes = Arrays.stream(value).mapToLong(x -> x & 0xFFFFFFFFl).max().orElse(0);
             if (bytes == 0) {
                 this.output.i32(value.length);
                 this.output.i32(0);

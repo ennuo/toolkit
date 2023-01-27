@@ -61,9 +61,11 @@ public class PAudioWorld implements Serializable {
         if (version < 0x2c4) {
             audio.triggerByFalloff = serializer.bool(audio.triggerByFalloff); // = play mode 0
             audio.triggerByImpact = serializer.bool(audio.triggerByImpact); // = play mode 1 
-            audio.triggerBySwitch = serializer.bool(audio.triggerBySwitch);
             if (version < 0x165)
                 serializer.bool(false); // unk
+            audio.triggerBySwitch = serializer.bool(audio.triggerBySwitch);
+            if (version < 0x165)
+                serializer.bool(false);
             if (version >= 0x1ad)
                 audio.triggerByDestroy = serializer.bool(audio.triggerByDestroy); // = play mode 2
 

@@ -237,7 +237,7 @@ public class AssetExporter extends JDialog {
                                 type.equals(ResourceType.FILENAME) ||
                                 type.equals(ResourceType.SCRIPT); // These don't technically *have* to be GUID, but they're mostly useless otherwise.
             asset.locked = isLocked;
-            boolean shouldUseGUID = isLocked || defaults.contains(asset.descriptor.getGUID());
+            boolean shouldUseGUID = isLocked || (asset.descriptor.isGUID() && defaults.contains(asset.descriptor.getGUID()));
             
             if (shouldUseGUID)
                 asset.hashinate = false;

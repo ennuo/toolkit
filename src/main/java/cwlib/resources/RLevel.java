@@ -19,8 +19,10 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.inventory.UserCreatedDetails;
+import cwlib.structs.level.AdventureData;
 import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
@@ -52,6 +54,12 @@ public class RLevel implements Serializable, Compressable {
     public GUID musicGUID, musicSettingsGUID;
     @GsonRevision(branch=0x4431, min=0x70)
     public float[] musicStemVolumes;
+
+    @GsonRevision(lbp3=true, min=0xfa)
+    public byte[] dceUuid;
+
+    @GsonRevision(lbp3=true, min=0x169)
+    public AdventureData adventureData;
 
     public RLevel() {
         Thing thing = new Thing(-1);
@@ -108,18 +116,23 @@ public class RLevel implements Serializable, Compressable {
             level.musicSettingsGUID = serializer.guid(level.musicSettingsGUID);
             level.musicStemVolumes = serializer.floatarray(level.musicStemVolumes);
         }
-
-        if (subVersion > 0x34 && subVersion < 0x91) { /* some bool */}
-        if (subVersion > 0x34 && subVersion < 0xb3) { /* some bool */}
-        if (subVersion > 0x94 && subVersion < 0x12a) { /* some bool */}
-
-
-        if (subVersion >= 0x169) { /* adventure data */}
         
-        // dceUuid
-        // adventureData
+        if (subVersion > 0x34 && subVersion < 0x91) { serializer.bool(false);/* some bool */}
+        if (subVersion > 0x34 && subVersion < 0xb3) { serializer.bool(false); /* some bool */}
+        if (subVersion > 0x94 && subVersion < 0x12a) { serializer.bool(false); /* some bool */}
+        
+        if (subVersion > 0xf1 && subVersion <= 0xf9) { /* ? */ }
 
-        serializer.log("END PARSE");
+        if (subVersion >= 0xfa)
+            level.dceUuid = serializer.bytearray(level.dceUuid);
+
+        if (subVersion >= 0x161 && subVersion < 0x169) {
+            // dont know whats here, old adventure data?
+            // will figure it out later
+        }
+
+        if (subVersion >= 0x169)
+            level.adventureData = serializer.reference(level.adventureData, AdventureData.class);
         
         return level;
     }
