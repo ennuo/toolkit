@@ -2384,7 +2384,7 @@ public class Toolkit extends javax.swing.JFrame {
             boolean wasPS4 = archive.isLittleEndian();
             archive.setLittleEndian(!wasPS4);
 
-            FileIO.write(archive.build(), FAR4.getAbsolutePath());
+            FileIO.write(archive.build(false), FAR4.getAbsolutePath());
             JOptionPane.showMessageDialog(this, 
                     String.format("FAR4 has been swapped to %s endianness.", 
                             (!wasPS4) ? "PS4" : "PS3"));
