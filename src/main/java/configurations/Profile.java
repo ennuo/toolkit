@@ -7,6 +7,7 @@ public class Profile {
     public String name = "Unnamed Profile";
     public List<String> archives = new ArrayList<>();
     public List<String> databases = new ArrayList<>();
+    public List<String> saves = new ArrayList<>();
     public long language = 0;
     
     public Profile() {};
