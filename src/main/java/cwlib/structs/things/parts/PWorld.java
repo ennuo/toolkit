@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.joml.Vector4f;
 
 import cwlib.enums.Branch;
-import cwlib.enums.GameMode;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
@@ -13,6 +12,7 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
+import cwlib.structs.streaming.StreamingManager;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.EggLink;
 import cwlib.structs.things.components.KeyLink;
@@ -30,6 +30,8 @@ public class PWorld implements Serializable {
     @GsonRevision(lbp3=true,min=0x6d) public float backdropOffsetX, backdropOffsetY, backdropOffsetZ;
     @GsonRevision(lbp3=true,min=0x70) public boolean backdropOffsetZAuto;
     @GsonRevision(lbp3=true,min=0xe2) public String overrideBackdropAmbience;
+    @GsonRevision(lbp3=true,min=0x3f)
+    public StreamingManager streamingManager;
     public ArrayList<Thing> things = new ArrayList<>();
     public float maxVel = 100.0f, maxAVel = 1.0f;
     public int frame;
@@ -179,6 +181,14 @@ public class PWorld implements Serializable {
             world.backdropOffsetZ = serializer.f32(world.backdropOffsetZ);
         }
 
+        if (subVersion >= 0x72 && subVersion <= 0x73) {
+            serializer.f32(0);
+            serializer.f32(0);
+            serializer.f32(0);
+            serializer.u8(0);
+            serializer.u8(0);
+        }
+
         if (subVersion >= 0x70)
             world.backdropOffsetZAuto = serializer.bool(world.backdropOffsetZAuto);
         if (subVersion >= 0xe2)
@@ -193,10 +203,8 @@ public class PWorld implements Serializable {
             }
         }
 
-        if (subVersion >= 0x3f) {
-            if (serializer.i32(0) != 0) throw new SerializationException("Streaming manager not supported!");
-        }
-
+        if (subVersion >= 0x3f)
+            world.streamingManager = serializer.reference(world.streamingManager, StreamingManager.class);
         
         if (!revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
             world.things = serializer.arraylist(world.things, Thing.class, true);
@@ -211,6 +219,7 @@ public class PWorld implements Serializable {
 
             world.thingUIDCounter = serializer.i32(world.thingUIDCounter);
         }
+
         
         if (version < 0x32d)
             world.randy = serializer.i32(world.randy);
@@ -547,22 +556,12 @@ public class PWorld implements Serializable {
         if (subVersion >= 0x5d)
             world.manualJumpDown = serializer.i32(world.manualJumpDown);
 
-
-
         if (subVersion >= 0x98 && subVersion < 0xe5)
-            throw new SerializationException("Unsupported objects in PWorld serialization!");
-
-        // if (subVersion >= 0x98 && subVersion < 0xe5) {
-
-        // }
-
-        // if (subVersion >= 0xc3 && subVersion < 0xe5) {
-
-        // }
-
-        // if (subVersion >= 0x98 && subVersion < 0xe5) {
-
-        // }
+            serializer.thingarray(null);
+        if (subVersion >= 0xc3 && subVersion < 0xe5)
+            serializer.thingarray(null);
+        if (subVersion >= 0x98 && subVersion < 0xe5)
+            serializer.thingarray(null);
 
         if (subVersion >= 0xe5)
             world.deferredDestroys = serializer.array(world.deferredDestroys, Thing.class, true);
@@ -587,9 +586,6 @@ public class PWorld implements Serializable {
 
         if (subVersion >= 0x15e)
             world.isLBP3World = serializer.bool(world.isLBP3World);
-
-        // serializer.log("PWORLD STRUCTURE NOT FINISHED!");
-        // System.exit(0);
 
         return world;
     }

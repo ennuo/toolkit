@@ -33,7 +33,7 @@ public class PAtmosphericTweak implements Serializable {
         tweak.inputAction = serializer.s32(tweak.inputAction);
 
         if (subVersion < 0x1a8)
-            serializer.u8(0);
+            serializer.bool(false); // disableAudio
 
         if (subVersion > 0x135)
             tweak.maxParticles = serializer.f32(tweak.maxParticles);

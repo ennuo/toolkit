@@ -65,6 +65,8 @@ public class Thing implements Serializable {
         this.UID = UID; 
     }
     
+    static int glob = 0;
+
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
@@ -127,6 +129,7 @@ public class Thing implements Serializable {
         } else {
             if (version >= 0x254)
                 thing.planGUID = serializer.guid(thing.planGUID);
+
             if (version >= 0x341) {
                 if (revision.has(Branch.DOUBLE11, 0x62))
                     thing.flags = serializer.i16(thing.flags);
@@ -198,6 +201,9 @@ public class Thing implements Serializable {
             serializer.log(part.name() + " [END]");
         }
 
+        // if (subVersion >= 0x83 && subVersion < 0x8b)
+            // serializer.u8(0);
+        
         serializer.log("THING " + Bytes.toHex(thing.UID) + " [END]");
         
         return thing;

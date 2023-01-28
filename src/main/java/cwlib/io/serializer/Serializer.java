@@ -573,7 +573,7 @@ public class Serializer {
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type) {
-        return this.resource(value, type, false, true);
+        return this.resource(value, type, false, true, false);
     }
 
     /**
@@ -584,7 +584,7 @@ public class Serializer {
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor) {
-        return this.resource(value, type, isDescriptor, true);
+        return this.resource(value, type, isDescriptor, true, false);
     }
 
     /**
@@ -593,9 +593,10 @@ public class Serializer {
      * @param type Type of resource
      * @param isDescriptor Whether or not to skip resource flags
      * @param cp Flag toggle
+     * @param t Serialize resource type
      * @return Resource (de)serialized
      */
-    public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor, boolean cp) {
+    public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type, boolean isDescriptor, boolean cp, boolean t) {
         byte NONE = 0, HASH = 1, GUID = 2;
         // is it 0x191 or 0x18c
         if (this.revision.getVersion() < 0x191 && cp) {
@@ -612,9 +613,9 @@ public class Serializer {
             if (guidHashFlag == NONE) return null;
 
             if (guidHashFlag == GUID)
-                descriptor = new ResourceDescriptor(this.input.guid(), type);
+                descriptor = new ResourceDescriptor(this.input.guid(), t ? ResourceType.fromType(this.input.i32()) : type);
             else if (guidHashFlag == HASH)
-                descriptor = new ResourceDescriptor(this.input.sha1(), type);
+                descriptor = new ResourceDescriptor(this.input.sha1(), t ? ResourceType.fromType(this.input.i32()) : type);
             else
                 throw new SerializationException("Invalid GUID/HASH flag!");
 
@@ -643,6 +644,9 @@ public class Serializer {
             if (flags != 0 && !(isDescriptor && type == ResourceType.PLAN))
                 this.dependencies.add(value);
         } else this.i8(NONE);
+
+        if (t)
+            this.output.i32(value != null ? value.getType().getValue() : 0);
 
         return value;
     }

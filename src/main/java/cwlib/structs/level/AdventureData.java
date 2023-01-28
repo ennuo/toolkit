@@ -15,27 +15,36 @@ public class AdventureData implements Serializable {
     public int adventureItemPUIDCounter;
     public ArrayList<AdventureItem> adventureItems = new ArrayList<>();
     public ArrayList<ResourceDescriptor> questDescriptors = new ArrayList<>();
-    public ArrayList<SlotID> startPointList = new ArrayList<>();
+    public ArrayList<StartPoint> startPointList = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     @Override public AdventureData serialize(Serializer serializer, Serializable structure) {
         AdventureData data = (structure == null) ? new AdventureData() : (AdventureData) structure;
 
-        data.adventureFixedID = serializer.i32(data.adventureFixedID);
-        data.adventureItemPUIDCounter = serializer.i32(data.adventureItemPUIDCounter);
-        data.adventureItems = serializer.arraylist(data.adventureItems, AdventureItem.class);
+        int subVersion = serializer.getRevision().getSubVersion();
 
-        int numItems = serializer.i32(data.questDescriptors != null ? data.questDescriptors.size() : 0);
-        if (serializer.isWriting()) {
-            for (ResourceDescriptor descriptor : data.questDescriptors)
-                serializer.resource(descriptor, ResourceType.QUEST, true);
-        } else {
-            data.questDescriptors = new ArrayList<>(numItems);
-            for (int i = 0; i < numItems; ++i)
-                data.questDescriptors.add(serializer.resource(null, ResourceType.QUEST, true));
+        if (subVersion > 0xaf)
+            data.adventureFixedID = serializer.i32(data.adventureFixedID);
+
+        if (subVersion > 0x93) {
+            data.adventureItemPUIDCounter = serializer.i32(data.adventureItemPUIDCounter);
+            data.adventureItems = serializer.arraylist(data.adventureItems, AdventureItem.class);
         }
 
-        data.startPointList = serializer.arraylist(data.startPointList, SlotID.class);
+        if (subVersion > 0xa6) {
+            int numItems = serializer.i32(data.questDescriptors != null ? data.questDescriptors.size() : 0);
+            if (serializer.isWriting()) {
+                for (ResourceDescriptor descriptor : data.questDescriptors)
+                    serializer.resource(descriptor, ResourceType.QUEST, true);
+            } else {
+                data.questDescriptors = new ArrayList<>(numItems);
+                for (int i = 0; i < numItems; ++i)
+                    data.questDescriptors.add(serializer.resource(null, ResourceType.QUEST, true));
+            }
+        }
+
+        if (subVersion >= 0xd1)
+            data.startPointList = serializer.arraylist(data.startPointList, StartPoint.class);
 
         return data;
     }

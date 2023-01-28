@@ -11,12 +11,20 @@ public class CollectableData implements Serializable {
     public ResourceDescriptor plan;
     public int source;
 
+    // -1 =invalid
+    // 0 = egg
+    // 1 = award_complete
+    // 2 = award_collect
+    // 3 = award_ace
+
     @SuppressWarnings("unchecked")
     @Override public CollectableData serialize(Serializer serializer, Serializable structure) {
         CollectableData data = (structure == null) ? new CollectableData() : (CollectableData) structure;
 
-        data.plan = serializer.resource(data.plan, ResourceType.PLAN, true);
-        data.source = serializer.i32(data.source);
+        if (serializer.getRevision().getVersion() >= 0x1c2) {
+            data.plan = serializer.resource(data.plan, ResourceType.PLAN, true);
+            data.source = serializer.s32(data.source);
+        }
 
         return data;
     }

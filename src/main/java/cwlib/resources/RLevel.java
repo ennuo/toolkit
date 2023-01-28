@@ -9,6 +9,7 @@ import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.ex.SerializationException;
 import cwlib.types.Resource;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -78,7 +79,6 @@ public class RLevel implements Serializable, Compressable {
         thing.setPart(Part.GAMEPLAY_DATA, new PGameplayData());
 
         world.things.add(thing);
-        // world.things.add(new Thing(1));
 
         this.world = thing;
     }
@@ -117,19 +117,21 @@ public class RLevel implements Serializable, Compressable {
             level.musicStemVolumes = serializer.floatarray(level.musicStemVolumes);
         }
         
-        if (subVersion > 0x34 && subVersion < 0x91) { serializer.bool(false);/* some bool */}
-        if (subVersion > 0x34 && subVersion < 0xb3) { serializer.bool(false); /* some bool */}
-        if (subVersion > 0x94 && subVersion < 0x12a) { serializer.bool(false); /* some bool */}
+        if (subVersion > 0x34 && subVersion < 0x91)
+            serializer.bool(false);
+        if (subVersion > 0x34 && subVersion < 0xb3) 
+            serializer.bool(false);
+        if (subVersion > 0x94 && subVersion < 0x12a)
+            serializer.bool(false); // savedThroughPusher
         
-        if (subVersion > 0xf1 && subVersion <= 0xf9) { /* ? */ }
+        if (subVersion >= 0xf1 && subVersion <= 0xf9)
+            level.adventureData = serializer.reference(level.adventureData, AdventureData.class);
 
         if (subVersion >= 0xfa)
             level.dceUuid = serializer.bytearray(level.dceUuid);
 
-        if (subVersion >= 0x161 && subVersion < 0x169) {
-            // dont know whats here, old adventure data?
-            // will figure it out later
-        }
+        if (subVersion >= 0x161 && subVersion < 0x169)
+            serializer.resource(null, ResourceType.ADVENTURE_SHARED_DATA);
 
         if (subVersion >= 0x169)
             level.adventureData = serializer.reference(level.adventureData, AdventureData.class);

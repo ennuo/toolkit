@@ -105,7 +105,8 @@ public class PCheckpoint implements Serializable {
         if (version >= 0x2ae && subVersion < 0x100)
             checkpoint.teamFilter = serializer.i32(checkpoint.teamFilter);
 
-        // some removed boolean/byte (head - 0x20000 < 0x1250000)
+        if (subVersion >= 0x1 && subVersion < 0x127)
+            serializer.u8(0); // persistPoint
 
         if (subVersion >= 0x88)
             checkpoint.creatureToSpawnAs = serializer.i32(checkpoint.creatureToSpawnAs);
@@ -114,7 +115,8 @@ public class PCheckpoint implements Serializable {
         if (subVersion >= 0xd5)
             checkpoint.linkVisibleOnPlanet = serializer.bool(checkpoint.linkVisibleOnPlanet);
 
-        // some removed boolean/byte (head + 0xfef80000 < 0x210000) ??? ghidra actin funny
+        if (subVersion >= 0x108 && subVersion < 0x129) 
+            serializer.u8(0); 
 
         if (subVersion >= 0xcb)
             checkpoint.name = serializer.wstr(checkpoint.name);

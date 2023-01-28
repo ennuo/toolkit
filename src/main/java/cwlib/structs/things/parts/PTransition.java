@@ -1,7 +1,5 @@
 package cwlib.structs.things.parts;
 
-import java.util.ArrayList;
-
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;

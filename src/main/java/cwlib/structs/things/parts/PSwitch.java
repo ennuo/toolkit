@@ -164,7 +164,7 @@ public class PSwitch implements Serializable {
             if (version < 0x160)
                 sw.refSticker = serializer.struct(sw.refSticker, GlobalThingDescriptor.class);
             else
-                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
+                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false, false);
         }
         
         if (0x13f < version && version < 0x1a5) serializer.s32(0);
@@ -177,7 +177,7 @@ public class PSwitch implements Serializable {
         }
 
         if (version >= 0x398 && (sw.type == SwitchType.STICKER || (type == SwitchType.POCKET_ITEM && subVersion > 0x10)))
-            sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
+            sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false, false);
         
         if (version > 0x1a4 && version < 0x368) sw.platformVisualFactor = serializer.f32(sw.platformVisualFactor);
         if (version > 0x1a4 && version < 0x2a0) sw.oldActivation = serializer.f32(sw.oldActivation);
@@ -211,7 +211,7 @@ public class PSwitch implements Serializable {
             sw.angleRange = serializer.f32(sw.angleRange);
             sw.includeTouching = serializer.s32(sw.includeTouching);
             if (version >= 0x398 && sw.type == SwitchType.MICROCHIP && sw.includeTouching == 1)
-                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false);
+                sw.stickerPlan = serializer.resource(sw.stickerPlan, ResourceType.PLAN, true, false, false);
         }
 
         if (subVersion > 0x165 && sw.type == SwitchType.GAME_LIVE_STREAMING_CHOICE) {

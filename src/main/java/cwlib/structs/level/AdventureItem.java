@@ -17,10 +17,22 @@ public class AdventureItem implements Serializable {
     @Override public AdventureItem serialize(Serializer serializer, Serializable structure) {
         AdventureItem item = (structure == null) ? new AdventureItem() : (AdventureItem) structure;
 
+        int subVersion = serializer.getRevision().getSubVersion();
+
         item.PUID = serializer.i32(item.PUID);
         item.descriptor = serializer.resource(descriptor, ResourceType.PLAN, true);
-        item.flags = serializer.i32(item.flags);
-        item.iconPUID = serializer.i32(item.iconPUID);
+
+        if (subVersion < 0xae) {
+            serializer.u16(0);
+            serializer.u8(0);
+            serializer.f32(0);
+            serializer.i32(0);
+        }
+
+        if (subVersion > 0xbe)
+            item.flags = serializer.i32(item.flags);
+        if (subVersion > 0xe0)
+            item.iconPUID = serializer.i32(item.iconPUID);
 
         return item;
     }

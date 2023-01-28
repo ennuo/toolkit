@@ -55,12 +55,12 @@ public class PPoppetPowerup implements Serializable {
         }
 
         if (((subVersion - 0x8) <= subVersion) && (subVersion < 0x174)) {
-            serializer.u8(0);
-            serializer.u8(0);
+            serializer.u8(0); // goodies
+            serializer.u8(0); // tools
         }
 
         if (((subVersion - 0xb) <= subVersion) && (subVersion < 0x174))
-            serializer.i32(0);
+            serializer.s32(0); // nextUid
 
         if (subVersion > 0x8b)
             powerup.vcrControlsEnabled = serializer.bool(powerup.vcrControlsEnabled);
@@ -69,7 +69,7 @@ public class PPoppetPowerup implements Serializable {
             powerup.gridSnapMode = serializer.s32(powerup.gridSnapMode);
 
         if (((subVersion - 0xc1) <= subVersion) && subVersion < 0x174)
-            serializer.u8(0);
+            serializer.u8(0); // allowCursorToCopy
 
         if (subVersion > 0x12d)
             powerup.sackFreeze = serializer.bool(powerup.sackFreeze);

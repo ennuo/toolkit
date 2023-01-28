@@ -72,7 +72,7 @@ public enum Part {
     CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, null),
     ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, PAtmosphericTweak.class),
     STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, null),
-    STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, null);
+    STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, PStreamingHint.class);
 
     /**
      * Minimum version required for this part

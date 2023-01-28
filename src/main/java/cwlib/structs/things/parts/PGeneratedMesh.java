@@ -125,9 +125,7 @@ public class PGeneratedMesh implements Serializable {
         if (version >= 0x258)
             mesh.planGUID = serializer.guid(mesh.planGUID);
 
-        if (subVersion >= 0xfb)
-            mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
-        else if (version >= 0x27c) {
+        if (version >= 0x27c && subVersion < 0xfb) {
             if (serializer.isWriting())
                 serializer.getOutput().bool((mesh.visibilityFlags & VisibilityFlags.PLAY_MODE) != 0);
             else {
@@ -136,6 +134,9 @@ public class PGeneratedMesh implements Serializable {
                     mesh.visibilityFlags |=  VisibilityFlags.PLAY_MODE;
             }
         }
+        
+        if (subVersion >= 0xfb)
+            mesh.visibilityFlags = serializer.i8(mesh.visibilityFlags);
 
         if (version >= 0x305) {
             mesh.textureAnimationSpeed = serializer.f32(mesh.textureAnimationSpeed);
