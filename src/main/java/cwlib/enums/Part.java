@@ -62,7 +62,7 @@ public enum Part {
     @Deprecated CREATOR_ANIM(0x3e, PartHistory.CREATOR_ANIM, null),
     TRANSITION(0x29, PartHistory.TRANSITION, PTransition.class),
     FADER(0x2a, PartHistory.FADER, PFader.class),
-    ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, null),
+    ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, PAnimationTweak.class),
     WIND_TWEAK(0x2c, PartHistory.WIND_TWEAK, null),
     POWER_UP(0x2d, PartHistory.POWER_UP, PPowerUp.class),
     HUD_ELEM(0x2e, PartHistory.HUD_ELEM, null),
@@ -70,7 +70,7 @@ public enum Part {
     WORMHOLE(0x30, PartHistory.WORMHOLE, PWormhole.class),
     QUEST(0x31, PartHistory.QUEST, null),
     CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, null),
-    ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, null),
+    ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, PAtmosphericTweak.class),
     STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, null),
     STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, null);
 

@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
@@ -16,7 +17,11 @@ public class PMaterialOverride implements Serializable {
 
     public RegionOverride[] overrides;
     public ResourceDescriptor mesh;
+
+    @GsonRevision(lbp3=true, min=0x15f)
     public int color;
+
+    @GsonRevision(lbp3=true, min=0x191)
     public byte brightness;
 
     @SuppressWarnings("unchecked")

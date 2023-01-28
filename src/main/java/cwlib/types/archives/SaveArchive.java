@@ -395,7 +395,7 @@ public class SaveArchive extends Fart {
         if (hashinate && this.archiveRevision > 2) {
             this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
             System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
-        }
+        } else this.hashinate = SHA1.EMPTY;
         
         // Update state of the archive in memory.
         this.entries = entries;

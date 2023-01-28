@@ -1,37 +1,98 @@
 package cwlib.structs.things.parts;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
 public class PMaterialTweak implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
+    @GsonRevision(max=0x2c3)
     @Deprecated public float activation;
 
     public boolean hideInPlayMode;
-    public float restitution, frictionScale;
-    public byte grabbability, grabFilter, stickiness;
-    public boolean noAutoDestruct, isProjectile;
+
+    @GsonRevision(min=0x2b7)
+    public float restitution;
+
+    @GsonRevision(min=0x30d)
+    public float frictionScale;
+
+    @GsonRevision(min=0x343)
+    public byte grabbability;
+
+    @GsonRevision(min=0x3bd)
+    public byte grabFilter;
+
+    @GsonRevision(min=0x343)
+    public byte stickiness;
+
+    @GsonRevision(min=0x2b9)
+    public boolean noAutoDestruct;
+
+    @GsonRevision(lbp3=true, min=0x3)
+    public boolean isProjectile;
+
+    @GsonRevision(min=0x357)
     public boolean disablePhysicsAudio;
 
+    @GsonRevision(lbp3=true, min=0x4)
     public boolean isUsableByPoppetAudio;
-    public boolean hasShadow, noBevel, zSlice, climbability;
+
+    @GsonRevision(lbp3=true, min=6)
+    @GsonRevision(min=0x3ed)
+    public boolean hasShadow;
+
+    @GsonRevision(lbp3=true, min=0x34)
+    public boolean noBevel;
+
+    @GsonRevision(lbp3=true, min=0xdc)
+    public boolean zSlice;
+
+    @GsonRevision(lbp3=true, min=0x49)
+    public boolean climbability;
+
+    @GsonRevision(lbp3=true, min=0x8d)
     public boolean ppGrab;
+
+    @GsonRevision(lbp3=true, min=0x8d)
     public byte ppTweakability;
+
+    @GsonRevision(lbp3=true, min=0x8d)
     public boolean ppRigidConnection;
+
+    @GsonRevision(lbp3=true, min=0xa8)
     public boolean ppMaterialMergeable;
 
     /* Vita  */
 
+    @GsonRevision(branch=0x4431, min=0x5)
     public byte touchability;
+
+    @GsonRevision(branch=0x4431, min=0x7)
     public int tweakType;
+
+    @GsonRevision(branch=0x4431, min=0x7)
     public boolean highlight, includeRigidConnectors;
+
+    @GsonRevision(branch=0x4431, min=0x7)
     public boolean droppable, requiresTag, requiresNewTouch;
+
+    @GsonRevision(branch=0x4431, min=0x7)
     public float maxSpeed;
+
+    @GsonRevision(max=0x2cc)
+    @GsonRevision(branch=0x4431, min=0x7)
     public int colorIndex;
+
+    @GsonRevision(branch=0x4431, min=0x7)
     public String name;
+
+    @GsonRevision(branch=0x4431, min=0x49)
     public float touchRotationalStrength;
+
+    @GsonRevision(branch=0x4431, min=0x6c)
     public boolean touchabilityInvisible;
 
     @SuppressWarnings("unchecked")

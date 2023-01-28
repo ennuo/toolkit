@@ -4,19 +4,35 @@ import java.util.ArrayList;
 
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
 public class PPoppetPowerup implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x40;
 
+    @GsonRevision(lbp3=true, min=0x125)
     public long tools;
+
+    @GsonRevision(lbp3=true, min=0x125)
     public ArrayList<ResourceDescriptor> items = new ArrayList<>();
+
+    @GsonRevision(lbp3=true, min=0x8c)
     public boolean vcrControlsEnabled;
+
+    @GsonRevision(lbp3=true, min=0xa2)
     public int gridSnapMode;
+
+    @GsonRevision(lbp3=true, min=0x12e)
     public boolean sackFreeze;
+
+    @GsonRevision(lbp3=true, min=0x12f)
     public int minLayer, maxLayer;
+
+    @GsonRevision(lbp3=true, min=0x14b)
     public boolean vcrBackupTriggered;
+
+    @GsonRevision(lbp3=true, min=0x167)
     public boolean filterContents;
 
     @SuppressWarnings("unchecked")

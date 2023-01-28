@@ -3,17 +3,22 @@ package cwlib.structs.things.parts;
 import java.util.ArrayList;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
 public class PTransition implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public int colorIndex;
+
+    @GsonRevision(lbp3=true, min=0x1a)
     public String label;
 
+    @GsonRevision(lbp3=true, min=0x19)
     public boolean enabled;
-    public boolean showColor;
-    public boolean playAudio;
+
+    @GsonRevision(lbp3=true, min=0x17d)
+    public boolean showColor, playAudio;
 
     @SuppressWarnings("unchecked")
     @Override public PTransition serialize(Serializer serializer, Serializable structure) {

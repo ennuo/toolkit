@@ -518,7 +518,6 @@ public class PCreature implements Serializable {
             creature.head = serializer.thing(creature.head);
             creature.toolTetherJoint = serializer.thing(creature.toolTetherJoint);
             creature.toolTetherWidth = serializer.f32(creature.toolTetherWidth);
-            serializer.log("balls");
             creature.jetpack = serializer.thing(creature.jetpack);
             creature.wallJumpDir = serializer.i32(creature.wallJumpDir);
             creature.wallJumpPos = serializer.v3(creature.wallJumpPos);

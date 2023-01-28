@@ -5,6 +5,7 @@ import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.things.components.CostumePiece;
@@ -16,11 +17,20 @@ public class PCostume implements Serializable {
 
     public ResourceDescriptor mesh;
     public ResourceDescriptor material;
+
+    @GsonRevision(min=0x19a)
     public ResourceDescriptor materialPlan;
+
     public int[] meshPartsHidden;
     public Primitive[] primitives;
+
+    @GsonRevision(lbp3=true, min=0xdb)
     public byte creatureFilter;
+
     public CostumePiece[] costumePieces;
+
+    @GsonRevision(branch=0x4c44, min=Revisions.LD_TEMP_COSTUME)
+    @GsonRevision(min=0x2c5)
     public CostumePiece[] temporaryCostumePiece;
 
     public PCostume() {
