@@ -32,10 +32,6 @@ public class UserCreatedDetails implements Serializable {
         return details.name.equals(this.name) && details.description.equals(this.description);
     }
 
-    @Override public int hashCode() {
-        return (this.name + this.description).hashCode();
-    }
-
     @Override public int getAllocatedSize() {
         int size = BASE_ALLOCATION_SIZE;
         if (this.name != null)
