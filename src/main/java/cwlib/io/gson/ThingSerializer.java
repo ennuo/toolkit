@@ -46,11 +46,10 @@ public class ThingSerializer implements JsonSerializer<Thing>, JsonDeserializer<
     }
 
     @Override public JsonElement serialize(Thing thing, Type type, JsonSerializationContext jsc) {
-        if (GsonUtils.UIDs.contains(thing.UID))
+        if (GsonUtils.UNIQUE_THINGS.contains(thing))
             return new JsonPrimitive(thing.UID);
-        GsonUtils.UIDs.add(thing.UID);
+        GsonUtils.UNIQUE_THINGS.add(thing);
         
-
         JsonObject object = new JsonObject();
 
         int version = GsonUtils.REVISION.getVersion();
