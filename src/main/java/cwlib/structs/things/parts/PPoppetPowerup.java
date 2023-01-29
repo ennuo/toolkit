@@ -6,6 +6,8 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.inventory.InventoryItemDetails;
+import cwlib.structs.profile.InventoryItem;
 import cwlib.types.data.ResourceDescriptor;
 
 public class PPoppetPowerup implements Serializable {
@@ -54,12 +56,26 @@ public class PPoppetPowerup implements Serializable {
             }
         }
 
-        if (((subVersion - 0x8) <= subVersion) && (subVersion < 0x174)) {
+        // I should probably fix this up so it
+        // can re-serialize the items
+        // but also, who the hell is working at these revisions?
+        if (subVersion >= 0x7 && subVersion < 0x124)
+            serializer.array(null, InventoryItem.class);
+        if (subVersion >= 0xb && subVersion < 0x123) {
+            int count = serializer.i32(0);
+            for (int i = 0; i < count; ++i) {
+                serializer.i32(0);
+                serializer.i32(0);
+            }
+        }
+
+
+        if (subVersion >= 0x8 && subVersion < 0x174) {
             serializer.u8(0); // goodies
             serializer.u8(0); // tools
         }
 
-        if (((subVersion - 0xb) <= subVersion) && (subVersion < 0x174))
+        if (subVersion >= 0xb && subVersion < 0x174)
             serializer.s32(0); // nextUid
 
         if (subVersion > 0x8b)
@@ -68,7 +84,7 @@ public class PPoppetPowerup implements Serializable {
         if (subVersion > 0xa1)
             powerup.gridSnapMode = serializer.s32(powerup.gridSnapMode);
 
-        if (((subVersion - 0xc1) <= subVersion) && subVersion < 0x174)
+        if (subVersion >= 0xc1 && subVersion < 0x174)
             serializer.u8(0); // allowCursorToCopy
 
         if (subVersion > 0x12d)

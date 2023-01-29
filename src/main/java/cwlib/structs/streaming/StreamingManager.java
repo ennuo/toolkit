@@ -35,6 +35,29 @@ public class StreamingManager implements Serializable {
         if (subVersion >= 0x46)
             manager.editingThingsList = serializer.thingarray(manager.editingThingsList);
 
+        if (subVersion < 0x4d) {
+            // 00c57988 - islands
+        }
+
+        if (subVersion >= 0x4d && subVersion < 0x73) {
+            serializer.i32(0); // numChunks
+            serializer.i32(0); // numChunks
+        }
+
+        if (subVersion >= 0x73 && subVersion < 0x93) {
+            // serializer.array(null, ChunkFile.class, true);
+        }
+
+        if (subVersion >= 0x93 && subVersion < 0xa1) {
+            if (serializer.isWriting()) {
+                LevelData data = null;
+                if (manager.levelData != null && manager.levelData.length != 0)
+                    data = manager.levelData[0];
+                serializer.struct(data, LevelData.class);
+            } else
+                manager.levelData = new LevelData[] { serializer.struct(null, LevelData.class) };
+        }
+
         if (subVersion > 0xa0)
             manager.levelData = serializer.array(manager.levelData, LevelData.class, true);
 
@@ -42,6 +65,9 @@ public class StreamingManager implements Serializable {
             manager.numIslands = serializer.i32(manager.numIslands);
         if (subVersion > 0x1ff)
             manager.numPendingIslands = serializer.i32(manager.numPendingIslands);
+
+        if (subVersion >= 0x4e && subVersion <= 0x7e)
+            serializer.v3(null);
 
         if (subVersion >= 0x89)
             manager.fartDesc = serializer.resource(manager.fartDesc, ResourceType.FILE_OF_BYTES, true);

@@ -34,7 +34,7 @@ public class ChunkFile implements Serializable {
         ChunkFile chunk = (structure == null) ? new ChunkFile() : (ChunkFile) structure;
         int subVersion = serializer.getRevision().getSubVersion();
 
-        if (subVersion > 0x73 && subVersion <= 0x130) {
+        if (subVersion >= 0x73 && subVersion <= 0x130) {
             ResourceDescriptor descriptor = null;
             if (serializer.isWriting()) {
                 if (chunk.chunkHash != null)

@@ -1,11 +1,13 @@
 package cwlib.structs.things.parts;
 
 import cwlib.enums.Branch;
+import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 public class PCheckpoint implements Serializable {
@@ -71,7 +73,7 @@ public class PCheckpoint implements Serializable {
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
         
-        if (subVersion < 0x102) checkpoint.activeFlags = serializer.i8(checkpoint.activeFlags);
+        if (subVersion > 0x101) checkpoint.activeFlags = serializer.i8(checkpoint.activeFlags);
         else {
             if (serializer.isWriting()) 
                 serializer.getOutput().bool((checkpoint.activeFlags & 0xf) != 0);
@@ -108,8 +110,24 @@ public class PCheckpoint implements Serializable {
         if (subVersion >= 0x1 && subVersion < 0x127)
             serializer.u8(0); // persistPoint
 
-        if (subVersion >= 0x88)
-            checkpoint.creatureToSpawnAs = serializer.i32(checkpoint.creatureToSpawnAs);
+        if (subVersion >= 0x88) {
+
+            if (subVersion <= 0x12a) {
+                ResourceDescriptor descriptor = null;
+                if (serializer.isWriting()) {
+                    if (checkpoint.creatureToSpawnAs != 0)
+                        descriptor = new ResourceDescriptor(checkpoint.creatureToChangeBackTo, ResourceType.PLAN);
+                }
+                descriptor = serializer.resource(descriptor, ResourceType.PLAN);
+                if (!serializer.isWriting()) {
+                    if (descriptor != null && descriptor.isGUID())
+                        checkpoint.creatureToChangeBackTo = (int) descriptor.getGUID().getValue();
+                }
+            }
+
+            if (subVersion >= 0xc5)
+                checkpoint.creatureToSpawnAs = serializer.s32(checkpoint.creatureToSpawnAs);
+        }
         if (subVersion >= 0xcb)
             checkpoint.isStartPoint = serializer.bool(checkpoint.isStartPoint);
         if (subVersion >= 0xd5)

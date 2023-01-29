@@ -58,7 +58,7 @@ public enum Part {
     SEQUENCER(0x25, PartHistory.SEQUENCER, PSequencer.class),
     CONTROLINATOR(0x26, PartHistory.CONTROLINATOR, PControlinator.class),
     POPPET_POWERUP(0x27, PartHistory.POPPET_POWERUP, PPoppetPowerup.class),
-    POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, null),
+    POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, PPocketItem.class),
     @Deprecated CREATOR_ANIM(0x3e, PartHistory.CREATOR_ANIM, null),
     TRANSITION(0x29, PartHistory.TRANSITION, PTransition.class),
     FADER(0x2a, PartHistory.FADER, PFader.class),

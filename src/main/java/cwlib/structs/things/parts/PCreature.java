@@ -476,9 +476,9 @@ public class PCreature implements Serializable {
         if (version >= 0x3a2)
             creature.bulletEmitter1 = serializer.thing(creature.bulletEmitter1);
         if (version >= 0x24e) 
-            creature.bulletPosIndex = serializer.i32(creature.bulletPosIndex);
+            creature.bulletPosIndex = serializer.i32(creature.bulletPosIndex); // game.bulletposindex_dashboots_hoverboard_unionval
         if (version >= 0x24f) {
-            creature.maxBulletCount = serializer.i32(creature.maxBulletCount);
+            creature.maxBulletCount = serializer.i32(creature.maxBulletCount); 
             creature.ammoFillFactor = serializer.f32(creature.ammoFillFactor);
         }
         if (version >= 0x252)
@@ -581,11 +581,19 @@ public class PCreature implements Serializable {
                 creature.shootAtTouch = serializer.i32(creature.shootAtTouch);
         }
 
+        if (subVersion >= 0x88 && subVersion <= 0xa4)
+            serializer.resource(null, ResourceType.PLAN);
+
         if (subVersion >= 0xaa)
             creature.alternateFormWorld = serializer.thing(creature.alternateFormWorld);
 
         if (subVersion >= 0xd7)
             creature.hookHatState = serializer.i32(creature.hookHatState);
+
+        if (subVersion >= 0xd7 && subVersion < 0xea) {
+            serializer.thing(null);
+            serializer.thing(null);
+        }
 
         if (subVersion >= 0xdf)
             creature.hookHatBogey = serializer.thing(creature.hookHatBogey);
