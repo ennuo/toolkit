@@ -125,7 +125,7 @@ public class RLevel implements Serializable, Compressable {
             serializer.bool(false); // savedThroughPusher
         
         if (subVersion >= 0xf1 && subVersion <= 0xf9)
-            level.adventureData = serializer.reference(level.adventureData, AdventureData.class);
+            throw new SerializationException("Legacy adventure data not supported in serialization!");
 
         if (subVersion >= 0xfa)
             level.dceUuid = serializer.bytearray(level.dceUuid);

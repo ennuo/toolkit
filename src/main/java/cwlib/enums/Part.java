@@ -71,7 +71,7 @@ public enum Part {
     QUEST(0x31, PartHistory.QUEST, PQuest.class),
     CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, PConnectorHook.class),
     ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, PAtmosphericTweak.class),
-    STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, null),
+    STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, PStreamingData.class),
     STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, PStreamingHint.class);
 
     /**

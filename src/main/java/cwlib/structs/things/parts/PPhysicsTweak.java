@@ -199,10 +199,14 @@ public class PPhysicsTweak implements Serializable {
             if (version > 0x2ad)
                 tweak.teamFilter = serializer.u8(tweak.teamFilter);
         } else {
-            if (subVersion < 0x132)
-                tweak.teamFilter = serializer.u8(tweak.teamFilter);
-            else
-                tweak.followerPlayerMode = serializer.i32(tweak.followerPlayerMode);   
+            if (subVersion < 0x132) {
+                if (version >= 0x2ae)
+                    tweak.teamFilter = serializer.u8(tweak.teamFilter);
+            }
+            else {
+                if (subVersion > 0x131)
+                    tweak.followerPlayerMode = serializer.i32(tweak.followerPlayerMode);   
+            }
         }
 
 
@@ -243,18 +247,19 @@ public class PPhysicsTweak implements Serializable {
             tweak.zPhase = serializer.i8(tweak.zPhase);
 
         // move recording, again will figure out the fields later
+        // RecordingPlayer
         if (version > 0x3b8 && tweak.configuration == 0xd) {
-            serializer.resource(null, ResourceType.THING_RECORDING);
-            serializer.f32(0);
+            serializer.resource(null, ResourceType.THING_RECORDING); // recording
+            serializer.f32(0); // playHead
             if (version < 0x3c4) serializer.u8(0);
-            serializer.u8(0);
-            serializer.u8(0);
-            serializer.v3(null);
-            serializer.u8(0);
-            serializer.m44(null);
-            serializer.f32(0);
+            serializer.u8(0); // type
+            serializer.u8(0); // dir
+            serializer.v3(null); // prevDesiredPos
+            serializer.u8(0); // prevDesiredPosSet
+            serializer.m44(null); // startOrientation
+            serializer.f32(0); // speed
             if (version > 0x3c4)
-                serializer.u8(0);
+                serializer.u8(0); // pathIsAbsolute
         }
 
         if (revision.isVita()) { 
@@ -271,15 +276,15 @@ public class PPhysicsTweak implements Serializable {
         }
 
         if (subVersion >= 0x1 && subVersion < 0x17) {
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
-            serializer.i32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
+            serializer.s32(0);
         }
 
         if (subVersion >= 0x5 && subVersion < 0x17) {
@@ -289,18 +294,19 @@ public class PPhysicsTweak implements Serializable {
         }
 
         // attract-o-gel, ill figure out the fields later
+        // attractorData
         if (tweak.configuration == 0xe && version > 0x3e3) {
-            serializer.f32(0);
+            serializer.f32(0); // attractDistance
             serializer.i32(0);
-            serializer.f32(0);
-            serializer.f32(0);
-            serializer.i32(0);
-            serializer.f32(0);
-            serializer.f32(0);
-            serializer.u8(0);
-            serializer.u8(0);
-            serializer.u8(0);
-            serializer.u8(0);
+            serializer.f32(0); // visualEffectBrightness_On
+            serializer.f32(0); // visualEffectSpeed_On
+            serializer.i32(0); 
+            serializer.f32(0); // visualEffectBrightnessOff
+            serializer.f32(0); // visualEffectSpeed_Off
+            serializer.u8(0); // attractorManualDetach
+            serializer.u8(0); // attractorSoundEffects
+            serializer.u8(0); // attractorVisualEffect
+            serializer.u8(0); // attractorAffectConnected
         }
 
         if (subVersion > 0x56) {

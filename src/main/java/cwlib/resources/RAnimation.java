@@ -28,7 +28,7 @@ public class RAnimation implements Serializable, Compressable {
 
     public AnimBone[] bones;
 
-    public short numFrames, fps = 30, loopStart;
+    public short numFrames, fps = 24, loopStart;
     public byte morphCount;
 
     public byte[] rotBonesAnimated;

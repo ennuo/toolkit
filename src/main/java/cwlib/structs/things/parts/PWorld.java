@@ -16,6 +16,7 @@ import cwlib.structs.streaming.StreamingManager;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.EggLink;
 import cwlib.structs.things.components.KeyLink;
+import cwlib.structs.things.components.world.BroadcastMicrochipEntry;
 import cwlib.structs.things.components.world.CameraSettings;
 import cwlib.structs.things.components.world.CutsceneCameraManager;
 import cwlib.structs.things.components.world.EditorSelection;
@@ -123,7 +124,7 @@ public class PWorld implements Serializable {
     @GsonRevision(min=0x3dd) public boolean fixInvalidInOutMoverContacts;
     @GsonRevision(min=0x3f1) public boolean continueMusic;
 
-    @GsonRevision(lbp3=true,min=0x2f) public Thing[] broadcastMicroChipEntries;
+    @GsonRevision(lbp3=true,min=0x2f) public BroadcastMicrochipEntry[] broadcastMicroChipEntries;
     @GsonRevision(lbp3=true,min=0x5d) public int manualJumpDown;
     @GsonRevision(lbp3=true,min=0xe5) public Thing[] deferredDestroys;
     @GsonRevision(lbp3=true,min=0xcf) public float globalDofFront, globalDofBack, globalDofSackTrack;
@@ -208,7 +209,7 @@ public class PWorld implements Serializable {
         
         if (!revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
             world.things = serializer.arraylist(world.things, Thing.class, true);
-            // serializer.log("END OF WORLD THINGS");
+            serializer.log("END OF WORLD THINGS");
 
             world.maxVel = serializer.f32(world.maxVel);
             world.maxAVel = serializer.f32(world.maxAVel);
@@ -551,7 +552,7 @@ public class PWorld implements Serializable {
             world.continueMusic = serializer.bool(world.continueMusic);
 
         if (subVersion >= 0x2f)
-            world.broadcastMicroChipEntries = serializer.array(world.broadcastMicroChipEntries, Thing.class, true);
+            world.broadcastMicroChipEntries = serializer.array(world.broadcastMicroChipEntries, BroadcastMicrochipEntry.class);
 
         if (subVersion >= 0x5d)
             world.manualJumpDown = serializer.i32(world.manualJumpDown);
@@ -582,7 +583,7 @@ public class PWorld implements Serializable {
             world.scoreboardUnlockLevelSlot = serializer.struct(world.scoreboardUnlockLevelSlot, SlotID.class);
 
         if (subVersion >= 0x154)
-            world.progressBoardLevelLinkStartPoint = serializer.str(world.progressBoardLevelLinkStartPoint);
+            world.progressBoardLevelLinkStartPoint = serializer.wstr(world.progressBoardLevelLinkStartPoint);
 
         if (subVersion >= 0x15e)
             world.isLBP3World = serializer.bool(world.isLBP3World);

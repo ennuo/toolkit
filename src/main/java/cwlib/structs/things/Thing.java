@@ -1,5 +1,6 @@
 package cwlib.structs.things;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
@@ -64,8 +65,6 @@ public class Thing implements Serializable {
     public Thing(int UID) { 
         this.UID = UID; 
     }
-    
-    static int glob = 0;
 
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
@@ -89,7 +88,8 @@ public class Thing implements Serializable {
         if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) thing.name = serializer.wstr(thing.name);
         else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER)) {
             serializer.log("TEST_SERIALISATION_MARKER");
-            serializer.u8(0xAA);
+            if (serializer.u8(0xAA) != 0xaa)
+                throw new SerializationException("Test serialization marker is invalid, something has gone terribly wrong!");
         }
 
         if (version < 0x1fd) {
