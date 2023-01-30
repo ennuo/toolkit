@@ -73,7 +73,7 @@ public class ResourcePicker extends javax.swing.JDialog {
         model.addRow(new Object[] { "N/A", "<No Resource>" });
         HashMap<GUID, String> unique = new HashMap<>();
         
-        FileDB database = (FileDB) ResourceSystem.getSelectedDatabase();
+        FileData database = ResourceSystem.getSelectedDatabase();
         if (database == null) return;
         
         for (FileData data : ResourceSystem.getDatabases()) {
@@ -82,8 +82,10 @@ public class ResourcePicker extends javax.swing.JDialog {
                 unique.put(row.getGUID(), row.getPath());
         }
         
-        for (FileDBRow row : database) 
-            unique.put(row.getGUID(), row.getPath());
+        if (database instanceof FileDB) {
+            for (FileDBRow row : (FileDB) database) 
+                unique.put(row.getGUID(), row.getPath());
+        }
         
         ArrayList<GUID> guids = new ArrayList<>(unique.keySet());
         guids.sort((a, z) -> Long.compareUnsigned(a.getValue(), z.getValue()));
