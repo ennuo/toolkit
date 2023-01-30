@@ -1,5 +1,7 @@
 package cwlib.structs.bevel;
 
+import java.util.Locale;
+
 import cwlib.enums.MappingMode;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -31,6 +33,6 @@ public class BevelVertex implements Serializable {
     @Override public int getAllocatedSize() { return BevelVertex.BASE_ALLOCATION_SIZE; }
     
     @Override public String toString() {
-        return String.format("BevelVertex{v2(%f, %f), %s}", this.y, this.z, this.mappingMode);
+        return String.format(Locale.ROOT, "BevelVertex{v2(%f, %f), %s}", this.y, this.z, this.mappingMode);
     }
 }
