@@ -124,12 +124,13 @@ public class ShapeAssembler {
 
     public static void main(String[] args) {
         ResourceSystem.DISABLE_LOGS = true;
-        
-        args = new String[] {
-            "C:/Users/Aidan/Desktop/gecko.mol",
-            "g6064",
-            "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
-        };
+
+        if (args.length <= 0)
+            args = new String[] {
+                "C:/Users/Aidan/Desktop/gecko.mol",
+                "g6064",
+                "E:/zeon/rpcs3/dev_hdd0/game/LBP1DEBUG/USRDIR/gamedata/plans/palettes/dlc_valentine/pal_val_meshes_7130.plan"
+            };
 
         // ResourceSystem.DISABLE_LOGS = true;
         if (args.length < 3) {
