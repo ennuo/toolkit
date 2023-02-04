@@ -407,15 +407,17 @@ public class Mesh {
     public int getPrimitiveType() { return this.type; }
 
     public void delete() {
-        glDeleteVertexArrays(this.VAO);
-        glDeleteBuffers(this.VBO);
-        glDeleteBuffers(this.EBO);
-
+        if (this.VAO != 0)
+            glDeleteVertexArrays(this.VAO);
+        if (this.VBO != 0)
+            glDeleteBuffers(this.VBO);
+        if (this.EBO != 0)
+            glDeleteBuffers(this.EBO);
+        
         this.VAO = 0;
         this.VBO = 0;
         this.EBO = 0;
 
-        if (this.descriptor != null)
-            MESHES.remove(this.descriptor);
+        MESHES.remove(this.descriptor);
     }
 }

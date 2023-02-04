@@ -2,6 +2,7 @@ package editor.gl.objects;
 
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
@@ -152,7 +153,12 @@ public class Shader {
             return PROGRAMS.get(descriptor);
         if (RenderSystem.getSceneGraph().getResourceData(descriptor) == null)
             return RenderSystem.getFallbackShader();
-        return new Shader(descriptor);
+        try { return new Shader(descriptor); } 
+        catch (Exception ex) { 
+            System.out.println(descriptor + " failed to load! Falling back to default shader.");
+            PROGRAMS.put(descriptor, RenderSystem.getFallbackShader());
+            return RenderSystem.getFallbackShader(); 
+        }
     }
 
     public void setUniformFloat4(int location, Vector4f v) {
@@ -346,10 +352,11 @@ public class Shader {
     }
 
     public void delete() {
+        PROGRAMS.remove(this.descriptor);
+        if (this.programID == 0) return;
+
         glDeleteProgram(this.programID);
         this.programID = 0;
-
-        PROGRAMS.remove(this.descriptor);
     }
 
     public static int compileProgram(int vertex, int fragment) {
@@ -358,7 +365,7 @@ public class Shader {
         glAttachShader(program, fragment);
         glLinkProgram(program);
         if (glGetProgrami(program, GL_LINK_STATUS) == 0)
-            throw new AssertionError("Could not link shader program!");
+            throw new AssertionError("Could not link shader program! " + glGetProgramInfoLog(program));
         return program;
     }
 
