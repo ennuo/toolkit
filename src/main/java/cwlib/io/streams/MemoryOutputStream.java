@@ -520,6 +520,7 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final MemoryOutputStream sha1(SHA1 value) {
+        if (value == null) return this.pad(0x14);
         return this.bytes(value.getHash());
     }
 

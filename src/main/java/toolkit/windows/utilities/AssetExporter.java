@@ -451,21 +451,26 @@ public class AssetExporter extends JDialog {
         int count = data.i32();
         for (int i = 0; i < count; ++i) {
             Asset asset = null;
-            switch (data.i8()) {
-                case 1: 
-                    asset = new Asset(new ResourceDescriptor(data.sha1(), ResourceType.fromType(data.i32())));
-                    break;
-                case 2:
-                    asset = new Asset(new ResourceDescriptor(data.u32(), ResourceType.fromType(data.i32())));
-                    break;
-            }
-            if (asset != null) {
-                if (descriptors.contains(asset)) continue;
-                descriptors.add(asset);
-                asset.data = ResourceSystem.extract(asset.descriptor);
-                if (asset.data != null)
-                    this.getDescriptors(asset.data, descriptors);
-            }
+            ResourceDescriptor descriptor = null;
+            byte flags = data.i8();
+            
+            GUID guid = null;
+            SHA1 sha1 = null;
+
+            if ((flags & 2) != 0)
+                guid = data.guid();
+            if ((flags & 1) != 0)
+                sha1 = data.sha1();
+            
+            descriptor = new ResourceDescriptor(guid, sha1, ResourceType.fromType(data.i32()));
+            if (!descriptor.isValid()) continue;
+            
+            asset = new Asset(descriptor);
+            if (descriptors.contains(asset)) continue;
+            descriptors.add(asset);
+            asset.data = ResourceSystem.extract(asset.descriptor);
+            if (asset.data != null)
+                this.getDescriptors(asset.data, descriptors);
         }
         
     }

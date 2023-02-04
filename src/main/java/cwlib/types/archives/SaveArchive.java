@@ -297,20 +297,16 @@ public class SaveArchive extends Fart {
         stream.seek(stream.i32(), SeekMode.Begin);
         int count = stream.i32();
         for (int i = 0; i < count; ++i) {
-            switch (stream.i8()) {
-                case 1:
-                    SHA1 sha1 = stream.sha1();
-                    if (this.exists(sha1) && !hashes.contains(sha1)) {
-                        hashes.add(sha1);
-                        byte[] data = this.extract(sha1);
-                        if (data != null)
-                            this.getFilterList(data, hashes);
-                    }
-                    break;
-                case 2:
-                    // We don't care about GUIDs
-                    stream.guid();
-                    break;
+            byte flags = stream.i8();
+            if ((flags & 2) != 0) stream.guid();
+            if ((flags & 1) != 0) {
+                SHA1 sha1 = stream.sha1();
+                if (this.exists(sha1) && !hashes.contains(sha1)) {
+                    hashes.add(sha1);
+                    byte[] data = this.extract(sha1);
+                    if (data != null)
+                        this.getFilterList(data, hashes);
+                }
             }
             stream.i32(); // ResourceType
         }

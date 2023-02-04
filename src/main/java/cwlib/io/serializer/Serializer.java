@@ -605,40 +605,49 @@ public class Serializer {
         }
 
         if (!this.isWriting) {
+            int flags = 0;
             if (this.revision.getVersion() > 0x22e && !isDescriptor)
-                this.input.i32(); // Flags, we don't need them.
+                flags = this.input.i32();
+            
             byte guidHashFlag = this.input.i8();
             ResourceDescriptor descriptor = null;
             
             if (guidHashFlag == NONE) return null;
 
-            if (guidHashFlag == GUID)
-                descriptor = new ResourceDescriptor(this.input.guid(), t ? ResourceType.fromType(this.input.i32()) : type);
-            else if (guidHashFlag == HASH)
-                descriptor = new ResourceDescriptor(this.input.sha1(), t ? ResourceType.fromType(this.input.i32()) : type);
-            else
-                throw new SerializationException("Invalid GUID/HASH flag!");
+            GUID guid = null;
+            SHA1 sha1 = null;
 
-            if (descriptor.isHash() && descriptor.getSHA1().equals(SHA1.EMPTY))
-                return null;
-            
+            if ((guidHashFlag & GUID) != 0)
+                guid = this.input.guid();
+            if ((guidHashFlag & HASH) != 0)
+                sha1 = this.input.sha1();
+
+            if (t) type = ResourceType.fromType(this.input.i32());
+
+            descriptor = new ResourceDescriptor(guid, sha1, type);
+            if (!descriptor.isValid()) return null;
+            descriptor.setFlags(flags);
+
             if (descriptor.isHash() || (!(isDescriptor && type == ResourceType.PLAN)))
                 this.dependencies.add(descriptor);
+            
             return descriptor;
         }
 
         if (this.revision.getVersion() > 0x22e && !isDescriptor)
-            this.output.u32(0); // The flags don't really matter.
+            this.output.u32(value != null ? value.getFlags() : 0);
 
-        if (value != null) {
+        if (value != null && value.isValid()) {
             byte flags = 0;
+            
             if (value.isHash()) flags |= HASH;
-            else if (value.isGUID()) flags |= GUID;
+            if (value.isGUID()) flags |= GUID;
+
             this.output.i8(flags);
 
-            if (flags == GUID)
+            if ((flags & GUID) != 0)
                 this.output.guid(value.getGUID());
-            if (flags == HASH)
+            if ((flags & HASH) != 0)
                 this.output.sha1(value.getSHA1());
             
             if (flags != 0 && !(isDescriptor && type == ResourceType.PLAN))

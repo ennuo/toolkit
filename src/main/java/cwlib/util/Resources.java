@@ -10,6 +10,7 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.Resource;
+import cwlib.types.data.GUID;
 import cwlib.types.data.GatherData;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -83,22 +84,20 @@ public class Resources {
 
         int count = stream.i32();
         for (int i = 0; i < count; ++i) {
-            switch (stream.i8()) {
-                case 1: {
-                    dependencies.add(
-                        new ResourceDescriptor(stream.sha1(), stream.enum32(ResourceType.class))
-                    );
-                    break;
-                }
-                case 2: {
-                    dependencies.add(
-                        new ResourceDescriptor(stream.guid(), stream.enum32(ResourceType.class))
-                    );
-                    break;
-                }
-                default: throw new SerializationException("Unexpected resource switch!");
+            ResourceDescriptor descriptor = null;
+            byte flags = stream.i8();
+            
+            GUID guid = null;
+            SHA1 sha1 = null;
 
-            }
+            if ((flags & 2) != 0)
+                guid = stream.guid();
+            if ((flags & 1) != 0)
+                sha1 = stream.sha1();
+            
+            descriptor = new ResourceDescriptor(guid, sha1, ResourceType.fromType(stream.i32()));
+            if (descriptor.isValid())
+                dependencies.add(descriptor);
         }
 
         return dependencies;

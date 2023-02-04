@@ -26,7 +26,8 @@ public final class ResourceDescriptor {
      */
     public ResourceDescriptor(String resource, ResourceType type) {
         if (Strings.isSHA1(resource)) {
-            this.sha1 = Strings.getSHA1(resource);
+            SHA1 sha1 = Strings.getSHA1(resource);
+            this.sha1 = SHA1.EMPTY.equals(sha1) ? null : sha1;
             this.guid = null;
         } else if (Strings.isGUID(resource)) {
             this.guid = new GUID(Strings.getLong(resource));
@@ -67,9 +68,22 @@ public final class ResourceDescriptor {
      * @param type Type of resource
      */
     public ResourceDescriptor(SHA1 sha1, ResourceType type) {
-        this.sha1 = sha1;
+        this.sha1 = SHA1.EMPTY.equals(sha1) ? null : sha1;
         this.type = type;
         this.guid = null;
+        this.flags = ResourceFlags.NONE;
+    }
+
+    /**
+     * Constructs a ResourceReference with SHA1, GUID, and type.
+     * @param guid Unique identifier of resource
+     * @param sha1 SHA1 signature of resource
+     * @param type Type of resource
+     */
+    public ResourceDescriptor(GUID guid, SHA1 sha1, ResourceType type) {
+        this.guid = guid;
+        this.sha1 = SHA1.EMPTY.equals(sha1) ? null : sha1;
+        this.type = type;
         this.flags = ResourceFlags.NONE;
     }
 
@@ -84,6 +98,20 @@ public final class ResourceDescriptor {
      * @return Whether or not this resource contains a SHA1 reference
      */
     public boolean isHash() { return this.sha1 != null; }
+
+
+    /**
+     * Checks if this resource descriptor has either a valid hash or GUID.
+     * @return
+     */
+    public boolean isValid() {
+        if (this.guid != null) return true;
+        if (this.sha1 != null) {
+            if (this.sha1.equals(SHA1.EMPTY)) return false;
+            return true;
+        }
+        return false;
+    }
 
     public GUID getGUID() { return this.guid; }
     public SHA1 getSHA1() { return this.sha1; }
