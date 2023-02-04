@@ -7,7 +7,8 @@ public enum EnemyPart implements ValueEnum<Integer> {
     EYE(1),
     BRAIN(2),
     WHEEL(3),
-    ROCKET(4);
+    ROCKET(4),
+    PAINT(5);
     
     private final int value;
     private EnemyPart(int value) {
