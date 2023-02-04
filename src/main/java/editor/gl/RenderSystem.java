@@ -262,6 +262,7 @@ public class RenderSystem {
 
         for (Shader shader : Shader.PROGRAMS.values().toArray(Shader[]::new)) {
             if (descriptors.contains(shader.descriptor)) continue;
+            if (shader == RenderSystem.fallback) continue;
             shader.delete();
             shaders++;
         }
