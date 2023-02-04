@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -31,6 +32,7 @@ import editor.gl.objects.Mesh;
 public class PRenderMesh implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
     public static final HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
+    public static final HashSet<ResourceDescriptor> DISABLED_ANIMATIONS = new HashSet<>();
 
     public ResourceDescriptor mesh;
     public transient MeshInstance instance;
@@ -154,7 +156,7 @@ public class PRenderMesh implements Serializable {
             this.setupBoneThings(RenderSystem.getSceneGraph(), thing, wpos, this.instance.mesh.getBones());
         
         this.recalculateStaticInverses(thing, this.instance.mesh.getBones(), wpos);
-        
+
         if (this.anim != null) {
             // No need to recalculate if we haven't changed animation position
             if (this.animPos == this.animPosOld || (this.animPos >= 1.0f && !this.animLoop)) {
@@ -162,33 +164,38 @@ public class PRenderMesh implements Serializable {
                 return;
             }
 
-            RAnimation animation = ANIMATIONS.get(this.anim);
-            if (animation == null) {
-                byte[] animData = ResourceSystem.extract(this.anim);
-                if (animData != null) {
-                    animation = new Resource(animData).loadResource(RAnimation.class);
-                    ANIMATIONS.put(this.anim, animation);
+            if (!DISABLED_ANIMATIONS.contains(this.anim)) {
+                RAnimation animation = ANIMATIONS.get(this.anim);
+                if (animation == null) {
+                    byte[] animData = ResourceSystem.extract(this.anim);
+                    if (animData != null) {
+                        Resource resource = new Resource(animData);
+                        if (resource.getRevision().getVersion() < 0x378) {
+                            animation = new Resource(animData).loadResource(RAnimation.class);
+                            ANIMATIONS.put(this.anim, animation);
+                        } else DISABLED_ANIMATIONS.add(this.anim);
+                    }
                 }
-            }
-
-            if (animation != null) {
-                this.animPosOld = this.animPos;
-                this.animPos += (((animation.getFPS() * RenderSystem.getDeltaTime()) / animation.getNumFrames()) * this.animSpeed);
-                
-                if (this.animLoop) {
-                    float x = this.animPos, y = this.loopEnd;
-
-                    // fmod(x, y)
-                    float q = x / y, t = (float) (q < 0 ? -Math.floor(-q) : Math.floor(q));
-                    this.animPos = (x - t * y);
-                }
-
-                for (Thing boneThing : this.boneThings) {
-                    PPos bonePos = boneThing.getPart(Part.POS);
-                    Bone bone = Bone.getByHash(this.instance.mesh.getBones(), bonePos.animHash);
-                    if (bone == null || bone.parent != -1) continue;
-                    Matrix4f pos = bonePos.worldPosition.mul(bone.invSkinPoseMatrix, new Matrix4f());
-                    calculateBoneTransform(animation, this.animPos, this.boneModels, this.instance.mesh.getBones(), bone, pos);
+    
+                if (animation != null) {
+                    this.animPosOld = this.animPos;
+                    this.animPos += (((animation.getFPS() * RenderSystem.getDeltaTime()) / animation.getNumFrames()) * this.animSpeed);
+                    
+                    if (this.animLoop) {
+                        float x = this.animPos, y = this.loopEnd;
+    
+                        // fmod(x, y)
+                        float q = x / y, t = (float) (q < 0 ? -Math.floor(-q) : Math.floor(q));
+                        this.animPos = (x - t * y);
+                    }
+    
+                    for (Thing boneThing : this.boneThings) {
+                        PPos bonePos = boneThing.getPart(Part.POS);
+                        Bone bone = Bone.getByHash(this.instance.mesh.getBones(), bonePos.animHash);
+                        if (bone == null || bone.parent != -1) continue;
+                        Matrix4f pos = bonePos.worldPosition.mul(bone.invSkinPoseMatrix, new Matrix4f());
+                        calculateBoneTransform(animation, this.animPos, this.boneModels, this.instance.mesh.getBones(), bone, pos);
+                    }
                 }
             }
         }
