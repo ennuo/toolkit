@@ -60,11 +60,16 @@ public class PNpc implements Serializable {
     @GsonRevision(min=0x392)
     public byte costumeToCopy;
 
+    @GsonRevision(lbp3=true, min=0x1a6)
+    public boolean copyFormAsWell;
+
     @SuppressWarnings("unchecked")
     @Override public PNpc serialize(Serializer serializer, Serializable structure) {
         PNpc npc = (structure == null) ? new PNpc() : (PNpc) structure;
         
         int version = serializer.getRevision().getVersion();
+        int subVersion = serializer.getRevision().getSubVersion();
+
         if (version < 0x273) return npc;
 
         npc.jumpSolver = serializer.struct(npc.jumpSolver, NpcJumpSolver.class);
@@ -149,6 +154,8 @@ public class PNpc implements Serializable {
 
         if (version > 0x391)
             npc.costumeToCopy = serializer.i8(npc.costumeToCopy);
+        if (subVersion > 0x1a5)
+            npc.copyFormAsWell = serializer.bool(npc.copyFormAsWell);
         
         return npc;
     }

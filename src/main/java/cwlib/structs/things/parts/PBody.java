@@ -43,6 +43,7 @@ public class PBody implements Serializable {
         PBody body = (structure == null) ? new PBody() : (PBody) structure;
 
         int version = serializer.getRevision().getVersion();
+        int subVersion = serializer.getRevision().getSubVersion();
 
         // A lot of fields were removed in 0x13c, across a lot of structures,
         // so I have no idea what they are, nor they do matter in any
@@ -94,7 +95,7 @@ public class PBody implements Serializable {
         else
             serializer.bool(false);
         
-        if (version >= 0x22c)
+        if ((version >= 0x22c && subVersion < 0x84) || subVersion >= 0x8b)
             body.editingPlayer = serializer.reference(body.editingPlayer, Thing.class);
 
         return body;

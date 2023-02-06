@@ -200,10 +200,10 @@ public class RLocalProfile implements Compressable, Serializable {
     public boolean hasSeenCalibrationScreen;
 
     @GsonRevision(min=0x206)
-    public long[] lbp1VOPlayed;
+    public int[] lbp1VOPlayed;
     
     @GsonRevision(min=0x36c)
-    public long[] lbp2VOPlayed;
+    public int[] lbp2VOPlayed;
 
     @GsonRevision(min=0x23b)
     public int subtitleMode;
@@ -243,7 +243,7 @@ public class RLocalProfile implements Compressable, Serializable {
     public int[] sectionHeadingToggled;
 
     @GsonRevision(lbp3=true, min=0x20e)
-    public int[] mysteryPodEventsSeen;
+    public MysteryPodEventSeen[] mysteryPodEventsSeen;
 
     @GsonRevision(min=0x367)
     public SHA1[] lastLegacyImportedProfileHashLBP1;
@@ -386,7 +386,7 @@ public class RLocalProfile implements Compressable, Serializable {
         profile.inventory = serializer.arraylist(profile.inventory, InventoryItem.class);
         profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
 
-        if (version > 0x3b5)
+        if (version >= 0x3b6)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
 
         if (version >= 0x133 && version < 0x1df) {
@@ -417,6 +417,8 @@ public class RLocalProfile implements Compressable, Serializable {
             }
         }
 
+        // These two are actually signed integer arrays
+        // TODO: Fix that at some point
         if (version > 0x265) {
             profile.dlcPackViewed = serializer.intarray(profile.dlcPackViewed);
             profile.dlcPackShown = serializer.intarray(profile.dlcPackShown);
@@ -567,11 +569,11 @@ public class RLocalProfile implements Compressable, Serializable {
         if (version > 0x35e)
             profile.hasSeenCalibrationScreen = serializer.bool(profile.hasSeenCalibrationScreen);
 
-        if (version > 0x205)
-            profile.lbp1VOPlayed = serializer.longvector(profile.lbp1VOPlayed);
 
+        if (version > 0x205)
+            profile.lbp1VOPlayed = serializer.intvector(profile.lbp1VOPlayed);
         if (version > 0x36b) 
-            profile.lbp2VOPlayed = serializer.longvector(profile.lbp2VOPlayed);
+            profile.lbp2VOPlayed = serializer.intvector(profile.lbp2VOPlayed);
 
         if (version > 0x23a)
             profile.subtitleMode = serializer.s32(profile.subtitleMode);
@@ -614,7 +616,7 @@ public class RLocalProfile implements Compressable, Serializable {
         }
 
         if (subVersion > 0x20d)
-            profile.mysteryPodEventsSeen = serializer.intarray(profile.mysteryPodEventsSeen);
+            profile.mysteryPodEventsSeen = serializer.array(profile.mysteryPodEventsSeen, MysteryPodEventSeen.class);
 
         if (version > 0x366) {
             if (!serializer.isWriting()) profile.lastLegacyImportedProfileHashLBP1 = new SHA1[serializer.getInput().i32()];
@@ -764,7 +766,7 @@ public class RLocalProfile implements Compressable, Serializable {
         if (subVersion > 0x1aa)
             profile.timesaverNoticeViewed = serializer.bool(profile.timesaverNoticeViewed);
         if (subVersion > 0x1ad)
-            profile.questProgressPin = serializer.i32(profile.questProgressPin);
+            profile.questProgressPin = serializer.s32(profile.questProgressPin);
         if (subVersion > 0x209) 
             profile.activityFilterToggled = serializer.intvector(profile.activityFilterToggled);
         if (subVersion > 0x212)

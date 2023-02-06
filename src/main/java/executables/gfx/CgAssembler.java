@@ -135,15 +135,16 @@ public class CgAssembler {
         HashSet<Long> pool = new HashSet<>();
         for (int i = 0; i < gmat.shaders.length; ++i) {
             gmat.shaders[i] = compileShaderVariant(template, gmat.flags, i, shader);
-            long[] code = getBytecode(gmat.shaders[i]);
-            for (long c : code)
-                pool.add(c);
+            if (shader == GameShader.LBP2) {
+                long[] code = getBytecode(gmat.shaders[i]);
+                for (long c : code)
+                    pool.add(c);
+            }
         }
 
-        ArrayList<Long> code = new ArrayList<>(pool);
-        code.sort((l, r) -> Long.compareUnsigned(l, r));
-
         if (shader == GameShader.LBP2) {
+            ArrayList<Long> code = new ArrayList<>(pool);
+            code.sort((l, r) -> Long.compareUnsigned(l, r));
             for (int i = 0; i < gmat.shaders.length; ++i)
                 gmat.shaders[i] = convert(gmat.shaders[i], code);
             MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);

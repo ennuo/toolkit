@@ -151,7 +151,7 @@ float rim_round = 0.9;
         CREATE_SAMPLER_3D(tex_lo, 10);
     #endif
 
-    #if ((FLAGS & SPRITELIG1T) || (FLAGS & DYNAMIC_AO))
+    #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
         uniform float4 minaabb, maxaabb;
         uniform float4 maxaabb_add, maxaabb_normal;
     #endif
@@ -548,7 +548,7 @@ void main(
 
 // XYZ = Diffuse Light Color, W = Specular Lobe
 float4 GetLight(float3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float2 iLightmapUV) {
-    float3 viewVec = iVec2Eye.xyz / length(iVec2Eye.xyz);
+    float3 viewVec = normalize(iVec2Eye.xyz);
     #if (FLAGS & ORBIS)
         float3 reflectVec = -reflect(viewVec, iNormal);
     #else

@@ -47,9 +47,14 @@ public class RSceneGraph implements Serializable, Compressable {
     private ResourceDescriptor background;
     private HashMap<ResourceDescriptor, byte[]> packedData = new HashMap<>();
 
+    private transient List<Thing> queue = Collections.synchronizedList(new ArrayList<>());
+
     public RSceneGraph() {}
     public RSceneGraph(RLevel level) {
         this.world = level.world.getPart(Part.WORLD);
+        while (this.world.things.remove(null));
+        this.world.things.sort((a, z) -> a.UID - z.UID);
+        
         for (Thing thing : this.world.things) {
             if (thing == null) continue;
 
@@ -111,18 +116,14 @@ public class RSceneGraph implements Serializable, Compressable {
                 }
             }
         }
-
-        // if (!serializer.isWriting()) {
-        //     this.things.clear();
-        // }
         
         return graph;
     }
 
     public Thing addThing() { 
         Thing thing = new Thing(this.nextUID++);
-        synchronized(this.things) {
-            this.things.add(thing);
+        synchronized(this.queue) {
+            this.queue.add(thing);
         }
         return thing;
     }
@@ -133,8 +134,8 @@ public class RSceneGraph implements Serializable, Compressable {
         thing.setPart(Part.BODY, new PBody());
         thing.setPart(Part.GROUP, new PGroup());
         thing.setPart(Part.RENDER_MESH, new PRenderMesh(mesh));
-        synchronized(this.things) {
-            this.things.add(thing);
+        synchronized(this.queue) {
+            this.queue.add(thing);
         }
         return thing;
     }
@@ -192,10 +193,22 @@ public class RSceneGraph implements Serializable, Compressable {
             for (Thing thing : this.backdrop)
                 thing.render();
         }
+
         synchronized(this.things) {
+            int index = 0;
             Iterator<Thing> i = this.things.iterator();
-            while (i.hasNext())
-                (i.next()).render();
+            while (i.hasNext()) {
+                Thing next = i.next();
+                next.render();
+                index++;
+            }
+        }
+
+        synchronized(this.queue) {
+            Thing[] queue = this.queue.toArray(Thing[]::new);
+            this.queue.clear();
+            for (Thing thing : queue)
+                this.things.add(thing);
         }
     }
 

@@ -1,5 +1,6 @@
 package cwlib.structs.things;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
@@ -64,7 +65,7 @@ public class Thing implements Serializable {
     public Thing(int UID) { 
         this.UID = UID; 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
@@ -87,7 +88,8 @@ public class Thing implements Serializable {
         if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) thing.name = serializer.wstr(thing.name);
         else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER)) {
             serializer.log("TEST_SERIALISATION_MARKER");
-            serializer.u8(0xAA);
+            if (serializer.u8(0xAA) != 0xaa)
+                throw new SerializationException("Test serialization marker is invalid, something has gone terribly wrong!");
         }
 
         if (version < 0x1fd) {
@@ -127,6 +129,7 @@ public class Thing implements Serializable {
         } else {
             if (version >= 0x254)
                 thing.planGUID = serializer.guid(thing.planGUID);
+
             if (version >= 0x341) {
                 if (revision.has(Branch.DOUBLE11, 0x62))
                     thing.flags = serializer.i16(thing.flags);
@@ -198,6 +201,9 @@ public class Thing implements Serializable {
             serializer.log(part.name() + " [END]");
         }
 
+        // if (subVersion >= 0x83 && subVersion < 0x8b)
+            // serializer.u8(0);
+        
         serializer.log("THING " + Bytes.toHex(thing.UID) + " [END]");
         
         return thing;

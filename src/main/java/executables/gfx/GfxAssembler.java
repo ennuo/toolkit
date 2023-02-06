@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.BoxType;
@@ -121,11 +122,11 @@ public class GfxAssembler {
                 float sx = Float.intBitsToFloat(params[0]);
                 float sy = Float.intBitsToFloat(params[1]);
                 if (sx != 1.0f || sy != 1.0f)
-                    uv = String.format("(%s * float2(%f, %f))", uv, sx, sy);
+                    uv = String.format(Locale.ROOT, "(%s * float2(%f, %f))", uv, sx, sy);
                 float ox = Float.intBitsToFloat(params[2]);
                 float oy = Float.intBitsToFloat(params[3]);
                 if (ox != 0.0f || oy != 0.0f)
-                    uv += String.format(" + float2(%f, %f)", ox, oy);
+                    uv += String.format(Locale.ROOT, " + float2(%f, %f)", ox, oy);
 
                 Variable add = getWithSwizzle(shader, gmat, box, 0, type);
                 if (add != null)
@@ -230,7 +231,7 @@ public class GfxAssembler {
                 if (r.type > l.type)
                     returnType = r.type;
 
-                String f = String.format("%f", Float.intBitsToFloat(params[0]));
+                String f = String.format(Locale.ROOT, "%f", Float.intBitsToFloat(params[0]));
                 Variable w = getWithSwizzle(shader, gmat, box, 2, type);
                 if (w != null) f = w.toString();
             
@@ -250,7 +251,7 @@ public class GfxAssembler {
                     if (variable != null)
                         inputs[i] = variable.value;
                     else
-                        inputs[i] = String.format("%f", Float.intBitsToFloat(params[i]));
+                        inputs[i] = String.format(Locale.ROOT, "%f", Float.intBitsToFloat(params[i]));
                 }
                 
                 return new Variable(
@@ -405,24 +406,24 @@ public class GfxAssembler {
         shader = shader.replace("ENV.MATERIAL_PROPERTIES", String.format("(%s)", String.join(" | ", properties)));
 
         if (!useEnvironmentVariables) {
-            shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format("%f", material.alphaTestLevel));
+            shader = shader.replace("ENV.ALPHA_TEST_LEVEL", String.format(Locale.ROOT, "%f", material.alphaTestLevel));
             shader = shader.replace("ENV.ALPHA_MODE", "" + material.alphaMode);
             
-            shader = shader.replace("ENV.COSINE_POWER", String.format("%f", material.cosinePower * 22.0f));
-            shader = shader.replace("ENV.BUMP_LEVEL", String.format("%f", material.bumpLevel));
+            shader = shader.replace("ENV.COSINE_POWER", String.format(Locale.ROOT, "%f", material.cosinePower * 22.0f));
+            shader = shader.replace("ENV.BUMP_LEVEL", String.format(Locale.ROOT, "%f", material.bumpLevel));
             
-            shader = shader.replace("ENV.REFLECTION_BLUR", String.format("%f", material.reflectionBlur - 1.0f));
-            shader = shader.replace("ENV.REFRACTIVE_INDEX", String.format("%f", material.refractiveIndex));
+            shader = shader.replace("ENV.REFLECTION_BLUR", String.format(Locale.ROOT, "%f", material.reflectionBlur - 1.0f));
+            shader = shader.replace("ENV.REFRACTIVE_INDEX", String.format(Locale.ROOT, "%f", material.refractiveIndex));
 
-            shader = shader.replace("ENV.FRESNEL_FALLOFF_POWER", String.format("%f", material.refractiveFresnelFalloffPower));
-            shader = shader.replace("ENV.FRESNEL_MULTIPLIER", String.format("%f", material.refractiveFresnelMultiplier));
-            shader = shader.replace("ENV.FRESNEL_OFFSET", String.format("%f", material.refractiveFresnelOffset));
-            shader = shader.replace("ENV.FRESNEL_SHIFT", String.format("%f", material.refractiveFresnelShift));
+            shader = shader.replace("ENV.FRESNEL_FALLOFF_POWER", String.format(Locale.ROOT, "%f", material.refractiveFresnelFalloffPower));
+            shader = shader.replace("ENV.FRESNEL_MULTIPLIER", String.format(Locale.ROOT, "%f", material.refractiveFresnelMultiplier));
+            shader = shader.replace("ENV.FRESNEL_OFFSET", String.format(Locale.ROOT, "%f", material.refractiveFresnelOffset));
+            shader = shader.replace("ENV.FRESNEL_SHIFT", String.format(Locale.ROOT, "%f", material.refractiveFresnelShift));
 
-            shader = shader.replace("ENV.FUZZ_LIGHTING_BIAS", String.format("%f", ((float)((int)material.fuzzLightingBias & 0xff)) / 255.0f));
-            shader = shader.replace("ENV.FUZZ_LIGHTING_SCALE", String.format("%f", ((float)((int)material.fuzzLightingScale & 0xff)) / 255.0f));
+            shader = shader.replace("ENV.FUZZ_LIGHTING_BIAS", String.format(Locale.ROOT, "%f", ((float)((int)material.fuzzLightingBias & 0xff)) / 255.0f));
+            shader = shader.replace("ENV.FUZZ_LIGHTING_SCALE", String.format(Locale.ROOT, "%f", ((float)((int)material.fuzzLightingScale & 0xff)) / 255.0f));
 
-            shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format("%f", ((float)((int)material.iridesenceRoughness & 0xff)) / 255.0f));
+            shader = shader.replace("ENV.IRIDESCENCE_ROUGHNESS", String.format(Locale.ROOT, "%f", ((float)((int)material.iridesenceRoughness & 0xff)) / 255.0f));
         }
 
         if (IS_GLSL) {

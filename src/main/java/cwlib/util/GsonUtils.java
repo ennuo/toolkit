@@ -26,7 +26,7 @@ import cwlib.structs.things.Thing;
 public final class GsonUtils {
     public static Revision REVISION = new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision());
     public static final HashMap<Integer, Thing> THINGS = new HashMap<>();
-    public static final HashSet<Integer> UIDs = new HashSet<>();
+    public static final HashSet<Thing> UNIQUE_THINGS = new HashSet<>();
 
 
     /**
@@ -88,7 +88,7 @@ public final class GsonUtils {
      */
     public static <T> T fromJSON(String json, Class<T> clazz) { 
         THINGS.clear();
-        UIDs.clear();
+        UNIQUE_THINGS.clear();
         return GSON.fromJson(json, clazz);
     }
 
@@ -99,7 +99,7 @@ public final class GsonUtils {
      */
     public static String toJSON(Object object) {
         THINGS.clear();
-        UIDs.clear();
+        UNIQUE_THINGS.clear();
         return GSON.toJson(object);
     }
 }

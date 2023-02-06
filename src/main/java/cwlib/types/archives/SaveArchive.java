@@ -297,20 +297,16 @@ public class SaveArchive extends Fart {
         stream.seek(stream.i32(), SeekMode.Begin);
         int count = stream.i32();
         for (int i = 0; i < count; ++i) {
-            switch (stream.i8()) {
-                case 1:
-                    SHA1 sha1 = stream.sha1();
-                    if (this.exists(sha1) && !hashes.contains(sha1)) {
-                        hashes.add(sha1);
-                        byte[] data = this.extract(sha1);
-                        if (data != null)
-                            this.getFilterList(data, hashes);
-                    }
-                    break;
-                case 2:
-                    // We don't care about GUIDs
-                    stream.guid();
-                    break;
+            byte flags = stream.i8();
+            if ((flags & 2) != 0) stream.guid();
+            if ((flags & 1) != 0) {
+                SHA1 sha1 = stream.sha1();
+                if (this.exists(sha1) && !hashes.contains(sha1)) {
+                    hashes.add(sha1);
+                    byte[] data = this.extract(sha1);
+                    if (data != null)
+                        this.getFilterList(data, hashes);
+                }
             }
             stream.i32(); // ResourceType
         }
@@ -320,7 +316,7 @@ public class SaveArchive extends Fart {
      * Builds this archive and returns the resulting byte array.
      * @return Built archive
      */
-    public byte[] build() {
+    public byte[] build(boolean hashinate) {
         // If the root exists, use it to filter what
         // resources are actually necessary.
         SHA1 rootHash = this.key.getRootHash();
@@ -392,10 +388,10 @@ public class SaveArchive extends Fart {
         byte[] archive = stream.getBuffer();
 
         // Compute hash and write it to the buffer
-        if (this.archiveRevision > 2) {
+        if (hashinate && this.archiveRevision > 2) {
             this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
             System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
-        }
+        } else this.hashinate = SHA1.EMPTY;
         
         // Update state of the archive in memory.
         this.entries = entries;
@@ -426,14 +422,14 @@ public class SaveArchive extends Fart {
     public boolean save(String path) {
         if (path == null) 
             throw new IllegalArgumentException("Can't save archive to null path!");
-        byte[] archive = this.build();
+        byte[] archive = this.build(false);
         return FileIO.write(archive, path);
     }
 
     @Override public boolean save() {
         if (this.file == null)
             throw new IllegalStateException("Can't save archive with no associated file!");
-        byte[] archive = this.build();
+        byte[] archive = this.build(false);
         return FileIO.write(archive, this.file.getAbsolutePath());
     }
 

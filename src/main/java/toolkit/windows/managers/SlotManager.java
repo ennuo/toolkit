@@ -27,6 +27,7 @@ import cwlib.util.Images;
 import cwlib.util.Resources;
 import cwlib.util.Strings;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -588,36 +589,41 @@ public class SlotManager extends javax.swing.JFrame {
     }
     
     private void updateIcon() {
-       Slot slot = this.selectedSlot;
-       
-       byte[] data = ResourceSystem.extract(slot.icon);
-       if (data == null) { this.resetIcon(); return; }
-       
-       ResourceType type = Resources.getResourceType(data);
-       if (type != ResourceType.TEXTURE && type != ResourceType.GTF_TEXTURE) return;
-       
-       RTexture texture = null;
-       try { texture = new RTexture(data); }
-       catch (Exception ex) { this.resetIcon(); return; }
-       
-       BufferedImage image = texture.getImage();
-       if (image == null) { this.resetIcon(); return; }
-       
-       ImageIcon icon = null;
-       if (slot.id.slotType.equals(SlotType.DEVELOPER_GROUP) || slot.id.slotType.equals(SlotType.DLC_PACK))
-           icon = Images.getGroupIcon(image);
-       else {
+        Slot slot = this.selectedSlot;
+        
+        byte[] data = ResourceSystem.extract(slot.icon);
+        if (data == null) { this.resetIcon(); return; }
+        
+        ResourceType type = Resources.getResourceType(data);
+        if (type != ResourceType.TEXTURE && type != ResourceType.GTF_TEXTURE) return;
+        
+        RTexture texture = null;
+        try { texture = new RTexture(data); }
+        catch (Exception ex) { this.resetIcon(); return; }
+        
+        BufferedImage image = texture.getImage();
+        if (image == null) { this.resetIcon(); return; }
+        
+        ImageIcon icon = null;
+        if (slot.id.slotType.equals(SlotType.DEVELOPER_GROUP) || slot.id.slotType.equals(SlotType.DLC_PACK))
+            icon = Images.getGroupIcon(image);
+        else if (slot.adventure != null) icon = Images.getAdventureIcon(image);
+        else {
             Revision levelRevision = Resources.getRevision(ResourceSystem.extract(slot.root));
-            if (levelRevision == null)
-                levelRevision = this.entry.getInfo().getRevision();
+            if (levelRevision == null) {
+                if (this.entry != null)
+                    levelRevision = this.entry.getInfo().getRevision();
+                else
+                    levelRevision = new Revision(0x272);
+            }
             
             icon = Images.getSlotIcon(image, levelRevision.getHead());
-       }
-       
-       if (icon == null) { this.resetIcon(); return; }
-       
-       this.slotIcon.setText("");
-       this.slotIcon.setIcon(icon);
+        }
+        
+        if (icon == null) { this.resetIcon(); return; }
+        
+        this.slotIcon.setText("");
+        this.slotIcon.setIcon(icon);
     }
     
     private void setSlotData() {
@@ -1299,6 +1305,7 @@ public class SlotManager extends javax.swing.JFrame {
                 this.iconTextEntry.getText(), 
                 ResourceType.TEXTURE
         ));
+        this.iconTextEntry.getActionListeners()[0].actionPerformed(new ActionEvent(this.iconTextEntry, ActionEvent.ACTION_PERFORMED, null));
     }//GEN-LAST:event_selectIconButonActionPerformed
 
     private void selectRootLevelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectRootLevelButtonActionPerformed
@@ -1307,6 +1314,7 @@ public class SlotManager extends javax.swing.JFrame {
                 this.rootLevelTextEntry.getText(), 
                 ResourceType.LEVEL
         ));
+        this.rootLevelTextEntry.getActionListeners()[0].actionPerformed(new ActionEvent(this.rootLevelTextEntry, ActionEvent.ACTION_PERFORMED, null));
     }//GEN-LAST:event_selectRootLevelButtonActionPerformed
 
     private void selectAdventureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAdventureButtonActionPerformed
@@ -1315,6 +1323,7 @@ public class SlotManager extends javax.swing.JFrame {
                 this.adventureTextEntry.getText(), 
                 ResourceType.ADVENTURE_CREATE_PROFILE
         ));
+        this.adventureTextEntry.getActionListeners()[0].actionPerformed(new ActionEvent(this.adventureTextEntry, ActionEvent.ACTION_PERFORMED, null));
     }//GEN-LAST:event_selectAdventureButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

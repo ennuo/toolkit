@@ -22,9 +22,9 @@ public class StringLookupTable implements Serializable, Iterable<SortString> {
         // Let's make sure the indices are sorted.
         if (serializer.isWriting()) {
             table.rawIndexToSortedIndex = new int[table.stringList.size()];
-            this.stringList.sort((l, r) -> l.string.compareTo(r.string));
-            for (int i = 0; i < this.stringList.size(); ++i)
-                table.rawIndexToSortedIndex[this.stringList.get(i).index] = i;
+            table.stringList.sort((l, r) -> l.string.compareTo(r.string));
+            for (int i = 0; i < table.stringList.size(); ++i)
+                table.rawIndexToSortedIndex[table.stringList.get(i).index] = i;
         }
 
         table.unsorted = serializer.bool(table.unsorted);

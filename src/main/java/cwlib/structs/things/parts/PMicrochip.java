@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.CompactComponent;
@@ -12,17 +13,41 @@ public class PMicrochip implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0xC0;
 
     public Thing circuitBoardThing;
+
+    @GsonRevision(max=0x2e3)
     @Deprecated public boolean circuitBoardVisible;
+
+    @GsonRevision(max=0x2e8)
     @Deprecated public Thing parentThing;
-    @Deprecated public Matrix4f cachedParentPos;
-    @Deprecated public Matrix4f localTransform;
-    public boolean hideInPlayMode, wiresVisible;
+
+    @GsonRevision(max=0x2e8)
+    @Deprecated public Matrix4f cachedParentPos, localTransform;
+
+    @GsonRevision(min=0x283)
+    public boolean hideInPlayMode;
+    
+    @GsonRevision(min=0x2b8)
+    public boolean wiresVisible;
+
+    @GsonRevision(min=0x2e4)
     public int lastTouched;
+
+    @GsonRevision(min=0x2e9)
     public Vector4f offset;
+
+    @GsonRevision(min=0x34d)
     public String name;
+
+    @GsonRevision(min=0x34d)
     public CompactComponent[] components;
+
+    @GsonRevision(min=0x34d)
     public float circuitBoardSizeX, circuitBoardSizeY;
+
+    @GsonRevision(lbp3=true, min=0x1d)
     public boolean keepVisualVertical;
+
+    @GsonRevision(lbp3=true, min=0x2d)
     public byte broadcastType;
 
     @SuppressWarnings("unchecked")

@@ -47,7 +47,7 @@ public class PoppetTweakObjectPlacement implements Serializable {
         if (version < 0x160) 
             object.thing = serializer.struct(object.thing, GlobalThingDescriptor.class);
         else
-            object.plan = serializer.resource(object.plan, ResourceType.PLAN, true, false);
+            object.plan = serializer.resource(object.plan, ResourceType.PLAN, true, false, false);
         
         object.proxyObject = serializer.thing(object.proxyObject);
         object.backZ = serializer.s32(object.backZ);

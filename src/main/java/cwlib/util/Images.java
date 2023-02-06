@@ -13,6 +13,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -191,6 +192,30 @@ public class Images {
         return i;
     }
 
+    public static ImageIcon getAdventureIcon(BufferedImage master) {
+        BufferedImage overlay = null;
+        BufferedImage mask = null;
+        try {
+            if (master == null)
+                master = ImageIO.read(Images.class.getResource("/images/slots/backdrop.png"));
+            overlay = ImageIO.read(Images.class.getResource("/images/slots/adventure.png"));
+            mask = ImageIO.read(Images.class.getResource("/images/slots/adventure_mask.png"));
+        } catch (IOException ex) { return null; }
+
+        master = getBufferedImageScaled(master, 185, 185);
+
+        BufferedImage masked = new BufferedImage(185, 185, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = masked.createGraphics();
+        applyQualityRenderingHints(g2d);
+        g2d.drawImage(master, -10, -10, null);
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_IN));
+        g2d.drawImage(mask, -10, -10, null);
+        g2d.dispose();
+
+        master = Images.getOverlayedImage(masked, overlay, 45, 46, false);
+        return Images.getImageIcon(master, 128, 128);
+    }
+
     public static ImageIcon getGroupIcon(BufferedImage master) {
         BufferedImage res = null;
         try {
@@ -227,12 +252,14 @@ public class Images {
         BufferedImage masked = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
         g2d = masked.createGraphics();
         applyQualityRenderingHints(g2d);
+
         int x = (diameter - master.getWidth()) / 2;
         int y = (diameter - master.getHeight()) / 2;
         g2d.drawImage(master, x, y, null);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_IN));
         g2d.drawImage(mask, 0, 0, null);
         g2d.dispose();
+
 
         BufferedImage res = null;
         try {

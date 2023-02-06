@@ -43,14 +43,15 @@ public class PTrigger implements Serializable {
         int subVersion = revision.getSubVersion();
 
         trigger.triggerType = serializer.enum8(trigger.triggerType);
-        trigger.inThings = serializer.array(trigger.inThings, Thing.class, true);
+        trigger.inThings = serializer.thingarray(trigger.inThings);
         trigger.radiusMultiplier = serializer.f32(trigger.radiusMultiplier);
+
+        if (version < 0x1d5)
+            serializer.i32(0); // zLayers?
         
         if (subVersion >= 0x2a)
             trigger.zRangeHundreds = serializer.i8(trigger.zRangeHundreds);
         
-        if (version < 0x1d5)
-            serializer.i32(0); // zLayers?
         trigger.allZLayers = serializer.bool(trigger.allZLayers);
 
         if (version >= 0x19b) {

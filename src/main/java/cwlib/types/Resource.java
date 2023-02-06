@@ -5,10 +5,12 @@ import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.types.data.Revision;
+import cwlib.types.data.SHA1;
 import cwlib.structs.texture.CellGcmTexture;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.io.streams.MemoryOutputStream;
@@ -190,15 +192,19 @@ public class Resource {
         this.dependencies = new HashSet<>(count);
         for (int i = 0; i < count; ++i) {
             ResourceDescriptor descriptor = null;
-            switch (stream.i8()) {
-                case 1:
-                    descriptor = new ResourceDescriptor(stream.sha1(), ResourceType.fromType(stream.i32()));
-                    break;
-                case 2:
-                    descriptor = new ResourceDescriptor(stream.guid(), ResourceType.fromType(stream.i32()));
-                    break;
-            }
-            this.dependencies.add(descriptor);
+            byte flags = stream.i8();
+            
+            GUID guid = null;
+            SHA1 sha1 = null;
+
+            if ((flags & 2) != 0)
+                guid = stream.guid();
+            if ((flags & 1) != 0)
+                sha1 = stream.sha1();
+            
+            descriptor = new ResourceDescriptor(guid, sha1, ResourceType.fromType(stream.i32()));
+            if (descriptor.isValid())
+                this.dependencies.add(descriptor);
         }
         
         stream.seek(originalOffset, SeekMode.Begin);
@@ -358,14 +364,22 @@ public class Resource {
             // Writing dependencies
             stream.i32(dependencies.length);
             for (ResourceDescriptor dependency : dependencies) {
-                if (dependency.isGUID()) {
-                    stream.u8(2);
-                    stream.guid(dependency.getGUID());
-                } else if (dependency.isHash()) {
-                    stream.u8(1);
-                    stream.sha1(dependency.getSHA1());
+                byte flags = 0;
+                
+                if (dependency != null) {
+                    if (dependency.isGUID()) flags |= 2;
+                    if (dependency.isHash()) flags |= 1;
                 }
-                stream.i32(dependency.getType().getValue());
+
+                stream.i8(flags);
+                if (flags != 0) {
+                    if ((flags & 2) != 0)
+                        stream.guid(dependency.getGUID());
+                    if ((flags & 1) != 0)
+                        stream.sha1(dependency.getSHA1());
+                }
+
+                stream.i32(dependency != null ? dependency.getType().getValue() : 0);
             }
         }
 

@@ -90,9 +90,9 @@ public class RBigProfile implements Compressable, Serializable {
         profile.inventory = serializer.arraylist(profile.inventory, InventoryItem.class);
 
         Revision revision = serializer.getRevision();
-        int head = revision.getVersion();
+        int version = revision.getVersion();
 
-        if (head > 0x3ea) {
+        if (version > 0x3ea) {
             if (serializer.isWriting()) {
                 if (profile.vitaCrossDependencyHashes != null) {
                     MemoryOutputStream stream = serializer.getOutput();
@@ -109,12 +109,12 @@ public class RBigProfile implements Compressable, Serializable {
             }
         }
 
-        if (head >= Revisions.DATALABELS)
+        if (version >= Revisions.DATALABELS)
             profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
 
         profile.stringTable = serializer.struct(profile.stringTable, StringLookupTable.class);
 
-        if (head >= Revisions.PRODUCTION_BUILD)
+        if (version >= Revisions.PRODUCTION_BUILD)
             profile.fromProductionBuild = serializer.bool(profile.fromProductionBuild);
         
         if (serializer.isWriting()) {
@@ -133,25 +133,27 @@ public class RBigProfile implements Compressable, Serializable {
                         serializer.struct(null, Slot.class));
         }
 
-        if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS))
+        if (revision.isVita()) {
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS))
             profile.creatorDataLabels = serializer.arraylist(profile.creatorDataLabels, DataLabel.class);
 
-        if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_CHALLENGES)) {
-            profile.nearMyChallengeDataLog = 
-                serializer.arraylist(profile.nearMyChallengeDataLog, Challenge.class);
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_CHALLENGES)) {
+                profile.nearMyChallengeDataLog = 
+                    serializer.arraylist(profile.nearMyChallengeDataLog, Challenge.class);
 
-            profile.nearMyChallengeDataOpen = 
-                serializer.arraylist(profile.nearMyChallengeDataOpen, Challenge.class);
+                profile.nearMyChallengeDataOpen = 
+                    serializer.arraylist(profile.nearMyChallengeDataOpen, Challenge.class);
+            }
+
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_TREASURES))
+                profile.nearMyTreasureLog = serializer.arraylist(profile.nearMyTreasureLog, Treasure.class);
+
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_DOWNLOADED_SLOTS))
+                profile.downloadedSlots = serializer.arraylist(profile.downloadedSlots, SlotID.class);
+
+            if (revision.has(Branch.DOUBLE11, Revisions.D1_PLANET_DECORATIONS))
+                profile.planetDecorations = serializer.resource(profile.planetDecorations, ResourceType.LEVEL, true);
         }
-
-        if (revision.has(Branch.DOUBLE11, Revisions.D1_NEAR_TREASURES))
-            profile.nearMyTreasureLog = serializer.arraylist(profile.nearMyTreasureLog, Treasure.class);
-
-        if (revision.has(Branch.DOUBLE11, Revisions.D1_DOWNLOADED_SLOTS))
-            profile.downloadedSlots = serializer.arraylist(profile.downloadedSlots, SlotID.class);
-
-        if (revision.has(Branch.DOUBLE11, Revisions.D1_PLANET_DECORATIONS))
-            profile.planetDecorations = serializer.resource(profile.planetDecorations, ResourceType.LEVEL, true);
         
         return profile;
     }

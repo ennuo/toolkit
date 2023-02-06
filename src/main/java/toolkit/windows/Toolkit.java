@@ -200,6 +200,17 @@ public class Toolkit extends javax.swing.JFrame {
             }
         }
         
+        if (profile.saves != null) {
+            Pattern bigRegex = Pattern.compile("bigfart\\d+");
+            for (String path : profile.saves) {
+                File folder = new File(path);
+                if (!Files.exists(Paths.get(path))) continue;
+                File[] profiles = folder.listFiles((dir, name) -> bigRegex.matcher(name).matches());
+                for (File file : profiles)
+                    ProfileCallbacks.loadProfile(file);
+            }
+        }
+        
         PrintStream out = new CustomPrintStream(new TextAreaOutputStream(console));
         System.setOut(out);
         System.setErr(out);
@@ -2373,7 +2384,7 @@ public class Toolkit extends javax.swing.JFrame {
             boolean wasPS4 = archive.isLittleEndian();
             archive.setLittleEndian(!wasPS4);
 
-            FileIO.write(archive.build(), FAR4.getAbsolutePath());
+            FileIO.write(archive.build(false), FAR4.getAbsolutePath());
             JOptionPane.showMessageDialog(this, 
                     String.format("FAR4 has been swapped to %s endianness.", 
                             (!wasPS4) ? "PS4" : "PS3"));
@@ -2849,7 +2860,7 @@ public class Toolkit extends javax.swing.JFrame {
         }
         
         File file = FileChooser.openFile(
-            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".json",
+            Strings.setExtension(selected.getName(), "json"),
             "json",
             true
         );

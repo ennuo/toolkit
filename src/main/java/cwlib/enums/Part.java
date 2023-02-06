@@ -57,22 +57,22 @@ public enum Part {
     INSTRUMENT(0x24, PartHistory.INSTRUMENT, PInstrument.class),
     SEQUENCER(0x25, PartHistory.SEQUENCER, PSequencer.class),
     CONTROLINATOR(0x26, PartHistory.CONTROLINATOR, PControlinator.class),
-    POPPET_POWERUP(0x27, PartHistory.POPPET_POWERUP, null),
-    POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, null),
+    POPPET_POWERUP(0x27, PartHistory.POPPET_POWERUP, PPoppetPowerup.class),
+    POCKET_ITEM(0x28, PartHistory.POCKET_ITEM, PPocketItem.class),
     @Deprecated CREATOR_ANIM(0x3e, PartHistory.CREATOR_ANIM, null),
-    TRANSITION(0x29, PartHistory.TRANSITION, null),
+    TRANSITION(0x29, PartHistory.TRANSITION, PTransition.class),
     FADER(0x2a, PartHistory.FADER, PFader.class),
-    ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, null),
-    WIND_TWEAK(0x2c, PartHistory.WIND_TWEAK, null),
+    ANIMATION_TWEAK(0x2b, PartHistory.ANIMATION_TWEAK, PAnimationTweak.class),
+    WIND_TWEAK(0x2c, PartHistory.WIND_TWEAK, PWindTweak.class),
     POWER_UP(0x2d, PartHistory.POWER_UP, PPowerUp.class),
-    HUD_ELEM(0x2e, PartHistory.HUD_ELEM, null),
+    HUD_ELEM(0x2e, PartHistory.HUD_ELEM, PHudElem.class),
     TAG_SYNCHRONIZER(0x2f, PartHistory.TAG_SYNCHRONIZER, PTagSynchroniser.class),
     WORMHOLE(0x30, PartHistory.WORMHOLE, PWormhole.class),
-    QUEST(0x31, PartHistory.QUEST, null),
-    CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, null),
-    ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, null),
-    STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, null),
-    STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, null);
+    QUEST(0x31, PartHistory.QUEST, PQuest.class),
+    CONNECTOR_HOOK(0x32, PartHistory.CONNECTOR_HOOK, PConnectorHook.class),
+    ATMOSPHERIC_TWEAK(0x33, PartHistory.ATMOSHPERIC_TWEAK, PAtmosphericTweak.class),
+    STREAMING_DATA(0x34, PartHistory.STREAMING_DATA, PStreamingData.class),
+    STREAMING_HINT(0x35, PartHistory.STREAMING_HINT, PStreamingHint.class);
 
     /**
      * Minimum version required for this part

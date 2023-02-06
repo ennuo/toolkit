@@ -108,4 +108,13 @@ public final class Strings {
             path = path.substring(0, path.length() - 1);
         return path;
     }
+    
+    public static final String setExtension(String path, String extension) {
+        if (extension.startsWith("."))
+            extension = extension.substring(1);
+        int index = path.lastIndexOf(".");
+        if (index != -1)
+            path = path.substring(0, index);
+        return path + "." + extension;
+    }
 }

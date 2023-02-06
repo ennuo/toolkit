@@ -46,16 +46,9 @@ public class AnimationImporter {
     public AnimationImporter(String glbSourcePath) throws IOException {
         this.gltf = new GltfModelReader().read(Path.of(glbSourcePath).toUri());
         this.resource = new RAnimation();
-
-        this.animation = this.gltf.getAnimationModels().get(0);
-
-        for (NodeModel node : this.gltf.getNodeModels()) {
-            SkinModel skin = node.getSkinModel();
-            if (skin != null) {
-                this.skin = skin;
-                return;
-            }
-        }
+        if (this.gltf.getAnimationModels() != null && this.gltf.getAnimationModels().size() != 0)
+            this.animation = this.gltf.getAnimationModels().get(0);
+        this.skin = this.gltf.getSkinModels().get(0);
     }
 
     private void getSackboyAnimBones() {
@@ -130,29 +123,32 @@ public class AnimationImporter {
         ArrayList<Integer> scaleBonesAnimated = new ArrayList<>();
 
         int frames = 0;
-        for (Channel channel : this.animation.getChannels()) {
-            int index = this.nodeToIndex.get(channel.getNodeModel());
 
-            Vector4f[] channelData = this.getChannelData(channel);
-            boolean isAnimated = false;
-            for (int i = 1; i < channelData.length; ++i) {
-                if (!channelData[i - 1].equals(channelData[i], 0.0001f)) {
-                    isAnimated = true;
-                    break;
+        if (this.animation != null) {
+            for (Channel channel : this.animation.getChannels()) {
+                int index = this.nodeToIndex.get(channel.getNodeModel());
+    
+                Vector4f[] channelData = this.getChannelData(channel);
+                boolean isAnimated = false;
+                for (int i = 1; i < channelData.length; ++i) {
+                    if (!channelData[i - 1].equals(channelData[i], 0.0001f)) {
+                        isAnimated = true;
+                        break;
+                    }
                 }
+    
+                // if (!isAnimated) continue;
+    
+                switch (channel.getPath()) {
+                    case "translation": posBonesAnimated.add(index); break;
+                    case "rotation": rotBonesAnimated.add(index); break;
+                    case "scale": scaleBonesAnimated.add(index); break;
+                }
+    
+                int localFrameCount = channel.getSampler().getOutput().getCount();
+                if (localFrameCount > frames)
+                    frames = localFrameCount;
             }
-
-            if (!isAnimated) continue;
-
-            switch (channel.getPath()) {
-                case "translation": posBonesAnimated.add(index); break;
-                case "rotation": rotBonesAnimated.add(index); break;
-                case "scale": scaleBonesAnimated.add(index); break;
-            }
-
-            int localFrameCount = channel.getSampler().getOutput().getCount();
-            if (localFrameCount > frames)
-                frames = localFrameCount;
         }
 
         AnimBone[] bones = this.resource.bones;
@@ -185,44 +181,46 @@ public class AnimationImporter {
         this.resource.packedPosition = packedPosition;
         this.resource.packedScale = packedScale;
 
-        for (Channel channel : this.animation.getChannels()) {
-            int boneIndex = this.nodeToIndex.get(channel.getNodeModel());
-
-            int numAnimated = -1;
-            int animBoneIndex = -1;
-            Vector4f[] packedData = null;
-            switch (channel.getPath()) {
-                case "translation": 
-                    animBoneIndex = posBonesAnimated.indexOf(boneIndex);
-                    packedData = packedPosition;
-                    numAnimated = posBonesAnimated.size();
-                    break;
-                case "rotation": 
-                    animBoneIndex = rotBonesAnimated.indexOf(boneIndex);
-                    packedData = packedRotation;
-                    numAnimated = rotBonesAnimated.size();
-                    break;
-                case "scale":                     
-                    animBoneIndex = scaleBonesAnimated.indexOf(boneIndex);
-                    packedData = packedScale;
-                    numAnimated = scaleBonesAnimated.size();
-                    break;
-            }
-
-            // It was optimized out
-            if (animBoneIndex == -1) continue;
-
-            AccessorModel accessor = channel.getSampler().getOutput();
-            FloatBuffer buffer = accessor.getAccessorData().createByteBuffer().asFloatBuffer();
-            boolean isRotation = channel.getPath().equals("rotation");
-            for (int i = 0; i < frames; ++i) {
-                Vector4f data = new Vector4f(buffer.get(), buffer.get(), buffer.get(), 1.0f);
-                if (isRotation)
-                    data.w = buffer.get();
-                packedData[bones.length + (i * numAnimated) + animBoneIndex] = data;
+        if (this.animation != null) {
+            for (Channel channel : this.animation.getChannels()) {
+                int boneIndex = this.nodeToIndex.get(channel.getNodeModel());
+    
+                int numAnimated = -1;
+                int animBoneIndex = -1;
+                Vector4f[] packedData = null;
+                switch (channel.getPath()) {
+                    case "translation": 
+                        animBoneIndex = posBonesAnimated.indexOf(boneIndex);
+                        packedData = packedPosition;
+                        numAnimated = posBonesAnimated.size();
+                        break;
+                    case "rotation": 
+                        animBoneIndex = rotBonesAnimated.indexOf(boneIndex);
+                        packedData = packedRotation;
+                        numAnimated = rotBonesAnimated.size();
+                        break;
+                    case "scale":                     
+                        animBoneIndex = scaleBonesAnimated.indexOf(boneIndex);
+                        packedData = packedScale;
+                        numAnimated = scaleBonesAnimated.size();
+                        break;
+                }
+    
+                // It was optimized out
+                // if (animBoneIndex == -1) continue;
+    
+                AccessorModel accessor = channel.getSampler().getOutput();
+                FloatBuffer buffer = accessor.getAccessorData().createByteBuffer().asFloatBuffer();
+                boolean isRotation = channel.getPath().equals("rotation");
+                for (int i = 0; i < frames; ++i) {
+                    Vector4f data = new Vector4f(buffer.get(), buffer.get(), buffer.get(), 1.0f);
+                    if (isRotation)
+                        data.w = buffer.get();
+                    packedData[bones.length + (i * numAnimated) + animBoneIndex] = data;
+                }
             }
         }
-
+        
         this.resource.rotBonesAnimated = new byte[rotBonesAnimated.size()];
         this.resource.posBonesAnimated = new byte[posBonesAnimated.size()];
         this.resource.scaledBonesAnimated = new byte[scaleBonesAnimated.size()];
@@ -236,18 +234,8 @@ public class AnimationImporter {
         
         this.resource.morphsAnimated = new byte[0];
         this.resource.packedMorph = new float[0];
+        this.resource.morphCount = 0;
         
         return this.resource;
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        AnimationImporter importer = new AnimationImporter("C:/Users/Aidan/Desktop/sackballs.import.glb");
-        System.out.println(importer.getAnimationName());
-        RAnimation animation = importer.getAnimation();
-        FileIO.write(
-            Resource.compress(animation.build(new Revision(0x37b), CompressionFlags.USE_ALL_COMPRESSION)),
-            "E:/zeon/rpcs3/dev_hdd0/game/NPEA00515/USRDIR/contrib/swouse/animations/swouse_test_01.anim"
-        );
     }
 }

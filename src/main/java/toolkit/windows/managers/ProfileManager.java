@@ -15,6 +15,7 @@ public class ProfileManager extends javax.swing.JDialog {
     DefaultListModel profileModel = new DefaultListModel();
     DefaultListModel archiveModel = new DefaultListModel();
     DefaultListModel databaseModel = new DefaultListModel();
+    DefaultListModel saveModel = new DefaultListModel();
     
     public ProfileManager(JFrame parent) {
         super(parent, "Profile Manager", true);
@@ -34,6 +35,7 @@ public class ProfileManager extends javax.swing.JDialog {
         this.profilesList.setModel(this.profileModel);
         this.archiveList.setModel(this.archiveModel);
         this.databaseList.setModel(this.databaseModel);
+        this.saveList.setModel(this.saveModel);
         
         this.profilesList.addListSelectionListener(listener -> {
             this.selectProfile(this.profilesList.getSelectedIndex());
@@ -90,6 +92,16 @@ public class ProfileManager extends javax.swing.JDialog {
             this.databaseModel.addElement(path);
         });
         
+        this.addSaveButton.addActionListener(e -> {
+            Profile profile = this.getSelectedProfile();
+            String path = FileChooser.openDirectory();
+            if (path == null) return;
+            if (profile.saves.contains(path))
+                return;
+            profile.saves.add(path);
+            this.saveModel.addElement(path);
+        });
+        
         this.removeArchiveButton.addActionListener(e -> {
             Profile profile = this.getSelectedProfile();
             String path = this.archiveList.getSelectedValue();
@@ -102,6 +114,13 @@ public class ProfileManager extends javax.swing.JDialog {
             String path = this.databaseList.getSelectedValue();
             profile.databases.remove(path);
             this.databaseModel.removeElement(path);
+        });
+        
+        this.removeSaveButton.addActionListener(e -> {
+            Profile profile = this.getSelectedProfile();
+            String path = this.databaseList.getSelectedValue();
+            profile.saves.remove(path);
+            this.saveModel.removeElement(path);
         });
         
         this.selectProfileButton.addActionListener(e -> {
@@ -139,6 +158,11 @@ public class ProfileManager extends javax.swing.JDialog {
         if (profile.archives != null)
             for (String path : profile.archives)
                 this.archiveModel.addElement(path);
+        
+        this.saveModel.clear();
+        if (profile.saves != null)
+            for (String path : profile.saves)
+                this.saveModel.addElement(path);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -164,6 +188,11 @@ public class ProfileManager extends javax.swing.JDialog {
         archiveList = new javax.swing.JList<>();
         addArchiveButton = new javax.swing.JButton();
         removeArchiveButton = new javax.swing.JButton();
+        savePanel = new javax.swing.JPanel();
+        saveContainer = new javax.swing.JScrollPane();
+        saveList = new javax.swing.JList<>();
+        addSaveButton = new javax.swing.JButton();
+        removeSaveButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         selectProfileButton = new javax.swing.JButton();
 
@@ -250,6 +279,36 @@ public class ProfileManager extends javax.swing.JDialog {
 
         preloadTabPanel.addTab("Archives", archivePanel);
 
+        saveContainer.setViewportView(saveList);
+
+        addSaveButton.setText("Add ");
+
+        removeSaveButton.setText("Remove");
+
+        javax.swing.GroupLayout savePanelLayout = new javax.swing.GroupLayout(savePanel);
+        savePanel.setLayout(savePanelLayout);
+        savePanelLayout.setHorizontalGroup(
+            savePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(savePanelLayout.createSequentialGroup()
+                .addComponent(saveContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(savePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(addSaveButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(removeSaveButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        savePanelLayout.setVerticalGroup(
+            savePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(saveContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(savePanelLayout.createSequentialGroup()
+                .addComponent(addSaveButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(removeSaveButton)
+                .addContainerGap(77, Short.MAX_VALUE))
+        );
+
+        preloadTabPanel.addTab("Saves", savePanel);
+
         closeButton.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Blue"));
         closeButton.setText("Close");
 
@@ -329,6 +388,7 @@ public class ProfileManager extends javax.swing.JDialog {
     private javax.swing.JButton addArchiveButton;
     private javax.swing.JButton addDatabaseButton;
     private javax.swing.JButton addProfileButton;
+    private javax.swing.JButton addSaveButton;
     private javax.swing.JScrollPane archiveContainer;
     private javax.swing.JList<String> archiveList;
     private javax.swing.JPanel archivePanel;
@@ -347,6 +407,10 @@ public class ProfileManager extends javax.swing.JDialog {
     private javax.swing.JButton removeArchiveButton;
     private javax.swing.JButton removeDatabaseButton;
     private javax.swing.JButton removeProfileButton;
+    private javax.swing.JButton removeSaveButton;
+    private javax.swing.JScrollPane saveContainer;
+    private javax.swing.JList<String> saveList;
+    private javax.swing.JPanel savePanel;
     private javax.swing.JButton selectProfileButton;
     // End of variables declaration//GEN-END:variables
 }
