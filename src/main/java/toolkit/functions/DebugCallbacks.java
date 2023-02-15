@@ -28,22 +28,22 @@ public class DebugCallbacks {
                     Resource resource = new Resource(data);
                     ResourceDescriptor[] dependencies = resource.getDependencies();
                     if (dependencies.length == 0)  continue;
-                    builder.append(String.format("%s (g%d)\n", entry.getPath(), entry.getKey()));
+                    builder.append(String.format("%s (%s)\n", entry.getPath(), entry.getKey()));
                     for (ResourceDescriptor descriptor : resource.getDependencies()) {
                         String type = descriptor.getType().name();
                         String name = String.format(" - (Unresolved Resource) [%s]", type);
                         if (descriptor.isGUID()) {
-                            name = String.format(" - (Unresolved Path) (g%d) [%s]\n", descriptor.getGUID(), type);
+                            name = String.format(" - (Unresolved Path) (%s) [%s]\n", descriptor.getGUID(), type);
                             FileEntry resolved = ResourceSystem.get(descriptor.getGUID());
                             if (resolved != null)
-                                name = String.format(" - %s (g%d) [%s]\n", resolved.getPath(), descriptor.getGUID(), type);
+                                name = String.format(" - %s (%s) [%s]\n", resolved.getPath(), descriptor.getGUID(), type);
                         } else if (descriptor.isHash())
                             name = String.format(" - %s [%s]", descriptor.getSHA1().toString(), type);
                         else continue;
                         builder.append(name);
                     }   
                     builder.append('\n');
-                } catch (Exception e) { /* Ignore the error */ }
+                } catch (Exception e) { /* Ignore the error */  }
             }
         }
         
