@@ -22,10 +22,35 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-    - name: Upload a Build Artifact
+
+    - name: Build with Maven - Linux amd64
+      run: mvn -B package --file pom.xml -P lwjgl-natives-linux-amd64
+    - name: Upload a Build Artifact - Linux amd64
       uses: actions/upload-artifact@v3.0.0
       with:
-        name: Toolkit
+        name: Toolkit - Linux amd64
+        path: target/*.jar
+
+    - name: Build with Maven - macOS aarch64
+      run: mvn -B package --file pom.xml -P lwjgl-natives-macos-aarch64
+    - name: Upload a Build Artifact - macOS aarch64
+      uses: actions/upload-artifact@v3.0.0
+      with:
+        name: Toolkit - macOS aarch64
+        path: target/*.jar
+
+    - name: Build with Maven - macOS x86_64
+      run: mvn -B package --file pom.xml -P lwjgl-natives-macos-x86_64
+    - name: Upload a Build Artifact - macOS x86_64
+      uses: actions/upload-artifact@v3.0.0
+      with:
+        name: Toolkit - macOS x86_64
+        path: target/*.jar
+
+    - name: Build with Maven - Windows amd64
+      run: mvn -B package --file pom.xml -P lwjgl-natives-windows-amd64
+    - name: Upload a Build Artifact - Windows amd64
+      uses: actions/upload-artifact@v3.0.0
+      with:
+        name: Toolkit - Windows amd64
         path: target/*.jar
