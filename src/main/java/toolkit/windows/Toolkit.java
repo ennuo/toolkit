@@ -502,6 +502,15 @@ public class Toolkit extends javax.swing.JFrame {
                         this.exportGroup.add(this.exportBackupGroup);
                         break;
                     }
+                    case TRANSLATION: {
+                        Swing.createMenuItem(
+                                "Merged with...",
+                                "Merges this translation table with another one, by adding their keys to this one.",
+                                ExportCallbacks::mergedRTranslation,
+                                this.exportGroup
+                        );
+                        break;
+                    }
                     default: break;
                 }
 

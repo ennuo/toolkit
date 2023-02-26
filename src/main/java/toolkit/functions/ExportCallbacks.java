@@ -26,6 +26,8 @@ import toolkit.windows.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
@@ -44,6 +46,35 @@ public class ExportCallbacks {
 
         if (file != null)
             MeshExporter.OBJ.export(file.getAbsolutePath(), info.getResource(), channel);
+    }
+
+    public static void mergedRTranslation(ActionEvent actionEvent) {
+        FileNode node = ResourceSystem.getSelected();
+        ResourceInfo info = node.getEntry().getInfo();
+        if (info == null || info.getType() != ResourceType.TRANSLATION || info.getResource() == null) return;
+
+        String name = node.getName();
+        String path_name = name.substring(0, name.length() - 4);
+        File file = FileChooser.openFile(
+                path_name + ".trans",
+                "trans",
+                false
+        );
+        if (file == null) return;
+        try {
+            RTranslationTable second = new RTranslationTable(Files.readAllBytes(file.toPath()));
+            RTranslationTable out = ((RTranslationTable)info.getResource()).merge(second);
+            File output = FileChooser.openFile(
+                    path_name + "_merged.trans",
+                    "trans",
+                    true
+            );
+            if (output != null) {
+                Files.write(output.toPath(), out.build());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public static void exportGLB() {
