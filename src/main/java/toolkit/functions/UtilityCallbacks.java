@@ -138,6 +138,12 @@ public class UtilityCallbacks {
             if (existing == null)
                 builder.append(String.format("[+] path=%s size=%s sha1=%s guid=%s\n", row.getPath(), row.getSize(), row.getSHA1(), row.getGUID()));
             else {
+
+                if (row.getPath().equals(existing.getPath())) {
+                    if (row.getSHA1().equals(existing.getSHA1())) continue;
+                }
+
+
                 builder.append(String.format(
                         "[~] path=%s->%s size=%s->%s sha1=%s->%s guid=%s->%s\n",
                         existing.getPath(), row.getPath(),
