@@ -17,7 +17,7 @@ public final class CellGcmTexture {
     private final int remap;
     private final short width, height, depth;
     private final byte location;
-    private final byte flags;
+    private byte flags;
     private final int pitch, offset;
     private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
 
@@ -123,8 +123,10 @@ public final class CellGcmTexture {
     public int getDepth() { return this.depth; }
     public SerializationType getMethod() { return this.method; }
 
+    public boolean isCubemap() { return this.cubemap == 1; }
     public boolean isBumpTexture() { return (this.flags & 0x1) != 0; }
     public boolean isVolumeTexture() { return (this.dimension > 2); }
+    public void fixupFlags() { this.flags = (byte) (this.flags & 0x1); }
 
     public void setMethod(SerializationType method) {
         this.method = method;

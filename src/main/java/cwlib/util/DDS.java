@@ -7,8 +7,20 @@ import cwlib.structs.texture.CellGcmTexture;
 public class DDS {
     public static int DDS_HEADER_FLAGS_TEXTURE = 0x00001007;
     public static int DDS_HEADER_FLAGS_MIPMAP = 0x00020000;
+
+    public static int DDS_SURFACE_FLAGS_COMPLEX = 0x00000008;
     public static int DDS_SURFACE_FLAGS_TEXTURE = 0x00001000;
-    public static int DDS_SURFACE_FLAGS_MIPMAP = 0x00400008;
+    public static int DDS_SURFACE_FLAGS_MIPMAP = 0x00400000;
+
+    public static int DDS_SURFACE_FLAGS_CUBEMAP			        = 0x00000200;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEX       = 0x00000400;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEX       = 0x00000800;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEY       = 0x00001000;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEY       = 0x00002000;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEZ       = 0x00004000;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEZ       = 0x00008000;
+    public static int DDS_SURFACE_FLAGS_CUBEMAP_ALL_FACES       = 0x0000FC00;
+    public static int DDS_SURFACE_FLAGS_VOLUME				    = 0x00200000;
 
     public static int DDS_FOURCC = 0x4;
     public static int DDS_RGB = 0x40;
@@ -38,7 +50,8 @@ public class DDS {
             texture.getFormat(), 
             texture.getWidth(), 
             texture.getHeight(), 
-            texture.getMipCount()
+            texture.getMipCount(),
+            texture.isCubemap()
         );
     }
 
@@ -50,7 +63,7 @@ public class DDS {
      * @param mips Mip level count
      * @return Generated DDS header
      */
-    public static byte[] getDDSHeader(CellGcmEnumForGtf format, int width, int height, int mips) {
+    public static byte[] getDDSHeader(CellGcmEnumForGtf format, int width, int height, int mips, boolean cubemap) {
         // For details on the DDS header structure, see:
         // https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
         
@@ -59,7 +72,7 @@ public class DDS {
 
         header.str("DDS ", 4);
         header.u32(0x7C); // dwSize
-        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((mips != 0) ? DDS.DDS_HEADER_FLAGS_MIPMAP : 0));
+        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((mips != 1) ? DDS.DDS_HEADER_FLAGS_MIPMAP : 0));
         header.u32(height);
         header.u32(width);
         header.u32(0); // dwPitchOrLinearSize
@@ -83,12 +96,32 @@ public class DDS {
         }
         for (int value : pixelFormat)
             header.u32(value);
-        
-        int surfaceFlags = DDS.DDS_SURFACE_FLAGS_TEXTURE;
-        if (mips != 0) surfaceFlags |= DDS.DDS_SURFACE_FLAGS_MIPMAP;
-        header.u32(surfaceFlags);
-        
-        header.u32(0);
+
+        int caps1 = DDS.DDS_SURFACE_FLAGS_TEXTURE;
+        int caps2 = 0;
+
+        if (mips != 1) {
+            caps1 |= DDS_SURFACE_FLAGS_MIPMAP;
+            caps1 |= DDS_SURFACE_FLAGS_COMPLEX;
+        }
+
+        if (cubemap) {
+            caps1 |= DDS_SURFACE_FLAGS_COMPLEX;
+
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP;
+
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEX;
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEX;
+
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEY;
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEY;
+
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_POSITIVEZ;
+            caps2 |= DDS_SURFACE_FLAGS_CUBEMAP_NEGATIVEZ;
+        }
+
+        header.u32(caps1);
+        header.u32(caps2);
         
         for (int i = 0; i < 3; ++i)
             header.u32(0); // dwReserved

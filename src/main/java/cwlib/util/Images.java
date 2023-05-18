@@ -50,7 +50,7 @@ public class Images {
                         green,
                         green,
                         green,
-                        255 - red
+                        red
                     ).getRGB());
                 }
             }
@@ -101,7 +101,7 @@ public class Images {
         }
         
         return Bytes.combine(
-            DDS.getDDSHeader(format, originalWidth, originalHeight, mipCount), 
+            DDS.getDDSHeader(format, originalWidth, originalHeight, mipCount, false), 
             dds
         );
     }
@@ -115,8 +115,10 @@ public class Images {
 
     public static byte[] toTEX(BufferedImage image, Squish.CompressionType type, boolean noSRGB, boolean generateMips) {
         byte[] dds = toDDS(image, type, generateMips);
+        String texType = "\0\0\0\0";
         if (noSRGB)
-            dds = Bytes.combine(dds, "BUMP".getBytes());
+            texType = "BUMP";
+        dds = Bytes.combine(dds, texType.getBytes());
         return Resource.compress(new SerializationData(dds));
     }
 

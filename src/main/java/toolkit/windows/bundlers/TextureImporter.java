@@ -54,8 +54,11 @@ public class TextureImporter extends javax.swing.JDialog {
                 return Resource.compress(new SerializationData(textureData, info));
             }
 
+            String texType = "\0\0\0\0";
             if (noSRGB) 
-                textureData = Bytes.combine(textureData, "BUMP".getBytes());
+                texType = "BUMP";
+            textureData = Bytes.combine(textureData, texType.getBytes());
+
             return Resource.compress(new SerializationData(textureData));
         }
 

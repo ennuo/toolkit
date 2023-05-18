@@ -2,6 +2,7 @@ package toolkit.functions;
 
 import cwlib.resources.RAnimation;
 import cwlib.resources.RFontFace;
+import cwlib.util.Bytes;
 import cwlib.util.FileIO;
 import cwlib.util.Resources;
 import cwlib.types.Resource;
@@ -13,6 +14,8 @@ import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
 import cwlib.resources.RTranslationTable;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.texture.CellGcmTexture;
+import cwlib.enums.CellGcmEnumForGtf;
 import cwlib.enums.ResourceType;
 import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RStaticMesh;
@@ -26,6 +29,8 @@ import toolkit.windows.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
@@ -164,8 +169,53 @@ public class ExportCallbacks {
 
         RTexture texture = selected.getInfo().getResource();
         if (texture == null) return;
+
+        byte[] output = texture.getData();
+
+        // Each face of cubemaps are aligned to 128 byte boundaries
+        CellGcmTexture gcm = texture.getInfo();
+        if (gcm != null && gcm.isCubemap()) {
+            byte[] data = Arrays.copyOfRange(output, 0x80, output.length);
+            output = null;
+
+            int depth = 16;
+            if (gcm.getFormat() == CellGcmEnumForGtf.DXT1)
+                depth = 8;
+
+            int offset = 0;
+            for (int n = 0; n < 6; ++n) {
+                int w = gcm.getWidth();
+                int h = gcm.getHeight();
+                int m = 0;
+
+                while (m < gcm.getMipCount()) {
+                    int size = ((w + 3) / 4) * ((h + 3) / 4) * depth;
+
+                    byte[] buf = Arrays.copyOfRange(data, offset, offset + size);
+                    if (output == null) output = buf;
+                    else
+                        output = Bytes.combine(output, buf);
+
+                    offset += size;
+                    
+                    w >>>= 1;
+                    h >>>= 1;
+
+                    if (w == 0 && h == 0) break;
+                    if (w == 0) w = 1;
+                    if (h == 0) h = 1;
+                    ++m;
+                }
+
+                if (((offset % 128) != 0)) {
+                    offset += (128 - (offset % 128));
+                }
+            }
+
+            output = Bytes.combine(texture.getDDSHeader(), output);
+        }
         
-        FileIO.write(texture.getData(), file.getAbsolutePath());
+        FileIO.write(output, file.getAbsolutePath());
     }
 
     public static void exportFont(ActionEvent e) {

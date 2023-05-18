@@ -19,6 +19,7 @@ import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RPlan;
+import cwlib.resources.RTexture;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -35,6 +36,7 @@ import toolkit.windows.Toolkit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import javax.swing.DefaultListModel;
@@ -314,15 +316,44 @@ public class AssetExporter extends JDialog {
         }
 
         Resource resource = new Resource(asset.data);
+
         if (resource.getSerializationType() != SerializationType.BINARY) {
-            
+
+
+
+            if (remap != null && resource.getSerializationType() == SerializationType.GTF_SWIZZLED || resource.getSerializationType() == SerializationType.GXT_SWIZZLED) {
+                RTexture texture = new RTexture(resource);
+                byte[] textureData = texture.getData();
+                resource.getTextureInfo().setMethod(SerializationType.COMPRESSED_TEXTURE);
+
+                boolean useGTF = remap != MaterialLibrary.LBP1;
+                boolean noSRGB = resource.getTextureInfo().isBumpTexture();
+
+                if (useGTF) {
+                    textureData = Arrays.copyOfRange(textureData, 0x80, textureData.length);
+                    asset.data = Resource.compress(new SerializationData(textureData, resource.getTextureInfo()));
+                }
+                else {
+                    String texType = "\0\0\0\0";
+                    if (noSRGB)
+                        texType = "BUMP";
+                    textureData = Bytes.combine(textureData, texType.getBytes());
+                    asset.data = Resource.compress(new SerializationData(textureData));
+                }
+            }
             // LBP1 didn't have GTF files
-            if (remap == MaterialLibrary.LBP1 && resource.getResourceType().equals(ResourceType.GTF_TEXTURE)) {
+            else if (remap == MaterialLibrary.LBP1 && resource.getResourceType().equals(ResourceType.GTF_TEXTURE)) {
                 byte[] header = DDS.getDDSHeader(resource.getTextureInfo());
                 byte[] data = Bytes.combine(header, resource.getStream().getBuffer());
+                String texType = "\0\0\0\0";
                 if (resource.getTextureInfo().isBumpTexture())
-                    data = Bytes.combine(data, "BUMP".getBytes());
+                    texType = "BUMP";
+                data = Bytes.combine(data, texType.getBytes());
                 asset.data = Resource.compress(new SerializationData(data));
+            } else if (remap != MaterialLibrary.LBP_PS4 && resource.getTextureInfo() != null) {
+                // ps4 has flags that mess up on ps3
+                resource.getTextureInfo().fixupFlags();
+                asset.data = Resource.compress(new SerializationData(resource.getStream().getBuffer(), resource.getTextureInfo()));
             }
 
             asset.recursed = true;
@@ -384,30 +415,38 @@ public class AssetExporter extends JDialog {
             }
             else if (resource.getResourceType().equals(ResourceType.GFX_MATERIAL)) {
                 RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
-                
-                if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
-                    if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
-                        gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
+
+                boolean isPS4 = gfx.shaders[0][0x25] == 0x68;
+                if (remap != MaterialLibrary.LBP1 && gfx.shaders.length == 10 && !isPS4)
+                {
+                    data = Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
                 }
-    
-                gfx.flags = gfx.flags & ~(0x10000);
-                if (remap != MaterialLibrary.LBP1) gfx.shaders = new byte[10][];
-                else gfx.shaders = new byte[4][];
-    
-                GameShader shader = GameShader.LBP2;
-                if (remap == MaterialLibrary.LBP1)
-                    shader = GameShader.LBP1;
-                else if (remap == MaterialLibrary.LBP_PS4)
-                    shader = GameShader.LBP3_PS4;
-    
-                try {
-                    CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, shader);
-                    data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
-                } catch (Exception ex)  { 
-                    ex.printStackTrace();
-                    data = resource.compress(); 
-                }
-    
+                else
+                {
+                    if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE) {
+                        if (gfx.getBoxConnectedToPort(gfx.getOutputBox(), BrdfPort.ALPHA_CLIP) != null)
+                            gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
+                    }
+        
+                    gfx.flags = gfx.flags & ~(0x10000);
+                    if (remap != MaterialLibrary.LBP1) gfx.shaders = new byte[10][];
+                    else gfx.shaders = new byte[4][];
+                    
+        
+                    GameShader shader = GameShader.LBP2;
+                    if (remap == MaterialLibrary.LBP1)
+                        shader = GameShader.LBP1;
+                    else if (remap == MaterialLibrary.LBP_PS4)
+                        shader = GameShader.LBP3_PS4;
+        
+                    try {
+                        CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1, false), gfx, shader);
+                        data =  Resource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
+                    } catch (Exception ex)  { 
+                        ex.printStackTrace();
+                        data = resource.compress(); 
+                    }
+                }    
             } else if (shouldConvert && resource.getResourceType().getCompressable() != null) {
 
                 // This surely won't cause any issues!
@@ -422,7 +461,17 @@ public class AssetExporter extends JDialog {
                 ResourceSystem.DISABLE_LOGS = false;
 
             }
-            else data = resource.compress();
+            else {
+                if (resource.getResourceType().equals(ResourceType.STATIC_MESH)) {
+                    data = asset.data;
+                    int head = revision.getHead();
+                    data[0x4] = (byte) ((head >>> 24) & 0xff);
+                    data[0x5] = (byte) ((head >>> 16) & 0xff);
+                    data[0x6] = (byte) ((head >>> 8) & 0xff);
+                    data[0x7] = (byte) ((head >>> 0) & 0xff);
+                }
+                else data = resource.compress();
+            }
 
         } else data = resource.compress();
 
