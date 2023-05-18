@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import org.joml.Matrix4f;
+
 import cwlib.enums.Branch;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
@@ -136,6 +138,24 @@ public class RLevel implements Serializable, Compressable {
         if (subVersion >= 0x169)
             level.adventureData = serializer.reference(level.adventureData, AdventureData.class);
         
+        if (!serializer.isWriting() && revision.getVersion() >= 0x341) {
+            for (Thing thing : world.<PWorld>getPart(Part.WORLD).things) {
+                if (thing == null || thing.parent == null) continue;
+
+                PPos pos = thing.getPart(Part.POS);
+                if (pos == null) continue;
+
+                PPos parent = thing.parent.getPart(Part.POS);
+
+                // This generally shouldn't happen, but make sure to check it anyway
+                if (parent == null) continue;
+
+                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
+                pos.localPosition = inv.mul(pos.worldPosition);
+            }
+        }
+
+
         return level;
     }
 
