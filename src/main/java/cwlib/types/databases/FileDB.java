@@ -124,7 +124,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
             /* 	In LittleBigPlanet Vita, some versions of the databases don't store any filenames,
                 only the extensions, so we'll use the hash of the resource in place of a name. */
             if (path.startsWith(".")) {
-                path = String.format("data/%s/%s%s",
+                path = String.format("data/%s%s%s",
                     FileDB.getFolderFromExtension(path), sha1.toString(), path);
             }
 
