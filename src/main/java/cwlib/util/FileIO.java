@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class FileIO {
     public static String readString(Path path) {
         try {
             byte[] data = Files.readAllBytes(path);
-            return new String(data);
+            return new String(data, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             ResourceSystem.println("FileIO", "An error occurred reading file.");
             return null;
