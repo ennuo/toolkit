@@ -179,6 +179,14 @@ public class RTranslationTable {
         RTranslationTable table = GsonUtils.fromJSON(FileIO.readString(Path.of(path)), RTranslationTable.class);
         return table;
     }
+
+    public RTranslationTable merge(RTranslationTable second) {
+        for (long key : second.lookup.keySet()) {
+            if (!lookup.containsKey(key))
+                lookup.put(key, second.lookup.get(key));
+        }
+        return this;
+    }
     
     /**
      * Builds the current RTranslationTable instance to a buffer
