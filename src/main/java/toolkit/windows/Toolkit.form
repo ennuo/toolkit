@@ -1008,6 +1008,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="installProfileModActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="lamsKey">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Get LAMS key"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="lamsKeyActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exportWorld">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Export RLevel"/>

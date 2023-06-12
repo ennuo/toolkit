@@ -792,6 +792,7 @@ public class Toolkit extends javax.swing.JFrame {
         generateDiff = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
+        lamsKey = new javax.swing.JMenuItem();
         exportWorld = new javax.swing.JMenuItem();
         exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
@@ -1985,6 +1986,14 @@ public class Toolkit extends javax.swing.JFrame {
         });
         toolsMenu.add(installProfileMod);
 
+        lamsKey.setText("Get LAMS key");
+        lamsKey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lamsKeyActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(lamsKey);
+
         exportWorld.setText("Export RLevel");
         exportWorld.setToolTipText("Exports the current scene graph as a level");
         exportWorld.addActionListener(new java.awt.event.ActionListener() {
@@ -2967,6 +2976,12 @@ public class Toolkit extends javax.swing.JFrame {
         ResourceSystem.reloadSelectedModel();
     }//GEN-LAST:event_remapDatabaseContextActionPerformed
 
+    private void lamsKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lamsKeyActionPerformed
+        String key = JOptionPane.showInputDialog("Insert key");
+        String value = Long.toString(RTranslationTable.makeLamsKeyID(key));
+        JOptionPane.showMessageDialog(null, value);
+    }//GEN-LAST:event_lamsKeyActionPerformed
+
     public void populateMetadata(RPlan item) {
         if (item == null || !ResourceSystem.canExtract()) return;
         InventoryItemDetails details = item.inventoryData;
@@ -3222,6 +3237,7 @@ public class Toolkit extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator9;
+    private javax.swing.JMenuItem lamsKey;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
     public javax.swing.JMenuItem loadDB;
