@@ -12,6 +12,9 @@ public class PScriptName implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x4;
 
     public String name;
+
+    public PScriptName(){};
+    public PScriptName(String name) { this.name = name; }
     
     @SuppressWarnings("unchecked")
     @Override public PScriptName serialize(Serializer serializer, Serializable structure) {

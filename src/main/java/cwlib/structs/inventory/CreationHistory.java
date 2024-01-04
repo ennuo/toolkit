@@ -18,6 +18,14 @@ public class CreationHistory implements Serializable {
 
     public String[] creators;
 
+    public CreationHistory() {};
+    public CreationHistory(String creator) {
+        this.creators = new String[] { creator };
+    }
+    public CreationHistory(String[] creators) {
+        this.creators = creators;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public CreationHistory serialize(Serializer serializer, Serializable structure) {
         CreationHistory history = (structure == null) ? new CreationHistory() : (CreationHistory) structure;

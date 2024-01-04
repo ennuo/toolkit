@@ -1,15 +1,20 @@
 package cwlib.structs.things.parts;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import cwlib.enums.AudioMaterial;
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.Branch;
 import cwlib.enums.LethalType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShapeFlags;
 import cwlib.io.Serializable;
+import cwlib.io.gson.AudioMaterialSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -19,6 +24,7 @@ import cwlib.structs.things.components.shapes.Polygon;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.Colors;
+import earcut4j.Earcut;
 
 /**
  * Used for collisions and other properties of materials.
@@ -35,7 +41,7 @@ public class PShape implements Serializable {
      * Physical properties of this shape.
      */
     public ResourceDescriptor material = 
-        new ResourceDescriptor(10716, ResourceType.MATERIAL);
+        new ResourceDescriptor(10724, ResourceType.MATERIAL);
 
     /**
      * Old physical properties of this shape.
@@ -118,6 +124,12 @@ public class PShape implements Serializable {
         this.polygon.requiresZ = true;
     } 
 
+    public PShape(float massDepth, float thickness, Vector3f[] vertices) {
+        this(vertices);
+        this.massDepth = massDepth;
+        this.thickness = thickness;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override public PShape serialize(Serializer serializer, Serializable structure) {
         PShape shape = (structure == null) ? new PShape() : (PShape) structure;

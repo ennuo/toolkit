@@ -6,6 +6,11 @@ import cwlib.structs.things.components.Decoration;
 
 public class PDecorations implements Serializable {
     public Decoration[] decorations;
+
+    public PDecorations(){}
+    public PDecorations(Decoration decor) {
+        this.decorations = new Decoration[] { decor };
+    }
     
     @SuppressWarnings("unchecked")
     @Override public PDecorations serialize(Serializer serializer, Serializable structure) {

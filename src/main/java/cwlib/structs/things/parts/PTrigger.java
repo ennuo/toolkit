@@ -13,7 +13,7 @@ public class PTrigger implements Serializable {
 
     public TriggerType triggerType = TriggerType.RADIUS;
     public Thing[] inThings;
-    public float radiusMultiplier;
+    public float radiusMultiplier = 600.0f;
 
     @GsonRevision(min=0x2a, lbp3=true)
     public byte zRangeHundreds;
@@ -23,9 +23,9 @@ public class PTrigger implements Serializable {
 
 
     @GsonRevision(min=0x19b)
-    public float hysteresisMultiplier;
+    public float hysteresisMultiplier = 1.0f;
     @GsonRevision(min=0x19b)
-    public boolean enabled;
+    public boolean enabled = true;
 
     @GsonRevision(min=0x322)
     public float zOffset;
@@ -33,6 +33,12 @@ public class PTrigger implements Serializable {
     @GsonRevision(min=0x30, branch=0x4431)
     @GsonRevision(min=0x90, lbp3=true)
     public int scoreValue;
+
+    public PTrigger() {};
+    public PTrigger(TriggerType type, float radius) {
+        this.triggerType = type;
+        this.radiusMultiplier = radius;
+    }
     
     @SuppressWarnings("unchecked")
     @Override public PTrigger serialize(Serializer serializer, Serializable structure) {

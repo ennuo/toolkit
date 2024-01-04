@@ -1,5 +1,7 @@
 package cwlib.structs.slot;
 
+import java.lang.System.Logger.Level;
+
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
@@ -12,6 +14,12 @@ public class Label implements Serializable {
 
     public int key;
     public int order;
+
+    public Label() {};
+    public Label(int key, int order) {
+        this.key = key;
+        this.order = order;
+    }
     
     @SuppressWarnings("unchecked")
     @Override public Label serialize(Serializer serializer, Serializable structure) {

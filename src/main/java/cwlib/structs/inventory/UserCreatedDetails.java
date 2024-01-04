@@ -25,13 +25,6 @@ public class UserCreatedDetails implements Serializable {
         return details;
     }
 
-    @Override public boolean equals(Object other) {
-        if (other == this) return true;
-        if (!(other instanceof UserCreatedDetails)) return false;
-        UserCreatedDetails details = (UserCreatedDetails) other;
-        return details.name.equals(this.name) && details.description.equals(this.description);
-    }
-
     @Override public int getAllocatedSize() {
         int size = BASE_ALLOCATION_SIZE;
         if (this.name != null)

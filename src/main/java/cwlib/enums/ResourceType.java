@@ -34,7 +34,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     GAME_CONSTANTS("CON", 20, "constants/", ".con"),
     POPPET_SETTINGS("POP", 21, "poppet_settings/", ".pop"),
     CACHED_LEVEL_DATA("CLD", 22, "cached/levels/", ".cld"),
-    SYNCED_PROFILE("PRF", 23, "profiles/synced/", ".pro"),
+    SYNCED_PROFILE("PRF", 23, RSyncedProfile.class, "profiles/synced/", ".pro"),
     BEVEL("BEV", 24, RBevel.class, "bevels/", ".bev"),
     GAME("GAM", 25, "game/", ".game"),
     SETTINGS_NETWORK("NWS", 26, "network_settings/", ".nws"),

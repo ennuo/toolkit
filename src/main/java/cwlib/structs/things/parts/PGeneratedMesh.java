@@ -97,19 +97,25 @@ public class PGeneratedMesh implements Serializable {
     public boolean includeSides = true;
 
     @GsonRevision(lbp3=true,min=0x155)
-    public byte slideImpactDamping;
+    public byte slideImpactDamping = 50;
 
     /**
      * Speed the player moves when steering on a slide.
      */
     @GsonRevision(lbp3=true,min=0x13d)
-    public byte slideSteer;
+    public byte slideSteer = 100;
 
     /**
      * Speed the player descends down this slide.
      */
     @GsonRevision(lbp3=true,min=0x13d)
-    public byte slideSpeed;
+    public byte slideSpeed = 50;
+
+    public PGeneratedMesh() {};
+    public PGeneratedMesh(ResourceDescriptor material, ResourceDescriptor bevel) {
+        this.gfxMaterial = material;
+        this.bevel = bevel;
+    }
 
     @SuppressWarnings("unchecked")
     @Override public PGeneratedMesh serialize(Serializer serializer, Serializable structure) {

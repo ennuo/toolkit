@@ -87,6 +87,24 @@ public class Decal implements Serializable {
         this.texture = texture;
     }
 
+    public Decal(ResourceDescriptor texture, float u, float v, float scale, float angle, boolean flipped) {
+        this.texture = texture;
+
+        this.u = u;
+        this.v = v;
+        
+        float sx = scale;
+        float sy = scale;
+        if (flipped)
+            sx = -sx;
+
+        this.xvecu = (float) (sx * Math.cos(angle));
+        this.xvecv = (float) (sx * Math.sin(angle));
+
+        this.yvecu = (float) (-sy * Math.sin(angle));
+        this.yvecv = (float) (sy * Math.cos(angle));
+    }
+
     @SuppressWarnings("unchecked")
     @Override public Decal serialize(Serializer serializer, Serializable structure) {
         Decal decal = (structure == null) ? new Decal() : (Decal) structure;

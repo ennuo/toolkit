@@ -59,8 +59,4 @@ public class NetworkPlayerID implements Serializable {
     @Override public String toString() {
         return this.handle.toString();
     }
-    
-    @Override public int hashCode() {
-        return this.handle.hashCode();
-    }
 }

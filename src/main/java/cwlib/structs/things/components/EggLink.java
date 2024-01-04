@@ -20,6 +20,11 @@ public class EggLink implements Serializable {
     @GsonRevision(min=0x23c) public boolean shareable = true;
     @GsonRevision(min=0x3e1) public ResourceDescriptor painting;
 
+    public EggLink() {};
+    public EggLink(ResourceDescriptor item) {
+        this.plan = item;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public EggLink serialize(Serializer serializer, Serializable structure) {
         EggLink link = (structure == null) ? new EggLink() : (EggLink) structure;
