@@ -25,7 +25,13 @@ public class ApplicationFlags {
      */
     public static File SCE_CGC_STRIP_EXECUTABLE =
         new File(Config.jarDirectory, "sce/sce-cgcstrip.exe");
-    
+
+    /**
+     * Path to the texconv executable, used in Windows instead of default DDS conversion if available.
+     */
+    public static File TEXCONV_EXECUTABLE = 
+        new File(Config.jarDirectory, "bin/texconv.exe");
+
     /**
      * Path to PS4 shader compiler executable, you'll have to
      * get this from a PS4 SDK yourself.
@@ -55,6 +61,11 @@ public class ApplicationFlags {
      * 3D is only supported on Windows (and maybe Linux)
      */
     public static boolean CAN_USE_3D = !IS_WINDOWS;
+
+    /**
+     * Whether or not Alear server operations are allowed.
+     */
+    public static boolean ALEAR_INTEGRATION = false;
 
     static {
         if (SCE_PSSL_EXECUTABLE != null)

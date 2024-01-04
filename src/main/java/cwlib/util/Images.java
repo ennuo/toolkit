@@ -27,6 +27,8 @@ import cwlib.external.DDSReader;
 
 import org.imgscalr.Scalr;
 
+import configurations.ApplicationFlags;
+
 public class Images {
     private static int toNearest(int x) {
         x |= x >> 1;
@@ -72,6 +74,52 @@ public class Images {
 
 
     private static byte[] toDDS(BufferedImage image, Squish.CompressionType type, boolean generateMips) {
+        // Prefer texconv on Windows platforms
+        if (ApplicationFlags.IS_WINDOWS && ApplicationFlags.TEXCONV_EXECUTABLE.exists())
+        {
+            File input = new File("TEXTURE.PNG");
+            File output = new File("TEXTURE.DDS");
+
+            String formatType = null;
+            switch (type) {
+                case DXT1: formatType = "DXT1"; break;
+                case DXT3: formatType = "DXT3"; break;
+                case DXT5: formatType = "DXT5"; break;
+                default: formatType = "DXT5"; break;
+            }
+
+            try { ImageIO.write(image, "png", input); } 
+            catch(Exception ex) { return null; }
+
+            ProcessBuilder builder = new ProcessBuilder(new String[] {
+                ApplicationFlags.TEXCONV_EXECUTABLE.getAbsolutePath(),
+                "texconv",
+                "-f",
+                formatType,
+                "-y",
+                "-nologo",
+                "-m",
+                generateMips ? "0" : "1",
+                input.getAbsolutePath(),
+                "-o",
+                new File("./").getAbsolutePath()
+            });
+
+            try { builder.start().waitFor(); }
+            catch (Exception ex) {}
+
+            byte[] imageData = null;
+            if (output.exists()) {
+                imageData = FileIO.read(output.getAbsolutePath());
+                output.delete();
+            }
+
+            input.delete();
+
+            return imageData;
+        }
+        
+        
         int width = toNearest(image.getWidth());
         int height = toNearest(image.getHeight());
         
