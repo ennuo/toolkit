@@ -1,4 +1,4 @@
-package executables.gfx;
+package cwlib.util.gfx;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,6 +11,7 @@ import org.joml.Vector4f;
 
 import configurations.ApplicationFlags;
 import cwlib.enums.BoxType;
+import cwlib.enums.BrdfPort;
 import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
@@ -29,51 +30,6 @@ public class GfxAssembler {
     public static boolean USE_NORMAL_MAPS = false;
     public static boolean IS_GLSL = false;
     public static int CURRENT_ATTRIBUTE = 0;
-
-    public static class BrdfPort {
-        public static final int DIFFUSE = 0;
-        public static final int ALPHA_CLIP = 1;
-        public static final int SPECULAR = 2;
-        public static final int BUMP = 3;
-        public static final int GLOW = 4;
-        public static final int REFLECTION = 6;
-        public static final int UNKNOWN = 7; // 7, just adds tex * ambcol, to final color
-
-        // 169
-        public static final int ANISO = 170;
-        public static final int TRANS = 171;
-        public static final int COLOR_CORRECTION = 172; // ramp
-        public static final int FUZZ = 173;
-        public static final int BRDF_REFLECTANCE = 174;
-        public static final int TOON_RAMP = 175;
-    }
-
-    public static class GfxFlags {
-        public static final int NO_FLAGS = 0;
-        public static final int DECALS = (1 << 0);
-        public static final int WATER_TWEAKS = (1 << 1);
-        public static final int SPRITELIGHT = (1 << 2);
-        public static final int BAKED_AO = (1 << 3);
-        public static final int DYNAMIC_AO = (1 << 4);
-        public static final int AO_FLAGS = (BAKED_AO | DYNAMIC_AO);
-        public static final int BAKED_SHADOWS = (1 << 5);
-        public static final int DYNAMIC_SHADOWS = (1 << 6);
-        public static final int SHADOW_FLAGS = (BAKED_SHADOWS | DYNAMIC_SHADOWS);
-    
-        public static final int LEGACY = (1 << 7);
-        public static final int LEGACY_NORMAL_PASS = (1 << 8);
-    
-        public static final int SPECULAR = (1 << 9);
-        public static final int NORMAL = (1 << 10);
-    
-        public static final int ALPHA = (1 << 11);
-        public static final int REFRACT = (1 << 12);
-        public static final int GLOW = (1 << 13);
-    
-        public static final int GLASS = (1 << 14);
-
-        public static final int ORBIS = (1 << 15);
-    }
 
     public static class Variable {
         public final String value;

@@ -29,7 +29,7 @@ import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
-import executables.gfx.GfxAssembler.BrdfPort;
+import cwlib.enums.BrdfPort;
 
 /**
  * Resource that controls how meshes get rendered,

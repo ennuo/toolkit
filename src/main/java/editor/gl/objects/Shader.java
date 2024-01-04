@@ -8,11 +8,11 @@ import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
+import cwlib.util.gfx.GfxAssembler;
+import cwlib.enums.BrdfPort;
 import editor.gl.RenderSystem;
 import editor.gl.RenderSystem.MorphInstance;
 import editor.gl.RenderSystem.RenderMode;
-import executables.gfx.GfxAssembler;
-import executables.gfx.GfxAssembler.BrdfPort;
 
 import static org.lwjgl.opengl.GL20.*;
 

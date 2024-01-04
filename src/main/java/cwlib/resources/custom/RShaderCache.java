@@ -43,10 +43,10 @@ import cwlib.types.databases.FileDBRow;
 import cwlib.util.FileIO;
 import cwlib.util.GsonUtils;
 import cwlib.util.Images;
+import cwlib.enums.BrdfPort;
 import de.javagl.jgltf.model.ImageModel;
 import de.javagl.jgltf.model.TextureModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
-import executables.gfx.GfxAssembler.BrdfPort;
 
 public class RShaderCache implements Serializable, Compressable {
     public static final int BASE_ALLOCATION_SIZE = 0x8;

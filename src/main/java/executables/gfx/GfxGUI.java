@@ -15,7 +15,9 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
-import executables.gfx.GfxAssembler.BrdfPort;
+import cwlib.util.gfx.CgAssembler;
+import cwlib.util.gfx.GfxAssembler;
+import cwlib.enums.BrdfPort;
 import executables.gfx.dialogues.ErrorDialogue;
 import executables.gfx.dialogues.TextureDialogue;
 

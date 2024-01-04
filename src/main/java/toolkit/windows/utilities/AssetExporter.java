@@ -1,6 +1,7 @@
 package toolkit.windows.utilities;
 
 import configurations.ApplicationFlags;
+import cwlib.enums.BrdfPort;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.GameShader;
 import cwlib.enums.GfxMaterialFlags;
@@ -28,9 +29,8 @@ import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
 import cwlib.util.Resources;
-import executables.gfx.CgAssembler;
-import executables.gfx.GfxAssembler;
-import executables.gfx.GfxAssembler.BrdfPort;
+import cwlib.util.gfx.CgAssembler;
+import cwlib.util.gfx.GfxAssembler;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
