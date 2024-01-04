@@ -76,11 +76,9 @@ public class Psyncer {
             System.err.println("Archive didn't contain RSyncedProfile!");
             return;
         }
-
-        GsonUtils.REVISION = archive.getGameRevision();
         
         if (extractJSON) {
-            FileIO.write(GsonUtils.toJSON(synced).getBytes(StandardCharsets.UTF_8), args[1]);
+            FileIO.write(GsonUtils.toJSON(synced, archive.getGameRevision()).getBytes(StandardCharsets.UTF_8), args[1]);
             return;
         }
         

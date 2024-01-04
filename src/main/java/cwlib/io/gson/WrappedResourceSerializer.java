@@ -79,6 +79,7 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
     @Override public JsonElement serialize(WrappedResource resource, Type type, JsonSerializationContext jsc) {
         JsonObject object = new JsonObject();
 
+        GsonUtils.REVISION = resource.revision;
         object.add("revision", new JsonPrimitive(resource.revision.getHead()));
         short id = resource.revision.getBranchID();
         if (id != 0) {

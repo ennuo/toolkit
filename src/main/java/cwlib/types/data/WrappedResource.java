@@ -24,8 +24,7 @@ public class WrappedResource {
     }
 
     public byte[] toJSON() {
-        GsonUtils.REVISION = this.revision;
-        return GsonUtils.toJSON(this).getBytes(StandardCharsets.UTF_8);
+        return GsonUtils.toJSON(this, this.revision).getBytes(StandardCharsets.UTF_8);
     }
     
     public byte[] build() {
