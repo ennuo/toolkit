@@ -395,6 +395,16 @@ public class Toolkit extends javax.swing.JFrame {
                             EditCallbacks::editItem, 
                             this.entryContext
                     );
+
+                    if (ApplicationFlags.ALEAR_INTEGRATION) {
+                        Swing.createMenuItem(
+                            "Upload",
+                            "Sends the item to the local Alear server",
+                            AlearCallbacks::upload,
+                            this.entryContext
+                        );
+                    }
+
                     break;
                 }
                 case SLOT_LIST: case PACKS: {
