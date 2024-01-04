@@ -58,7 +58,7 @@ public class RInstrument implements Serializable, Compressable {
 
         for (int i = 0; i < MAX_PARAMS; ++i) {
             serializer.i32(2); // Technically a float array, but it's always of length 2
-            serializer.v2(inst.params[i]);
+            inst.params[i] = serializer.v2(inst.params[i]);
         }
 
         serializer.i32(MAX_ARPEGGIO);
