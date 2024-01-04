@@ -117,7 +117,8 @@ public class CgAssembler {
     public static byte[] compileShaderVariant(String source, int gmatFlags, int index, GameShader shader) {
         int flags = (shader == GameShader.LBP1) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
         if (shader == GameShader.LBP3_PS4) flags |= ORBIS;
-        if (shader == GameShader.LBP2_PRE_ALPHA) flags |= WATER_TWEAKS;
+        if (shader == GameShader.LBP2_PRE_ALPHA)
+            flags |= WATER_TWEAKS;
         
         if ((gmatFlags & GfxMaterialFlags.RECEIVE_SHADOWS) != 0)
             flags |= (1 << 22);

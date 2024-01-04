@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import org.joml.Vector4f;
+
 import configurations.ApplicationFlags;
 import cwlib.enums.BoxType;
 import cwlib.enums.GameShader;
@@ -14,6 +16,7 @@ import cwlib.enums.GfxMaterialFlags;
 import cwlib.resources.RGfxMaterial;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.gmat.MaterialBox;
+import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.util.FileIO;
 
@@ -107,7 +110,7 @@ public class GfxAssembler {
             case BoxType.TEXTURE_SAMPLE: {
                 String texVar = "s" + params[5];
                 variableName = "smp" + index;
-                String channel = (params[4] == 1 || params[4] == 256) ? "zw" : "xy";
+                String channel = (params[4] == 1 || params[4] == 257) ? "zw" : "xy";
                 if (type == BrdfPort.REFLECTION) {
 
                     if (IS_GLSL)
@@ -119,27 +122,65 @@ public class GfxAssembler {
                 }
 
                 String uv = "iUV." + channel;
-                float sx = Float.intBitsToFloat(params[0]);
-                float sy = Float.intBitsToFloat(params[1]);
-                if (sx != 1.0f || sy != 1.0f)
-                    uv = String.format(Locale.ROOT, "(%s * float2(%f, %f))", uv, sx, sy);
-                float ox = Float.intBitsToFloat(params[2]);
-                float oy = Float.intBitsToFloat(params[3]);
-                if (ox != 0.0f || oy != 0.0f)
-                    uv += String.format(Locale.ROOT, " + float2(%f, %f)", ox, oy);
 
-                Variable add = getWithSwizzle(shader, gmat, box, 0, type);
-                if (add != null)
-                    uv = String.format("(%s) + %s", uv, (add.value.indexOf(".") == -1 && add.type != 1) ? add.value + ".xy" : add.value);
-                Variable scale = getWithSwizzle(shader, gmat, box, 1, type);
-                if (scale != null)
-                    uv = String.format("(%s) * %s", uv, (scale.value.indexOf(".") == -1 && scale.type != 1) ? scale.value + ".xy" : scale.value);
-                Variable sub = getWithSwizzle(shader, gmat, box, 2, type);
-                if (sub != null)
-                    uv = String.format("(%s) - %s", uv, (sub.value.indexOf(".") == -1 && sub.type != 1) ? sub.value + ".xy" : sub.value);
 
+                boolean hasAnim1 = !box.anim.getName().isEmpty();
+                boolean hasAnim2 = !box.anim2.getName().isEmpty();
+
+                if (box.subType == 0)
+                {
+                    if (hasAnim1 && hasAnim2) {
+                        uv = String.format(
+                            "float2(dot(%s.xyz, float3(%s, 1.0)), dot(%s.xyz, float3(%s, 1.0)))",
+                            "t" + box.anim.getName(),
+                            uv,
+                            "t" + box.anim2.getName(),
+                            uv                        
+                        );
+                    } else if (hasAnim1) {
+                        uv = String.format("((%s - %s.zw) * %s.xy)", 
+                            uv, "t" + box.anim.getName(), "t" + box.anim.getName()
+                        );
+                    } else {
+                        float sx = Float.intBitsToFloat(params[0]);
+                        float sy = Float.intBitsToFloat(params[1]);
+                        if (sx != 1.0f || sy != 1.0f)
+                            uv = String.format(Locale.ROOT, "(%s * float2(%f, %f))", uv, sx, sy);
+                        float ox = Float.intBitsToFloat(params[2]);
+                        float oy = Float.intBitsToFloat(params[3]);
+                        if (ox != 0.0f || oy != 0.0f)
+                            uv += String.format(Locale.ROOT, " + float2(%f, %f)", ox, oy);
+        
+                        Variable add = getWithSwizzle(shader, gmat, box, 0, type);
+                        if (add != null)
+                            uv = String.format("(%s) + %s", uv, (add.value.indexOf(".") == -1 && add.type != 1) ? add.value + ".xy" : add.value);
+                        Variable scale = getWithSwizzle(shader, gmat, box, 1, type);
+                        if (scale != null)
+                            uv = String.format("(%s) * %s", uv, (scale.value.indexOf(".") == -1 && scale.type != 1) ? scale.value + ".xy" : scale.value);
+                        Variable sub = getWithSwizzle(shader, gmat, box, 2, type);
+                        if (sub != null)
+                            uv = String.format("(%s) - %s", uv, (sub.value.indexOf(".") == -1 && sub.type != 1) ? sub.value + ".xy" : sub.value);
+                    }
+                }
+                else if (box.subType == 1)
+                {
+                    String x = String.format("dot(float3(%s, 1.0), float3(%f, %f, %f))", uv, Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]), Float.intBitsToFloat(params[2]));
+                    if (hasAnim1)
+                    {
+                        x = String.format("dot(float3(%s, 1.0), %s.xyz)", uv, "t" + box.anim.getName());
+                    }
+                    
+                    String y = String.format("dot(float3(%s, 1.0), float3(%f, %f, %f))", uv, Float.intBitsToFloat(params[3]), Float.intBitsToFloat(params[6]), Float.intBitsToFloat(params[7]));
+                    if (hasAnim2)
+                    {
+                        y = String.format("dot(float3(%s, 1.0), %s.xyz)", uv, "t" + box.anim2.getName());
+                    }
+
+                    uv = String.format("float2(%s, %s)", x, y);
+                }
 
                 assignment = String.format("SAMPLE_2D(%s, %s)", texVar, uv);
+
 
                 if (type == BrdfPort.FUZZ) {
                     shader.append(String.format("\tfloat4 %s = float4(%s.x, SAMPLE_2D(%s, iUV.zw).yz, 0.0);\n", variableName, assignment, texVar));
@@ -151,23 +192,31 @@ public class GfxAssembler {
             case BoxType.THING_COLOR: return new Variable("iColor", 4);
             case BoxType.COLOR: {
                 variableName = "col" + index;
-                assignment = String.format("float4(%s, %s, %s, %s)", Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]), Float.intBitsToFloat(params[2]), Float.intBitsToFloat(params[3]));
+                if (box.anim.getName().isEmpty()) {
+                    assignment = String.format(
+                        Locale.ROOT, "float4(%f, %f, %f, %f)", 
+                        Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]), 
+                        Float.intBitsToFloat(params[2]), Float.intBitsToFloat(params[3])
+                    );
+                }
+                else assignment = "t" + box.anim.getName();
+
                 break;
             }
-            case BoxType.CONSTANT: return new Variable(String.format("%s", Float.intBitsToFloat(params[0])), 1);
+            case BoxType.CONSTANT: return new Variable(String.format(Locale.ROOT, "%f", Float.intBitsToFloat(params[0])), 1);
             case BoxType.CONSTANT2: {
-                return new Variable(String.format("float2(%s, %s)", 
+                return new Variable(String.format(Locale.ROOT, "float2(%f, %f)", 
                     Float.intBitsToFloat(params[0]),
                     Float.intBitsToFloat(params[1])), 2);
             }
             case BoxType.CONSTANT3: {
-                return new Variable(String.format("float3(%s, %s, %s)", 
+                return new Variable(String.format(Locale.ROOT, "float3(%f, %f, %f)", 
                     Float.intBitsToFloat(params[0]),
                     Float.intBitsToFloat(params[1]),
                     Float.intBitsToFloat(params[2])), 3);
             }
             case BoxType.CONSTANT4: {
-                return new Variable(String.format("float4(%s, %s, %s, %s)", 
+                return new Variable(String.format(Locale.ROOT, "float4(%f, %f, %f, %f)", 
                     Float.intBitsToFloat(params[0]),
                     Float.intBitsToFloat(params[1]),
                     Float.intBitsToFloat(params[2]),
@@ -183,7 +232,7 @@ public class GfxAssembler {
                 returnType = input.type;
                 
                 variableName = "mad" + index;
-                assignment = String.format("((%s * %s) + %s)", input,
+                assignment = String.format(Locale.ROOT, "((%s * %f) + %f)", input,
                     Float.intBitsToFloat(params[0]),
                     Float.intBitsToFloat(params[1]));
                 break;
@@ -351,6 +400,20 @@ public class GfxAssembler {
         IS_GLSL = (flags == 0xDEADBEEF);
 
         String shader = IS_GLSL ? BRDF_GLSL : BRDF_CG;
+
+        if (!IS_GLSL && material.parameterAnimations != null && material.parameterAnimations.length != 0) {
+            shader = '\n' + shader;
+            for (MaterialParameterAnimation animation : material.parameterAnimations) {
+                shader = String.format(Locale.ROOT,
+                    "uniform float4 t%s = float4(%f, %f, %f, %f);\n", 
+                    animation.getName(), 
+                    animation.baseValue.x, animation.baseValue.y,
+                    animation.baseValue.z, animation.baseValue.w
+                ) + shader;
+            }
+            shader = "// Parameter animation uniforms \n" + shader;
+        }
+
         int output = material.getOutputBox();
 
         ArrayList<String> properties = new ArrayList<>();
@@ -427,17 +490,12 @@ public class GfxAssembler {
         }
 
         if (IS_GLSL) {
-            shader = shader.replaceAll("float1", "float");
-            shader = shader.replaceAll("float2", "vec2");
-            shader = shader.replaceAll("float3", "vec3");
-            shader = shader.replaceAll("float4", "vec4");
             shader = shader.replaceAll("iUV", "uv");
             shader = shader.replaceAll("iDecalUV", "decal_uv");
             shader = shader.replaceAll("iVec2Eye", "vec2eye");
             shader = shader.replaceAll("iTangent", "tangent");
             shader = shader.replaceAll("iNormal", "normal");
             shader = shader.replaceAll("iColor", "thing_color");
-            shader = shader.replaceAll("half", "vec");
         }
 
         return shader;
@@ -487,7 +545,7 @@ public class GfxAssembler {
         if (shader == GameShader.LBP3_PS4)
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-nodx10clamp", "-write-constant-block", "-sbiversion", "0", "-dont-strip-default-cb");
         else if (shader != GameShader.LBP1)
-            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-mcgb");
+            msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath(), "-mcgb", "--nofastmath", "--nofastprecision", "--O0");
         else
             msg = run(compiler.getAbsolutePath(), "-profile", profile, "-o", outputFile.getAbsolutePath(), inputFile.getAbsolutePath());
         
