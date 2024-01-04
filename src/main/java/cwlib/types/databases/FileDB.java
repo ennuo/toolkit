@@ -341,7 +341,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
      */
     public byte[] build() {
         // Just figure the GUIDs should be in ascending order.
-        entries.sort((l, r) -> Long.compare(l.getGUID().getValue(), r.getGUID().getValue()));
+        entries.sort((l, r) -> Long.compareUnsigned(l.getGUID().getValue(), r.getGUID().getValue()));
 
         int pathSize = this.entries
             .stream()
