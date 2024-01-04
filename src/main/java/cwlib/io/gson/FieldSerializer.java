@@ -42,8 +42,6 @@ public class FieldSerializer implements JsonSerializer<FieldLayoutDetails>, Json
             layout.arrayBaseMachineType = jdc.deserialize(object.get("arrayBaseMachineType"), MachineType.class);
         if (object.has("instanceOffset"))
             layout.instanceOffset = object.get("instanceOffset").getAsInt();
-        if (object.has("type"))
-            layout.type = jdc.deserialize(object.get("type"), ScriptObjectType.class);
         if (object.has("value")) {
             switch (layout.machineType) {
                 case BOOL: layout.value = object.get("value").getAsBoolean(); break;
@@ -78,7 +76,6 @@ public class FieldSerializer implements JsonSerializer<FieldLayoutDetails>, Json
                 case V4: object.add("value", jsc.serialize(layout.value, Vector4f.class)); break;
                 case M44: object.add("value", jsc.serialize(layout.value, Matrix4f.class)); break;
                 case OBJECT_REF: 
-                    object.add("type", jsc.serialize(layout.type));
                     object.add("value", jsc.serialize(layout.value, ScriptObject.class)); 
                     break;
                 case SAFE_PTR:

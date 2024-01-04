@@ -18,6 +18,12 @@ public class ScriptObject implements Serializable {
     public ScriptObjectType type = ScriptObjectType.NULL;
     public Object value;
 
+    public ScriptObject() {};
+    public ScriptObject(ScriptObjectType type, Object value) {
+        this.type = type;
+        this.value = value;
+    }
+
     @SuppressWarnings("unchecked")
     @Override public ScriptObject serialize(Serializer serializer, Serializable structure) {
         ScriptObject object = (structure == null) ? new ScriptObject() : (ScriptObject) structure;

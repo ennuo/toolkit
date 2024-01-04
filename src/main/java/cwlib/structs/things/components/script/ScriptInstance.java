@@ -6,6 +6,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import cwlib.enums.BuiltinType;
+import cwlib.enums.MachineType;
+import cwlib.enums.ModifierType;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
@@ -18,7 +20,7 @@ public class ScriptInstance implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x30;
     
     public ResourceDescriptor script;
-    public InstanceLayout instanceLayout;
+    public InstanceLayout instanceLayout = new InstanceLayout();
 
     @SuppressWarnings("unchecked")
     @Override public ScriptInstance serialize(Serializer serializer, Serializable structure) {
@@ -73,11 +75,11 @@ public class ScriptInstance implements Serializable {
                         field.value = serializer.i32(writing ? (int) field.value : 0); 
                         if (serializer.isWriting() && field.fishType == BuiltinType.GUID && ((int)field.value) != 0) {
                             if (field.name != null && field.name.equals("FSB"))
-                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILENAME));
+                                serializer.addDependency(new ResourceDescriptor(new GUID((long) (((int)field.value) & 0xffffffffl)), ResourceType.FILENAME));
                             else if (field.name != null && field.name.equals("SettingsFile"))
-                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.MUSIC_SETTINGS));
+                                serializer.addDependency(new ResourceDescriptor(new GUID((long) (((int)field.value) & 0xffffffffl)), ResourceType.MUSIC_SETTINGS));
                             else
-                                serializer.addDependency(new ResourceDescriptor(new GUID((int)field.value), ResourceType.FILE_OF_BYTES));
+                                serializer.addDependency(new ResourceDescriptor(new GUID((long) (((int)field.value) & 0xffffffffl)), ResourceType.FILE_OF_BYTES));
                         }
                         break;
                     case F32: field.value = serializer.f32(writing ? (float) field.value : 0); break;
@@ -88,13 +90,36 @@ public class ScriptInstance implements Serializable {
                     default: throw new SerializationException("Unhandled machine type in field member reflection!");
                 }
             }
-
-
-            // serializer.log("SCRIPT STRUCTURE NOT FINISHED!");
-            // System.exit(0);
         }
         
         return script;
+    }
+
+    public void addField(String name, GUID value) {
+        FieldLayoutDetails field = new FieldLayoutDetails();
+        field.modifiers.add(ModifierType.PUBLIC);
+        field.name = name;
+        field.instanceOffset = this.instanceLayout.instanceSize;
+        field.fishType = BuiltinType.GUID;
+        field.machineType = MachineType.S32;
+        field.value = (int) value.getValue();
+        this.instanceLayout.instanceSize += 4;
+        this.instanceLayout.fields.add(field);
+    }
+
+    public FieldLayoutDetails getField(String name) {
+        if (this.instanceLayout == null) return null;
+        for (FieldLayoutDetails details : instanceLayout.fields) {
+            if (details.name.equals(name))
+                return details;
+        }
+        return null;
+    }
+
+    public void setField(String name, Object value) {
+        FieldLayoutDetails field = this.getField(name);
+        if (field != null)
+            field.value = value;
     }
 
     @Override public int getAllocatedSize() { return ScriptInstance.BASE_ALLOCATION_SIZE; }

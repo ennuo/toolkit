@@ -29,7 +29,6 @@ public class FieldLayoutDetails implements Serializable {
     public int instanceOffset;
     
     public Object value;
-    public ScriptObjectType type = ScriptObjectType.NULL;
 
     public FieldLayoutDetails() {};
     public FieldLayoutDetails(FieldLayoutDetails details) {
