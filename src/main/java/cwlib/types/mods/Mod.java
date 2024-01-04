@@ -178,9 +178,13 @@ public class Mod extends FileDB  {
             String path = stream.str();
             int size = stream.i32();
             GUID guid = stream.guid();
+            long date = (revision >= Revisions.LM_SLOTS_TIMESTAMPS) ? stream.u32() : 0;
+
+            // account for workbench's shitty guid duping
+            if (mod.exists(guid)) guid = mod.getNextGUID();
 
             FileDBRow entry = mod.newFileDBRow(path, guid);
-            entry.setDate((revision >= Revisions.LM_SLOTS_TIMESTAMPS) ? stream.u32() : 0);
+            entry.setDate(date);
             entry.setSize(size);
         }
 
