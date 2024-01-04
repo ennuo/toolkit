@@ -1,0 +1,5 @@
+# Controls which resources don't get exported as "hashed"
+# by default in the AssetExporter.
+# descriptor, path
+
+g9877, naked_to.mol

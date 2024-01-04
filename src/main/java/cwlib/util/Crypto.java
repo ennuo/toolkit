@@ -10,13 +10,18 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
+
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -46,6 +51,11 @@ public final class Crypto {
     public static final int[] TEA_KEY = { 0x1B70CBD, 0x149607D6, 0x7F94DD5, 0x10DB8CA0 };
 
     /**
+     * Used for encrypting/decrypting network packets.
+     */
+    public static final int[] NETWORK_KEY = { 0x39678238, 0x4290AD3E, 0x11EF3D28, 0x893C2E0F };
+
+    /**
      * Used in XXTEA encryption/decryption.
      */
     public static final int DELTA = 0x9e3779b9;
@@ -71,6 +81,17 @@ public final class Crypto {
      * @return Encrypted/decrypted buffer
      */
     public static byte[] XXTEA(byte[] data, boolean shouldDecrypt) {
+        return XXTEA(data, shouldDecrypt, Crypto.TEA_KEY);
+    }
+
+    /**
+     * Encrypts or decrypts a byte array with XXTEA.
+     * @param data Data to encrypt/decrypt
+     * @param shouldDecrypt Whether this array should be decrypted
+     * @param key The key to use for decryption/encryption
+     * @return Encrypted/decrypted buffer
+     */
+    public static byte[] XXTEA(byte[] data, boolean shouldDecrypt, int[] key) {
         
         // Left pad the data in case it's not divisibly by 4.
         if (data.length % 4 != 0) {
@@ -96,10 +117,10 @@ public final class Crypto {
                 for (p = n; p > 0; p--) {
                     z = v[p - 1];
                     y = v[p] -= 
-                        ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (Crypto.TEA_KEY[p & 3 ^ e] ^ z));
+                        ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
                 }
                 z = v[n];
-                y = v[0] -= ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (Crypto.TEA_KEY[p & 3 ^ e] ^ z));
+                y = v[0] -= ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
                 sum = sum - Crypto.DELTA;
             }
         } else {
@@ -109,14 +130,25 @@ public final class Crypto {
                 e = sum >>> 2 & 3;
                 for (p = 0; p < n; p++) {
                     y = v[p + 1];
-                    z = v[p] += ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (Crypto.TEA_KEY[p & 3 ^ e] ^ z));
+                    z = v[p] += ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
                 }
                 y = v[0];
-                z = v[n] += ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (Crypto.TEA_KEY[p & 3 ^ e] ^ z));
+                z = v[n] += ((z >>> 5 ^ y << 2) +  (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
             }
         }
 
         return Bytes.fromIntArrayBE(v);
+    }
+
+    /**
+     * Makes a GUID that is loaded from file path
+     * @param path Resource path
+     * @return GUID for a given resource path
+     */
+    public static GUID makePathGUID(String path) {
+        CRC32 crc = new CRC32();
+        crc.update(path.getBytes(StandardCharsets.US_ASCII));
+        return new GUID(crc.getValue() | 0x80000000L);
     }
     
     /**

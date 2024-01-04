@@ -106,8 +106,12 @@ public class PlayerMetrics implements Serializable {
         if (head > 0x1c9)
             metrics.gamesWithRandomPlayersCount = serializer.i32(metrics.gamesWithRandomPlayersCount);
         
-        if (((head > 0x1de || revision.isLeerdammer()) && head < 0x2cb) && revision.before(Branch.LEERDAMMER, Revisions.LD_REMOVED_ENEMY_STAT))
-            serializer.i32(0); // enemiesKilled
+
+        if (head > 0x1de && head < 0x2cb) {
+            if (!revision.isLeerdammer() || revision.before(Branch.LEERDAMMER, Revisions.LD_REMOVED_ENEMY_STAT)) {
+                serializer.i32(0); // enemiesKilled
+            }
+        }
 
         if (head > 0x1de)
             metrics.pointsCollected = serializer.f32(metrics.pointsCollected);

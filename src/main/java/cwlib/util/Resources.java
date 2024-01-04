@@ -53,18 +53,31 @@ public class Resources {
         int branch = stream.i32();
         return new Revision(head, branch);
     }
-    
-    
+
     /**
      * Gets the dependency table of a resource without any of the overhead
      * of the Resource class
      * @param resource Resource data
      * @return Dependency entries
      */
-    public static HashSet<ResourceDescriptor> getDependencyTable(byte[] resource) {
+    public static HashSet<ResourceDescriptor> getDependencyTable(byte[] resource)
+    {
+        return getDependencyTable(resource, 0);
+    }
+    
+    
+    /**
+     * Gets the dependency table of a resource without any of the overhead
+     * of the Resource class
+     * @param resource Resource data
+     * @param offset Offset into the resource data
+     * @return Dependency entries
+     */
+    public static HashSet<ResourceDescriptor> getDependencyTable(byte[] resource, int offset) {
         HashSet<ResourceDescriptor> dependencies = new HashSet<>();
         MemoryInputStream stream = new MemoryInputStream(resource);
-
+        stream.seek(offset, SeekMode.Begin);
+        
         ResourceType type = ResourceType.fromMagic(stream.str(3));
         if (type == ResourceType.INVALID)
             return dependencies;
@@ -80,7 +93,7 @@ public class Resources {
         // was removed for resources below 0x132
         if ((stream.i32() & 0xFFFF) < 0x109) return dependencies;
 
-        stream.seek(stream.i32(), SeekMode.Begin); // Seek to dependency table
+        stream.seek(offset + stream.i32(), SeekMode.Begin); // Seek to dependency table
 
         int count = stream.i32();
         for (int i = 0; i < count; ++i) {

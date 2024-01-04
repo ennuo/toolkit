@@ -1,0 +1,57 @@
+
+<Composition>
+    <AuditionConsoleControlRepository>
+        <AuditionConsoleControl Type="Utility" Xpos="18" Ypos="18">
+            <SimpleRack>
+                <ControlName>Reset</ControlName>
+                <ControlRange>0, 1</ControlRange>
+                <ControlWidget>
+                    <ResetControl/>
+                </ControlWidget>
+                <ControlMapping Type="3" ID="0"/>
+            </SimpleRack>
+        </AuditionConsoleControl>
+    </AuditionConsoleControlRepository>
+    <CompositionUI>
+        <SceneEditor>
+            <SceneEditorItemRepository/>
+        </SceneEditor>
+        <ThemeEditor>
+            <ThemeEditorItemRepository/>
+        </ThemeEditor>
+    </CompositionUI>
+    <CueFactory>
+        <UID>2</UID>
+    </CueFactory>
+    <CueRepository/>
+    <ExtLinkFactory>
+        <UID>1</UID>
+    </ExtLinkFactory>
+    <ExtLinkRepository/>
+    <ExtSegmentFactory>
+        <UID>1</UID>
+    </ExtSegmentFactory>
+    <MusicSettings>
+        <BaseVolume>1</BaseVolume>
+        <BaseReverbLevel>1</BaseReverbLevel>
+    </MusicSettings>
+    <ParameterFactory>
+        <UID>1</UID>
+    </ParameterFactory>
+    <ParameterRepository/>
+    <SceneRepository>
+        <Scene ID="1">
+            <CueSheet></CueSheet>
+        </Scene>
+    </SceneRepository>
+    <SegmentRepository/>
+    <SharedFile/>
+    <ThemeFactory>
+        <UID>1</UID>
+    </ThemeFactory>
+    <ThemeRepository/>
+    <TimelineFactory>
+        <UID>1</UID>
+    </TimelineFactory>
+    <TimelineRepository/>
+</Composition>

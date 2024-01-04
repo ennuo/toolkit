@@ -3,15 +3,19 @@ package cwlib.structs.slot;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.util.Strings;
 import cwlib.enums.Branch;
 import cwlib.enums.GameProgressionStatus;
 import cwlib.enums.LevelType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
+import cwlib.enums.SlotType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
+import cwlib.resources.RTranslationTable;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.server.SlotDescriptor;
 import cwlib.types.data.GUID;
 import cwlib.types.data.NetworkOnlineID;
 
@@ -91,6 +95,36 @@ public class Slot implements Serializable {
         this.id = id;
         this.root = root;
         this.location = location;
+    }
+
+    public Slot(SlotDescriptor descriptor) {
+        this.id = new SlotID(SlotType.USER_CREATED_ON_SERVER, descriptor.id);
+        this.name = descriptor.name;
+        this.description = descriptor.description;
+
+        if (Strings.isSHA1(descriptor.root) || Strings.isGUID(descriptor.root)) {
+            if (descriptor.isAdventurePlanet)
+                this.adventure = new ResourceDescriptor(descriptor.root, ResourceType.ADVENTURE_CREATE_PROFILE);
+            else
+                this.root = new ResourceDescriptor(descriptor.root, ResourceType.LEVEL);
+        }
+
+        if (Strings.isSHA1(descriptor.icon) || Strings.isGUID(descriptor.icon))
+            this.icon = new ResourceDescriptor(descriptor.icon, ResourceType.TEXTURE);
+        if (descriptor.labels != null) {
+            this.labels = new Label[descriptor.labels.length];
+            for (int i = 0; i < this.labels.length; ++i)
+                this.labels[i] = new Label((int) RTranslationTable.makeLamsKeyID(descriptor.labels[i]), i);
+        }
+
+        this.initiallyLocked = descriptor.locked;
+        this.isSubLevel = descriptor.subLevel;
+        this.shareable = descriptor.shareable != 0;
+        if (descriptor.background != 0)
+            this.backgroundGUID = new GUID(descriptor.background);
+
+        this.minPlayers = (byte) descriptor.minPlayers;
+        this.maxPlayers = (byte) descriptor.maxPlayers;
     }
     
     @SuppressWarnings("unchecked")

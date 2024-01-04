@@ -28,11 +28,11 @@ public class ParamSFO {
     
     private ArrayList<SfoEntry> entries = new ArrayList<SfoEntry>();
     
-    public ParamSFO(String titleID, String name) {
+    public ParamSFO(String titleID, String description, String name) {
         this.addKey("ACCOUNT_ID", FORMAT_UTF8, 0x10, "0000000000000000".getBytes());
         this.addKey("ATTRIBUTE", FORMAT_INT32, 0x4, new byte[0x4]);
         this.addKey("CATEGORY", FORMAT_UTF8_NULL, 0x4, ("SD" + '\0').getBytes());
-        this.addKey("DETAIL", FORMAT_UTF8_NULL, 0x400, ("Automated export from Craftworld Toolkit" + '\0').getBytes());
+        this.addKey("DETAIL", FORMAT_UTF8_NULL, 0x400, (description + '\0').getBytes());
         this.addKey("PARAMS", FORMAT_UTF8, 0x400, new byte[0x400]);
         this.addKey("PARAMS2", FORMAT_UTF8, 0xC, new byte[0xC]);
         this.addKey("PARENTAL_LEVEL", FORMAT_INT32, 4, new byte[0x4]);

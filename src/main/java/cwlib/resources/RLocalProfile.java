@@ -569,7 +569,6 @@ public class RLocalProfile implements Compressable, Serializable {
         if (version > 0x35e)
             profile.hasSeenCalibrationScreen = serializer.bool(profile.hasSeenCalibrationScreen);
 
-
         if (version > 0x205)
             profile.lbp1VOPlayed = serializer.intvector(profile.lbp1VOPlayed);
         if (version > 0x36b) 
@@ -660,6 +659,9 @@ public class RLocalProfile implements Compressable, Serializable {
             profile.hasUsed6Axis = serializer.bool(profile.hasUsed6Axis);
             profile.hasUsedMove = serializer.bool(profile.hasUsedMove);
         }
+
+        // serializer.bool(true); // hasSeenCrossCompatInfo
+        // serializer.bool(false); // wantsCrossCompatDownloadNotification
 
         if (version > 0x3db)
             profile.paintProperties = serializer.struct(profile.paintProperties, PaintProperties.class);

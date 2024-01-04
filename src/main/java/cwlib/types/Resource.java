@@ -399,8 +399,10 @@ public class Resource {
             // Music dependencies are actually the GUID dependencies of a script,
             // so they don't have the same structure for referencing.
             if (type.equals(ResourceType.MUSIC_SETTINGS) || type.equals(ResourceType.FILE_OF_BYTES) || type.equals(ResourceType.SAMPLE) || isFSB) {
-                oldDescBuffer = Bytes.getIntegerBuffer(oldDescriptor.getGUID().getValue(), this.compressionFlags);
-                newDescBuffer = Bytes.getIntegerBuffer(newDescriptor.getGUID().getValue(), this.compressionFlags);
+                if (oldDescriptor.isGUID() && newDescriptor.isGUID()) {
+                    oldDescBuffer = Bytes.getIntegerBuffer(oldDescriptor.getGUID().getValue(), this.compressionFlags);
+                    newDescBuffer = Bytes.getIntegerBuffer(newDescriptor.getGUID().getValue(), this.compressionFlags);
+                } else return;
             } else {
                 oldDescBuffer = Bytes.getResourceReference(oldDescriptor, this.revision, this.compressionFlags);
                 newDescBuffer = Bytes.getResourceReference(newDescriptor, this.revision, this.compressionFlags);
