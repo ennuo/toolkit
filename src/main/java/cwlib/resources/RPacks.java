@@ -34,7 +34,8 @@ public class RPacks implements Compressable, Serializable, Iterable<Pack> {
         RPacks packs = (structure == null) ? new RPacks() : (RPacks) structure;
 
         packs.packs = serializer.arraylist(packs.packs, Pack.class);
-
+        packs.packs.sort((a, z) -> Long.compareUnsigned(a.timestamp, z.timestamp));
+        
         return packs;
     }
 
