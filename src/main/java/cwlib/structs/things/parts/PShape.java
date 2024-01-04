@@ -70,7 +70,9 @@ public class PShape implements Serializable {
     public LethalType lethalType = LethalType.NOT;
 
 
-    public AudioMaterial soundEnumOverride = AudioMaterial.NONE;
+    @JsonAdapter(AudioMaterialSerializer.class)
+    public int soundEnumOverride;
+    
     @GsonRevision(min=0x2a3) public byte playerNumberColor;
     
     public short flags = ShapeFlags.DEFAULT_FLAGS;
@@ -208,7 +210,7 @@ public class PShape implements Serializable {
             serializer.f32(0); // Is this a float, or is it just because it's an early revision?
         }
         
-        shape.soundEnumOverride = serializer.enum32(shape.soundEnumOverride);
+        shape.soundEnumOverride = serializer.i32(shape.soundEnumOverride);
 
         if (version >= 0x29d && version < 0x30c) {
             serializer.f32(0); // restitution

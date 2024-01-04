@@ -6,7 +6,8 @@ import java.util.Arrays;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import cwlib.enums.AudioMaterial;
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.BoxType;
 import cwlib.enums.Branch;
 import cwlib.enums.GfxMaterialFlags;
@@ -17,6 +18,8 @@ import cwlib.enums.ShadowCastMode;
 import cwlib.enums.TextureWrap;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.AudioMaterialSerializer;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -75,14 +78,15 @@ public class RGfxMaterial implements Serializable, Compressable {
     public ArrayList<MaterialBox> boxes = new ArrayList<>();
     public ArrayList<MaterialWire> wires = new ArrayList<>();
 
-    public AudioMaterial soundEnum = AudioMaterial.NONE;
+    @JsonAdapter(AudioMaterialSerializer.class)
+    public int soundEnum;
 
     public MaterialParameterAnimation[] parameterAnimations;
 
     /* PS Vita specific fields */
 
-    public short[] uvOffsets = new short[UV_OFFSETS];
-    public short[] uvScales = new short[UV_SCALES];
+    public float[] uvOffsets = new float[UV_OFFSETS];
+    public float[] uvScales = new float[UV_SCALES];
 
     public byte[] cycleCount = new byte[PERF_DATA];
     public byte[] conditionalTexLookups = new byte[PERF_DATA];
@@ -192,16 +196,16 @@ public class RGfxMaterial implements Serializable, Compressable {
         gmat.wires = serializer.arraylist(gmat.wires, MaterialWire.class);
 
         if (version >= Revisions.GFXMATERIAL_SOUND_ENUM)
-            gmat.soundEnum = serializer.enum32(gmat.soundEnum);
+            gmat.soundEnum = serializer.i32(gmat.soundEnum);
 
         if (version >= Revisions.PARAMETER_ANIMATIONS)
             gmat.parameterAnimations = serializer.array(gmat.parameterAnimations, MaterialParameterAnimation.class);
 
         if (revision.has(Branch.DOUBLE11, Revisions.D1_UV_OFFSCALE)) {
             for (int i = 0; i < UV_OFFSETS; ++i)
-                gmat.uvOffsets[i] = serializer.i16(gmat.uvOffsets[i]);
+                gmat.uvOffsets[i] = serializer.f16(gmat.uvOffsets[i]);
             for (int i = 0; i < UV_SCALES; ++i)
-                gmat.uvScales[i] = serializer.i16(gmat.uvScales[i]);
+                gmat.uvScales[i] = serializer.f16(gmat.uvScales[i]);
         }
         
         if (revision.has(Branch.DOUBLE11, Revisions.D1_PERFDATA)) {

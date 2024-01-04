@@ -1,11 +1,13 @@
 package cwlib.resources;
 
-import cwlib.enums.AudioMaterial;
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.CollideType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.io.Compressable;
 import cwlib.io.Serializable;
+import cwlib.io.gson.AudioMaterialSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
@@ -27,7 +29,10 @@ public class RMaterial implements Compressable, Serializable {
     public float rollingFriction = 1.8f;
     @GsonRevision(max=0x13b)
     public byte field003, field004, field005, field006, field007;
-    public AudioMaterial soundEnum = AudioMaterial.NONE;
+    
+    @JsonAdapter(AudioMaterialSerializer.class)
+    public int soundEnum;
+
     public boolean grabbable = false;
     @GsonRevision(max=0x13b)
     public byte field008, field009;
@@ -91,7 +96,7 @@ public class RMaterial implements Compressable, Serializable {
             material.field007 = serializer.i8(material.field007);
         }
 
-        material.soundEnum = AudioMaterial.fromValue(serializer.i32(material.soundEnum.getValue()));
+        material.soundEnum = serializer.i32(material.soundEnum);
 
         material.grabbable = serializer.bool(material.grabbable);
 

@@ -1,8 +1,10 @@
 package cwlib.structs.things.components.poppet;
 
-import cwlib.enums.AudioMaterial;
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.AudioMaterialSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
@@ -12,7 +14,9 @@ public class PoppetMaterialOverride implements Serializable {
 
     public ResourceDescriptor plan, gfxMaterial, bevel, physicsMaterial;
     public float bevelSize;
-    public AudioMaterial soundEnum = AudioMaterial.NONE;
+
+    @JsonAdapter(AudioMaterialSerializer.class)
+    public int soundEnum;
 
     @GsonRevision(lbp3=true, min=0x63)
     public boolean headDucking;
@@ -30,7 +34,7 @@ public class PoppetMaterialOverride implements Serializable {
         override.gfxMaterial = serializer.resource(override.gfxMaterial, ResourceType.GFX_MATERIAL);
         override.bevel = serializer.resource(override.bevel, ResourceType.BEVEL);
         override.physicsMaterial = serializer.resource(override.physicsMaterial, ResourceType.MATERIAL);
-        override.soundEnum = serializer.enum32(override.soundEnum);
+        override.soundEnum = serializer.i32(override.soundEnum);
         override.bevelSize = serializer.f32(override.bevelSize);
             
         if (version < 0x2ed)
