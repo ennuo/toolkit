@@ -465,6 +465,10 @@ public class Revisions {
     public static final int LD_USED_SCUBA = 0x15; // Added hasUsedScuba to RGame
     public static final int LD_OWNER_ID = 0x16; // Added ownerUserId to RLocalProfile
     public static final int LD_WATER_LEVELS = 0x17; // Added numWaterLevelsPlayed to RLocalProfile
+
+    // Custom leerdammer revisions for cambridge project
+
+    public static final int LD_CAMBRIDGE_ADD_STATIC = 0x18; // Added isStatic to PShape
     
     public static final int LD_MAX = 0x17; // last revision for leerdammer revisions
 
@@ -558,8 +562,9 @@ public class Revisions {
     public static final int MZ_SCE_DEFAULT_LIGHTING = 0x9; // Serializes lighting in RSceneGraph to use as default.
     public static final int MZ_SCE_PACKED_DATA = 0xa; // Allows storing data in scene graph caches.
     public static final int MZ_CGC_OFFSETS = 0xb; // Adds offsets for properties in cached shaders
+    public static final int MZ_GLSL_SHADERS = 0xc; // Store GLSL shaders in RGfxMaterial
 
-    public static final int MZ_MAX = 0xb; // last revision for toolkit revisions
+    public static final int MZ_MAX = 0xc; // last revision for toolkit revisions
 
     // Legacy mod revisions
     // Somewhat weird, but apparently Toolkit started with mod

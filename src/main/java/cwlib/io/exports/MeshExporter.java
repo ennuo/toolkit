@@ -631,6 +631,13 @@ public class MeshExporter {
                 }
             } catch (Exception ex) { return null; }
         }
+
+        public static class KHRTextureTransform {
+            public float[] offset;
+            public float rotation;
+            public float[] scale;
+            // public int texCoord;
+        }
         
         private int createMaterial(String name, RGfxMaterial gmat) {
             if (this.materials.containsKey(name))
@@ -660,8 +667,33 @@ public class MeshExporter {
                 
                 if (box.type == BoxType.TEXTURE_SAMPLE) {
                     int[] params = box.getParameters();
-                    float[] textureScale = new float[] { Float.intBitsToFloat((int) params[0]), Float.intBitsToFloat((int) params[1]) };
-                    float[] textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[3]) };
+
+                    float[] textureScale, textureOffset;
+                    float textureRotation;
+                    if (box.subType == 1)
+                    {
+                        Vector2f col0 = new Vector2f(Float.intBitsToFloat((int) params[0]), Float.intBitsToFloat((int) params[1]));
+                        Vector2f col1 = new Vector2f(Float.intBitsToFloat((int) params[3]), Float.intBitsToFloat((int) params[6]));
+
+                        textureScale = new float[] { 
+                            col0.length(),
+                            col1.length()
+                        };
+
+                        col0.div(col0.length());
+                        col1.div(col1.length());
+
+
+                        textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[7]) };
+                        textureRotation = (float) Math.acos(col0.x);
+
+                    }
+                    else
+                    {
+                        textureScale = new float[] { Float.intBitsToFloat((int) params[0]), Float.intBitsToFloat((int) params[1]) };
+                        textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[3]) };
+                        textureRotation = 0.0f;
+                    }
                     int channel = (int) params[4];
                     int textureIndex = (int) params[5];
                     FileEntry entry = ResourceSystem.get(gmat.textures[textureIndex]);
@@ -677,10 +709,12 @@ public class MeshExporter {
                     } catch (IOException ex) {
                         Logger.getLogger(MeshExporter.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    HashMap<String, float[]> transforms = new HashMap<String, float[]>();
-                    transforms.put("offset", textureOffset);
-                    transforms.put("scale", textureScale);
+     
+                    KHRTextureTransform transforms = new KHRTextureTransform();
+                    transforms.offset = textureOffset;
+                    transforms.scale = textureScale;
+                    transforms.rotation = textureRotation;
+
                     
                     MaterialWire wire = gmat.findWireFrom(i);
                     while (wire.boxTo != outputBox)

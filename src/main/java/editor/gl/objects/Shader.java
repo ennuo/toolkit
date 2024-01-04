@@ -1,6 +1,7 @@
 package editor.gl.objects;
 
 import cwlib.enums.GfxMaterialFlags;
+import cwlib.enums.TextureWrap;
 import cwlib.resources.RGfxMaterial;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.things.parts.PLevelSettings;
@@ -8,6 +9,7 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
 import editor.gl.RenderSystem;
+import editor.gl.RenderSystem.MorphInstance;
 import editor.gl.RenderSystem.RenderMode;
 import executables.gfx.GfxAssembler;
 import executables.gfx.GfxAssembler.BrdfPort;
@@ -38,9 +40,22 @@ public class Shader {
     public int lighscaleadd;
     public int color;
 
+    public int[] morphInfluences = new int[32];
+    private int morphLUT;
+
     public int[] locations = new int[8];
 
     public ResourceDescriptor[] textures = new ResourceDescriptor[8];
+    public int[] wrapS = new int[] {
+        GL_REPEAT, GL_REPEAT, GL_REPEAT, GL_REPEAT,
+        GL_REPEAT, GL_REPEAT, GL_REPEAT, GL_REPEAT
+    };
+
+    public int[] wrapT = new int[] {
+        GL_REPEAT, GL_REPEAT, GL_REPEAT, GL_REPEAT,
+        GL_REPEAT, GL_REPEAT, GL_REPEAT, GL_REPEAT
+    };
+
     public int shadowtex, cbuf;
 
     public Shader(int programID) {
@@ -107,6 +122,7 @@ public class Shader {
         
         String source = GfxAssembler.generateShaderSource(gfx, 0xDEADBEEF, false);
         int fragmentID = Shader.compileSource(source, GL_FRAGMENT_SHADER);
+        // System.out.println(source);
         this.programID = Shader.compileProgram(RenderSystem.getVertexShader(), fragmentID);
         glDeleteShader(fragmentID);
 
@@ -116,6 +132,28 @@ public class Shader {
         // Preload textures
         for (ResourceDescriptor desc : gfx.textures)
             Texture.get(desc);
+
+        for (int i = 0; i < 8; ++i) {
+            int wrapMode = GL_REPEAT;
+            if (gfx.wrapS[i] == TextureWrap.MIRROR)
+                wrapMode = GL_MIRRORED_REPEAT;
+            if (gfx.wrapS[i] == TextureWrap.CLAMP_TO_EDGE)
+                wrapMode = GL_CLAMP_TO_EDGE;
+            if (gfx.wrapS[i] == TextureWrap.BORDER)
+                wrapMode = GL_CLAMP_TO_BORDER;
+            this.wrapS[i] = wrapMode;
+        }
+
+        for (int i = 0; i < 8; ++i) {
+            int wrapMode = GL_REPEAT;
+            if (gfx.wrapT[i] == TextureWrap.MIRROR)
+                wrapMode = GL_MIRRORED_REPEAT;
+            if (gfx.wrapT[i] == TextureWrap.CLAMP_TO_EDGE)
+                wrapMode = GL_CLAMP_TO_EDGE;
+            if (gfx.wrapT[i] == TextureWrap.BORDER)
+                wrapMode = GL_CLAMP_TO_BORDER;
+            this.wrapT[i] = wrapMode;
+        }
 
         PROGRAMS.put(descriptor, this);
     }
@@ -145,6 +183,10 @@ public class Shader {
 
         this.shadowtex = glGetUniformLocation(this.programID, "shadowtex");
         this.cbuf = glGetUniformLocation(this.programID, "cbuf");
+
+        for (int i = 0; i < 32; ++i)
+            this.morphInfluences[i] = glGetUniformLocation(this.programID, "target_weights[" + i + "]");
+        this.morphLUT = glGetUniformLocation(this.programID, "morph_lut");
     }
 
     public static Shader get(ResourceDescriptor descriptor) {        
@@ -185,6 +227,10 @@ public class Shader {
     }
 
     public void bind(Texture remap, Matrix4f[] model, Vector4f color) {
+        this.bind(remap, model, color, null);
+    }
+
+    public void bind(Texture remap, Matrix4f[] model, Vector4f color, MorphInstance morph) {
         PLevelSettings lighting = RenderSystem.getLevelSettings();
         glUseProgram(this.programID);
         
@@ -202,7 +248,6 @@ public class Shader {
             else
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         } else glDisable(GL_BLEND);
-        
 
         // Set level lighting uniforms
         setUniformFloat4(this.ambcol, lighting.ambientColor);
@@ -325,11 +370,11 @@ public class Shader {
 
             glActiveTexture(GL_TEXTURE0 + i);
 
-            // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this.wrapS[i]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.wrapT[i]);
 
             glUniform1i(this.locations[i], i);
             glBindTexture(GL_TEXTURE_2D, texture.textureID);
@@ -348,6 +393,16 @@ public class Shader {
             glBindTexture(GL_TEXTURE_2D, RenderSystem.getColorBufferTexture());
         }
 
+        if (morph != null) { 
+            glActiveTexture(GL_TEXTURE0 + 9);
+            glUniform1i(this.morphLUT, 9);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, morph.texture.textureID);
+            for (int i = 0; i < 32; ++i)
+                glUniform1f(this.morphInfluences[i], morph.weights[i]);
+        }
+
         glActiveTexture(GL_TEXTURE0);
     }
 
@@ -364,7 +419,7 @@ public class Shader {
         glAttachShader(program, vertex);
         glAttachShader(program, fragment);
         glLinkProgram(program);
-        if (glGetProgrami(program, GL_LINK_STATUS) == 0)
+        if (glGetProgrami(program, GL_LINK_STATUS) == 0) 
             throw new AssertionError("Could not link shader program! " + glGetProgramInfoLog(program));
         return program;
     }

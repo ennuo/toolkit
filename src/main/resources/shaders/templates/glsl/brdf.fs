@@ -35,6 +35,12 @@
 #define saturate(value) max(0, min(1, value))
 #define lerp(a, b, w) (a + w * (b - a))
 
+#define float1 float
+#define float2 vec2
+#define float3 vec3
+#define float4 vec4
+#define half vec
+
 in vec4 uv;
 in vec3 tangent;
 in vec3 normal;
@@ -102,30 +108,17 @@ ENV.AUTO_REFLECTION_SETUP
 void main() {
     vec3 N = GetBump().xyz;
     vec3 V = normalize(vec2eye);
-    vec3 R = reflect(V, N);
-    vec3 L = normalize((vec2eye - sunpos) * lightscaleadd.x);
+    vec3 R = -reflect(V, N);
+    vec3 L = normalize((vec2eye - sunpos) * (100177.7265625));
+
+    // 47 C3 A8 DD 47 CD 69 FC
 
     float NdotV = dot(N, V);
     float RdotL = dot(R, L);
     float NdotL = dot(N, L);
 
-    // float shadow = 0.0;
-    // if (wpos.z < 100 && wpos.z > -1700) {
-    //     if (shadowmap_position.z <= 1.0) {
-    //         float bias = max(0.05 * (1.0 + dot(N, L)), 0.005);
-    //         vec2 texelSize = 1.0 / textureSize(shadowtex, 0);
-    //         for (int x = -1; x <= 1; ++x) {
-    //             for (int y = -1; y <= 1; ++y) {
-    //                 float pcfDepth = texture(shadowtex, shadowmap_position.xy + vec2(x, y) * texelSize).z;
-    //                 shadow += shadowmap_position.z - bias > pcfDepth ? 1.0 : 0.0;
-    //             }
-    //         }
-    //         shadow /= 9.0;
-    //     }
-    // }
-    // shadow = 1.0 - shadow;
-
     float shadow = 1.0;
+    float ao = 1.0;
     
     vec3 ambientColor = ((N.y * normal_mul) + normal_add) * ambcol.rgb;
     vec3 sunColor = suncol.rgb * saturate(-NdotL) * shadow;
@@ -133,7 +126,7 @@ void main() {
         lerp(rimcol.rgb, rimcol2.rgb, ((N.y + 1.0) / 2.0))), 0.0, 1.0);
     
     vec3 diffuseColor = ambientColor + sunColor + rimColor;
-    float specularLobe = pow(saturate(-RdotL), cosine_power);
+    float specularLobe = pow(saturate(RdotL), cosine_power);
 
     vec3 Kd = GetDiffuse().rgb;
     
@@ -146,10 +139,9 @@ void main() {
     }
 
     vec3 lighting = reflection;
-    vec3 specular = vec3(0.0);
 
     if ((PROPERTIES & SPECULAR) != 0) {
-        specular = GetSpecular().rgb;
+        vec3 specular = GetSpecular().rgb;
         lighting = (((specularLobe * prod) * specular) + (specular * reflection)) * 2.0;
     } else lighting = reflection;
 

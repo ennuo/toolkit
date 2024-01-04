@@ -73,12 +73,32 @@ public class Texture {
         TEXTURES.put(descriptor, this);
     }
 
+    public Texture(ByteBuffer data, int width, int height) {
+        this.textureID = glGenTextures();
+        this.descriptor = null;
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA32F,
+            width,
+            height,
+            0,
+            GL_RGBA,
+            GL_FLOAT,
+            data
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+
     public void delete() {
         if (this.textureID != 0) {
             glDeleteTextures(this.textureID);
             this.textureID = 0;
         }
-        TEXTURES.remove(this.descriptor);
+        if (this.descriptor != null)
+            TEXTURES.remove(this.descriptor);
     }
 
     public static Texture get(ResourceDescriptor descriptor) {

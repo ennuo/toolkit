@@ -201,6 +201,14 @@ public class Thing implements Serializable {
             serializer.log(part.name() + " [END]");
         }
 
+        // Hack for now since only PPos needs to know its current thing
+        if (!serializer.isWriting())
+        {
+            PPos pos = thing.getPart(Part.POS);
+            if (pos != null)
+                pos.myThing = thing;
+        }
+
         // if (subVersion >= 0x83 && subVersion < 0x8b)
             // serializer.u8(0);
         
@@ -216,8 +224,9 @@ public class Thing implements Serializable {
         PRenderMesh mesh = this.getPart(Part.RENDER_MESH);
         PCostume costume = this.getPart(Part.COSTUME);
 
-        int[] regionIDsToHide = null;
+        ArrayList<Integer> regionIDsToHide = null;
         if (costume != null) regionIDsToHide = costume.meshPartsHidden;
+
         if (mesh != null) mesh.update(this, pos.getWorldPosition(), regionIDsToHide);
 
         PShape shape = this.getPart(Part.SHAPE);
@@ -254,8 +263,14 @@ public class Thing implements Serializable {
                 }
                 if (piece.instance == null) {
                     Mesh glMesh = Mesh.getSkinnedMesh(piece.mesh);
-                    if (glMesh != null)
+                    if (glMesh != null) {
                         piece.instance = new MeshInstance(glMesh);
+                        piece.categoriesUsed = glMesh.getCostumeCategoriesUsed();
+                        for (int region : glMesh.getRegionIDsToHide()) {
+                            if (!costume.meshPartsHidden.contains(region))
+                                costume.meshPartsHidden.add(region);
+                        }
+                    }
                 } else {
                     piece.instance.override(base, costume.material);
                     piece.instance.draw(mesh.boneModels, Colors.RGBA32.fromARGB(mesh.editorColor));
@@ -266,7 +281,12 @@ public class Thing implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
-    public <T extends Serializable> void setPart(Part part, T value) { this.parts[part.getIndex()] = value; }
+    public <T extends Serializable> void setPart(Part part, T value) {
+        // Hack for now since only PPos needs to know its current thing
+        if (value instanceof PPos)
+            ((PPos)value).myThing = this;
+        this.parts[part.getIndex()] = value; 
+    }
     public boolean hasPart(Part part) { return this.parts[part.getIndex()] != null; }
 
     @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }

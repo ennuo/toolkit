@@ -50,6 +50,11 @@ public class RSceneGraph implements Serializable, Compressable {
     private transient List<Thing> queue = Collections.synchronizedList(new ArrayList<>());
 
     public RSceneGraph() {}
+    public RSceneGraph(ResourceDescriptor background) {
+        this.background = background;
+        this.backdrop = null;
+    }
+
     public RSceneGraph(RLevel level) {
         this.world = level.world.getPart(Part.WORLD);
         while (this.world.things.remove(null));
@@ -129,8 +134,12 @@ public class RSceneGraph implements Serializable, Compressable {
     }
     
     public Thing addMesh(ResourceDescriptor mesh) {
+        return this.addMesh(mesh, new Matrix4f().identity());
+    }
+
+    public Thing addMesh(ResourceDescriptor mesh, Matrix4f transform) {
         Thing thing = new Thing(this.nextUID++);
-        thing.setPart(Part.POS, new PPos(thing, 0, new Matrix4f().identity()));
+        thing.setPart(Part.POS, new PPos(thing, 0, transform));
         thing.setPart(Part.BODY, new PBody());
         thing.setPart(Part.GROUP, new PGroup());
         thing.setPart(Part.RENDER_MESH, new PRenderMesh(mesh));
@@ -138,6 +147,13 @@ public class RSceneGraph implements Serializable, Compressable {
             this.queue.add(thing);
         }
         return thing;
+    }
+
+    public void packAsset(ResourceDescriptor descriptor) {
+        if (descriptor == null) return;
+        byte[] fileData = ResourceSystem.extract(descriptor);
+        if (fileData != null)
+            this.packedData.put(descriptor, fileData);
     }
 
     @SuppressWarnings("unchecked")
@@ -212,6 +228,12 @@ public class RSceneGraph implements Serializable, Compressable {
         }
     }
 
+    public Thing[] getThings() {
+        synchronized(this.things) {
+            return this.things.toArray(Thing[]::new);
+        }
+    }
+    
     public HashSet<ResourceDescriptor> getResourcesInUse() {
         HashSet<ResourceDescriptor> resources = new HashSet<>();
         synchronized(this.things) {

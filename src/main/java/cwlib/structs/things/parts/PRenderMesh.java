@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -8,6 +9,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import cwlib.enums.FlipType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShadowType;
@@ -16,6 +18,7 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.resources.RAnimation;
+import cwlib.resources.RAnimation.RPSAnimData;
 import cwlib.resources.custom.RSceneGraph;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.mesh.Bone;
@@ -53,34 +56,35 @@ public class PRenderMesh implements Serializable {
     public transient boolean isDirty = true;
 
     public PRenderMesh() {}
+    public PRenderMesh(ResourceDescriptor mesh, Thing[] bones) {
+        this.mesh = mesh;
+        this.boneThings = bones;
+    }
     public PRenderMesh(ResourceDescriptor mesh) {
         this.mesh = mesh;
     }
 
-    public static void calculateBoneTransform(RAnimation animation, float position, Matrix4f[] transforms, Bone[] bones, Bone bone, Matrix4f parent) {
+    public static void calculateBoneTransform(RAnimation animation, float position, Matrix4f[] transforms, Bone[] bones, Bone bone, FlipType[] types, Matrix4f parent) {
         int index = Bone.indexOf(bones, bone.animHash);
+        if (index == -1) return;
+        FlipType type = types[index];
+
         int frame = (int) Math.floor(position * animation.getNumFrames());
-
-        // frame = frameOverride;
+        // frame = 0;
         
-        Matrix4f local = animation.getFrameMatrix(bone.animHash, frame, position);
-        Matrix4f global = parent.mul(local, new Matrix4f());
+        Matrix4f local = animation.getBlendedFrameMatrix(bone.animHash, frame, position, true);
+        if (local == null) return;
 
-        Vector3f translation = local.getTranslation(new Vector3f());
-        Quaternionf rotation = local.getNormalizedRotation(new Quaternionf());
-        Matrix4f childGlobal = new Matrix4f().identity().translationRotateScale(
-            new Vector3f(translation.x, translation.y, translation.z),
-            rotation,
-            new Vector3f(1.0f, 1.0f, 1.0f)
-        );
-        childGlobal = parent.mul(childGlobal, new Matrix4f());
+        Matrix4f global = new Matrix4f(parent);
+        if (bone.parent != -1) global.normalize3x3();
+        global.mul(local);
 
         Matrix4f inverse = global.mul(bone.invSkinPoseMatrix, new Matrix4f());
         transforms[index] = inverse;
 
         for (Bone child : bones) {
             if (child.parent == index)
-                calculateBoneTransform(animation, position, transforms, bones, child, childGlobal);
+                calculateBoneTransform(animation, position, transforms, bones, child, types, global);
         }
 
     }
@@ -143,7 +147,7 @@ public class PRenderMesh implements Serializable {
         ((PRenderMesh)root.getPart(Part.RENDER_MESH)).boneThings = boneThings;
     }
 
-    public void update(Thing thing, Matrix4f wpos, int[] regionIDsToHide) {
+    public void update(Thing thing, Matrix4f wpos, ArrayList<Integer> regionIDsToHide) {
         if (this.mesh == null) return;
 
         if (this.instance == null) {
@@ -167,7 +171,8 @@ public class PRenderMesh implements Serializable {
             if (!DISABLED_ANIMATIONS.contains(this.anim)) {
                 RAnimation animation = ANIMATIONS.get(this.anim);
                 if (animation == null) {
-                    byte[] animData = ResourceSystem.extract(this.anim);
+                    System.out.println("Getting animation...");
+                    byte[] animData = RenderSystem.getSceneGraph().getResourceData(this.anim);
                     if (animData != null) {
                         Resource resource = new Resource(animData);
                         if (resource.getRevision().getVersion() < 0x378) {
@@ -189,13 +194,22 @@ public class PRenderMesh implements Serializable {
                         this.animPos = (x - t * y);
                     }
     
+                    int frame = (int) Math.floor(this.animPos * animation.getNumFrames());
+                    if (this.instance.morph != null) {
+                        float[] weights = animation.getBlendedFrameWeights(frame, this.animPos, true);
+                        for (int i = 0; i < weights.length; ++i)
+                            this.instance.morph.weights[i] = weights[i];
+                    }
+
                     for (Thing boneThing : this.boneThings) {
                         PPos bonePos = boneThing.getPart(Part.POS);
                         Bone bone = Bone.getByHash(this.instance.mesh.getBones(), bonePos.animHash);
                         if (bone == null || bone.parent != -1) continue;
                         Matrix4f pos = bonePos.worldPosition.mul(bone.invSkinPoseMatrix, new Matrix4f());
-                        calculateBoneTransform(animation, this.animPos, this.boneModels, this.instance.mesh.getBones(), bone, pos);
+                        calculateBoneTransform(animation, this.animPos, this.boneModels, this.instance.mesh.getBones(), bone, this.instance.mesh.getBoneTypes(), pos);
                     }
+
+
                 }
             }
         }

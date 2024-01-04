@@ -222,14 +222,20 @@ float3 NormalMap(float4 iNormal, float4 iTangent, float4 iSample) {
 }
 
 float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump) {
-    float2 bump = iBump.yw - 0.501961;
-    float3 bitangent = cross(iTangent.xyz, iNormal.xyz);
-    float3 normal = normalize(
-        (iNormal.xyz * sqrt(abs(dot(bump, bump) - 0.25))) - 
-        (BumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
-    );
-
-    return normal;
+    #if (FLAGS & ORBIS)
+        float2 bump = iBump.yw - 0.501961;
+        float3 bitangent = cross(iTangent.xyz, iNormal.xyz);
+        float3 normal = normalize(
+            (iNormal.xyz * sqrt(abs(dot(bump, bump) - 0.25))) - 
+            (BumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
+        );
+        return normal;
+    #else
+        float2 n = iBump.yw - 0.501953;
+        float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
+        float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
+        return v / length(v);
+    #endif
 }
 
 float3 GetNormalFromTexture(float4 iNormal, float4 iTangent, float4 iUV, float4 iColor) {
@@ -492,7 +498,7 @@ void main(
         #endif
 
         #if (PROPERTIES & LIGHTING_RAMP)
-            float toon_dot = dot(iVec2Eye.xyz , normal) / sqrt(dot(iVec2Eye.xyz , iVec2Eye.xyz)) / 2.0;
+            float toon_dot = dot(iVec2Eye.xyz , normal) / length(iVec2Eye.xyz) * 0.5;
             diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
         #endif
 
@@ -550,10 +556,10 @@ void main(
 float4 GetLight(float3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float2 iLightmapUV) {
     float3 viewVec = normalize(iVec2Eye.xyz);
     #if (FLAGS & ORBIS)
-        float3 reflectVec = -reflect(viewVec, iNormal);
-    #else
         float3 halfVec = normalize((iVec2Eye.xyz - sunpos) + (viewVec * float3(3.0, 1.0, 1.0)));
-        float3 reflectVec = -reflect(halfVec, iNormal);
+        float3 reflectVec = reflect(halfVec, iNormal);
+    #else
+        float3 reflectVec = reflect(viewVec, iNormal);
     #endif
 
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
@@ -611,7 +617,7 @@ float4 GetLight(float3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, floa
         ));
     #endif
 
-    float specular = pow(saturate(RdotL), CosinePower);
+    float specular = pow(saturate(-RdotL), CosinePower);
 
     #if (FLAGS & ORBIS)
         specular *= miscparams.x;
@@ -652,8 +658,10 @@ void main(
     float4 iColor: COLOR0,
     float4 iPlaneCoeff: CLP0,
 
-    out half4 fragColor
+    out half4 fragColor: COLOR0
 ) {
+    if (GetDiffuseColor(iUV, iColor).w < AlphaTestLevel) discard;
+
     float3 viewVec = normalize(iVec2Eye.xyz);
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
 

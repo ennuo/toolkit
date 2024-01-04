@@ -1,10 +1,12 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import editor.gl.RenderSystem;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -19,6 +21,7 @@ import com.google.gson.annotations.JsonAdapter;
 public class PPos implements Serializable {
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
+    public transient Thing myThing;
     public Thing thingOfWhichIAmABone;
     public int animHash;
     
@@ -28,10 +31,6 @@ public class PPos implements Serializable {
 
     @JsonAdapter(TranslationSerializer.class) 
     public Matrix4f worldPosition = new Matrix4f();
-
-    private transient Vector3f translation = new Vector3f();
-    private transient Vector3f rotation = new Vector3f();
-    private transient Vector3f scale = new Vector3f();
 
     public PPos() {};
     public PPos(Matrix4f wpos) { this(wpos, wpos); }
@@ -61,9 +60,77 @@ public class PPos implements Serializable {
     public Matrix4f getWorldPosition() { return this.worldPosition; }
     public Matrix4f getLocalPosition() { return this.localPosition; }
 
-    public Vector3f getTranslation() { return this.translation; }
-    public Vector3f getRotation() { return this.rotation; }
-    public Vector3f getScale() { return this.scale; }
+    public void translate(Vector3f delta)
+    {
+        this.setWorldPos(this.worldPosition.translate(delta));
+    }
+
+    public void rotateX(float degrees)
+    {
+        this.setWorldPos(this.worldPosition.rotate(
+            (float) Math.toRadians(degrees),
+            new Vector3f(1.0f, 0.0f, 0.0f)
+        ));
+    }
+
+    public void rotateY(float degrees)
+    {
+        this.setWorldPos(this.worldPosition.rotate(
+            (float) Math.toRadians(degrees),
+            new Vector3f(0.0f, 1.0f, 0.0f)
+        ));
+    }
+
+    public void rotateZ(float degrees)
+    {
+        this.setWorldPos(this.worldPosition.rotate(
+            (float) Math.toRadians(degrees),
+            new Vector3f(0.0f, 0.0f, 1.0f)
+        ));
+    }
+
+    public void setWorldPos(Matrix4f wpos) {
+        this.worldPosition = wpos;
+        this.recomputeLocalPos();
+        this.worldPosChanged();
+    }
+
+    public void worldPosChanged() {
+        if (this.thingOfWhichIAmABone != null) {
+            PRenderMesh mesh = this.thingOfWhichIAmABone.getPart(Part.RENDER_MESH);
+            if (mesh != null)
+                mesh.isDirty = true;
+        }
+        Thing[] things = RenderSystem.getSceneGraph().getThings();
+        for (Thing thing : things) {
+            if (thing.parent == this.myThing) {
+                PPos pos = thing.getPart(Part.POS);
+                if (pos != null)
+                    pos.recomputeWorldPos();
+            }
+        }
+    }
+
+    public void recomputeWorldPos() {
+        if (this.myThing.parent == null)
+            this.worldPosition = new Matrix4f(this.localPosition);
+        else {
+            Matrix4f parent = this.myThing.parent.<PPos>getPart(Part.POS).worldPosition;
+            this.worldPosition = parent.mul(this.localPosition, new Matrix4f());
+        }
+        this.worldPosChanged();
+    }
+
+    public void recomputeLocalPos()
+    {
+        if (this.myThing.parent == null)
+            this.localPosition = new Matrix4f(this.worldPosition);
+        else {
+            Matrix4f parent = this.myThing.parent.<PPos>getPart(Part.POS).worldPosition;
+            this.localPosition = parent.invert(new Matrix4f()).mul(this.worldPosition);
+        }
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override public PPos serialize(Serializer serializer, Serializable structure) {

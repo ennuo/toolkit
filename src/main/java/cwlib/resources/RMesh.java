@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -309,16 +311,18 @@ public class RMesh implements Compressable, Serializable {
         // Initialize the mirror arrays if the bones aren't null.
         if (bones != null) {
             this.mirrorBones = new short[bones.length];
+            for (int i = 0; i < this.mirrorBones.length; ++i)
+                this.mirrorBones[i] = (short) i;
             this.mirrorBoneFlipTypes = new FlipType[bones.length];
             Arrays.fill(this.mirrorBoneFlipTypes, FlipType.MAX);
         }
         this.bones = bones;
-        this.cullBones = new CullBone[bones.length];
-        for (int i = 0; i < bones.length; ++i) {
+        this.cullBones = new CullBone[this.bones.length];
+        for (int i = 0; i < this.bones.length; ++i) {
             CullBone bone = new CullBone();
-            bone.boundBoxMax = bones[i].boundBoxMax;
-            bone.boundBoxMin = bones[i].boundBoxMin;
-            bone.invSkinPoseMatrix = bones[i].invSkinPoseMatrix;
+            bone.boundBoxMax = this.bones[i].boundBoxMax;
+            bone.boundBoxMin = this.bones[i].boundBoxMin;
+            bone.invSkinPoseMatrix = this.bones[i].invSkinPoseMatrix;
             this.cullBones[i] = bone;
         }
         
@@ -863,6 +867,17 @@ public class RMesh implements Compressable, Serializable {
      * @return Vertices
      */
     public Vector3f[] getVertices() { return this.getVertices(0, this.numVerts); }
+
+    public void swapUV01() {
+        for (int i = 0; i < this.numVerts; i++) {
+            int uv0 = (this.attributeCount * 0x8 * i);
+            int uv1 = uv0 + 0x8;
+
+            byte[] tmp = Arrays.copyOfRange(this.attributes, uv0, uv1); // copy uv0 into tmp
+            System.arraycopy(this.attributes, uv1, this.attributes, uv0, 0x8);
+            System.arraycopy(tmp, 0, this.attributes, uv1, 0x8);
+        }
+    }
     
     /**
      * Gets the UVs in a specified range.
@@ -1207,6 +1222,86 @@ public class RMesh implements Compressable, Serializable {
      */
     public int[] getTriangles() {
         return this.getTriangles(0, this.numIndices);
+    }
+
+        /**
+     * Recalculates the bounding boxes for each bone in this model.
+     * @param setOBB Whether or not to set the OBB field from AABB bounding boxes.
+     */
+    public void calculateBoundBoxes(boolean setOBB) {
+        Vector3f[] vertices = this.getVertices();
+        Vector4f[] weights = this.getWeights();
+        byte[][] joints = this.getJoints();
+
+        HashMap<Bone, Vector3f> minVert = new HashMap<>();
+        HashMap<Bone, Vector3f> maxVert = new HashMap<>();
+
+        for (Bone bone : this.bones) {
+            minVert.put(bone, new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
+            maxVert.put(bone, new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
+        }
+
+        for (int i = 0; i < vertices.length; ++i) {
+            Vector3f v = vertices[i];
+            Vector4f weightCache = weights[i];
+            byte[] jointCache = joints[i];
+
+            for (int j = 0; j < 4; ++j) {
+                if (weightCache.get(j) == 0.0f) continue;
+                Vector3f max = maxVert.get(this.bones[jointCache[j]]);
+                Vector3f min = minVert.get(this.bones[jointCache[j]]);
+
+                
+
+                if (v.x > max.x) max.x = v.x;
+                if (v.y > max.y) max.y = v.y;
+                if (v.z > max.z) max.z = v.z;
+
+                if (v.x < min.x) min.x = v.x;
+                if (v.y < min.y) min.y = v.y;
+                if (v.z < min.z) min.z = v.z;
+            }
+        }
+        
+        int index = 0;
+        for (Bone bone : this.bones) {
+            Vector4f max = new Vector4f(maxVert.get(bone), 1.0f);
+            Vector4f min = new Vector4f(minVert.get(bone), 1.0f);
+            
+            if (min.x == Float.POSITIVE_INFINITY) min = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+            else min.mul(bone.invSkinPoseMatrix);
+
+
+            if (max.x == Float.NEGATIVE_INFINITY) max = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+            else max.mul(bone.invSkinPoseMatrix);
+
+            for (int c = 0; c < 3; ++c) {
+                if (min.get(c) > max.get(c)) {
+                    float u = min.get(c);
+                    float l = max.get(c);
+                    min.setComponent(c, l);
+                    max.setComponent(c, u);
+                }
+            }
+
+            bone.boundBoxMax = max;
+            bone.boundBoxMin = min;
+            if (setOBB) {
+                bone.obbMax = bone.boundBoxMax;
+                bone.obbMin = bone.boundBoxMin;
+            }
+
+            Vector4f center = max.add(min, new Vector4f()).div(2.0f);
+            float minDist = Math.abs(center.distance(min));
+            float maxDist = Math.abs(center.distance(max));
+            center.w =  (minDist > maxDist) ? minDist : maxDist;
+            bone.boundSphere = new Vector4f(center);
+
+            CullBone culler = this.cullBones[index++];
+            culler.boundBoxMax = bone.boundBoxMax;
+            culler.boundBoxMin = bone.boundBoxMin;
+            culler.invSkinPoseMatrix = bone.invSkinPoseMatrix;
+        }
     }
 
     

@@ -6,6 +6,7 @@ import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.FileIO;
+import cwlib.util.GsonUtils;
 import editor.gl.objects.Mesh;
 import editor.gl.objects.Shader;
 import editor.gl.objects.Texture;
@@ -27,9 +28,16 @@ import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 public class RenderSystem {
+    public static class MorphInstance {
+        public Texture texture;
+        public float[] weights = new float[32];
+        public MorphInstance(Texture texture) { this.texture = texture; }
+    }
+
     public static class DrawCall implements Comparable<DrawCall> {
         private int VAO;
         private Texture instance;
+        private MorphInstance morph;
         private Matrix4f[] model;
         private Vector4f color;
         private MeshPrimitive primitive;
@@ -40,6 +48,11 @@ public class RenderSystem {
             this.instance = instance;
             this.model = model;
             this.color = color;
+        }
+
+        public DrawCall(int VAO, MeshPrimitive primitive, Texture instance, Matrix4f[] model, Vector4f color, MorphInstance morph) {
+            this(VAO, primitive, instance, model, color);
+            this.morph = morph;
         }
 
         public void draw() {
@@ -53,7 +66,7 @@ public class RenderSystem {
                 glDrawElements(primitive.getPrimitiveType(), primitive.getNumIndices(), GL_UNSIGNED_INT, primitive.getFirstIndex() * 4);
             }
             else
-                primitive.draw(instance, model, color);
+                primitive.draw(instance, model, color, morph);
             
             glBindVertexArray(0);
             glUseProgram(0);

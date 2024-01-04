@@ -1,7 +1,6 @@
 package cwlib.io.imports;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -17,38 +16,20 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-import cwlib.enums.CompressionFlags;
 import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.HairMorph;
-import cwlib.enums.InventoryObjectType;
-import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SkeletonType;
-import cwlib.io.serializer.SerializationData;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.resources.RMesh;
-import cwlib.resources.RPlan;
 import cwlib.resources.custom.RBoneSet;
-import cwlib.resources.custom.RSceneGraph;
-import cwlib.resources.custom.RShaderCache;
 import cwlib.singleton.ResourceSystem;
-import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Primitive;
-import cwlib.structs.mesh.SoftbodySpring;
-import cwlib.structs.mesh.SoftbodyVertEquivalence;
-import cwlib.structs.things.Thing;
-import cwlib.structs.things.parts.PRenderMesh;
-import cwlib.structs.things.parts.PShape;
 import cwlib.types.Resource;
-import cwlib.types.data.GatherData;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.types.data.Revision;
-import cwlib.types.data.SHA1;
-import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.FileIO;
 import de.javagl.jgltf.model.AccessorModel;
@@ -59,7 +40,6 @@ import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.SkinModel;
 import de.javagl.jgltf.model.io.GltfModelReader;
-import de.javagl.jgltf.model.v2.MaterialModelV2;
 
 public class ModelImporter {
     private static final RBoneSet SKELETONS =
@@ -81,14 +61,6 @@ public class ModelImporter {
         public SkeletonType skeleton = SkeletonType.SACKBOY;
     }
 
-    private static class SoftbodyImportData {
-        private int minSpringVert = 0xFFFF;
-        private int maxSpringVert = 0x0;
-        private ArrayList<SoftbodyVertEquivalence> vertEquivalences = new ArrayList<>();
-        private ArrayList<SoftbodySpring> springs = new ArrayList<>();
-        private ArrayList<Integer> springyTriIndices = new ArrayList<>();
-    }
-
     private ModelImportConfig config;
     private GltfModel gltf;
 
@@ -105,8 +77,6 @@ public class ModelImporter {
     private MemoryOutputStream attributeStream = null;
     private MemoryOutputStream indexStream = null;
 
-    SoftbodyImportData softbody = new SoftbodyImportData();
-
     private Vector2f minUV = new Vector2f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
     private Vector2f maxUV = new Vector2f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
@@ -114,9 +84,6 @@ public class ModelImporter {
     private HashMap<Bone, Vector3f> maxVert = new HashMap<>();
 
     private HashMap<MaterialModel, Primitive> gltfMaterials = new HashMap<>();
-
-    private boolean isMissingSkeleton = false;
-    private boolean hasSpringData = false;
 
     public ModelImporter(ModelImportConfig config) throws IOException {
         this.config = config;
@@ -202,7 +169,7 @@ public class ModelImporter {
             if (node.getMeshModels().size() != 0) {
                 MeshModel mesh = node.getMeshModels().get(0);
                 for (MeshPrimitiveModel primitive : mesh.getMeshPrimitiveModels()) {
-                    for (int i = 0; i < 2; ++i) {
+                    for (int i = 0; i < 3; ++i) {
                         if (!primitive.getAttributes().containsKey("TEXCOORD_" + i)) 
                             break;
                         
@@ -250,7 +217,6 @@ public class ModelImporter {
             ByteBuffer color = this.getAttributeBuffer(meshPrimitive, "COLOR_0");
             MemoryOutputStream vertexStream = this.vertexStreams[RMesh.STREAM_POS_BONEINDICES];
             Vector3f[] vertexCache = new Vector3f[numVertices];
-            boolean[] springCache = new boolean[numVertices];
             for (int i = 0; i < numVertices; ++i) {
                 Vector3f vertex = new Vector3f(
                     vertices.getFloat(),
@@ -269,27 +235,22 @@ public class ModelImporter {
                 if (color != null) {
                     c = Math.round(((float)(color.getShort() & 0xffff) / (float)0xffff) * 0xFF);
                     color.getShort(); color.getShort(); color.getShort();
-                    boolean isSpringy = c != 255;
-                    springCache[i] = isSpringy;
-                    if (isSpringy) {
-                        this.hasSpringData = true;
-                        int index = minVert + i;
-                        if (index > this.softbody.maxSpringVert)
-                            this.softbody.maxSpringVert = index;
-                        if (index < this.softbody.minSpringVert)
-                            this.softbody.minSpringVert = index;
-                    }
-
                 }
                 vertexStream.i32(c, true); 
             }
 
             MemoryOutputStream skinningStream = this.vertexStreams[RMesh.STREAM_BONEWEIGHTS_NORM_TANGENT_SMOOTH_NORM];
-            
+
             ByteBuffer weights = this.getAttributeBuffer(meshPrimitive, "WEIGHTS_0");
             ByteBuffer joints = this.getAttributeBuffer(meshPrimitive, "JOINTS_0");
             ByteBuffer normals = this.getAttributeBuffer(meshPrimitive, "NORMAL");
             ByteBuffer tangents = this.getAttributeBuffer(meshPrimitive, "TANGENT");
+
+            boolean isShortBuffer = false;
+            AccessorModel jointAccessorModel = meshPrimitive.getAttributes().get("JOINTS_0");
+            isShortBuffer = 
+                jointAccessorModel != null && 
+                jointAccessorModel.getComponentDataType().toString().equals("short");
 
             ByteBuffer[] attributes = new ByteBuffer[] {
                 this.getAttributeBuffer(meshPrimitive, "TEXCOORD_0"),
@@ -320,13 +281,16 @@ public class ModelImporter {
                     for (int j = 0; j < 4; ++j)
                         weightCache[j] = weights.getFloat();
                 }
+                
 
                 if (skin == null) {
                     for (int j = 0; j < 4; ++j)
                         jointCache[j] = 0;
                 } else {
-                    for (int j = 0; j < 4; ++j)
-                        jointCache[j] = this.getJointIndex(skin.getJoints().get((int) (joints.get() & 0xff)));
+                    for (int j = 0; j < 4; ++j) {
+                        int joint = (isShortBuffer ? joints.getShort() : joints.get()) & 0xff;
+                        jointCache[j] = this.getJointIndex(skin.getJoints().get(joint));
+                    }
                 }
 
                 // Update min/max for bones
@@ -429,42 +393,8 @@ public class ModelImporter {
                 this.indexStream.u16(index);
             }
 
-            if (this.hasSpringData) {
-
-                // Setup vertex equivalences
-                for (int i = 0; i < vertexCache.length; ++i) {
-                    int vertexIndex = i;
-                    int count = 1;
-                    while (true) {
-                        if ((i + 1) >= vertexCache.length) break;
-                        if (vertexCache[vertexIndex].equals(vertexCache[i + 1], 0.0001f)) {
-                            count++;
-                            i++;
-                            continue;
-                        }
-                        break;
-                    }
-    
-                    if (count != 1) {
-                        this.softbody.vertEquivalences.add(new SoftbodyVertEquivalence(
-                            minVert + vertexIndex,
-                            count
-                        ));
-                    }
-                }
-
-                for (int i = 0; i < triCache.length; i += 3) {
-                    if (springCache[triCache[i] - minVert] && springCache[triCache[i + 1] - minVert] && springCache[triCache[i + 2] - minVert]) {
-                        this.softbody.springyTriIndices.add(triCache[i]);
-                        this.softbody.springyTriIndices.add(triCache[i + 1]);
-                        this.softbody.springyTriIndices.add(triCache[i + 2]);                        
-                    }
-                }
-
-                // TODO: Generate softbody springs
-            }
-
             String materialName = meshPrimitive.getMaterialModel().getName();
+            System.out.println(materialName);
             ResourceDescriptor descriptor = null;
             if (this.config.materialOverrides != null && this.config.materialOverrides.containsKey(materialName))
                 descriptor = this.config.materialOverrides.get(materialName);
@@ -478,14 +408,6 @@ public class ModelImporter {
         }
     }
 
-    private void addSpring(Vector3f[] vertices, int minVert, int a, int b) {
-        this.softbody.springs.add(new SoftbodySpring(
-            a - this.softbody.minSpringVert,
-            b - this.softbody.minSpringVert,
-            vertices[a - minVert].distanceSquared(vertices[b - minVert])
-        ));
-    }
-
     private void convertToGlobalSkinPose(Bone bone, Matrix4f parent) {
         bone.skinPoseMatrix = parent.mul(bone.skinPoseMatrix, new Matrix4f());
         for (Bone child : bone.getChildren(this.bones))
@@ -495,7 +417,6 @@ public class ModelImporter {
     private void getCustomSkeleton() {
         if (this.gltf.getSkinModels().size() == 0) {
             this.bones = new Bone[] { new Bone("BocchiTheRock!") };
-            this.isMissingSkeleton = true;
             return;
         }
         
@@ -589,6 +510,7 @@ public class ModelImporter {
         }
 
         this.attributeCount = this.getMaxAttributeCount();
+        System.out.println("UV Count: " + this.attributeCount);
         this.morphCount = this.getMaxMorphCount();
 
         if (this.morphCount >= RMesh.MAX_MORPHS) {
@@ -626,44 +548,14 @@ public class ModelImporter {
         for (int i = 0; i < streams.length; ++i)
             streams[i] = this.vertexStreams[i].getBuffer();
 
-        for (Bone bone : this.bones) {
-            Vector3f max = this.maxVert.get(bone);
-            Vector3f min = this.minVert.get(bone);
-
-            Vector3f pos = bone.skinPoseMatrix.getTranslation(new Vector3f());
-            if (min.x == Float.POSITIVE_INFINITY) min = pos;
-            if (max.x == Float.NEGATIVE_INFINITY) max = pos;
-
-            if (this.isMissingSkeleton) {
-                pos = max.add(min, new Vector3f()).div(2.0f);
-                bone.skinPoseMatrix.setTranslation(pos);
-            }
-
-            max = max.sub(pos, new Vector3f());
-            min = min.sub(pos, new Vector3f());
-
-            bone.boundBoxMax = new Vector4f(max, 1.0f);
-            bone.boundBoxMin = new Vector4f(min, 1.0f);
-            bone.obbMax = bone.boundBoxMax;
-            bone.obbMin = bone.boundBoxMin;
-
-            Vector3f center = max.add(min, new Vector3f()).div(2.0f);
-
-            float minDist = Math.abs(center.distance(min));
-            float maxDist = Math.abs(center.distance(max));
-            
-            bone.boundSphere = new Vector4f(
-                center,
-                (minDist > maxDist) ? minDist : maxDist
-            );
-        }
-
         RMesh mesh = new RMesh(
             streams,
             this.attributeStream.getBuffer(),
             this.indexStream.getBuffer(),
             this.bones
         );
+
+        mesh.calculateBoundBoxes(this.config.skeleton == null);
 
         // Set morph names
         for (int i = 0; i < this.morphs.size(); ++i) {
@@ -689,21 +581,6 @@ public class ModelImporter {
         mesh.setCostumeCategoriesUsed(CostumePieceCategory.getFlags(this.config.categories));
         mesh.setHairMorphs(this.config.hairMorph);
         mesh.setSkeletonType(this.config.skeleton != null ? this.config.skeleton : SkeletonType.SACKBOY);
-
-        if (this.hasSpringData) {
-            mesh.setMinSpringVert(this.softbody.minSpringVert);
-            mesh.setMinUnalignedSpringVert(this.softbody.minSpringVert);
-            mesh.setMaxSpringVert(this.softbody.maxSpringVert);
-            mesh.setSoftbodyEquivs(this.softbody.vertEquivalences.toArray(SoftbodyVertEquivalence[]::new));
-            mesh.setSpringTrisStripped(false);
-
-            short[] indices = new short[this.softbody.springyTriIndices.size()];
-            for (int i = 0; i < indices.length; ++i)
-                indices[i] = this.softbody.springyTriIndices.get(i).shortValue();
-            mesh.setSpringyTriIndices(indices);
-
-            mesh.setSoftbodySprings(this.softbody.springs.toArray(SoftbodySpring[]::new));
-        }
 
         return mesh;
     }

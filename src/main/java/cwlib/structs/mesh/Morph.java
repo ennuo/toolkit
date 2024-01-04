@@ -9,12 +9,12 @@ public class Morph {
     /**
      * Relative offset of each vertex.
      */
-    private Vector3f[] offsets;
+    public Vector3f[] offsets;
 
     /**
      * New normals for each vertex.
      */
-    private Vector3f[] normals;
+    public Vector3f[] normals;
 
     /**
      * Creates a morph from offset and normal data.

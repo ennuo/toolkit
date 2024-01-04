@@ -8,6 +8,7 @@ import cwlib.enums.ResourceType;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.types.data.ResourceDescriptor;
+import editor.gl.RenderSystem.MorphInstance;
 import editor.gl.objects.Shader;
 import editor.gl.objects.Texture;
 
@@ -121,12 +122,26 @@ public class MeshPrimitive {
     /**
      * Draws this primitive to current buffer.
      */
-    public void draw(Texture instanceTexture, Matrix4f[] model, Vector4f color) {
+    public void draw(Texture instanceTexture, Matrix4f[] model, Vector4f color, MorphInstance morph) {
         Shader shader = RenderSystem.OVERRIDE_SHADER;
         if (shader == null)
             shader = Shader.get(this.getMaterial());
-        shader.bind(instanceTexture, model, color);
+        shader.bind(instanceTexture, model, color, morph);
+
+        // Offset polygons slightly for decals
+        if (this.alphaLayer != 0) {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(-1.0f, -1.0f);
+            glDrawElements(this.type, this.numIndices, GL_UNSIGNED_INT, this.firstIndex * 4);
+            glDisable(GL_POLYGON_OFFSET_FILL);
+            return;
+        }
+
         glDrawElements(this.type, this.numIndices, GL_UNSIGNED_INT, this.firstIndex * 4);
+    }
+
+    public void draw(Texture instanceTexture, Matrix4f[] model, Vector4f color) {
+        this.draw(instanceTexture, model, color, null);
     }
 
     public int getRegion() { return this.region; }

@@ -1,5 +1,7 @@
 package cwlib.structs.things.parts;
 
+import java.util.ArrayList;
+
 import cwlib.enums.Branch;
 import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.ResourceType;
@@ -21,7 +23,7 @@ public class PCostume implements Serializable {
     @GsonRevision(min=0x19a)
     public ResourceDescriptor materialPlan;
 
-    public int[] meshPartsHidden;
+    public ArrayList<Integer> meshPartsHidden = new ArrayList<>();
     public Primitive[] primitives;
 
     @GsonRevision(lbp3=true, min=0xdb)
@@ -58,7 +60,17 @@ public class PCostume implements Serializable {
         if (version >= 0x19a)
             costume.materialPlan = serializer.resource(costume.materialPlan, ResourceType.PLAN, true);
     
-        costume.meshPartsHidden = serializer.intvector(costume.meshPartsHidden);
+        if (serializer.isWriting()) {
+            int[] vec = costume.meshPartsHidden.stream().mapToInt(Integer::valueOf).toArray();
+            serializer.intvector(vec);
+        } else {
+            int[] vec = serializer.intvector(null);
+            if (vec != null) {
+                for (int v : vec)
+                    costume.meshPartsHidden.add(v);
+            }
+        }
+
         costume.primitives = serializer.array(costume.primitives, Primitive.class);
         
         if (subVersion >= 0xdb)
@@ -78,7 +90,7 @@ public class PCostume implements Serializable {
             for (CostumePiece piece : this.costumePieces)
                 size += piece.getAllocatedSize();
         if (this.primitives != null) size += (this.primitives.length * Primitive.BASE_ALLOCATION_SIZE);
-        if (this.meshPartsHidden != null) size += (this.meshPartsHidden.length * 4);
+        if (this.meshPartsHidden != null) size += (this.meshPartsHidden.size() * 4);
         return size;
     }
 }

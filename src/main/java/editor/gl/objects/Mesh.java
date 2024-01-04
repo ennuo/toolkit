@@ -1,29 +1,37 @@
 package editor.gl.objects;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.BufferUtils;
 
+import cwlib.enums.FlipType;
+import cwlib.enums.HairMorph;
 import cwlib.enums.PrimitiveType;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
 import cwlib.structs.mesh.Bone;
+import cwlib.structs.mesh.Morph;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.util.FileIO;
 import editor.gl.Extruder;
 import editor.gl.MeshPrimitive;
 import editor.gl.RenderSystem;
+import editor.gl.objects.Texture;
 
 import static org.lwjgl.opengl.GL30.*;
 
@@ -34,8 +42,15 @@ public class Mesh {
     private int VAO, VBO, EBO;
     private int numIndices;
     private int type;
+
+    private Texture morphLUT;
+
     private MeshPrimitive[] primitives;
     private Bone[] bones;
+    private FlipType[] types;
+    private HashSet<Integer> regionIDsToHide = new HashSet<>();
+    private int costumeCategoriesUsed;
+    private HairMorph hairMorphs = HairMorph.HAT;
 
     private ResourceDescriptor descriptor;
 
@@ -255,6 +270,56 @@ public class Mesh {
             vertexBuffer.put(weights[j].y);
             vertexBuffer.put(weights[j].z);
             vertexBuffer.put(weights[j].w);
+
+            // for (int m = 0; m < 32; ++m) {
+            //     Morph morph = morphs[m];
+            //     if (morph == null) {
+            //         vertexBuffer.position(vertexBuffer.position() + 0x20);
+            //         continue;
+            //     }
+            //     vertexBuffer.put(morph.offsets[j].x);
+            //     vertexBuffer.put(morph.offsets[j].y);
+            //     vertexBuffer.put(morph.offsets[j].z);
+            //     vertexBuffer.put(0.0f);
+
+            //     vertexBuffer.put(morph.normals[j].x);
+            //     vertexBuffer.put(morph.normals[j].y);
+            //     vertexBuffer.put(morph.normals[j].z);
+            //     vertexBuffer.put(0.0f);                
+            // }
+        }
+
+        if (mesh.getMorphCount() != 0) {
+            Morph[] morphs = mesh.getMorphs();
+            // Maybe I should optimize this if there aren't many morphs, takes up 16mbs!
+            ByteBuffer texture = BufferUtils.createByteBuffer(1024 * 1024 * 0x10);
+            for (int i = 0; i < morphs.length; ++i) {
+                Morph morph = morphs[i];
+
+                int offset = ((1024 * 512) / 32) * i * 0x10;
+                texture.position(offset);
+                for (Vector3f position : morph.offsets) {
+                    texture.putFloat(position.x);
+                    texture.putFloat(position.y);
+                    texture.putFloat(position.z);
+                    texture.putFloat(0.0f);
+                }
+
+                texture.position((1024 * 512 * 0x10) + offset);
+                for (int m = 0; m < morph.normals.length; ++m) {
+                    Vector3f normal = morph.normals[m];
+                    normal.sub(normals[m]);
+                    texture.putFloat(normal.x);
+                    texture.putFloat(normal.y);
+                    texture.putFloat(normal.z);
+                    texture.putFloat(0.0f);
+
+                }
+            }
+
+            texture.flip();
+
+            glMesh.morphLUT = new Texture(texture, 1024, 1024);
         }
         
         byte[] stream = mesh.getIndexStream();
@@ -292,6 +357,15 @@ public class Mesh {
             glMesh.primitives[i] = new MeshPrimitive(primitives[i], mesh.getPrimitiveType());
 
         Arrays.sort(glMesh.primitives, (a, z) -> a.getAlphaLayer() - z.getAlphaLayer());
+
+        int[] regions = mesh.getRegionIDsToHide();
+        if (regions != null) {
+            for (int region : regions)
+                glMesh.regionIDsToHide.add(region);
+        }
+        glMesh.costumeCategoriesUsed = mesh.getCostumeCategoriesUsed();
+        glMesh.hairMorphs = mesh.getHairMorphs();
+        glMesh.types = mesh.getMirrorTypes();
 
         glMesh.numIndices = mesh.getNumIndices();
 
@@ -400,6 +474,10 @@ public class Mesh {
     }
 
     public ResourceDescriptor getDescriptor() { return this.descriptor; }
+    public Texture getMorphLUT() { return this.morphLUT; }
+    public HashSet<Integer> getRegionIDsToHide() { return this.regionIDsToHide; }
+    public int getCostumeCategoriesUsed() { return this.costumeCategoriesUsed; }
+    public FlipType[] getBoneTypes() { return this.types; }
     public int getVAO() { return this.VAO; }
     public int getNumIndices() { return this.numIndices; }
     public Bone[] getBones() { return this.bones; }

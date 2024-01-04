@@ -12,6 +12,10 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 matrices[100];
 
+
+uniform sampler2D morph_lut;
+uniform float target_weights[32];
+
 uniform vec3 campos;
 
 out vec4 uv;
@@ -27,14 +31,36 @@ void main() {
         iBoneWeights.y * matrices[int(iBones.y)] +
         iBoneWeights.z * matrices[int(iBones.z)] +
         iBoneWeights.w * matrices[int(iBones.w)];
+
+
+    vec4 worldPos = vec4(iPosition.xyz, 1.0);
+    vec4 worldNormal = vec4(iNormal.xyz, 1.0);
+
+    const int MAX_TARGET_COUNT = 32;
+    const int BLOCK_SIZE = (1024 * 512) / MAX_TARGET_COUNT;
+    for (int i = 0; i < MAX_TARGET_COUNT; i++) {
+        if (target_weights[i] == 0.0) continue;
+
+        float offset = (BLOCK_SIZE * i) + gl_VertexID;
+        vec2 coord = vec2(
+            (mod(offset, 1024.0) / 1024.0),
+            ((offset / 1024.0) / 1024.0)
+        );
+
+        vec4 target_pos = texture2D(morph_lut, coord);
+        vec4 target_normal = texture2D(morph_lut, coord + vec2(0.0, 0.5));
+
+        worldPos += (target_pos * target_weights[i]);
+        worldNormal += (target_normal * target_weights[i]);
+    }
     
-    vec4 worldPos = skin * vec4(iPosition.xyz, 1.0);
+    worldPos = skin * worldPos;
     vec4 cameraPos = view * worldPos;
 
     vec2eye = worldPos.xyz - campos;
 
     wpos = worldPos.xyz;
-    normal = normalize(mat3(skin) * iNormal.xyz);
+    normal = normalize(mat3(skin) * worldNormal.xyz);
     tangent = normalize(mat3(skin) * iTangent.xyz);
 
     uv = iUV;

@@ -67,6 +67,9 @@ public class RGfxMaterial implements Serializable, Compressable {
     public byte fuzzLightingScale = 127;
     public byte iridesenceRoughness;
 
+    @GsonRevision(branch=0x4d5a, min=0xC)
+    public String glsl;
+
     public byte[][] shaders;
     public byte[] code;
 
@@ -139,6 +142,9 @@ public class RGfxMaterial implements Serializable, Compressable {
             }
         }
 
+        if (revision.has(Branch.MIZUKI, Revisions.MZ_GLSL_SHADERS))
+            serializer.str(gmat.glsl);
+
         boolean serializeCode = !revision.isToolkit() || revision.before(Branch.MIZUKI, Revisions.MZ_REMOVE_GFX_CODE);
         int sourceOffsets = gmat.getBlobOffsetCount(revision);
         if (serializer.isWriting()) {
@@ -155,7 +161,8 @@ public class RGfxMaterial implements Serializable, Compressable {
                 }
                 if (this.code != null) offset += this.code.length;
                 stream.i32(offset);
-                for (byte[] shader : gmat.shaders) stream.bytes(shader);
+                for (int i = 0; i < sourceOffsets; ++i)
+                    stream.bytes(gmat.shaders[i]);
                 if (this.code != null)
                     stream.bytes(this.code);
             }
@@ -167,21 +174,30 @@ public class RGfxMaterial implements Serializable, Compressable {
                 int[] blobOffsets  = new int[sourceOffsets];
                 for (int i = 0; i < sourceOffsets; ++i)
                     blobOffsets[i] = stream.i32();
+                
                 byte[] code = stream.bytearray();
+
+                if (!revision.isVita()) {
+                    gmat.shaders = new byte[sourceOffsets][];
+                    if (version < 0x34f) {
+                        for (int i = 1; i < sourceOffsets; ++i)
+                            gmat.shaders[i - 1] = Arrays.copyOfRange(code, blobOffsets[i - 1], blobOffsets[i]);
+                        gmat.shaders[sourceOffsets - 1] = Arrays.copyOfRange(code, blobOffsets[sourceOffsets - 1], code.length);
+                    } else {
+                        int offset = 0;
     
-                gmat.shaders = new byte[sourceOffsets][];
-                if (version < 0x34f) {
-                    for (int i = 1; i < sourceOffsets; ++i)
-                        gmat.shaders[i - 1] = Arrays.copyOfRange(code, blobOffsets[i - 1], blobOffsets[i]);
-                    gmat.shaders[sourceOffsets - 1] = Arrays.copyOfRange(code, blobOffsets[sourceOffsets - 1], code.length);
-                } else {
-                    int offset = 0;
-                    for (int i = 0; i < sourceOffsets; ++i) {
-                        gmat.shaders[i] = Arrays.copyOfRange(code, offset, blobOffsets[i]);
-                        offset += gmat.shaders[i].length;
+                        for (int i = 0; i < sourceOffsets; ++i) {
+                            gmat.shaders[i] = Arrays.copyOfRange(code, offset % code.length, blobOffsets[i]);
+                            offset += gmat.shaders[i].length;
+                        }
+    
+                        if (offset != code.length)
+                            gmat.code = Arrays.copyOfRange(code, offset, code.length);
                     }
-                    if (offset != code.length)
-                        gmat.code = Arrays.copyOfRange(code, offset, code.length);
+                } else {
+                    gmat.shaders = new byte[4][];
+                    for (int i = 0; i < 4; i++)
+                        gmat.shaders[i] = new byte[0x500];
                 }
             }
             
