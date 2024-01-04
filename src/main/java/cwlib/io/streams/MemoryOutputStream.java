@@ -63,6 +63,7 @@ public class MemoryOutputStream {
      * @return This output stream
      */
     public final MemoryOutputStream bytearray(byte[] value) {
+        if (value == null) return this.i32(0);
         this.i32(value.length);
         return this.bytes(value);
     }
