@@ -41,6 +41,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// This class is stil a work in progress, so it's kind of messy,
+// the idea is to re-implement the model exporter to support full scenes,
+// as well as baking materials and decals for more accurate rendering.
 public class SceneExporter
 {
       private final GlTF gltf = new GlTF();
@@ -1544,84 +1547,5 @@ public class SceneExporter
       {
             public float[] specularColorFactor;
             public TextureInfo specularColorTexture;
-      }
-
-      public static void main(String[] args)
-      {
-            ResourceSystem.DISABLE_LOGS = true;
-
-
-            ResourceSystem.getArchives().add(new FileArchive("E:/emu/rpcs3/dev_hdd0/game" +
-                                                             "/NPUA80662" +
-                                                             "/USRDIR/data.farc"));
-            ResourceSystem.getArchives().add(new FileArchive("E:/emu/rpcs3/dev_hdd0/game" +
-                                                             "/NPUA80662" +
-                                                             "/USRDIR/patches/cumulative_0133" +
-                                                             ".farc"));
-            ResourceSystem.getDatabases().add(new FileDB("E:/emu/rpcs3/dev_hdd0/game/NPUA80662" +
-                                                         "/USRDIR" +
-                                                         "/output/blurayguids.map"));
-            ResourceSystem.getDatabases().add(new FileDB("E:/emu/rpcs3/dev_hdd0/game/NPUA80662" +
-                                                         "/USRDIR" +
-                                                         "/output/brg_patch.map"));
-            ResourceSystem.getArchives().add(new SaveArchive("E:/emu/rpcs3/dev_hdd0/game" +
-                                                             "/BCUS98245_USER1/USRDIR/bigfart28"));
-
-
-            // RPlan plan = new Resource("C:/Users/Aidan/Downloads/louis.plan").loadResource(RPlan
-            // .class);
-            RPlan plan = ResourceSystem.load(new ResourceDescriptor(
-                    "da281942ea0bb528655aecec151985ab0630ca9d", ResourceType.PLAN), RPlan.class);
-
-
-            // ResourceSystem.getArchives().add(new FileArchive("F:/cache/orbis/base_001.farc"));
-            // ResourceSystem.getArchives().add(new FileArchive("F:/cache/orbis/chunk1_001.farc"));
-            // ResourceSystem.getArchives().add(new FileArchive("F:/cache/orbis/craftworld_001
-            // .farc"));
-            // ResourceSystem.getArchives().add(new FileArchive("F:/cache/orbis/intro_001.farc"));
-            // ResourceSystem.getArchives().add(new FileArchive("F:/cache/orbis/patch_001.farc"));
-
-            // ResourceSystem.getDatabases().add(new FileDB("F:/cache/orbis/orbisguids.map"));
-            // FileDB database = new FileDB("F:/cache/orbis/orbisguids.map");
-            // RemapDB remap = new RemapDB(new File("F:/cache/orbis/orbisguids.remap"));
-            // for (RemapDBRow row : remap) {
-            //     FileDBRow source = database.get(row.getFrom());
-            //     if (source == null) continue;
-            //     source.setPath(row.getPath());
-            //     source.setGUID(row.getTo());
-            // }
-            // ResourceSystem.getDatabases().add(database);
-
-            // Thing thing = plan.getThings()[0];
-            SceneExporter exporter = new SceneExporter();
-            // exporter.registerPlan(plan);
-            exporter.registerPlan(plan);
-            // SceneExporter exporter = new SceneExporter();
-            // exporter.registerModel("Sackboy", new ResourceDescriptor(1087, ResourceType.MESH),
-            // null, new MeshConfig());
-
-            exporter.export("C:/Users/Aidan/Desktop/Sackboy.GLB");
-
-
-            // exporter.registerThing(thing);
-            // exporter.registerPlan(plan);
-
-
-            // RLevel level = ResourceSystem.load(new ResourceDescriptor
-            // ("2c0bb9c0432b8c4ad8a5c67b0ad39b9118c34dc7", ResourceType.LEVEL), RLevel.class);
-            // exporter.registerLevel(level);
-            // exporter.export("C:/Users/Aidan/Desktop/test.glb");
-
-
-            // RMesh mesh = ResourceSystem.load(new ResourceDescriptor(1087, ResourceType.MESH),
-            // RMesh.class);
-            // byte[] png = new MultiMaterialBaker(mesh, new ResourceDescriptor[] {
-
-            //     new ResourceDescriptor(9698, ResourceType.GFX_MATERIAL),
-            //     new ResourceDescriptor(7572, ResourceType.GFX_MATERIAL),
-            //     new ResourceDescriptor(7570, ResourceType.GFX_MATERIAL),
-
-            // }, BrdfPort.SPECULAR).BakeToPNG();
-            // FileIO.write(png, "C:/Users/Aidan/Desktop/test.png");
       }
 }

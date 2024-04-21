@@ -35,6 +35,8 @@ import javax.swing.tree.TreePath;
  */
 public class ResourceSystem
 {
+      // These are only temporarily here until, well, if, I 
+      // completely untangle this class from the GUI mode.
       public static Runnable TriggerWorkSpaceUpdate;
       public static Supplier<Fart[]> GetSelectedCaches;
       public static Consumer<JTree> TreeSelectionListener;

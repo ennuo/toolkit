@@ -27,24 +27,6 @@ public class ResPtr<T extends Resource>
 
     public ResPtr()
     {
-        System.out.println();
-        System.out.println();
-        System.out.println();
         type = ResourceType.INVALID;
-
-        // System.out.println(TypeToken.get(null));
-        System.out.println(new TypeToken<ResPtr<T>>() {}.getRawType());
-
-
     }
-
-
-    public static void main(String[] args) {
-        ResPtr<RMesh> mesh = new ResPtr<>();
-
-
-
-
-    }
-
 }
