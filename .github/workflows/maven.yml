@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v3.0.0
         with:
           name: Toolkit - Linux amd64
-          path: toolkit/target/toolkit.jar
+          path: toolkit/target/*.jar
 
       - name: Build with Maven - macOS aarch64
         run: mvn -B package --file pom.xml -P lwjgl-natives-macos-aarch64
@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v3.0.0
         with:
           name: Toolkit - macOS aarch64
-          path: toolkit/target/toolkit.jar
+          path: toolkit/target/*.jar
 
       - name: Build with Maven - macOS x86_64
         run: mvn -B package --file pom.xml -P lwjgl-natives-macos-x86_64
@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v3.0.0
         with:
           name: Toolkit - macOS x86_64
-          path: toolkit/target/toolkit.jar
+          path: toolkit/target/*.jar
 
       - name: Build with Maven - Windows amd64
         run: mvn -B package --file pom.xml -P lwjgl-natives-windows-amd64
@@ -53,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v3.0.0
         with:
           name: Toolkit - Windows amd64
-          path: toolkit/target/toolkit.jar
+          path: toolkit/target/*.jar
