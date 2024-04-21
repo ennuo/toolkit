@@ -15,42 +15,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Build with Maven - Linux amd64
-      run: mvn -B package --file pom.xml -P lwjgl-natives-linux-amd64
-    - name: Upload a Build Artifact - Linux amd64
-      uses: actions/upload-artifact@v3.0.0
-      with:
-        name: Toolkit - Linux amd64
-        path: target/*.jar
+      - name: Build with Maven - Linux amd64
+        run: mvn -B package --file pom.xml -P lwjgl-natives-linux-amd64
+      - name: Upload a Build Artifact - Linux amd64
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: Toolkit - Linux amd64
+          path: target/*.jar
 
-    - name: Build with Maven - macOS aarch64
-      run: mvn -B package --file pom.xml -P lwjgl-natives-macos-aarch64
-    - name: Upload a Build Artifact - macOS aarch64
-      uses: actions/upload-artifact@v3.0.0
-      with:
-        name: Toolkit - macOS aarch64
-        path: target/*.jar
+      - name: Build with Maven - macOS aarch64
+        run: mvn -B package --file pom.xml -P lwjgl-natives-macos-aarch64
+      - name: Upload a Build Artifact - macOS aarch64
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: Toolkit - macOS aarch64
+          path: target/*.jar
 
-    - name: Build with Maven - macOS x86_64
-      run: mvn -B package --file pom.xml -P lwjgl-natives-macos-x86_64
-    - name: Upload a Build Artifact - macOS x86_64
-      uses: actions/upload-artifact@v3.0.0
-      with:
-        name: Toolkit - macOS x86_64
-        path: target/*.jar
+      - name: Build with Maven - macOS x86_64
+        run: mvn -B package --file pom.xml -P lwjgl-natives-macos-x86_64
+      - name: Upload a Build Artifact - macOS x86_64
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: Toolkit - macOS x86_64
+          path: target/*.jar
 
-    - name: Build with Maven - Windows amd64
-      run: mvn -B package --file pom.xml -P lwjgl-natives-windows-amd64
-    - name: Upload a Build Artifact - Windows amd64
-      uses: actions/upload-artifact@v3.0.0
-      with:
-        name: Toolkit - Windows amd64
-        path: target/*.jar
+      - name: Build with Maven - Windows amd64
+        run: mvn -B package --file pom.xml -P lwjgl-natives-windows-amd64
+      - name: Upload a Build Artifact - Windows amd64
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: Toolkit - Windows amd64
+          path: target/*.jar

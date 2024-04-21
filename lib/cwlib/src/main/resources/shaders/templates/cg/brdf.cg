@@ -1,0 +1,802 @@
+#define NO_FLAGS (0)
+
+// LBP2 compile flags
+#define DECALS (1 << 0)
+#define WATER_CAUSTICS (1 << 1)
+#define SPRITELIGHT (1 << 2)
+#define BAKED_AO (1 << 3)
+#define DYNAMIC_AO (1 << 4)
+#define AO_FLAGS (BAKED_AO | DYNAMIC_AO)
+#define BAKED_SHADOWS (1 << 5)
+#define DYNAMIC_SHADOWS (1 << 6)
+#define SHADOW_FLAGS (BAKED_SHADOWS | DYNAMIC_SHADOWS)
+
+// LBP1 compile flags
+#define DEFERRED (1 << 7)
+#define DEFERRED_NORMAL_PASS (1 << 8)
+
+// Make shader PSSL compatible.
+#define ORBIS (1 << 15)
+
+// Material properties
+#define SPECULAR (1 << 9)
+#define NORMAL (1 << 10)
+#define ALPHA (1 << 11)
+#define REFRACT (1 << 12)
+#define GLOW (1 << 13)
+#define GLASS (1 << 14)
+#define ST7 (1 << 22)
+#define ANISO (1 << 16)
+#define TRANS (1 << 17)
+#define COLOR_CORRECTION (1 << 18)
+#define FUZZ (1 << 19)
+#define BRDF_REFLECTANCE (1 << 20)
+#define LIGHTING_RAMP (1 << 21)
+
+// Receive flags
+#define RECEIVE_SHADOWS (1 << 22)
+#define RECEIVE_SUN (1 << 23)
+#define RECEIVE_SPRITELIGHTS (1 << 24)
+
+// LBP2 alpha modes
+#define BLEND_MODE_DISABLE 0
+#define BLEND_MODE_ALPHA_BLEND 1
+#define BLEND_MODE_ADDITIVE 2
+#define BLEND_MODE_ADDITIVE_NO_ALPHA 3
+#define BLEND_MODE_PREMULTIPLIED_ALPHA 4
+
+// Set this variable to define what maps this material uses.
+#define PROPERTIES ENV.MATERIAL_PROPERTIES
+
+// Set this variable to define how this shader is compiled.
+// Refer to charts below for appropriate configurations.
+#define FLAGS ENV.COMPILE_FLAGS
+
+// Set this variable to define how alpha is handled.
+// Only available in LBP2 onward.
+#define ALPHA_MODE ENV.ALPHA_MODE
+
+// LBP1 Shaders
+
+// FLAGS[0] = DEFERRED_NORMAL_PASS
+// FLAGS[1] = DEFERRED
+// FLAGS[2] = DEFERRED | DECALS
+// FLAGS[3] = DEFERRED | WATER_CAUSTICS
+
+// LBP2 Shaders
+
+// FLAGS[0] = BAKED_AO | BAKED_SHADOWS
+// FLAGS[1] = SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO | DECALS
+// FLAGS[2] = SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO
+// FLAGS[3] = SPRITELIGHT | SHADOW_FLAGS | AO_FLAGS
+
+// FLAGS[4] = WATER_CAUSTICS | BAKED_AO | BAKED_SHADOWS
+// FLAGS[5] = WATER_CAUSTICS | SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO | DECALS
+// FLAGS[6] = WATER_CAUSTICS | SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO
+// FLAGS[7] = WATER_CAUSTICS | SPRITELIGHT | SHADOW_FLAGS | AO_FLAGS
+
+// FLAGS[8] = NO_FLAGS
+// FLAGS[9] = DECALS
+
+#if (FLAGS & ORBIS)
+    #define SAMPLE_2D(sampler, uv) sampler##_tex.Sample(sampler##_smp, uv)
+    #define SAMPLE_3D(sampler, uv) sampler##_tex.Sample(sampler##_smp, uv)
+    #define SAMPLE_3D_LOD(sampler, locd) sampler##_tex.SampleLOD(sampler##_smp, locd.xyz, locd.w)
+    #define SAMPLE_2D_PROJ(sampler, value) sampler##_tex.Sample(sampler##_smp, float2(value.x, value.y) / value.w)
+
+    #define CREATE_SAMPLER_2D(name, index) SamplerState name##_smp: register(s##index); Texture2D name##_tex : register(t##index)
+    #define CREATE_SAMPLER_3D(name, index) SamplerState name##_smp: register(s##index); Texture3D name##_tex : register(t##index)
+#else
+    #define SAMPLE_2D(sampler, uv) tex2D(sampler, uv)
+    #define SAMPLE_3D(sampler, uv) tex3D(sampler, uv)
+    #define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, locd)
+    #define SAMPLE_2D_PROJ(sampler, value) tex2Dproj(sampler, value)
+    #define SAMPLE_2D_BIAS(sampler, uv, blur) tex2Dbias(sampler, uv, blur)
+
+    #define CREATE_SAMPLER_2D(name, index) sampler2D name: TEXUNIT##index
+    #define CREATE_SAMPLER_3D(name, index) sampler3D name: TEXUNIT##index
+#endif
+
+float AlphaTestLevel = ENV.ALPHA_TEST_LEVEL;
+
+float CosinePower = ENV.COSINE_POWER;
+
+float BumpLevel = ENV.BUMP_LEVEL;
+
+float ReflectionBlur = ENV.REFLECTION_BLUR;
+float RefractiveIndex = ENV.REFRACTIVE_INDEX;
+
+float FresnelFalloffPower = ENV.FRESNEL_FALLOFF_POWER;
+float FresnelMultiplier = ENV.FRESNEL_MULTIPLIER;
+float FresnelOffset = ENV.FRESNEL_OFFSET;
+float FresnelShift = ENV.FRESNEL_SHIFT;
+
+float FuzzLightingBias = ENV.FUZZ_LIGHTING_BIAS;
+float FuzzLightingScale = ENV.FUZZ_LIGHTING_SCALE;
+
+float IridescenceRoughness = ENV.IRIDESCENCE_ROUGHNESS;
+
+float normal_mul = 0.15;
+float normal_add = 0.5;
+
+float rim_round = 0.9;
+
+#if ((FLAGS & DEFERRED) == 0)
+    uniform float3 sunpos;
+    uniform float2 lightscaleadd;
+
+    uniform float3 rimcol2, ambcol, suncol;
+    float3 rimcol = float3(0.5, 0.4, 0.3);
+
+    #if (PROPERTIES & GLASS)
+        float2 oores = float2(0.00078125, 0.00138889);
+    #endif
+
+    #if (FLAGS & BAKED_AO)
+        uniform float4 aotweak;
+        CREATE_SAMPLER_2D(aomap, 8);
+    #endif
+
+    #if (FLAGS & BAKED_SHADOWS)
+        CREATE_SAMPLER_2D(shadowmap, 14);
+    #endif
+
+    #if (FLAGS & DYNAMIC_SHADOWS)
+        CREATE_SAMPLER_2D(shadowtex, 12);
+        uniform float3 zmul;
+    #endif
+
+    #if (FLAGS & DYNAMIC_AO)
+        CREATE_SAMPLER_3D(tex, 9);
+        CREATE_SAMPLER_3D(tex_lo, 10);
+    #endif
+
+    #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
+        uniform float4 minaabb, maxaabb;
+        uniform float4 maxaabb_add, maxaabb_normal;
+    #endif
+
+    #if (FLAGS & SPRITELIGHT)
+        CREATE_SAMPLER_3D(sprlight_itex, 7);
+        CREATE_SAMPLER_3D(sprlight_wstex, 11);
+    #endif
+
+    #if (FLAGS & WATER_CAUSTICS)
+        uniform float4 watertweaks, causticuvscale;
+        CREATE_SAMPLER_2D(caustic_tex, 6);
+    #endif
+
+    uniform float4 fogccparams;
+
+#endif
+
+uniform float4 fogcol;
+uniform float4 tintcol;
+
+#if (FLAGS & ORBIS)
+    uniform float4 miscparams, dynamicWetnessParams, alphatestparams; 
+#endif
+
+CREATE_SAMPLER_2D(s0, 0);
+CREATE_SAMPLER_2D(s1, 1);
+CREATE_SAMPLER_2D(s2, 2);
+CREATE_SAMPLER_2D(s3, 3);
+CREATE_SAMPLER_2D(s4, 4);
+CREATE_SAMPLER_2D(s5, 5);
+CREATE_SAMPLER_2D(s6, 6);
+CREATE_SAMPLER_2D(s7, 7);
+
+
+#if (FLAGS & DECALS)
+    #if ((FLAGS & DEFERRED) != 0)
+        CREATE_SAMPLER_2D(itex, 10);
+        CREATE_SAMPLER_2D(wstex, 11);
+    #else
+        CREATE_SAMPLER_2D(itex, 8);
+        CREATE_SAMPLER_2D(wstex, 14);
+    #endif
+#endif
+
+#if ((FLAGS & DEFERRED) && ((FLAGS & DEFERRED_NORMAL_PASS) == 0))
+    CREATE_SAMPLER_2D(lbuf, 12);
+    CREATE_SAMPLER_2D(zbuf, 13);
+    CREATE_SAMPLER_2D(nbuf, 14);
+#endif
+
+CREATE_SAMPLER_2D(cbuf, 15);
+
+// #if (FLAGS & ORBIS)
+//     CREATE_SAMPLER_3D(bouncevolcol, 16);
+//     CREATE_SAMPLER_3D(bouncevoldir, 17);
+// #endif
+
+#if (PROPERTIES & NORMAL)
+float3 NormalMap(float4 iNormal, float4 iTangent, float4 iSample) {
+    float2 n = iSample.yx;
+    n.y = 1.0 - n.y;
+    n -= 0.501953;
+
+    float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
+    float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
+    return v / length(v);
+}
+
+float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump) {
+    #if (FLAGS & ORBIS)
+        float2 bump = iBump.yw - 0.501961;
+        float3 bitangent = cross(iTangent.xyz, iNormal.xyz);
+        float3 normal = normalize(
+            (iNormal.xyz * sqrt(abs(dot(bump, bump) - 0.25))) - 
+            (BumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
+        );
+        return normal;
+    #else
+        float2 n = iBump.yw - 0.501953;
+        float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
+        float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
+        return v / length(v);
+    #endif
+}
+
+float3 GetNormalFromTexture(float4 iNormal, float4 iTangent, float4 iUV, float4 iColor) {
+ENV.AUTO_NORMAL_SETUP
+}
+#endif
+
+#if (PROPERTIES & REFRACT)
+float4 GetReflection(float2 iUV) {
+ENV.AUTO_REFLECTION_SETUP
+}
+#endif
+
+#if (PROPERTIES & SPECULAR)
+float4 GetSpecularColor(float4 iUV, float4 iColor) {
+ENV.AUTO_SPECULAR_SETUP
+}
+#endif
+
+float4 GetDiffuseColor(float4 iUV, float4 iColor) {
+ENV.AUTO_DIFFUSE_SETUP
+}
+
+#if (PROPERTIES & GLOW)
+float4 GetGlowColor(float4 iUV, float4 iColor) {
+ENV.AUTO_GLOW_SETUP
+}
+#endif
+
+#if (PROPERTIES & ALPHA)
+float4 GetAlpha(float4 iUV, float4 iColor) {
+ENV.AUTO_ALPHA_SETUP
+}
+#endif
+
+#if (PROPERTIES & ST7)
+float4 GetST7Sample(float4 iUV, float4 iColor) {
+ENV.AUTO_ST7_SETUP
+}
+#endif
+
+#if (PROPERTIES & ANISO)
+float4 GetAniso(float4 iUV, float4 iColor) {
+ENV.AUTO_ANISO_SETUP
+}
+#endif
+
+#if (PROPERTIES & COLOR_CORRECTION)
+float4 GetColorCorrection(float2 iUV, float4 iColor) {
+ENV.AUTO_COLOR_CORRECTION_SETUP
+}
+#endif
+
+#if (PROPERTIES & FUZZ)
+float4 GetFuzz(float4 iUV, float4 iColor) {
+ENV.AUTO_FUZZ_SETUP
+}
+#endif
+
+#if (PROPERTIES & LIGHTING_RAMP)
+float4 GetLightingRamp(float2 iUV, float4 iColor) {
+ENV.AUTO_RAMP_SETUP
+}
+#endif
+
+#if (FLAGS & DECALS)
+float4 GetDecals(float3 iDecalUV) {
+    float2 dcoord = (frac(iDecalUV.xy * 256.0) * 127.0 + floor(SAMPLE_2D(itex, iDecalUV.xy).xy * 32640.0 + 0.5) + 0.5) * 0.000488281;
+    return SAMPLE_2D(wstex, dcoord);
+}
+#endif
+
+#if ((FLAGS & DEFERRED) == 0)
+    #if ((FLAGS & SPRITELIGHT) || (FLAGS & DYNAMIC_AO))
+    float3 GetWorldPos(float4 iVec2Eye) {
+        return (((iVec2Eye - minaabb) * maxaabb) + maxaabb_add).xyz;
+    }
+    #endif
+    
+    #if (FLAGS & DYNAMIC_AO)
+    float DynamicAO(float4 iVec2Eye, float3 iNormal) {
+        float4 aoNormal = float4(iNormal, 1.0);
+        float4 worldPos = float4(GetWorldPos(iVec2Eye), 0.0);
+        aoNormal.y += 0.75; // push towards the sky
+        aoNormal.xyz *= maxaabb_normal.xyz;
+
+        worldPos.xyz += aoNormal.xyz;
+
+        float ao = SAMPLE_3D_LOD(tex, worldPos).z;
+        worldPos.xyz += aoNormal.xyz;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
+        worldPos.xyzw += aoNormal.xyzw;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
+        worldPos.xyzw += aoNormal.xyzw;
+        ao += SAMPLE_3D_LOD(tex_lo, worldPos).z;
+        
+        return 1 - ao * minaabb.w;
+    }
+    #endif
+
+    #if (FLAGS & AO_FLAGS)
+    float GetAO(float3 iNormal, float4 iVec2Eye, float2 iLightmapUV) {
+        #if ((FLAGS & AO_FLAGS) == AO_FLAGS)
+            float ao = DynamicAO(iVec2Eye, iNormal);
+            return min(ao, (SAMPLE_2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y);
+        #elif (FLAGS & DYNAMIC_AO)
+            return DynamicAO(iVec2Eye, iNormal);
+        #elif (FLAGS & BAKED_AO)
+            return (SAMPLE_2D(aomap, iLightmapUV).w * aotweak.x) + aotweak.y;
+        #endif
+    }
+    #endif
+
+
+    #if (FLAGS & DYNAMIC_SHADOWS)
+    float GetDynamicShadow(float4 iShadowMapPosition, float4 iVec2Eye) {
+        float3 lightVec = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
+        float shadowPos = (abs(dot(lightVec, lightVec)) / length(lightVec)) - lightscaleadd.y;
+        float shadow = 1.0;
+        if (shadowPos < 1.0) {
+            float4 shadowProj = SAMPLE_2D_PROJ(shadowtex, iShadowMapPosition);
+            float2 s = (shadowProj.zw * 0.03125) + shadowProj.xy;
+
+            float h4x = s.x - shadowPos; 
+            s.y = saturate((-s.x * s.x) + s.y) + 0.00005;
+            float r3w = s.y / (pow(h4x, 2) + s.y);
+            r3w += saturate((iVec2Eye.z * zmul.x) + zmul.y);
+
+            shadow = saturate(max(0.0 <= h4x, r3w));
+        }
+        return shadow;
+    }
+    #endif
+
+    #if (FLAGS & SHADOW_FLAGS)
+    float GetShadow(float4 iShadowMapPosition, float2 iLightmapUV, float4 iVec2Eye) {
+        #if ((FLAGS & SHADOW_FLAGS) == SHADOW_FLAGS)
+            float shadow = GetDynamicShadow(iShadowMapPosition, iVec2Eye);
+            return min(shadow, SAMPLE_2D(shadowmap, iLightmapUV).x);
+        #elif (FLAGS & BAKED_SHADOWS)
+            return SAMPLE_2D(shadowmap, iLightmapUV).x; // baked shadow, is this used for static meshes?
+        #elif (FLAGS & DYNAMIC_SHADOWS)
+            return GetDynamicShadow(iShadowMapPosition, iVec2Eye);
+        #endif
+    }
+    #endif
+
+    #if (FLAGS & WATER_CAUSTICS)
+    float2 GetCaustic(float4 iVec2Eye, float3 iLightVec, float iNdotL, float iShadow) {
+        float waterDirection = max(watertweaks.y - iVec2Eye.y, 0.0);
+        float causticScale = 1.0, causticOverlay = 0.0;
+        if (waterDirection > 0.0) {
+            float2 causticuv = (iVec2Eye.xz * causticuvscale.xy) + causticuvscale.zw;
+            causticuv += ((iLightVec.xz * waterDirection) * 0.00005);
+            
+            float caustic = SAMPLE_2D(caustic_tex, causticuv).x - 0.5;
+            caustic *= (saturate((iShadow * saturate(-iNdotL)) + 0.125) * max((-waterDirection * 0.000025) + 1.0, 0.0));
+
+            float direction = min(waterDirection * 0.0125, 1.0);
+
+            caustic *= (3.0 * direction);
+
+            causticOverlay = max(min(caustic, 0.25), -0.25);
+            causticScale = ((causticOverlay * direction) - direction) + 1.0;
+        }
+
+        return float2(causticScale, causticOverlay);
+    }
+    #endif
+#endif
+
+#if (FLAGS & DEFERRED)
+
+#if (FLAGS & WATER_CAUSTICS)
+    #define DEFERRED_POS_OFFSET float2(0.003125, 0.00555556)
+    #define DEFERRED_ZBUF_OFFSET float2(0.00078125, 0.0)
+    #define DEFERRED_LNBUF_OFFSET (zbfs * 0.199219)
+#else
+    #define DEFERRED_POS_OFFSET float2(0.00078125, 0.00138889)
+    #define DEFERRED_ZBUF_OFFSET float2(0.000195313, 0.0)
+    #define DEFERRED_LNBUF_OFFSET (zbfs * 0.0498047)
+#endif
+
+float2 encode(float3 normal) {
+    float2 encoded = normal.xy;
+    float z = length(normal + float3(0.0, 0.0, 1.0));
+    return (encoded / z / 2.0) + 0.5;
+}
+
+float3 decode(float2 encoded_normal) {
+    float2 n = (encoded_normal * 2.0) - 1.0;
+    float z = 1.0 - dot(n, n);
+    float3 normal = float3(n, abs(z) / sqrt(z)) / rsqrt(z) * 2.0;
+    normal.z -= 1.0;
+    return normal;
+}
+
+// LBP1 main
+void main(
+    float4 iUV: TEXCOORD0,
+    float4 iTangent: TEXCOORD1,
+    float4 iNormal: TEXCOORD2,
+    float3 iDecalUV: TEXCOORD3,
+    float3 iVec2Eye: TEXCOORD4,
+    float4 iPositionNew: TEXCOORD5,
+    float4 iPositionOld: TEXCOORD6,
+
+    float4 iWorldPos: WPOS,
+    float4 iColor: COLOR0,
+
+    out half4 fragColor
+) {
+    #if (PROPERTIES & ALPHA)
+        float4 alpha = GetAlpha(iUV, iColor);
+        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+            if (GetAlpha(iUV, iColor).x < AlphaTestLevel) discard;
+        #else
+            if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
+        #endif
+    #endif
+
+    // First normal pass shader
+    #if ((FLAGS & DEFERRED_NORMAL_PASS) == (DEFERRED_NORMAL_PASS))
+        #if (PROPERTIES & NORMAL)
+            float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+        #else
+            float3 normal = normalize(iNormal.xyz);
+        #endif
+
+        float2 delta = ((iPositionNew.xy / iPositionNew.w) - (iPositionOld.xy / iPositionOld.w)) * 4.0;
+        fragColor = half4(
+            encode(normal),
+            half2(delta.x, -delta.y) + 0.503922
+        );
+    // The actual color shaders
+    #else
+        float2 pos = iWorldPos.xy * DEFERRED_POS_OFFSET;
+        pos.y = 1.0 - pos.y;
+
+        float zbfs = SAMPLE_2D(zbuf, pos - DEFERRED_ZBUF_OFFSET).w;
+
+        // In LBP1, the left side of the normal buffer has transparency.
+        #if (PROPERTIES & GLASS)
+            float2 pixelPos = float2(-DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
+        #else
+            float2 pixelPos = float2(DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
+        #endif
+
+        #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT) || (PROPERTIES & LIGHTING_RAMP))
+            float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
+            float3 normal = decode(nbfs);
+        #endif
+
+        float4 lbfs = SAMPLE_2D(lbuf, pixelPos);
+
+        float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+        #if (FLAGS & DECALS)
+            float4 decals = GetDecals(iDecalUV);
+            diffuse = (diffuse * decals.w) + decals.xyz;
+        #endif
+
+        #if (PROPERTIES & LIGHTING_RAMP)
+            float toon_dot = dot(iVec2Eye.xyz , normal) / length(iVec2Eye.xyz) * 0.5;
+            diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
+        #endif
+
+        float3 prod = pow(lbfs.xyz, 2);
+
+        #if (PROPERTIES & REFRACT)
+            float3 viewDir = normalize(iVec2Eye.xyz);
+            float3 reflection = GetReflection(reflect(viewDir, normal).xy).xyz;
+            reflection *= dot(prod, float3(0.299, 0.587, 0.114));
+        #else
+            float3 reflection = float3(0.0, 0.0, 0.0); // Dummy addition variable.
+        #endif
+
+        #if (PROPERTIES & SPECULAR)
+            float3 specular = GetSpecularColor(iUV, iColor).xyz;
+            float3 lobe = (((lbfs.w * prod) * specular) + (specular * reflection)) * 2;
+        #else
+            float3 lobe = reflection;
+        #endif
+
+        #if (PROPERTIES & GLASS)
+            float2 n = nbfs - 0.501961;
+
+            float2 cuv = (n * (RefractiveIndex * float2(9.0, -16.0))) + (pos + float2(0.000195313, 0.0));
+            cuv.x = (round(cuv.x * 1280.0) * 0.00078125) - 0.000195313;
+            float3 cbfs = SAMPLE_2D(cbuf, cuv).xyz;
+
+            float3 color = ((diffuse * tintcol.xyz) * cbfs) + (lobe * 2) + (prod * pow(saturate(dot(n, n) * 10.0 - 0.5), 2));
+        #else
+            float3 color = (diffuse * prod) + lobe;
+        #endif
+
+        #if (PROPERTIES & GLOW)
+            color += GetGlowColor(iUV, iColor).xyz;
+        #endif
+
+        #if (PROPERTIES & GLASS)
+            fragColor = half4(color, 1.0);
+        #else
+            color = sqrt(abs(color * tintcol.rgb));
+            color = saturate(iDecalUV.z) * (-color + fogcol.xyz) + color;
+
+            float factor = max(max(color.x, max(color.y, color.z)), 1.0);
+            fragColor = half4(
+                color / factor,
+                (1.0 / factor) / 2
+            );
+        #endif
+    #endif
+}
+#else
+
+
+// XYZ = Diffuse Light Color, W = Specular Lobe
+float4 GetLight(float3 iNormal, float4 iVec2Eye, float4 iShadowMapPosition, float2 iLightmapUV) {
+    float3 viewVec = normalize(iVec2Eye.xyz);
+    #if (FLAGS & ORBIS)
+        float3 halfVec = normalize((iVec2Eye.xyz - sunpos) + (viewVec * float3(3.0, 1.0, 1.0)));
+        float3 reflectVec = reflect(halfVec, iNormal);
+    #else
+        float3 reflectVec = reflect(viewVec, iNormal);
+    #endif
+
+    float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
+
+    float NdotV = dot(iNormal, viewVec);
+    float RdotL = dot(reflectVec, lightVec);
+    float NdotL = dot(iNormal, lightVec); 
+
+    #if ((FLAGS & AO_FLAGS) && (FLAGS & RECEIVE_SHADOWS))
+        float ao = GetAO(iNormal, iVec2Eye, iLightmapUV);
+    #else
+        float ao = 1.0; // Dummy multiplication variable, will be optimized out.
+    #endif
+
+    #if ((FLAGS & SHADOW_FLAGS) && (FLAGS & RECEIVE_SHADOWS))
+        float shadow = GetShadow(iShadowMapPosition, iLightmapUV, iVec2Eye);
+    #else
+        float shadow = 1.0; // Dummy multiplication variable, will be optimized out.
+    #endif
+
+    #if (FLAGS & WATER_CAUSTICS)
+        float2 caustic = GetCaustic(iVec2Eye, lightVec, NdotL, shadow);
+    #endif
+
+    // ...ambient a simple 2 color hemisphere
+    float3 color = ((iNormal.y * normal_mul) + normal_add) * ambcol;
+
+    #if (FLAGS & RECEIVE_SHADOWS)
+        #if (FLAGS & AO_FLAGS)
+            color *= ao;
+        #endif
+
+        #if (FLAGS & WATER_CAUSTICS)
+            color += (color * caustic.y);
+            color += ((((shadow * saturate(-NdotL)) * ao) * caustic.x) * suncol);
+        #else
+            color += ((ao * (shadow * saturate(-NdotL))) * suncol);
+        #endif
+
+        // ... the 2 rim lights are lerp'ed between based on sunlight shadow
+        color += (shadow * saturate(
+            // based on (V.N)^2 w/ bias & scale
+            pow(saturate(NdotV + rim_round), 2) * 
+            lerp(rimcol, rimcol2, (iNormal.y + 1.0) / 2.0)
+        ));
+    #else
+        #if (FLAGS & WATER_CAUSTICS)
+            color += (color * caustic.y);
+        #endif
+        color += suncol;
+
+        color += (saturate(
+            pow(saturate(NdotV + rim_round), 2) * 
+            (rimcol2 * ((iNormal.y + 1.0) / 2.0))
+        ));
+    #endif
+
+    float specular = pow(saturate(-RdotL), CosinePower);
+
+    #if (FLAGS & ORBIS)
+        specular *= miscparams.x;
+    #endif
+
+    #if ((FLAGS & SPRITELIGHT) && (FLAGS & RECEIVE_SHADOWS) && (FLAGS & RECEIVE_SPRITELIGHTS))
+        float3 worldPos = GetWorldPos(iVec2Eye);
+
+        float3 ws = (SAMPLE_3D(sprlight_wstex, worldPos).xyz - 0.5) * 2.0;
+        ws /= sqrt(dot(ws, ws) + 0.001);
+        float RdotS = saturate(dot(reflectVec, ws));
+        float NdotS = dot(iNormal, ws);
+        float3 spritelight = SAMPLE_3D(sprlight_itex, worldPos).xyz * ao;
+        color += (max((NdotS + 0.2), 0.0) * spritelight);
+        specular += (spritelight * (pow(RdotS, 22.0) * (NdotS > 0.0))).x;
+
+    #endif
+
+    return float4(color, specular);
+}
+
+// LBP2 Main
+void main(
+    #if (FLAGS & ORBIS)
+    float4 iWorldPos: SPOSITION,
+    #else
+    float4 iWorldPos: WPOS,
+    #endif
+    float4 iUV: TEXCOORD0,
+    float4 iTangent: TEXCOORD1,
+    float4 iNormal: TEXCOORD2,
+    float3 iDecalUV: TEXCOORD3,
+    float4 iVec2Eye: TEXCOORD4,
+    float4 iPositionNew: TEXCOORD5,
+    float4 iShadowMapPosition: TEXCOORD6,
+    float2 iLightmapUV: TEXCOORD7,
+
+    float4 iColor: COLOR0,
+    float4 iPlaneCoeff: CLP0,
+
+    out half4 fragColor: COLOR0
+) {
+    if (GetDiffuseColor(iUV, iColor).w < AlphaTestLevel) discard;
+
+    float3 viewVec = normalize(iVec2Eye.xyz);
+    float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
+
+    #if (PROPERTIES & NORMAL)
+        float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+    #else
+        float3 normal = normalize(iNormal.xyz);
+    #endif
+
+    #if (FLAGS & ORBIS)
+        float3 wetness = float3(0.0, 0.0, 0.0);
+        float wetness_factor = 0.0;
+        if (dynamicWetnessParams.x < 0.0) {
+            // Actually implement this at some point.
+        }
+
+    #endif
+
+    float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+    #if (FLAGS & DECALS)
+        float4 decals = GetDecals(iDecalUV);
+        diffuse = (diffuse * decals.w) + decals.xyz;
+    #endif
+
+    // #if (PROPERTIES & COLOR_CORRECTION) 
+    //     float lum = saturate(dot(diffuse, float3(0.3, 0.6, 0.1)));
+    //     diffuse = GetColorCorrection(float2(lum, 0.5), iColor).xyz;
+    // #endif
+
+    #if (PROPERTIES & LIGHTING_RAMP)
+        float3 toon_light = (iVec2Eye.xyz - sunpos) * lightscaleadd.x;
+        float toon_dot = dot(toon_light, normal) / sqrt(dot(toon_light, toon_light)) / 2.0;
+        diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), iColor).xyz;
+    #endif
+
+    float4 light = GetLight(normal, iVec2Eye, iShadowMapPosition, iLightmapUV);
+    float3 prod = light.xyz * light.xyz;
+
+    #if (PROPERTIES & REFRACT)
+        float3 reflection = GetReflection(reflect(viewVec, normal).xy).xyz;
+        reflection *= dot(prod, float3(0.299072, 0.586914, 0.114014));
+    #else
+        float3 reflection = float3(0.0, 0.0, 0.0); // Dummy addition variable.
+    #endif
+
+    #if (PROPERTIES & SPECULAR)
+        float3 specular = GetSpecularColor(iUV, iColor).xyz;
+
+        #if (PROPERTIES & ANISO)
+            float anisoOffset = -0.5;
+            float3 anisoDir = GetAniso(iUV, iColor).xyz;
+
+            float HdotA = dot(normalize(normal + anisoDir), viewVec + lightVec);
+            float aniso = max(0, sin(radians((HdotA + anisoOffset) * 180.0)));
+
+            specular *= aniso;
+        #endif
+
+        float3 lighting = (((light.w * prod) * specular) + (specular * reflection)) * 2.0;
+    #else
+        float3 lighting = reflection;
+    #endif 
+    
+    #if (PROPERTIES & GLASS)
+        float2 wpos = iWorldPos.xy * oores;
+        float2 cuv = (normal.xy * (RefractiveIndex * float2(9.0, -16.0))) + float2(wpos.x, 1.0 - wpos.y);
+        float n = saturate((dot(normal.xy, normal.xy) * 10.0) - 0.5);
+        float3 color = (prod * pow(n, 2)) + ((diffuse * tintcol.xyz) * SAMPLE_2D(cbuf, cuv).xyz) + (lighting * 2.0);
+    #else
+        float3 color = (diffuse * prod) + lighting;
+    #endif
+
+    float illumination = tintcol.w;
+    float factor = saturate(iDecalUV.z);
+
+    #if (PROPERTIES & GLOW)
+        float3 glow = GetGlowColor(iUV, iColor).xyz;
+        color += glow;
+        float r = 1.0 / ((dot(glow, glow) * 4.0) + 1.0);
+        illumination *= (r + ((-r * factor) + factor));
+    #endif
+
+    #if ((PROPERTIES & GLASS) == 0)
+        color = sqrt(abs(color * tintcol.rgb));
+    #endif
+
+    // #if ((PROPERTIES & FUZZ) && (FLAGS & ORBIS))
+    //     float4 fuzz = GetFuzz(iUV, iColor);
+    //     float NdotL = dot(iNormal, lightVec);
+    //     color *= ((suncol * pow(-abs(NdotL) + 1.0, 3)) + (fuzz.z + FuzzLightingBias));
+    //     float v2 = (abs(iPositionNew.w) * tintcol.w) * fuzz.y * fuzz.x;
+    //     if (0.101 > v2 && iPositionNew.z < 0.0) {
+    //         fragColor = float4(color, 1.0);
+    //         return;
+    //     }
+    // #endif
+    
+    float fogcc = ((dot(color, float3(0.3, 0.6, 0.1)) + fogccparams.y) * fogccparams.x) + 1.0;
+    float3 fog = (fogcc * fogcol.xyz) - color;
+    
+    #if (PROPERTIES & ALPHA)
+        float4 alpha = GetAlpha(iUV, iColor);
+
+        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+            illumination = alpha.x * tintcol.w;
+        #elif (ALPHA_MODE != BLEND_MODE_DISABLE)
+            illumination = alpha.w * tintcol.w;
+            if (alpha.w < AlphaTestLevel) illumination = 0.0;
+        #else
+            if (alpha.w < AlphaTestLevel) illumination = 0.0;
+        #endif
+        
+    #endif
+
+    #if (FLAGS & ORBIS)
+        if (alphatestparams.x >= illumination) discard;
+    #endif
+
+    #if (PROPERTIES & ST7)
+        color += (ambcol * GetST7Sample(iUV, iColor).xyz);
+    #endif
+
+    color += (factor * fog);
+
+    #if ((PROPERTIES & ALPHA) && (PROPERTIES & GLOW))
+        color *= illumination;
+    #endif
+
+    #if (FLAGS & ORBIS)
+        color += (wetness_factor * wetness);
+    #endif
+
+    fragColor = half4(
+        color,
+        illumination
+    );
+} 
+#endif
