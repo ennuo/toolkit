@@ -182,7 +182,11 @@ public class RAnimation implements Resource
 
                   for (Vector4f rotation : this.packedRotation)
                   {
-                        stream.i16((short) (Math.round(rotation.x * 0x7fff)));
+                        short xrot = (short)Math.round(rotation.x * 0x7fff);
+                        xrot &= ~1;
+                        if (rotation.w < 0.0f) xrot |= 1;
+
+                        stream.i16(xrot);
                         stream.i16((short) (Math.round(rotation.y * 0x7fff)));
                         stream.i16((short) (Math.round(rotation.z * 0x7fff)));
                   }
@@ -251,8 +255,6 @@ public class RAnimation implements Resource
 
             byte[] animData = stream.bytearray();
 
-            //System.out.println("Length: " + animData.length);
-
             locators = serializer.array(locators, Locator.class);
 
             stream = new MemoryInputStream(animData);
@@ -269,7 +271,6 @@ public class RAnimation implements Resource
             scaledBonesAnimated = new byte[scaleAnims];
             morphsAnimated = new byte[morphAnims];
 
-            // System.out.println("locator keys: " + stream.getOffset());
             if (locatorKeys != 0) stream.bytes(0x4 * locatorKeys);
 
             for (int i = 0; i < rotAnims; ++i) rotBonesAnimated[i] = stream.i8();
@@ -279,50 +280,35 @@ public class RAnimation implements Resource
 
             if (stream.getOffset() % 2 != 0) stream.i8(); // Alignment
 
-            // System.out.println("Data: " + stream.getOffset());
-
             packedRotation = new Vector4f[boneCount + (rotAnims * (numFrames - 1))];
             packedPosition = new Vector4f[boneCount + (posAnims * (numFrames - 1))];
             packedScale = new Vector4f[boneCount + (scaleAnims * (numFrames - 1))];
             packedMorph = new float[morphCount + (morphAnims * (numFrames - 1))];
 
-            // System.out.println("Rotation Size: " + packedRotation.length * 0x6);
-            // System.out.println("Position Size: " + packedPosition.length * 0x6);
-            // System.out.println("Scale Size: " + packedScale.length * 0x6);
-
-            // locatorKeys is 0x6???
-            // 2 locator array 0x1e bytes?
-
-
-            //System.out.println("Rotation Buffer Start: " + stream.getOffset());
-
             for (int i = 0; i < packedRotation.length; ++i)
             {
-                  float x = ((float) stream.i16()) / 0x7FFF;
+                  short xrot = stream.i16();
+                  boolean flag = (xrot & 1) != 0;
+                  xrot &= (short)~1;
+
+                  float x = (float)xrot / 0x7FFF;
                   float y = ((float) stream.i16()) / 0x7FFF;
                   float z = ((float) stream.i16()) / 0x7FFF;
                   float w =
                           (float) Math.sqrt(1 - ((Math.pow(x, 2)) + (Math.pow(y, 2) + (Math.pow(z
                                   , 2)))));
 
-                  packedRotation[i] = new Vector4f(x, y, z, w);
+                  packedRotation[i] = new Vector4f(x, y, z, flag ? -w : w);
             }
-
-            //System.out.println("Position Buffer Start: " + stream.getOffset());
 
             for (int i = 0; i < packedPosition.length; ++i)
                   packedPosition[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
 
-            //System.out.println("Scale Buffer Start: " + stream.getOffset());
-
             for (int i = 0; i < packedScale.length; ++i)
                   packedScale[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), 1.0f);
 
-            //System.out.println("Morph Start: " + stream.getOffset());
             for (int i = 0; i < packedMorph.length; ++i)
                   packedMorph[i] = stream.f16();
-
-            //System.out.println(stream.getOffset());
 
             return;
       }
