@@ -81,7 +81,7 @@ public class InventoryItemDetails implements Serializable
       public boolean copyright;
 
       @GsonRevision(min = 0x182)
-      public NetworkPlayerID creator;
+      public NetworkPlayerID creator = new NetworkPlayerID();
 
       @GsonRevision(min = 0x197)
       public ToolType toolType = ToolType.NONE;

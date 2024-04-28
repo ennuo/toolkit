@@ -1073,22 +1073,18 @@ public class Serializer
        */
       public final <T extends Serializable> T struct(T value, Class<T> clazz)
       {
-            if (this.isWriting)
+            if ((this.isWriting && value == null) || !this.isWriting)
             {
-                  value.serialize(this);
-                  return value;
+                  try { value = clazz.getDeclaredConstructor().newInstance(); }
+                  catch (Exception ex)
+                  {
+                        throw new SerializationException("Failed to create class instance in " +
+                                                         "serializer!");
+                  }
             }
 
-            T struct = null;
-            try { struct = clazz.getDeclaredConstructor().newInstance(); }
-            catch (Exception ex)
-            {
-                  throw new SerializationException("Failed to create class instance in " +
-                                                   "serializer!");
-            }
-
-            struct.serialize(this);
-            return struct;
+            value.serialize(this);
+            return value;
       }
 
       /**
