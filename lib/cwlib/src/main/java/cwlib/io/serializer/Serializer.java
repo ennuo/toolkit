@@ -693,6 +693,31 @@ public class Serializer
             return this.array(things, Thing.class, true);
       }
 
+      public final int adventureCreatureReference(int value)
+      {
+            int subVersion = revision.getSubVersion();
+            if (subVersion <= 0x12a)
+            {
+                  ResourceDescriptor descriptor = null;
+                  if (isWriting())
+                  {
+                        if (value != 0)
+                              descriptor = new ResourceDescriptor(value, ResourceType.PLAN);
+                  }
+                  descriptor = resource(descriptor, ResourceType.PLAN);
+                  if (!isWriting())
+                  {
+                        if (descriptor != null && descriptor.isGUID())
+                              value = (int) descriptor.getGUID().getValue();
+                  }
+            }
+
+            if (subVersion >= 0xc5)
+                  value = s32(value);
+
+            return value;
+      }
+
       /**
        * (De)serializes a resource to/from the stream.
        *
