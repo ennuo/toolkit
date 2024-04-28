@@ -1,6 +1,7 @@
 package cwlib.structs.profile;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 import cwlib.io.Serializable;
@@ -21,8 +22,11 @@ public class StringLookupTable implements Serializable, Iterable<SortString>
             // Let's make sure the indices are sorted.
             if (serializer.isWriting())
             {
+                  sortEnabled = true;
+                  unsorted = false;
                   rawIndexToSortedIndex = new int[stringList.size()];
-                  stringList.stream().sorted((a, z) -> a.string.compareTo(z.string));
+
+                  Collections.sort(stringList, (a, z) -> a.string.compareTo(z.string));
                   for (int i = 0; i < stringList.size(); ++i)
                         rawIndexToSortedIndex[stringList.get(i).index] = i;
             }
@@ -92,6 +96,9 @@ public class StringLookupTable implements Serializable, Iterable<SortString>
        */
       public int find(int key)
       {
+            // LAMS keys shouldn't be 0, treat this as non-existing.
+            if (key == 0) return -1;
+
             for (int i = 0; i < this.stringList.size(); ++i)
             {
                   SortString string = this.stringList.get(i);
@@ -110,12 +117,8 @@ public class StringLookupTable implements Serializable, Iterable<SortString>
        */
       public int add(String string, int key)
       {
-            int index = this.find(key);
-            if (index != -1)
-                  return index;
-            index = this.find(string);
-            if (index != -1)
-                  return index;
+            int index = key != 0 ? this.find(key) : this.find(string);
+            if (index != -1) return index;
 
             index = this.stringList.size();
             this.stringList.add(new SortString(key, string, index));
