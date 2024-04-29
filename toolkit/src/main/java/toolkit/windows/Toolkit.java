@@ -3067,21 +3067,9 @@ public class Toolkit extends javax.swing.JFrame
             }
 
             SaveArchive master = archives[fragments.length - 1];
-
-            // Patch all relevant archives into master
-            for (int id : master.getFragmentIDs())
+            for (SaveArchive archive : archives)
             {
-                  if (id == master.getID())
-                        continue;
-                  SaveArchive archive = archiveIDs.get(id);
-                  if (archive == null)
-                  {
-                        JOptionPane.showMessageDialog(this, "An archive is missing from your " +
-                                                            "savedata!",
-                                "Error!",
-                                JOptionPane.ERROR_MESSAGE);
-                        continue;
-                  }
+                  if (archive == master) continue;
                   master.add(archive);
             }
 
