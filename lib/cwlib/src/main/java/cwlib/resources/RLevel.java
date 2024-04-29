@@ -49,7 +49,7 @@ public class RLevel implements Resource
     public static final int BASE_ALLOCATION_SIZE = 0x8;
 
     @GsonRevision(min = 0x3e6)
-    public SHA1[] crossPlayVitaDependencyHashes;
+    public SHA1[] crossPlayVitaDependencyHashes = new SHA1[0];
 
     public Thing worldThing;
 
@@ -110,7 +110,7 @@ public class RLevel implements Resource
         if (serializer.isWriting()) onStartSave(revision);
 
 
-        if (version >= 0x3e6)
+        if (version > 0x3e6)
         {
             if (!serializer.isWriting())
                 crossPlayVitaDependencyHashes = new SHA1[serializer.getInput().i32()];
