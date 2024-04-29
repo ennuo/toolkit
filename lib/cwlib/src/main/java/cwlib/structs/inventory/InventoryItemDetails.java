@@ -142,7 +142,7 @@ public class InventoryItemDetails implements Serializable
 
             if (serializer.getRevision().getVersion() > 0x37c)
             {
-                  dateAdded = serializer.i64(dateAdded);
+                  dateAdded = serializer.s64(dateAdded);
                   levelUnlockSlotID = serializer.struct(levelUnlockSlotID, SlotID.class);
                   highlightSound = serializer.guid(highlightSound);
                   colour = serializer.i32(colour);
@@ -279,7 +279,7 @@ public class InventoryItemDetails implements Serializable
                         allowEmit = serializer.bool(allowEmit);
 
                   if (head > 0x221)
-                        dateAdded = serializer.i64(dateAdded, true);
+                        dateAdded = serializer.s64(dateAdded, true);
 
                   if (head > 0x222)
                         shareable = serializer.bool(shareable);
@@ -314,7 +314,7 @@ public class InventoryItemDetails implements Serializable
                   serializer.i32(0, true); // Pad
 
 
-            dateAdded = serializer.i64(dateAdded, true);
+            dateAdded = serializer.s64(dateAdded, true);
 
             fluffCost = serializer.i32(fluffCost, true);
 

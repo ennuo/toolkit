@@ -73,7 +73,7 @@ public class RSyncedProfile implements Resource
                   serializer.resource(null, ResourceType.TEXTURE);
 
             timePlayed = serializer.i32(timePlayed);
-            uniqueNumber = serializer.i64(uniqueNumber);
+            uniqueNumber = serializer.u64(uniqueNumber);
 
             if (version > 0x163)
             {

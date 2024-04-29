@@ -83,7 +83,7 @@ public class SceneExporter
 
       public void registerLevel(RLevel level)
       {
-            Thing worldThing = level.world;
+            Thing worldThing = level.worldThing;
 
             // Can't exactly parse the level if there's no
             // existent world.

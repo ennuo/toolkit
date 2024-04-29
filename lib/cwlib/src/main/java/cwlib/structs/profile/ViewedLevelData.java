@@ -24,8 +24,8 @@ public class ViewedLevelData implements Serializable
             lastCommentCount = serializer.i32(lastCommentCount);
             lastPhotoCount = serializer.i32(lastPhotoCount);
             lastAuthorPhotoCount = serializer.i32(lastAuthorPhotoCount);
-            lastStreamEventTimestamp = serializer.i64(lastStreamEventTimestamp);
-            lastViewedTimestamp = serializer.i64(lastViewedTimestamp);
+            lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
+            lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
       }
 
       @Override

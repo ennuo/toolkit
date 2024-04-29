@@ -160,7 +160,7 @@ public class CgAssembler
                   for (int i = 0; i < gmat.shaders.length; ++i)
                         gmat.shaders[i] = convert(gmat.shaders[i], code);
                   MemoryOutputStream stream = new MemoryOutputStream(code.size() * 0x8);
-                  for (long c : code) stream.i64(c);
+                  for (long c : code) stream.u64(c);
                   gmat.code = stream.getBuffer();
             }
             else gmat.code = null;

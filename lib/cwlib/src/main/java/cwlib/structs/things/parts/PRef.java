@@ -24,7 +24,7 @@ public class PRef implements Serializable
       public int oldAliveFrames;
       
       @GsonRevision(max = 0x320)
-      public boolean childrenSelectable = true;
+      public boolean childrenSelectable;
 
       @GsonRevision(min = 0x13d, max = 0x320)
       public boolean stripChildren;

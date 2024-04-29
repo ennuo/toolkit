@@ -57,7 +57,7 @@ public class Pack implements Serializable
             mesh = serializer.resource(mesh, ResourceType.MESH, true);
             slot = serializer.struct(slot, Slot.class);
             contentID = serializer.str(contentID);
-            timestamp = serializer.i64(timestamp);
+            timestamp = serializer.s64(timestamp);
             if (serializer.getRevision().isVita())
                   crossBuyCompatible = serializer.bool(crossBuyCompatible);
       }

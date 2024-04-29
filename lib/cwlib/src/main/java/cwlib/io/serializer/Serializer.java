@@ -335,24 +335,6 @@ public class Serializer
             return this.input.u32(force32);
       }
 
-
-      /**
-       * (De)serializes a long to/from the stream, compressed depending on the flags.
-       *
-       * @param value   Long to write
-       * @param force64 Whether or not to always write 64 bits regardless of compression flags.
-       * @return Long (de)serialized
-       */
-      public final long i64(long value, boolean force64)
-      {
-            if (this.isWriting)
-            {
-                  this.output.i64(value, force64);
-                  return value;
-            }
-            return this.input.i64(force64);
-      }
-
       /**
        * (De)serializes a 32-bit integer to/from the stream.
        *
@@ -381,9 +363,54 @@ public class Serializer
        * @param value Long to write
        * @return Long (de)serialized
        */
-      public final long i64(long value)
+      public final long u64(long value)
       {
-            return this.i64(value, false);
+            return this.u64(value, false);
+      }
+
+      /**
+       * (De)serializes a "signed" long to/from the stream.
+       *
+       * @param value Long to write
+       * @return Long (de)serialized
+       */
+      public final long s64(long value)
+      {
+            return this.s64(value, false);
+      }
+
+      /**
+       * (De)serializes a "signed" long to/from the stream, compressed depending on the flags.
+       *
+       * @param value   Long to write
+       * @param force64 Whether or not to always write 64 bits regardless of compression flags.
+       * @return Long (de)serialized
+       */
+      public final long s64(long value, boolean force64)
+      {
+            if (this.isWriting)
+            {
+                  this.output.s64(value, force64);
+                  return value;
+            }
+            return this.input.s64(force64);
+      }
+
+      /**
+       * (De)serializes a long to/from the stream, compressed depending on the flags.
+       *
+       * @param value   Long to write
+       * @param force64 Whether or not to always write 64 bits regardless of compression flags.
+       * @return Long (de)serialized
+       */
+      public final long u64(long value, boolean force64)
+      {
+            if (this.isWriting)
+            {
+                  this.output.u64(value, force64);
+                  return value;
+            }
+            return this.input.u64(force64);
       }
 
       /**

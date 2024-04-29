@@ -14,15 +14,15 @@ public class Nodes
 {
       public static int childIndex(FileNode node, String header)
       {
-            int index = -1;
             Enumeration<TreeNode> children = node.children();
-            while (index != 0 && children.hasMoreElements())
+            while (children.hasMoreElements())
             {
                   DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-                  if (header.equals(child.getUserObject()))
-                        index = node.getIndex(child);
+                  if (header.equals((String)child.getUserObject()))
+                        return node.getIndex(child);
             }
-            return index;
+            
+            return -1;
       }
 
       public static void loadChildren(ArrayList<FileNode> nodes, FileNode node, boolean isFiltered)

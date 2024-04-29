@@ -192,7 +192,7 @@ public class Thing implements Serializable
             if (isCompressed)
             {
                   // serializer.log("FLAGS");
-                  flags = serializer.i64(flags);
+                  flags = serializer.u64(flags);
             }
 
             // I have no idea why they did this

@@ -44,7 +44,7 @@ public class PPoppetPowerup implements Serializable
 
             if (subVersion > 0x124)
             {
-                  tools = serializer.i64(tools);
+                  tools = serializer.u64(tools);
                   int numItems = serializer.i32(items != null ? items.size() : 0);
                   if (serializer.isWriting())
                   {

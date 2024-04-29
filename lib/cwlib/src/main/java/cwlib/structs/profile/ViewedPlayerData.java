@@ -28,8 +28,8 @@ public class ViewedPlayerData implements Serializable
             lastPhotosWithMeCount = serializer.i32(lastPhotosWithMeCount);
             lastFavouriteSlotsCount = serializer.i32(lastFavouriteSlotsCount);
             lastFavouriteUsersCount = serializer.i32(lastFavouriteUsersCount);
-            lastStreamEventTimestamp = serializer.i64(lastStreamEventTimestamp);
-            lastViewedTimestamp = serializer.i64(lastViewedTimestamp);
+            lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
+            lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
       }
 
       @Override

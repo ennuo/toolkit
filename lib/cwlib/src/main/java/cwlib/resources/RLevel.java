@@ -33,6 +33,7 @@ import cwlib.structs.things.parts.PEffector;
 import cwlib.structs.things.parts.PGameplayData;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
+import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PScript;
 import cwlib.structs.things.parts.PWorld;
 
@@ -43,7 +44,7 @@ public class RLevel implements Resource
       @GsonRevision(min = 0x3e6)
       public SHA1[] crossPlayVitaDependencyHashes;
 
-      public Thing world;
+      public Thing worldThing;
 
       @GsonRevision(min = 0x214)
       public PlayerRecord playerRecord = new PlayerRecord();
@@ -88,7 +89,7 @@ public class RLevel implements Resource
 
             world.things.add(thing);
 
-            this.world = thing;
+            this.worldThing = thing;
       }
 
       @Override
@@ -97,6 +98,10 @@ public class RLevel implements Resource
             Revision revision = serializer.getRevision();
             int version = revision.getVersion();
             int subVersion = revision.getSubVersion();
+
+            // Should move this to a common place at some point.
+            if (serializer.isWriting()) onStartSave(revision);
+
 
             if (version >= 0x3e6)
             {
@@ -113,7 +118,7 @@ public class RLevel implements Resource
                                 serializer.sha1(crossPlayVitaDependencyHashes[i]);
             }
 
-            world = serializer.reference(world, Thing.class);
+            worldThing = serializer.reference(worldThing, Thing.class);
             if (version > 0x213)
                   playerRecord = serializer.struct(playerRecord, PlayerRecord.class);
 
@@ -155,9 +160,35 @@ public class RLevel implements Resource
             if (subVersion >= 0x169)
                   adventureData = serializer.reference(adventureData, AdventureData.class);
 
-            if (!serializer.isWriting() && revision.getVersion() >= 0x341)
+            // Should move this to a common place at some point.
+            if (!serializer.isWriting()) onLoadFinished(revision);
+      }
+
+      private boolean isValidLevel()
+      {
+            // Who's serializing a level without a world thing?
+            if (worldThing == null) return false;
+
+            PWorld world = worldThing.getPart(Part.WORLD);
+
+            // Just in case somebody's serializing a world without a world for whatever reason.
+            if (world == null) return false;
+
+            return true;
+      }
+
+      @Override
+      public void onLoadFinished(Revision revision)
+      {
+            if (!isValidLevel()) return;
+            int version = revision.getVersion();
+            PWorld world = worldThing.getPart(Part.WORLD);
+
+            // If we're reading a file from after local positions stopped being serialized,
+            // generate them.
+            if (version >= 0x341)
             {
-                  for (Thing thing : world.<PWorld>getPart(Part.WORLD).things)
+                  for (Thing thing : world.things)
                   {
                         if (thing == null || thing.parent == null) continue;
 
@@ -175,9 +206,43 @@ public class RLevel implements Resource
             }
       }
 
+      @Override
+      public void onStartSave(Revision revision)
+      {
+            if (!isValidLevel()) return;
+            int version = revision.getVersion();
+            PWorld world = worldThing.getPart(Part.WORLD);
+
+            // If we're writing a file that was originally from after LBP1, we need to
+            // put the backdropPlan as PRef component 
+            if (version < 0x321 && world.backdropPlan != null && world.backdrop != null)
+            {
+                  PRef ref;
+                  if (!world.backdrop.hasPart(Part.REF))
+                  {
+                        ref = new PRef();
+                        world.backdrop.setPart(Part.REF, ref);
+                  }
+                  else ref = new PRef();
+
+                  ref.plan = world.backdropPlan;
+                  ref.childrenSelectable = false;
+                  ref.stripChildren = true;
+            }
+            else if (version >= 0x321 && world.backdropPlan == null && world.backdrop != null)
+            {
+                  PRef ref = world.backdrop.getPart(Part.REF);
+                  if (ref != null)
+                  {
+                        world.backdropPlan = ref.plan;
+                        world.backdrop.setPart(Part.REF, null);
+                  }
+            }
+      }
+
       private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing)
       {
-            PWorld world = (this.world.getPart(Part.WORLD));
+            PWorld world = (this.worldThing.getPart(Part.WORLD));
             if (!things.contains(thing)) things.add(thing);
             for (Thing worldThing : world.things)
             {
@@ -194,7 +259,7 @@ public class RLevel implements Resource
                                                 byte compressionFlags, boolean includeChildren)
       {
             HashMap<String, RPlan> plans = new HashMap<>();
-            PWorld world = this.world.getPart(Part.WORLD);
+            PWorld world = this.worldThing.getPart(Part.WORLD);
             Thing.SERIALIZE_WORLD_THING = false;
             for (Thing thing : world.things)
             {
@@ -220,13 +285,13 @@ public class RLevel implements Resource
 
       public int getNextUID()
       {
-            return ++((PWorld) this.world.getPart(Part.WORLD)).thingUIDCounter;
+            return ++((PWorld) this.worldThing.getPart(Part.WORLD)).thingUIDCounter;
       }
 
       public void addPlan(RPlan plan)
       {
             Thing[] things = plan.getThings();
-            PWorld world = this.world.getPart(Part.WORLD);
+            PWorld world = this.worldThing.getPart(Part.WORLD);
             for (Thing thing : things)
             {
                   if (thing != null)
@@ -246,10 +311,10 @@ public class RLevel implements Resource
             plan.revision = new Revision(0x272, 0x4c44, 0x0017);
             plan.compressionFlags = 0x7;
             ArrayList<Thing> things = new ArrayList<>();
-            PWorld world = ((PWorld) this.world.getPart(Part.WORLD));
+            PWorld world = ((PWorld) this.worldThing.getPart(Part.WORLD));
             for (Thing thing : world.things)
             {
-                  if (thing == this.world) continue;
+                  if (thing == this.worldThing) continue;
                   if (thing == world.backdrop) continue;
 
                   things.add(thing);

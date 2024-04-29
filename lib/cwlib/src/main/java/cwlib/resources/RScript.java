@@ -91,7 +91,7 @@ public class RScript implements Resource
                   MemoryOutputStream stream = serializer.getOutput();
                   stream.i32(sharedBytecode.size());
                   for (Instruction instruction : sharedBytecode)
-                        stream.i64(instruction.getBits());
+                        stream.u64(instruction.getBits());
             }
             else
             {
@@ -100,7 +100,7 @@ public class RScript implements Resource
                   sharedBytecode = new ArrayList<>(count);
                   for (int i = 0; i < count; ++i)
                   {
-                        long code = stream.i64();
+                        long code = stream.u64();
                         InstructionType type = InstructionType.fromValue((int) (code & 0xff));
                         Instruction instruction = null;
                         switch (type.getInstructionClass())

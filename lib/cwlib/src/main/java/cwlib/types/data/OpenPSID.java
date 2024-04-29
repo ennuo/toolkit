@@ -22,8 +22,8 @@ public class OpenPSID implements Serializable
       @Override
       public void serialize(Serializer serializer)
       {
-            high = serializer.i64(high);
-            low = serializer.i64(low);
+            high = serializer.u64(high);
+            low = serializer.u64(low);
       }
 
       @Override

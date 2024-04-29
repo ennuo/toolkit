@@ -75,7 +75,7 @@ public class Descriptor
             }
 
             HashSet<GUID> descriptors = new HashSet<>();
-            PWorld world = level.world.getPart(Part.WORLD);
+            PWorld world = level.worldThing.getPart(Part.WORLD);
             for (Thing thing : world.things)
             {
                   if (thing == null) continue;

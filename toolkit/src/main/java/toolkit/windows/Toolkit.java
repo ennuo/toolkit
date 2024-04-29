@@ -12,7 +12,10 @@ import cwlib.io.serializer.Serializer;
 import cwlib.resources.*;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.inventory.InventoryItemDetails;
+import cwlib.structs.inventory.UserCreatedDetails;
+import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.parts.PStickers;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.SerializedResource;
 import cwlib.types.archives.Fart;
@@ -25,6 +28,7 @@ import cwlib.types.databases.RemapDB;
 import cwlib.types.databases.RemapDB.RemapDBRow;
 import cwlib.types.mods.Mod;
 import cwlib.types.save.BigSave;
+import cwlib.types.save.SaveEntry;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
@@ -733,1712 +737,1499 @@ public class Toolkit extends javax.swing.JFrame
 
       @SuppressWarnings("unchecked")
       // <editor-fold defaultstate="collapsed" desc="Generated
-      // Code">//GEN-BEGIN:initComponents
-      private void initComponents()
-      {
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-            entryContext = new javax.swing.JPopupMenu();
-            extractGroup = new javax.swing.JMenu();
-            extractContext = new javax.swing.JMenuItem();
-            extractDecompressedContext = new javax.swing.JMenuItem();
-            editGroup = new javax.swing.JMenu();
-            editPathContext = new javax.swing.JMenuItem();
-            editHashContext = new javax.swing.JMenuItem();
-            editGUIDContext = new javax.swing.JMenuItem();
-            exportGroup = new javax.swing.JMenu();
-            exportJSONContext = new javax.swing.JMenuItem();
-            exportTextureGroupContext = new javax.swing.JMenu();
-            exportPNG = new javax.swing.JMenuItem();
-            exportDDS = new javax.swing.JMenuItem();
-            exportModelGroup = new javax.swing.JMenu();
-            exportOBJ = new javax.swing.JMenu();
-            exportOBJTEXCOORD0 = new javax.swing.JMenuItem();
-            exportOBJTEXCOORD1 = new javax.swing.JMenuItem();
-            exportOBJTEXCOORD2 = new javax.swing.JMenuItem();
-            exportGLTF = new javax.swing.JMenuItem();
-            exportModGroup = new javax.swing.JMenu();
-            exportAsModCustom = new javax.swing.JMenuItem();
-            exportAsMod = new javax.swing.JMenuItem();
-            exportAsModGUID = new javax.swing.JMenuItem();
-            exportAnimation = new javax.swing.JMenuItem();
-            exportBackupGroup = new javax.swing.JMenu();
-            exportAsBackup = new javax.swing.JMenuItem();
-            exportAsBackupGUID = new javax.swing.JMenuItem();
-            exportPaletteContext = new javax.swing.JMenuItem();
-            newEntryGroup = new javax.swing.JMenu();
-            newResourceGroup = new javax.swing.JMenu();
-            importJSONContext = new javax.swing.JMenuItem();
-            newTextureContext = new javax.swing.JMenuItem();
-            newAnimationContext = new javax.swing.JMenuItem();
-            newModelContext = new javax.swing.JMenuItem();
-            newItemGroup = new javax.swing.JMenu();
-            newStickerContext = new javax.swing.JMenuItem();
-            newEntryContext = new javax.swing.JMenuItem();
-            newFolderContext = new javax.swing.JMenuItem();
-            renameFolder = new javax.swing.JMenuItem();
-            replaceGroup = new javax.swing.JMenu();
-            replaceCompressedContext = new javax.swing.JMenuItem();
-            replaceDecompressedContext = new javax.swing.JMenuItem();
-            replaceDependenciesContext = new javax.swing.JMenuItem();
-            replaceImageContext = new javax.swing.JMenuItem();
-            replaceJSONContext = new javax.swing.JMenuItem();
-            dependencyGroup = new javax.swing.JMenu();
-            removeDependenciesContext = new javax.swing.JMenuItem();
-            removeMissingDependenciesContext = new javax.swing.JMenuItem();
-            duplicateContext = new javax.swing.JMenuItem();
-            copyGroup = new javax.swing.JMenu();
-            zeroContext = new javax.swing.JMenuItem();
-            deleteContext = new javax.swing.JMenuItem();
-            consolePopup = new javax.swing.JPopupMenu();
-            clear = new javax.swing.JMenuItem();
-            metadataButtonGroup = new javax.swing.ButtonGroup();
-            workspace = new javax.swing.JSplitPane();
-            details = new javax.swing.JSplitPane();
-            previewContainer = new javax.swing.JSplitPane();
-            consoleContainer = new javax.swing.JScrollPane();
-            console = new javax.swing.JTextArea();
-            renderPane = new javax.swing.JTabbedPane();
-            overviewPane = new javax.swing.JSplitPane();
-            texture = new javax.swing.JLabel();
-            hex = new tv.porst.jhexview.JHexView();
-            scenePanel = new javax.swing.JPanel();
-            infoCardPanel = new javax.swing.JPanel();
-            fileDataPane = new javax.swing.JSplitPane();
-            tableContainer = new javax.swing.JScrollPane();
-            entryTable = new javax.swing.JTable();
-            entryModifiers = new javax.swing.JTabbedPane();
-            dependencyTreeContainer = new javax.swing.JScrollPane();
-            dependencyTree = new javax.swing.JTree();
-            itemMetadata = new javax.swing.JPanel();
-            LAMSMetadata = new javax.swing.JRadioButton();
-            StringMetadata = new javax.swing.JRadioButton();
-            iconLabel = new javax.swing.JLabel();
-            iconField = new javax.swing.JTextField();
-            titleLabel = new javax.swing.JLabel();
-            descriptionLabel = new javax.swing.JLabel();
-            descriptionField = new javax.swing.JTextArea();
-            titleField = new javax.swing.JTextField();
-            locationLabel = new javax.swing.JLabel();
-            locationField = new javax.swing.JTextField();
-            categoryLabel = new javax.swing.JLabel();
-            categoryField = new javax.swing.JTextField();
-            pageCombo = new javax.swing.JComboBox(InventoryObjectType.values());
-            creatorLabel = new javax.swing.JLabel();
-            creatorField = new javax.swing.JTextField();
-            subCombo = new javax.swing.JTextField();
-            inspectorPane = new javax.swing.JPanel();
-            jLabel1 = new javax.swing.JLabel();
-            jLabel2 = new javax.swing.JLabel();
-            jLabel3 = new javax.swing.JLabel();
-            cameraPosX = new javax.swing.JSpinner();
-            cameraPosY = new javax.swing.JSpinner();
-            cameraPosZ = new javax.swing.JSpinner();
-            resourceTabs = new javax.swing.JTabbedPane();
-            treeContainer = new javax.swing.JSplitPane();
-            search = new javax.swing.JTextField();
-            fileDataTabs = new javax.swing.JTabbedPane();
-            hierachyPanel = new javax.swing.JPanel();
-            progressBar = new javax.swing.JProgressBar();
-            navigation = new javax.swing.JMenuBar();
-            fileMenu = new javax.swing.JMenu();
-            menuFileMenu = new javax.swing.JMenu();
-            newGamedataGroup = new javax.swing.JMenu();
-            newFileDBGroup = new javax.swing.JMenu();
-            newLegacyDB = new javax.swing.JMenuItem();
-            newVitaDB = new javax.swing.JMenuItem();
-            newModernDB = new javax.swing.JMenuItem();
-            createFileArchive = new javax.swing.JMenuItem();
-            newMod = new javax.swing.JMenuItem();
-            loadGroupMenu = new javax.swing.JMenu();
-            gamedataMenu = new javax.swing.JMenu();
-            loadDB = new javax.swing.JMenuItem();
-            loadArchive = new javax.swing.JMenuItem();
-            savedataMenu = new javax.swing.JMenu();
-            loadBigProfile = new javax.swing.JMenuItem();
-            loadVitaProfile = new javax.swing.JMenuItem();
-            loadProfileBackup = new javax.swing.JMenuItem();
-            loadMod = new javax.swing.JMenuItem();
-            jSeparator9 = new javax.swing.JPopupMenu.Separator();
-            manageProfile = new javax.swing.JMenuItem();
-            manageSettings = new javax.swing.JMenuItem();
-            saveDivider = new javax.swing.JPopupMenu.Separator();
-            saveAs = new javax.swing.JMenuItem();
-            saveMenu = new javax.swing.JMenuItem();
-            jSeparator4 = new javax.swing.JPopupMenu.Separator();
-            closeTab = new javax.swing.JMenuItem();
-            reboot = new javax.swing.JMenuItem();
-            editMenu = new javax.swing.JMenu();
-            editMenuDelete = new javax.swing.JMenuItem();
-            archiveMenu = new javax.swing.JMenu();
-            manageArchives = new javax.swing.JMenuItem();
-            jSeparator10 = new javax.swing.JPopupMenu.Separator();
-            addFile = new javax.swing.JMenuItem();
-            addFolder = new javax.swing.JMenuItem();
-            databaseMenu = new javax.swing.JMenu();
-            patchMAP = new javax.swing.JMenuItem();
-            remapDatabaseContext = new javax.swing.JMenuItem();
-            jSeparator6 = new javax.swing.JPopupMenu.Separator();
-            dumpRLST = new javax.swing.JMenuItem();
-            profileMenu = new javax.swing.JMenu();
-            extractBigProfile = new javax.swing.JMenuItem();
-            jSeparator1 = new javax.swing.JPopupMenu.Separator();
-            editProfileSlots = new javax.swing.JMenuItem();
-            editProfileItems = new javax.swing.JMenuItem();
-            modMenu = new javax.swing.JMenu();
-            openModMetadata = new javax.swing.JMenuItem();
-            toolsMenu = new javax.swing.JMenu();
-            openCompressinator = new javax.swing.JMenuItem();
-            openGfxCompiler = new javax.swing.JMenuItem();
-            dumpSep = new javax.swing.JPopupMenu.Separator();
-            jMenu1 = new javax.swing.JMenu();
-            fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
-            mergeFARCs = new javax.swing.JMenuItem();
-            swapProfilePlatform = new javax.swing.JMenuItem();
-            jMenu2 = new javax.swing.JMenu();
-            convertTexture = new javax.swing.JMenuItem();
-            decompressResource = new javax.swing.JMenuItem();
-            collectionD = new javax.swing.JMenu();
-            collectorPresets = new javax.swing.JMenu();
-            collectAllLevelDependencies = new javax.swing.JMenuItem();
-            collectAllItemDependencies = new javax.swing.JMenuItem();
-            customCollector = new javax.swing.JMenuItem();
-            jSeparator3 = new javax.swing.JPopupMenu.Separator();
-            fixDependencyTable = new javax.swing.JMenuItem();
-            generateDiff = new javax.swing.JMenuItem();
-            jSeparator5 = new javax.swing.JPopupMenu.Separator();
-            installProfileMod = new javax.swing.JMenuItem();
-            exportWorld = new javax.swing.JMenuItem();
-            exportSceneGraph = new javax.swing.JMenuItem();
-            debugMenu = new javax.swing.JMenu();
-            jMenuItem1 = new javax.swing.JMenuItem();
+        entryContext = new javax.swing.JPopupMenu();
+        extractGroup = new javax.swing.JMenu();
+        extractContext = new javax.swing.JMenuItem();
+        extractDecompressedContext = new javax.swing.JMenuItem();
+        editGroup = new javax.swing.JMenu();
+        editPathContext = new javax.swing.JMenuItem();
+        editHashContext = new javax.swing.JMenuItem();
+        editGUIDContext = new javax.swing.JMenuItem();
+        exportGroup = new javax.swing.JMenu();
+        exportJSONContext = new javax.swing.JMenuItem();
+        exportTextureGroupContext = new javax.swing.JMenu();
+        exportPNG = new javax.swing.JMenuItem();
+        exportDDS = new javax.swing.JMenuItem();
+        exportModelGroup = new javax.swing.JMenu();
+        exportOBJ = new javax.swing.JMenu();
+        exportOBJTEXCOORD0 = new javax.swing.JMenuItem();
+        exportOBJTEXCOORD1 = new javax.swing.JMenuItem();
+        exportOBJTEXCOORD2 = new javax.swing.JMenuItem();
+        exportGLTF = new javax.swing.JMenuItem();
+        exportModGroup = new javax.swing.JMenu();
+        exportAsModCustom = new javax.swing.JMenuItem();
+        exportAsMod = new javax.swing.JMenuItem();
+        exportAsModGUID = new javax.swing.JMenuItem();
+        exportAnimation = new javax.swing.JMenuItem();
+        exportBackupGroup = new javax.swing.JMenu();
+        exportAsBackup = new javax.swing.JMenuItem();
+        exportAsBackupGUID = new javax.swing.JMenuItem();
+        exportPaletteContext = new javax.swing.JMenuItem();
+        newEntryGroup = new javax.swing.JMenu();
+        newResourceGroup = new javax.swing.JMenu();
+        importJSONContext = new javax.swing.JMenuItem();
+        newTextureContext = new javax.swing.JMenuItem();
+        newAnimationContext = new javax.swing.JMenuItem();
+        newModelContext = new javax.swing.JMenuItem();
+        newItemGroup = new javax.swing.JMenu();
+        newStickerContext = new javax.swing.JMenuItem();
+        newEntryContext = new javax.swing.JMenuItem();
+        newFolderContext = new javax.swing.JMenuItem();
+        renameFolder = new javax.swing.JMenuItem();
+        replaceGroup = new javax.swing.JMenu();
+        replaceCompressedContext = new javax.swing.JMenuItem();
+        replaceDecompressedContext = new javax.swing.JMenuItem();
+        replaceDependenciesContext = new javax.swing.JMenuItem();
+        replaceImageContext = new javax.swing.JMenuItem();
+        replaceJSONContext = new javax.swing.JMenuItem();
+        dependencyGroup = new javax.swing.JMenu();
+        removeDependenciesContext = new javax.swing.JMenuItem();
+        removeMissingDependenciesContext = new javax.swing.JMenuItem();
+        duplicateContext = new javax.swing.JMenuItem();
+        copyGroup = new javax.swing.JMenu();
+        zeroContext = new javax.swing.JMenuItem();
+        deleteContext = new javax.swing.JMenuItem();
+        consolePopup = new javax.swing.JPopupMenu();
+        clear = new javax.swing.JMenuItem();
+        metadataButtonGroup = new javax.swing.ButtonGroup();
+        workspace = new javax.swing.JSplitPane();
+        details = new javax.swing.JSplitPane();
+        previewContainer = new javax.swing.JSplitPane();
+        consoleContainer = new javax.swing.JScrollPane();
+        console = new javax.swing.JTextArea();
+        renderPane = new javax.swing.JTabbedPane();
+        overviewPane = new javax.swing.JSplitPane();
+        texture = new javax.swing.JLabel();
+        hex = new tv.porst.jhexview.JHexView();
+        scenePanel = new javax.swing.JPanel();
+        infoCardPanel = new javax.swing.JPanel();
+        fileDataPane = new javax.swing.JSplitPane();
+        tableContainer = new javax.swing.JScrollPane();
+        entryTable = new javax.swing.JTable();
+        entryModifiers = new javax.swing.JTabbedPane();
+        dependencyTreeContainer = new javax.swing.JScrollPane();
+        dependencyTree = new javax.swing.JTree();
+        itemMetadata = new javax.swing.JPanel();
+        LAMSMetadata = new javax.swing.JRadioButton();
+        StringMetadata = new javax.swing.JRadioButton();
+        iconLabel = new javax.swing.JLabel();
+        iconField = new javax.swing.JTextField();
+        titleLabel = new javax.swing.JLabel();
+        descriptionLabel = new javax.swing.JLabel();
+        descriptionField = new javax.swing.JTextArea();
+        titleField = new javax.swing.JTextField();
+        locationLabel = new javax.swing.JLabel();
+        locationField = new javax.swing.JTextField();
+        categoryLabel = new javax.swing.JLabel();
+        categoryField = new javax.swing.JTextField();
+        pageCombo = new javax.swing.JComboBox(InventoryObjectType.values());
+        creatorLabel = new javax.swing.JLabel();
+        creatorField = new javax.swing.JTextField();
+        subCombo = new javax.swing.JTextField();
+        inspectorPane = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        cameraPosX = new javax.swing.JSpinner();
+        cameraPosY = new javax.swing.JSpinner();
+        cameraPosZ = new javax.swing.JSpinner();
+        resourceTabs = new javax.swing.JTabbedPane();
+        treeContainer = new javax.swing.JSplitPane();
+        search = new javax.swing.JTextField();
+        fileDataTabs = new javax.swing.JTabbedPane();
+        hierachyPanel = new javax.swing.JPanel();
+        progressBar = new javax.swing.JProgressBar();
+        navigation = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        menuFileMenu = new javax.swing.JMenu();
+        newGamedataGroup = new javax.swing.JMenu();
+        newFileDBGroup = new javax.swing.JMenu();
+        newLegacyDB = new javax.swing.JMenuItem();
+        newVitaDB = new javax.swing.JMenuItem();
+        newModernDB = new javax.swing.JMenuItem();
+        createFileArchive = new javax.swing.JMenuItem();
+        newMod = new javax.swing.JMenuItem();
+        loadGroupMenu = new javax.swing.JMenu();
+        gamedataMenu = new javax.swing.JMenu();
+        loadDB = new javax.swing.JMenuItem();
+        loadArchive = new javax.swing.JMenuItem();
+        savedataMenu = new javax.swing.JMenu();
+        loadBigProfile = new javax.swing.JMenuItem();
+        loadVitaProfile = new javax.swing.JMenuItem();
+        loadProfileBackup = new javax.swing.JMenuItem();
+        loadMod = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
+        manageProfile = new javax.swing.JMenuItem();
+        manageSettings = new javax.swing.JMenuItem();
+        saveDivider = new javax.swing.JPopupMenu.Separator();
+        saveAs = new javax.swing.JMenuItem();
+        saveMenu = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        closeTab = new javax.swing.JMenuItem();
+        reboot = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
+        editMenuDelete = new javax.swing.JMenuItem();
+        archiveMenu = new javax.swing.JMenu();
+        manageArchives = new javax.swing.JMenuItem();
+        jSeparator10 = new javax.swing.JPopupMenu.Separator();
+        addFile = new javax.swing.JMenuItem();
+        addFolder = new javax.swing.JMenuItem();
+        databaseMenu = new javax.swing.JMenu();
+        patchMAP = new javax.swing.JMenuItem();
+        remapDatabaseContext = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        dumpRLST = new javax.swing.JMenuItem();
+        profileMenu = new javax.swing.JMenu();
+        extractBigProfile = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        editProfileSlots = new javax.swing.JMenuItem();
+        editProfileItems = new javax.swing.JMenuItem();
+        modMenu = new javax.swing.JMenu();
+        openModMetadata = new javax.swing.JMenuItem();
+        toolsMenu = new javax.swing.JMenu();
+        openCompressinator = new javax.swing.JMenuItem();
+        openGfxCompiler = new javax.swing.JMenuItem();
+        dumpSep = new javax.swing.JPopupMenu.Separator();
+        jMenu1 = new javax.swing.JMenu();
+        fileArchiveIntegrityCheck = new javax.swing.JMenuItem();
+        mergeFARCs = new javax.swing.JMenuItem();
+        swapProfilePlatform = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        convertTexture = new javax.swing.JMenuItem();
+        decompressResource = new javax.swing.JMenuItem();
+        collectionD = new javax.swing.JMenu();
+        collectorPresets = new javax.swing.JMenu();
+        collectAllLevelDependencies = new javax.swing.JMenuItem();
+        collectAllItemDependencies = new javax.swing.JMenuItem();
+        customCollector = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        fixDependencyTable = new javax.swing.JMenuItem();
+        generateDiff = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        installProfileMod = new javax.swing.JMenuItem();
+        exportWorld = new javax.swing.JMenuItem();
+        exportSceneGraph = new javax.swing.JMenuItem();
+        debugMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
-            extractGroup.setText("Extract...");
-            extractGroup.setToolTipText("Extract selected entries");
+        extractGroup.setText("Extract...");
+        extractGroup.setToolTipText("Extract selected entries");
 
-            extractContext.setText("Extract");
-            extractContext.setToolTipText("Extract entries as-is");
-            extractContext.addActionListener(new java.awt.event.ActionListener()
+        extractContext.setText("Extract");
+        extractContext.setToolTipText("Extract entries as-is");
+        extractContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extractContextActionPerformed(evt);
+            }
+        });
+        extractGroup.add(extractContext);
+
+        extractDecompressedContext.setText("Decompress");
+        extractDecompressedContext.setToolTipText("Extract entries and decompress where possible");
+        extractDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extractDecompressedContextActionPerformed(evt);
+            }
+        });
+        extractGroup.add(extractDecompressedContext);
+
+        entryContext.add(extractGroup);
+
+        editGroup.setText("Edit...");
+        editGroup.setToolTipText("Edit entry details");
+
+        editPathContext.setText("Path");
+        editPathContext.setToolTipText("Move this entry");
+        editPathContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editPathContextActionPerformed(evt);
+            }
+        });
+        editGroup.add(editPathContext);
+
+        editHashContext.setText("Hash");
+        editHashContext.setToolTipText("Edit the hash this entry loads");
+        editHashContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editHashContextActionPerformed(evt);
+            }
+        });
+        editGroup.add(editHashContext);
+
+        editGUIDContext.setText("GUID");
+        editGUIDContext.setToolTipText("Change the unique GUID for this entry");
+        editGUIDContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editGUIDContextActionPerformed(evt);
+            }
+        });
+        editGroup.add(editGUIDContext);
+
+        entryContext.add(editGroup);
+
+        exportGroup.setText("Export...");
+        exportGroup.setToolTipText("Export resource to different formats");
+
+        exportJSONContext.setText("JSON");
+        exportJSONContext.setToolTipText("Converts resource to JSON file");
+        exportJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportJSONContextActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportJSONContext);
+
+        exportTextureGroupContext.setText("Textures");
+        exportTextureGroupContext.setToolTipText("Export texture file as image");
+
+        exportPNG.setText("PNG");
+        exportPNG.setToolTipText("Export texture as PNG file");
+        exportPNG.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPNGActionPerformed(evt);
+            }
+        });
+        exportTextureGroupContext.add(exportPNG);
+
+        exportDDS.setText("DDS");
+        exportDDS.setToolTipText("Export texture as DDS file");
+        exportDDS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDDSActionPerformed(evt);
+            }
+        });
+        exportTextureGroupContext.add(exportDDS);
+
+        exportGroup.add(exportTextureGroupContext);
+
+        exportModelGroup.setText("Model");
+        exportModelGroup.setToolTipText("Export model file");
+
+        exportOBJ.setText("Wavefront");
+        exportOBJ.setToolTipText("Export model as Wavefront OBJ");
+
+        exportOBJTEXCOORD0.setText("TEXCOORD0");
+        exportOBJTEXCOORD0.setToolTipText("Export as OBJ with first UV channel");
+        exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportOBJTEXCOORD0ActionPerformed(evt);
+            }
+        });
+        exportOBJ.add(exportOBJTEXCOORD0);
+
+        exportOBJTEXCOORD1.setText("TEXCOORD1");
+        exportOBJTEXCOORD1.setToolTipText("Export as OBJ with second UV channel");
+        exportOBJTEXCOORD1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportOBJTEXCOORD1ActionPerformed(evt);
+            }
+        });
+        exportOBJ.add(exportOBJTEXCOORD1);
+
+        exportOBJTEXCOORD2.setText("TEXCOORD2");
+        exportOBJTEXCOORD2.setToolTipText("Export as OBJ with third UV channel");
+        exportOBJTEXCOORD2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportOBJTEXCOORD2ActionPerformed(evt);
+            }
+        });
+        exportOBJ.add(exportOBJTEXCOORD2);
+
+        exportModelGroup.add(exportOBJ);
+
+        exportGLTF.setText("glTF 2.0");
+        exportGLTF.setToolTipText("Export model as glTF 2.0");
+        exportGLTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportGLTFActionPerformed(evt);
+            }
+        });
+        exportModelGroup.add(exportGLTF);
+
+        exportGroup.add(exportModelGroup);
+
+        exportModGroup.setText("Mod");
+        exportModGroup.setToolTipText("Exports selected resource as a mod file");
+
+        exportAsModCustom.setToolTipText("Manual mod export, choose which resources get exported as hash/GUID, as well as re-generating gmats");
+        exportAsModCustom.setActionCommand("Custom");
+        exportAsModCustom.setLabel("Custom");
+        exportAsModCustom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsModCustomActionPerformed(evt);
+            }
+        });
+        exportModGroup.add(exportAsModCustom);
+
+        exportAsMod.setText("Hash");
+        exportAsMod.setToolTipText("Export mod with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
+        exportAsMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsModActionPerformed(evt);
+            }
+        });
+        exportModGroup.add(exportAsMod);
+
+        exportAsModGUID.setText("GUID");
+        exportAsModGUID.setToolTipText("Export mod without modifying resource references");
+        exportAsModGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsModGUIDActionPerformed(evt);
+            }
+        });
+        exportModGroup.add(exportAsModGUID);
+
+        exportGroup.add(exportModGroup);
+
+        exportAnimation.setText("Animation");
+        exportAnimation.setToolTipText("Export selected animation as glTF2.0 file");
+        exportAnimation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAnimationActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportAnimation);
+
+        exportBackupGroup.setText("Backup");
+        exportBackupGroup.setToolTipText("Convert this resource into a level backup.");
+
+        exportAsBackup.setText("Hash");
+        exportAsBackup.setToolTipText("Export backup with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
+        exportAsBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsBackupActionPerformed(evt);
+            }
+        });
+        exportBackupGroup.add(exportAsBackup);
+
+        exportAsBackupGUID.setText("GUID");
+        exportAsBackupGUID.setToolTipText("Export backup without modifying resource references");
+        exportAsBackupGUID.setActionCommand("exportAsBackupGUID");
+        exportAsBackupGUID.setName(""); // NOI18N
+        exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAsBackupGUIDActionPerformed(evt);
+            }
+        });
+        exportBackupGroup.add(exportAsBackupGUID);
+
+        exportGroup.add(exportBackupGroup);
+
+        exportPaletteContext.setText("BIN");
+        exportPaletteContext.setToolTipText("Convert this palette to a level");
+        exportPaletteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPaletteContextActionPerformed(evt);
+            }
+        });
+        exportGroup.add(exportPaletteContext);
+
+        entryContext.add(exportGroup);
+
+        newEntryGroup.setText("New...");
+        newEntryGroup.setToolTipText("Add new entries to the database");
+
+        newResourceGroup.setText("Resource");
+        newResourceGroup.setToolTipText("Import resources from local files");
+
+        importJSONContext.setText("JSON");
+        importJSONContext.setToolTipText("Import resource from exported JSON data");
+        importJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importJSONContextActionPerformed(evt);
+            }
+        });
+        newResourceGroup.add(importJSONContext);
+
+        newTextureContext.setText("Texture");
+        newTextureContext.setToolTipText("Import texture resource from JPG/PNG/DDS");
+        newTextureContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newTextureContextActionPerformed(evt);
+            }
+        });
+        newResourceGroup.add(newTextureContext);
+
+        newAnimationContext.setText("Animation");
+        newAnimationContext.setToolTipText("Import animation from glTF2.0 file");
+        newAnimationContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newAnimationContextActionPerformed(evt);
+            }
+        });
+        newResourceGroup.add(newAnimationContext);
+
+        newModelContext.setText("Model");
+        newModelContext.setToolTipText("Import model from glTF2.0 file");
+        newModelContext.setEnabled(false);
+        newResourceGroup.add(newModelContext);
+
+        newEntryGroup.add(newResourceGroup);
+
+        newItemGroup.setText("Item");
+        newItemGroup.setToolTipText("Generate inventory items");
+        newItemGroup.setEnabled(false);
+
+        newStickerContext.setText("Sticker");
+        newStickerContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newStickerContextActionPerformed(evt);
+            }
+        });
+        newItemGroup.add(newStickerContext);
+
+        newEntryGroup.add(newItemGroup);
+
+        newEntryContext.setText("Entry");
+        newEntryContext.setToolTipText("Create a new blank entry in this database");
+        newEntryContext.setActionCommand("File");
+        newEntryContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newEntryContextActionPerformed(evt);
+            }
+        });
+        newEntryGroup.add(newEntryContext);
+
+        entryContext.add(newEntryGroup);
+
+        newFolderContext.setText("New Folder");
+        newFolderContext.setToolTipText("Create a new folder here");
+        newFolderContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newFolderContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(newFolderContext);
+
+        renameFolder.setText("Rename Folder");
+        renameFolder.setToolTipText("Renames selected folder");
+        renameFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renameFolderActionPerformed(evt);
+            }
+        });
+        entryContext.add(renameFolder);
+
+        replaceGroup.setText("Replace...");
+        replaceGroup.setToolTipText("Data replacement tools");
+
+        replaceCompressedContext.setText("Replace");
+        replaceCompressedContext.setToolTipText("Replace resource data with a selected file from disk");
+        replaceCompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceCompressedContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceCompressedContext);
+
+        replaceDecompressedContext.setText("Decompressed");
+        replaceDecompressedContext.setToolTipText("Re-compresses file selected from disk and replaces this entry's resource data");
+        replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceDecompressedContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceDecompressedContext);
+
+        replaceDependenciesContext.setText("Dependencies");
+        replaceDependenciesContext.setToolTipText("Edit the dependencies of this resource");
+        replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceDependenciesContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceDependenciesContext);
+
+        replaceImageContext.setText("Image");
+        replaceImageContext.setToolTipText("Replaces data with image loaded from disk");
+        replaceImageContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceImageContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceImageContext);
+
+        replaceJSONContext.setText("JSON");
+        replaceJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceJSONContextActionPerformed(evt);
+            }
+        });
+        replaceGroup.add(replaceJSONContext);
+
+        entryContext.add(replaceGroup);
+
+        dependencyGroup.setText("Dependencies...");
+        dependencyGroup.setToolTipText("Dependency management tools");
+
+        removeDependenciesContext.setText("Remove Dependencies");
+        removeDependenciesContext.setToolTipText("Removes all resources from dependency table. This can allow levels with missing dependencies to potentially load.");
+        removeDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeDependenciesContextActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeDependenciesContext);
+
+        removeMissingDependenciesContext.setText("Remove Missing Dependencies");
+        removeMissingDependenciesContext.setToolTipText("Removes only missing resources from dependency table. This can allow levels with missing dependencies to potentially load.");
+        removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeMissingDependenciesContextActionPerformed(evt);
+            }
+        });
+        dependencyGroup.add(removeMissingDependenciesContext);
+
+        entryContext.add(dependencyGroup);
+
+        duplicateContext.setText("Duplicate");
+        duplicateContext.setToolTipText("Create a duplicate entry copying this one with a new GUID");
+        duplicateContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                duplicateContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(duplicateContext);
+
+        copyGroup.setText("Copy To...");
+        copyGroup.setToolTipText("Copy selected entries to another database");
+        entryContext.add(copyGroup);
+
+        zeroContext.setText("Zero");
+        zeroContext.setToolTipText("Removes resource hash. Allows files to be loaded from disk rather than the FARC");
+        zeroContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zeroContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(zeroContext);
+
+        deleteContext.setText("Delete");
+        deleteContext.setToolTipText("Deletes selected entries from the database");
+        deleteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteContextActionPerformed(evt);
+            }
+        });
+        entryContext.add(deleteContext);
+
+        clear.setText("Clear");
+        clear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearActionPerformed(evt);
+            }
+        });
+        consolePopup.add(clear);
+
+        metadataButtonGroup.add(LAMSMetadata);
+        metadataButtonGroup.add(StringMetadata);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Craftworld Toolkit");
+        setMinimumSize(new java.awt.Dimension(698, 296));
+
+        workspace.setDividerLocation(275);
+
+        details.setResizeWeight(1);
+        details.setDividerLocation(850);
+
+        previewContainer.setDividerLocation(325);
+        previewContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        console.setEditable(false);
+        console.setColumns(20);
+        console.setLineWrap(true);
+        console.setRows(5);
+        console.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                consoleMouseReleased(evt);
+            }
+        });
+        consoleContainer.setViewportView(console);
+
+        previewContainer.setBottomComponent(consoleContainer);
+
+        overviewPane.setDividerLocation(325);
+
+        texture.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        texture.setText("No preview to be displayed.");
+        texture.setToolTipText("");
+        texture.setFocusable(false);
+        overviewPane.setLeftComponent(texture);
+
+        javax.swing.GroupLayout hexLayout = new javax.swing.GroupLayout(hex);
+        hex.setLayout(hexLayout);
+        hexLayout.setHorizontalGroup(
+            hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        hexLayout.setVerticalGroup(
+            hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 292, Short.MAX_VALUE)
+        );
+
+        overviewPane.setRightComponent(hex);
+
+        renderPane.addTab("Overview", overviewPane);
+
+        javax.swing.GroupLayout scenePanelLayout = new javax.swing.GroupLayout(scenePanel);
+        scenePanel.setLayout(scenePanelLayout);
+        scenePanelLayout.setHorizontalGroup(
+            scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 850, Short.MAX_VALUE)
+        );
+        scenePanelLayout.setVerticalGroup(
+            scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 292, Short.MAX_VALUE)
+        );
+
+        renderPane.addTab("Scene", scenePanel);
+
+        previewContainer.setTopComponent(renderPane);
+
+        details.setLeftComponent(previewContainer);
+
+        infoCardPanel.setLayout(new java.awt.CardLayout());
+
+        fileDataPane.setDividerLocation(204);
+        fileDataPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        fileDataPane.setMaximumSize(new java.awt.Dimension(55, 2147483647));
+        fileDataPane.setMinimumSize(new java.awt.Dimension(55, 102));
+        fileDataPane.setPreferredSize(new java.awt.Dimension(55, 1120));
+
+        tableContainer.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        tableContainer.setMaximumSize(new java.awt.Dimension(452, 32767));
+        tableContainer.setMinimumSize(new java.awt.Dimension(452, 6));
+
+        entryTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {"Path", "N/A"},
+                {"Timestamp", "N/A"},
+                {"SHA1", "N/A"},
+                {"Size", "N/A"},
+                {"GUID", "N/A"},
+                {"GUID (Hex)", "N/A"},
+                {"GUID (7-bit)", "N/A"},
+                {"Revision", "N/A"}
+            },
+            new String [] {
+                "Field", "Value"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                true, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        entryTable.getTableHeader().setReorderingAllowed(false);
+        tableContainer.setViewportView(entryTable);
+        if (entryTable.getColumnModel().getColumnCount() > 0) {
+            entryTable.getColumnModel().getColumn(0).setResizable(false);
+            entryTable.getColumnModel().getColumn(1).setResizable(false);
+        }
+
+        fileDataPane.setLeftComponent(tableContainer);
+
+        entryModifiers.setMaximumSize(new java.awt.Dimension(452, 32767));
+        entryModifiers.setMinimumSize(new java.awt.Dimension(452, 81));
+        entryModifiers.setPreferredSize(new java.awt.Dimension(452, 713));
+
+        dependencyTreeContainer.setAlignmentX(2.0F);
+
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
+        dependencyTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        dependencyTree.setRootVisible(false);
+        dependencyTreeContainer.setViewportView(dependencyTree);
+
+        entryModifiers.addTab("Dependencies", dependencyTreeContainer);
+
+        LAMSMetadata.setText("LAMS");
+        LAMSMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                LAMSMetadataActionPerformed(evt);
+            }
+        });
+
+        StringMetadata.setText("String");
+        StringMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                StringMetadataActionPerformed(evt);
+            }
+        });
+
+        iconLabel.setText("Icon");
+
+        iconField.setEditable(false);
+
+        titleLabel.setText("Title");
+
+        descriptionLabel.setText("Description");
+
+        descriptionField.setEditable(false);
+        descriptionField.setColumns(20);
+        descriptionField.setLineWrap(true);
+        descriptionField.setRows(5);
+        descriptionField.setWrapStyleWord(true);
+
+        titleField.setEditable(false);
+
+        locationLabel.setText("Location");
+
+        locationField.setEditable(false);
+        locationField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                locationFieldActionPerformed(evt);
+            }
+        });
+
+        categoryLabel.setText("Category");
+
+        categoryField.setEditable(false);
+
+        pageCombo.setEnabled(false);
+
+        creatorLabel.setText("Creator");
+
+        creatorField.setEditable(false);
+
+        subCombo.setEditable(false);
+        subCombo.setAutoscrolls(false);
+        subCombo.setEnabled(false);
+
+        javax.swing.GroupLayout itemMetadataLayout = new javax.swing.GroupLayout(itemMetadata);
+        itemMetadata.setLayout(itemMetadataLayout);
+        itemMetadataLayout.setHorizontalGroup(
+            itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(itemMetadataLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(LAMSMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(StringMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionLabel)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(iconLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationLabel)
+                            .addComponent(categoryLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationField)
+                            .addComponent(categoryField)))
+                    .addComponent(pageCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(subCombo))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        itemMetadataLayout.setVerticalGroup(
+            itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(itemMetadataLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(iconLabel)
+                    .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(StringMetadata)
+                    .addComponent(LAMSMetadata))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(titleLabel)
+                    .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(locationLabel)
+                    .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(categoryLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(categoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(creatorLabel)
+                    .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        entryModifiers.addTab("Inspector", itemMetadata);
+
+        fileDataPane.setRightComponent(entryModifiers);
+
+        infoCardPanel.add(fileDataPane, "card2");
+
+        jLabel1.setText("Thing UID 0");
+
+        jLabel2.setText("PCamera");
+
+        jLabel3.setText("Target Position");
+
+        cameraPosX.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosX.setToolTipText("");
+
+        cameraPosY.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosY.setToolTipText("");
+
+        cameraPosZ.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
+        cameraPosZ.setToolTipText("");
+
+        javax.swing.GroupLayout inspectorPaneLayout = new javax.swing.GroupLayout(inspectorPane);
+        inspectorPane.setLayout(inspectorPaneLayout);
+        inspectorPaneLayout.setHorizontalGroup(
+            inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cameraPosX)
+                    .addComponent(cameraPosY, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(inspectorPaneLayout.createSequentialGroup()
+                        .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(0, 159, Short.MAX_VALUE))
+                    .addComponent(cameraPosZ))
+                .addContainerGap())
+        );
+        inspectorPaneLayout.setVerticalGroup(
+            inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosZ, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(441, Short.MAX_VALUE))
+        );
+
+        infoCardPanel.add(inspectorPane, "card3");
+
+        details.setRightComponent(infoCardPanel);
+
+        workspace.setRightComponent(details);
+
+        treeContainer.setDividerLocation(30);
+        treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
+        treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
+
+        search.setEditable(false);
+        search.setText(" Search is currently disabled.");
+        search.setBorder(null);
+        search.setFocusable(false);
+        search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchActionPerformed(evt);
+            }
+        });
+        treeContainer.setLeftComponent(search);
+        treeContainer.setRightComponent(fileDataTabs);
+
+        resourceTabs.addTab("Assets", treeContainer);
+
+        javax.swing.GroupLayout hierachyPanelLayout = new javax.swing.GroupLayout(hierachyPanel);
+        hierachyPanel.setLayout(hierachyPanelLayout);
+        hierachyPanelLayout.setHorizontalGroup(
+            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 150, Short.MAX_VALUE)
+        );
+        hierachyPanelLayout.setVerticalGroup(
+            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 558, Short.MAX_VALUE)
+        );
+
+        resourceTabs.addTab("Hierachy", hierachyPanel);
+
+        workspace.setLeftComponent(resourceTabs);
+
+        progressBar.setEnabled(false);
+
+        fileMenu.setText("File");
+
+        menuFileMenu.setText("New");
+
+        newGamedataGroup.setText("Gamedata");
+
+        newFileDBGroup.setText("FileDB");
+
+        newLegacyDB.setText("LBP1/2");
+        newLegacyDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newLegacyDBActionPerformed(evt);
+            }
+        });
+        newFileDBGroup.add(newLegacyDB);
+
+        newVitaDB.setText("LBP Vita");
+        newVitaDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newVitaDBActionPerformed(evt);
+            }
+        });
+        newFileDBGroup.add(newVitaDB);
+
+        newModernDB.setText("LBP3");
+        newModernDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newModernDBActionPerformed(evt);
+            }
+        });
+        newFileDBGroup.add(newModernDB);
+
+        newGamedataGroup.add(newFileDBGroup);
+
+        createFileArchive.setText("File Archive");
+        createFileArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createFileArchiveActionPerformed(evt);
+            }
+        });
+        newGamedataGroup.add(createFileArchive);
+
+        menuFileMenu.add(newGamedataGroup);
+
+        newMod.setText("Mod");
+        newMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newModActionPerformed(evt);
+            }
+        });
+        menuFileMenu.add(newMod);
+
+        fileMenu.add(menuFileMenu);
+
+        loadGroupMenu.setText("Load");
+
+        gamedataMenu.setText("Gamedata");
+
+        loadDB.setText("FileDB (.MAP)");
+        loadDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadDBActionPerformed(evt);
+            }
+        });
+        gamedataMenu.add(loadDB);
+
+        loadArchive.setText("File Archive (.FARC)");
+        loadArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadArchiveActionPerformed(evt);
+            }
+        });
+        gamedataMenu.add(loadArchive);
+
+        loadGroupMenu.add(gamedataMenu);
+
+        savedataMenu.setText("Savedata");
+
+        loadBigProfile.setText("Big Profile");
+        loadBigProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadBigProfileActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadBigProfile);
+
+        loadVitaProfile.setText("Vita Profile");
+        loadVitaProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadVitaProfileActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadVitaProfile);
+
+        loadProfileBackup.setText("Profile Backup");
+        loadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadProfileBackupActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadProfileBackup);
+
+        loadGroupMenu.add(savedataMenu);
+
+        loadMod.setText("Mod");
+        loadMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadModActionPerformed(evt);
+            }
+        });
+        loadGroupMenu.add(loadMod);
+
+        fileMenu.add(loadGroupMenu);
+        fileMenu.add(jSeparator9);
+
+        manageProfile.setText("Profiles");
+        manageProfile.setToolTipText("Manage boot profiles and settings");
+        manageProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageProfileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(manageProfile);
+
+        manageSettings.setText("Settings");
+        manageSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageSettingsActionPerformed(evt);
+            }
+        });
+        fileMenu.add(manageSettings);
+        fileMenu.add(saveDivider);
+
+        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAs.setText("Save as...");
+        saveAs.setToolTipText("Save a copy of selected database");
+        saveAs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAs);
+
+        saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveMenu.setText("Save");
+        saveMenu.setToolTipText("Save selected database and any archives that may have changes");
+        saveMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveMenu);
+        fileMenu.add(jSeparator4);
+
+        closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        closeTab.setText("Close Tab");
+        closeTab.setToolTipText("Close currently selected tab");
+        closeTab.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeTabActionPerformed(evt);
+            }
+        });
+        fileMenu.add(closeTab);
+
+        reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        reboot.setText("Reboot");
+        reboot.setToolTipText("Restart Toolkit");
+        reboot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rebootActionPerformed(evt);
+            }
+        });
+        fileMenu.add(reboot);
+
+        navigation.add(fileMenu);
+
+        editMenu.setText("Edit");
+
+        editMenuDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
+        editMenuDelete.setText("Delete");
+        editMenuDelete.setToolTipText("Deletes selected entries from the database");
+        editMenuDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMenuDeleteActionPerformed(evt);
+            }
+        });
+        editMenu.add(editMenuDelete);
+
+        navigation.add(editMenu);
+
+        archiveMenu.setText("Archive");
+
+        manageArchives.setText("Manage Archives");
+        manageArchives.setToolTipText("Add/Remove/Save loaded archives");
+        manageArchives.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageArchivesActionPerformed(evt);
+            }
+        });
+        archiveMenu.add(manageArchives);
+        archiveMenu.add(jSeparator10);
+
+        addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addFile.setText("Add...");
+        addFile.setToolTipText("Add files to a loaded archive");
+        addFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFileActionPerformed(evt);
+            }
+        });
+        archiveMenu.add(addFile);
+
+        addFolder.setText("Add Folder");
+        addFolder.setToolTipText("Add all files in a folder to a loaded archive");
+        addFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFolderActionPerformed(evt);
+            }
+        });
+        archiveMenu.add(addFolder);
+
+        navigation.add(archiveMenu);
+
+        databaseMenu.setText("FileDB");
+
+        patchMAP.setText("Patch");
+        patchMAP.setToolTipText("Patch another FileDB on-top of this one");
+        patchMAP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                patchMAPActionPerformed(evt);
+            }
+        });
+        databaseMenu.add(patchMAP);
+
+        remapDatabaseContext.setText("Remap");
+        remapDatabaseContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                remapDatabaseContextActionPerformed(evt);
+            }
+        });
+        databaseMenu.add(remapDatabaseContext);
+        databaseMenu.add(jSeparator6);
+
+        dumpRLST.setText("Dump RLST");
+        dumpRLST.setToolTipText("Dump all entries to RLST");
+        dumpRLST.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dumpRLSTActionPerformed(evt);
+            }
+        });
+        databaseMenu.add(dumpRLST);
+
+        navigation.add(databaseMenu);
+
+        profileMenu.setText("Profile");
+
+        extractBigProfile.setText("Extract Profile");
+        extractBigProfile.setToolTipText("Extract RBigProfile from save, mostly used for debugging.");
+        extractBigProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extractBigProfileActionPerformed(evt);
+            }
+        });
+        profileMenu.add(extractBigProfile);
+        profileMenu.add(jSeparator1);
+
+        editProfileSlots.setText("Edit Slots");
+        editProfileSlots.setToolTipText("Edit and add levels to this profile");
+        editProfileSlots.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editProfileSlotsActionPerformed(evt);
+            }
+        });
+        profileMenu.add(editProfileSlots);
+
+        editProfileItems.setText("Edit Items");
+        editProfileItems.setToolTipText("Edit and add collected items to this profile");
+        editProfileItems.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editProfileItemsActionPerformed(evt);
+            }
+        });
+        profileMenu.add(editProfileItems);
+
+        navigation.add(profileMenu);
+
+        modMenu.setText("Mod");
+
+        openModMetadata.setText("Edit");
+        openModMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openModMetadataActionPerformed(evt);
+            }
+        });
+        modMenu.add(openModMetadata);
+
+        navigation.add(modMenu);
+
+        toolsMenu.setText("Tools");
+
+        openCompressinator.setText("Compressinator GUI");
+        openCompressinator.setToolTipText("Compress files to resources");
+        openCompressinator.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openCompressinatorActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(openCompressinator);
+
+        openGfxCompiler.setText("Gfx Compiler GUI");
+        openGfxCompiler.setToolTipText("Compile GMATs from source shaders");
+        openGfxCompiler.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openGfxCompilerActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(openGfxCompiler);
+        toolsMenu.add(dumpSep);
+
+        jMenu1.setText("Archive Utilities");
+
+        fileArchiveIntegrityCheck.setText("FARC Integrity Check");
+        fileArchiveIntegrityCheck.setToolTipText("Verify that all data in the FARC matches hash table");
+        fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileArchiveIntegrityCheckActionPerformed(evt);
+            }
+        });
+        jMenu1.add(fileArchiveIntegrityCheck);
+
+        mergeFARCs.setText("Merge Archives");
+        mergeFARCs.setToolTipText("Merge two archives together");
+        mergeFARCs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mergeFARCsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(mergeFARCs);
+
+        swapProfilePlatform.setText("Swap FAR4 Endianness (PS3/PS4)");
+        swapProfilePlatform.setToolTipText("Switch big/littlefart endianness, used for converting profile saves between PS3 and PS4");
+        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                swapProfilePlatformActionPerformed(evt);
+            }
+        });
+        jMenu1.add(swapProfilePlatform);
+
+        toolsMenu.add(jMenu1);
+
+        jMenu2.setText("File Utilities");
+
+        convertTexture.setText("PNG/JPG to TEX");
+        convertTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                convertTextureActionPerformed(evt);
+            }
+        });
+        jMenu2.add(convertTexture);
+
+        decompressResource.setText("Decompress Resource");
+        decompressResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                decompressResourceActionPerformed(evt);
+            }
+        });
+        jMenu2.add(decompressResource);
+
+        toolsMenu.add(jMenu2);
+
+        collectionD.setText("Collectors");
+        collectionD.setToolTipText("");
+
+        collectorPresets.setText("Presets");
+
+        collectAllLevelDependencies.setText("RLevel");
+        collectAllLevelDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                collectAllLevelDependenciesActionPerformed(evt);
+            }
+        });
+        collectorPresets.add(collectAllLevelDependencies);
+
+        collectAllItemDependencies.setText("RPlan");
+        collectAllItemDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                collectAllItemDependenciesActionPerformed(evt);
+            }
+        });
+        collectorPresets.add(collectAllItemDependencies);
+
+        collectionD.add(collectorPresets);
+
+        customCollector.setText("Custom");
+        customCollector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customCollectorActionPerformed(evt);
+            }
+        });
+        collectionD.add(customCollector);
+
+        toolsMenu.add(collectionD);
+        toolsMenu.add(jSeparator3);
+
+        fixDependencyTable.setText("Calculate Dependency Table");
+        fixDependencyTable.setToolTipText("Takes any compressed resource and attempts to automatically generate the dependency table");
+        fixDependencyTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fixDependencyTableActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(fixDependencyTable);
+
+        generateDiff.setText("Get FileDB diffs");
+        generateDiff.setToolTipText("Generates a text file showing differences between two FileDB's");
+        generateDiff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateDiffActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(generateDiff);
+        toolsMenu.add(jSeparator5);
+
+        installProfileMod.setText("Install Mod(s)");
+        installProfileMod.setToolTipText("Installs mod file(s) to currently selected database");
+        installProfileMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installProfileModActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(installProfileMod);
+
+        exportWorld.setText("Export RLevel");
+        exportWorld.setToolTipText("Exports the current scene graph as a level");
+        exportWorld.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportWorldActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(exportWorld);
+
+        exportSceneGraph.setText("Export Scene Graph");
+        exportSceneGraph.setToolTipText("Dumps the current scene graph to a file");
+        exportSceneGraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportSceneGraphActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(exportSceneGraph);
+
+        navigation.add(toolsMenu);
+
+        debugMenu.setText("Debug");
+
+        jMenuItem1.setText("open big profile gui");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        debugMenu.add(jMenuItem1);
+
+        navigation.add(debugMenu);
+
+        setJMenuBar(navigation);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void newStickerContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newStickerContextActionPerformed
+            byte[] texture = null;
+            try
             {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        extractContextActionPerformed(evt);
-                  }
-            });
-            extractGroup.add(extractContext);
-
-            extractDecompressedContext.setText("Decompress");
-            extractDecompressedContext.setToolTipText("Extract entries and decompress where " +
-             "possible");
-            extractDecompressedContext.addActionListener(new java.awt.event.ActionListener()
+                  texture = TextureImporter.getTexture();
+            }
+            catch (Exception ex)
             {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        extractDecompressedContextActionPerformed(evt);
-                  }
-            });
-            extractGroup.add(extractDecompressedContext);
-
-            entryContext.add(extractGroup);
-
-            editGroup.setText("Edit...");
-            editGroup.setToolTipText("Edit entry details");
-
-            editPathContext.setText("Path");
-            editPathContext.setToolTipText("Move this entry");
-            editPathContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editPathContextActionPerformed(evt);
-                  }
-            });
-            editGroup.add(editPathContext);
-
-            editHashContext.setText("Hash");
-            editHashContext.setToolTipText("Edit the hash this entry loads");
-            editHashContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editHashContextActionPerformed(evt);
-                  }
-            });
-            editGroup.add(editHashContext);
-
-            editGUIDContext.setText("GUID");
-            editGUIDContext.setToolTipText("Change the unique GUID for this entry");
-            editGUIDContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editGUIDContextActionPerformed(evt);
-                  }
-            });
-            editGroup.add(editGUIDContext);
-
-            entryContext.add(editGroup);
-
-            exportGroup.setText("Export...");
-            exportGroup.setToolTipText("Export resource to different formats");
-
-            exportJSONContext.setText("JSON");
-            exportJSONContext.setToolTipText("Converts resource to JSON file");
-            exportJSONContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportJSONContextActionPerformed(evt);
-                  }
-            });
-            exportGroup.add(exportJSONContext);
-
-            exportTextureGroupContext.setText("Textures");
-            exportTextureGroupContext.setToolTipText("Export texture file as image");
-
-            exportPNG.setText("PNG");
-            exportPNG.setToolTipText("Export texture as PNG file");
-            exportPNG.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportPNGActionPerformed(evt);
-                  }
-            });
-            exportTextureGroupContext.add(exportPNG);
-
-            exportDDS.setText("DDS");
-            exportDDS.setToolTipText("Export texture as DDS file");
-            exportDDS.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportDDSActionPerformed(evt);
-                  }
-            });
-            exportTextureGroupContext.add(exportDDS);
-
-            exportGroup.add(exportTextureGroupContext);
-
-            exportModelGroup.setText("Model");
-            exportModelGroup.setToolTipText("Export model file");
-
-            exportOBJ.setText("Wavefront");
-            exportOBJ.setToolTipText("Export model as Wavefront OBJ");
-
-            exportOBJTEXCOORD0.setText("TEXCOORD0");
-            exportOBJTEXCOORD0.setToolTipText("Export as OBJ with first UV channel");
-            exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportOBJTEXCOORD0ActionPerformed(evt);
-                  }
-            });
-            exportOBJ.add(exportOBJTEXCOORD0);
-
-            exportOBJTEXCOORD1.setText("TEXCOORD1");
-            exportOBJTEXCOORD1.setToolTipText("Export as OBJ with second UV channel");
-            exportOBJTEXCOORD1.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportOBJTEXCOORD1ActionPerformed(evt);
-                  }
-            });
-            exportOBJ.add(exportOBJTEXCOORD1);
-
-            exportOBJTEXCOORD2.setText("TEXCOORD2");
-            exportOBJTEXCOORD2.setToolTipText("Export as OBJ with third UV channel");
-            exportOBJTEXCOORD2.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportOBJTEXCOORD2ActionPerformed(evt);
-                  }
-            });
-            exportOBJ.add(exportOBJTEXCOORD2);
-
-            exportModelGroup.add(exportOBJ);
-
-            exportGLTF.setText("glTF 2.0");
-            exportGLTF.setToolTipText("Export model as glTF 2.0");
-            exportGLTF.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportGLTFActionPerformed(evt);
-                  }
-            });
-            exportModelGroup.add(exportGLTF);
-
-            exportGroup.add(exportModelGroup);
-
-            exportModGroup.setText("Mod");
-            exportModGroup.setToolTipText("Exports selected resource as a mod file");
-
-            exportAsModCustom.setToolTipText(
-                    "Manual mod export, choose which resources get exported as hash/GUID, as well" +
-                     " as " +
-                    "re-generating gmats");
-            exportAsModCustom.setActionCommand("Custom");
-            exportAsModCustom.setLabel("Custom");
-            exportAsModCustom.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAsModCustomActionPerformed(evt);
-                  }
-            });
-            exportModGroup.add(exportAsModCustom);
-
-            exportAsMod.setText("Hash");
-            exportAsMod.setToolTipText(
-                    "Export mod with GUID references replaced with hashes. You should use this if" +
-                     " " +
-                    "you're exporting custom content for others to use");
-            exportAsMod.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAsModActionPerformed(evt);
-                  }
-            });
-            exportModGroup.add(exportAsMod);
-
-            exportAsModGUID.setText("GUID");
-            exportAsModGUID.setToolTipText("Export mod without modifying resource references");
-            exportAsModGUID.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAsModGUIDActionPerformed(evt);
-                  }
-            });
-            exportModGroup.add(exportAsModGUID);
-
-            exportGroup.add(exportModGroup);
-
-            exportAnimation.setText("Animation");
-            exportAnimation.setToolTipText("Export selected animation as glTF2.0 file");
-            exportAnimation.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAnimationActionPerformed(evt);
-                  }
-            });
-            exportGroup.add(exportAnimation);
-
-            exportBackupGroup.setText("Backup");
-            exportBackupGroup.setToolTipText("Convert this resource into a level backup.");
-
-            exportAsBackup.setText("Hash");
-            exportAsBackup.setToolTipText(
-                    "Export backup with GUID references replaced with hashes. You should use this" +
-                     " if " +
-                    "you're exporting custom content for others to use");
-            exportAsBackup.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAsBackupActionPerformed(evt);
-                  }
-            });
-            exportBackupGroup.add(exportAsBackup);
-
-            exportAsBackupGUID.setText("GUID");
-            exportAsBackupGUID.setToolTipText("Export backup without modifying resource " +
-             "references");
-            exportAsBackupGUID.setActionCommand("exportAsBackupGUID");
-            exportAsBackupGUID.setName(""); // NOI18N
-            exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportAsBackupGUIDActionPerformed(evt);
-                  }
-            });
-            exportBackupGroup.add(exportAsBackupGUID);
-
-            exportGroup.add(exportBackupGroup);
-
-            exportPaletteContext.setText("BIN");
-            exportPaletteContext.setToolTipText("Convert this palette to a level");
-            exportPaletteContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportPaletteContextActionPerformed(evt);
-                  }
-            });
-            exportGroup.add(exportPaletteContext);
-
-            entryContext.add(exportGroup);
-
-            newEntryGroup.setText("New...");
-            newEntryGroup.setToolTipText("Add new entries to the database");
-
-            newResourceGroup.setText("Resource");
-            newResourceGroup.setToolTipText("Import resources from local files");
-
-            importJSONContext.setText("JSON");
-            importJSONContext.setToolTipText("Import resource from exported JSON data");
-            importJSONContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        importJSONContextActionPerformed(evt);
-                  }
-            });
-            newResourceGroup.add(importJSONContext);
-
-            newTextureContext.setText("Texture");
-            newTextureContext.setToolTipText("Import texture resource from JPG/PNG/DDS");
-            newTextureContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newTextureContextActionPerformed(evt);
-                  }
-            });
-            newResourceGroup.add(newTextureContext);
-
-            newAnimationContext.setText("Animation");
-            newAnimationContext.setToolTipText("Import animation from glTF2.0 file");
-            newAnimationContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newAnimationContextActionPerformed(evt);
-                  }
-            });
-            newResourceGroup.add(newAnimationContext);
-
-            newModelContext.setText("Model");
-            newModelContext.setToolTipText("Import model from glTF2.0 file");
-            newModelContext.setEnabled(false);
-            newResourceGroup.add(newModelContext);
-
-            newEntryGroup.add(newResourceGroup);
-
-            newItemGroup.setText("Item");
-            newItemGroup.setToolTipText("Generate inventory items");
-            newItemGroup.setEnabled(false);
-
-            newStickerContext.setText("Sticker");
-            newItemGroup.add(newStickerContext);
-
-            newEntryGroup.add(newItemGroup);
-
-            newEntryContext.setText("Entry");
-            newEntryContext.setToolTipText("Create a new blank entry in this database");
-            newEntryContext.setActionCommand("File");
-            newEntryContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newEntryContextActionPerformed(evt);
-                  }
-            });
-            newEntryGroup.add(newEntryContext);
-
-            entryContext.add(newEntryGroup);
-
-            newFolderContext.setText("New Folder");
-            newFolderContext.setToolTipText("Create a new folder here");
-            newFolderContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newFolderContextActionPerformed(evt);
-                  }
-            });
-            entryContext.add(newFolderContext);
-
-            renameFolder.setText("Rename Folder");
-            renameFolder.setToolTipText("Renames selected folder");
-            renameFolder.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        renameFolderActionPerformed(evt);
-                  }
-            });
-            entryContext.add(renameFolder);
-
-            replaceGroup.setText("Replace...");
-            replaceGroup.setToolTipText("Data replacement tools");
-
-            replaceCompressedContext.setText("Replace");
-            replaceCompressedContext.setToolTipText("Replace resource data with a selected file " +
-             "from " +
-                                                    "disk");
-            replaceCompressedContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        replaceCompressedContextActionPerformed(evt);
-                  }
-            });
-            replaceGroup.add(replaceCompressedContext);
-
-            replaceDecompressedContext.setText("Decompressed");
-            replaceDecompressedContext
-                    .setToolTipText("Re-compresses file selected from disk and replaces this " +
-                     "entry's " +
-                                    "resource data");
-            replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        replaceDecompressedContextActionPerformed(evt);
-                  }
-            });
-            replaceGroup.add(replaceDecompressedContext);
-
-            replaceDependenciesContext.setText("Dependencies");
-            replaceDependenciesContext.setToolTipText("Edit the dependencies of this resource");
-            replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        replaceDependenciesContextActionPerformed(evt);
-                  }
-            });
-            replaceGroup.add(replaceDependenciesContext);
-
-            replaceImageContext.setText("Image");
-            replaceImageContext.setToolTipText("Replaces data with image loaded from disk");
-            replaceImageContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        replaceImageContextActionPerformed(evt);
-                  }
-            });
-            replaceGroup.add(replaceImageContext);
-
-            replaceJSONContext.setText("JSON");
-            replaceJSONContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        replaceJSONContextActionPerformed(evt);
-                  }
-            });
-            replaceGroup.add(replaceJSONContext);
-
-            entryContext.add(replaceGroup);
-
-            dependencyGroup.setText("Dependencies...");
-            dependencyGroup.setToolTipText("Dependency management tools");
-
-            removeDependenciesContext.setText("Remove Dependencies");
-            removeDependenciesContext.setToolTipText(
-                    "Removes all resources from dependency table. This can allow levels with " +
-                     "missing " +
-                    "dependencies to potentially load.");
-            removeDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        removeDependenciesContextActionPerformed(evt);
-                  }
-            });
-            dependencyGroup.add(removeDependenciesContext);
-
-            removeMissingDependenciesContext.setText("Remove Missing Dependencies");
-            removeMissingDependenciesContext.setToolTipText(
-                    "Removes only missing resources from dependency table. This can allow levels " +
-                     "with" +
-                    " missing dependencies to potentially load.");
-            removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        removeMissingDependenciesContextActionPerformed(evt);
-                  }
-            });
-            dependencyGroup.add(removeMissingDependenciesContext);
-
-            entryContext.add(dependencyGroup);
-
-            duplicateContext.setText("Duplicate");
-            duplicateContext.setToolTipText("Create a duplicate entry copying this one with a new" +
-             " " +
-                                            "GUID");
-            duplicateContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        duplicateContextActionPerformed(evt);
-                  }
-            });
-            entryContext.add(duplicateContext);
-
-            copyGroup.setText("Copy To...");
-            copyGroup.setToolTipText("Copy selected entries to another database");
-            entryContext.add(copyGroup);
-
-            zeroContext.setText("Zero");
-            zeroContext.setToolTipText("Removes resource hash. Allows files to be loaded from " +
-             "disk " +
-                                       "rather than the FARC");
-            zeroContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        zeroContextActionPerformed(evt);
-                  }
-            });
-            entryContext.add(zeroContext);
-
-            deleteContext.setText("Delete");
-            deleteContext.setToolTipText("Deletes selected entries from the database");
-            deleteContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        deleteContextActionPerformed(evt);
-                  }
-            });
-            entryContext.add(deleteContext);
-
-            clear.setText("Clear");
-            clear.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        clearActionPerformed(evt);
-                  }
-            });
-            consolePopup.add(clear);
-
-            metadataButtonGroup.add(LAMSMetadata);
-            metadataButtonGroup.add(StringMetadata);
-
-            setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-            setTitle("Craftworld Toolkit");
-            setMinimumSize(new java.awt.Dimension(698, 296));
-
-            workspace.setDividerLocation(275);
-
-            details.setResizeWeight(1);
-            details.setDividerLocation(850);
-
-            previewContainer.setDividerLocation(325);
-            previewContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-
-            console.setEditable(false);
-            console.setColumns(20);
-            console.setLineWrap(true);
-            console.setRows(5);
-            console.addMouseListener(new java.awt.event.MouseAdapter()
-            {
-                  public void mouseReleased(java.awt.event.MouseEvent evt)
-                  {
-                        consoleMouseReleased(evt);
-                  }
-            });
-            consoleContainer.setViewportView(console);
-
-            previewContainer.setBottomComponent(consoleContainer);
-
-            overviewPane.setDividerLocation(325);
-
-            texture.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            texture.setText("No preview to be displayed.");
-            texture.setToolTipText("");
-            texture.setFocusable(false);
-            overviewPane.setLeftComponent(texture);
-
-            javax.swing.GroupLayout hexLayout = new javax.swing.GroupLayout(hex);
-            hex.setLayout(hexLayout);
-            hexLayout.setHorizontalGroup(
-                    hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 0, Short.MAX_VALUE));
-            hexLayout.setVerticalGroup(
-                    hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 292, Short.MAX_VALUE));
-
-            overviewPane.setRightComponent(hex);
-
-            renderPane.addTab("Overview", overviewPane);
-
-            javax.swing.GroupLayout scenePanelLayout = new javax.swing.GroupLayout(scenePanel);
-            scenePanel.setLayout(scenePanelLayout);
-            scenePanelLayout.setHorizontalGroup(
-                    scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 850, Short.MAX_VALUE));
-            scenePanelLayout.setVerticalGroup(
-                    scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 292, Short.MAX_VALUE));
-
-            renderPane.addTab("Scene", scenePanel);
-
-            previewContainer.setTopComponent(renderPane);
-
-            details.setLeftComponent(previewContainer);
-
-            infoCardPanel.setLayout(new java.awt.CardLayout());
-
-            fileDataPane.setDividerLocation(204);
-            fileDataPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-            fileDataPane.setMaximumSize(new java.awt.Dimension(55, 2147483647));
-            fileDataPane.setMinimumSize(new java.awt.Dimension(55, 102));
-            fileDataPane.setPreferredSize(new java.awt.Dimension(55, 1120));
-
-            tableContainer.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-            tableContainer.setMaximumSize(new java.awt.Dimension(452, 32767));
-            tableContainer.setMinimumSize(new java.awt.Dimension(452, 6));
-
-            entryTable.setModel(new javax.swing.table.DefaultTableModel(
-                    new Object[][] {
-                            { "Path", "N/A" },
-                            { "Timestamp", "N/A" },
-                            { "SHA1", "N/A" },
-                            { "Size", "N/A" },
-                            { "GUID", "N/A" },
-                            { "GUID (Hex)", "N/A" },
-                            { "GUID (7-bit)", "N/A" },
-                            { "Revision", "N/A" }
-                    },
-                    new String[] {
-                            "Field", "Value"
-                    })
-            {
-                  final boolean[] canEdit = new boolean[] {
-                          true, false
-                  };
-
-                  public boolean isCellEditable(int rowIndex, int columnIndex)
-                  {
-                        return canEdit[columnIndex];
-                  }
-            });
-            entryTable.getTableHeader().setReorderingAllowed(false);
-            tableContainer.setViewportView(entryTable);
-            if (entryTable.getColumnModel().getColumnCount() > 0)
-            {
-                  entryTable.getColumnModel().getColumn(0).setResizable(false);
-                  entryTable.getColumnModel().getColumn(1).setResizable(false);
+                  JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Texture failed to convert!",
+                          "Texture Importer",
+                          JOptionPane.ERROR_MESSAGE);
+                  return;
             }
 
-            fileDataPane.setLeftComponent(tableContainer);
-
-            entryModifiers.setMaximumSize(new java.awt.Dimension(452, 32767));
-            entryModifiers.setMinimumSize(new java.awt.Dimension(452, 81));
-            entryModifiers.setPreferredSize(new java.awt.Dimension(452, 713));
-
-            dependencyTreeContainer.setAlignmentX(2.0F);
-
-            javax.swing.tree.DefaultMutableTreeNode treeNode1 =
-                    new javax.swing.tree.DefaultMutableTreeNode("root");
-            dependencyTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-            dependencyTree.setRootVisible(false);
-            dependencyTreeContainer.setViewportView(dependencyTree);
-
-            entryModifiers.addTab("Dependencies", dependencyTreeContainer);
-
-            LAMSMetadata.setText("LAMS");
-            LAMSMetadata.addActionListener(new java.awt.event.ActionListener()
+            if (texture == null)
+                  return;
+            
+            FileData database = ResourceSystem.getSelectedDatabase();
+            ResourceDescriptor textureDescriptor;
+            boolean inGameDatabase = database.getType().hasGUIDs();
+            if (inGameDatabase)
             {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        LAMSMetadataActionPerformed(evt);
-                  }
-            });
-
-            StringMetadata.setText("String");
-            StringMetadata.addActionListener(new java.awt.event.ActionListener()
+                // Prompt the user to add the texture to the database
+                FileEntry textureResourceEntry = DatabaseCallbacks.newEntry(texture);
+                if (textureResourceEntry == null)
+                {
+                    JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Sticker import was cancelled", "Item Importer", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                
+                textureDescriptor = new ResourceDescriptor((GUID)textureResourceEntry.getKey(), ResourceType.TEXTURE);
+            }
+            else
             {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        StringMetadataActionPerformed(evt);
-                  }
-            });
-
-            iconLabel.setText("Icon");
-
-            iconField.setEditable(false);
-
-            titleLabel.setText("Title");
-
-            descriptionLabel.setText("Description");
-
-            descriptionField.setEditable(false);
-            descriptionField.setColumns(20);
-            descriptionField.setLineWrap(true);
-            descriptionField.setRows(5);
-            descriptionField.setWrapStyleWord(true);
-
-            titleField.setEditable(false);
-
-            locationLabel.setText("Location");
-
-            locationField.setEditable(false);
-            locationField.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        locationFieldActionPerformed(evt);
-                  }
-            });
-
-            categoryLabel.setText("Category");
-
-            categoryField.setEditable(false);
-
-            pageCombo.setEnabled(false);
-
-            creatorLabel.setText("Creator");
-
-            creatorField.setEditable(false);
-
-            subCombo.setEditable(false);
-            subCombo.setAutoscrolls(false);
-            subCombo.setEnabled(false);
-
-            javax.swing.GroupLayout itemMetadataLayout = new javax.swing.GroupLayout(itemMetadata);
-            itemMetadata.setLayout(itemMetadataLayout);
-            itemMetadataLayout.setHorizontalGroup(
-                    itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                    .addGap(12, 12, 12)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                                    .addGap(6, 6, 6)
-                                                    .addComponent(LAMSMetadata,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 80,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                    .addComponent(StringMetadata,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            80,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(descriptionLabel)
-                                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                                    .addComponent(iconLabel)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(iconField,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 171,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                                    .addComponent(titleLabel,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 28,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(titleField,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 166,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(descriptionField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE, 0,
-                                                    Short.MAX_VALUE)
-                                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                                    .addGroup(itemMetadataLayout
-                                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(locationLabel)
-                                                            .addComponent(categoryLabel,
-                                                                    javax.swing.GroupLayout.Alignment.TRAILING,
-                                                                    javax.swing.GroupLayout.PREFERRED_SIZE, 52,
-                                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addGroup(itemMetadataLayout
-                                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(locationField)
-                                                            .addComponent(categoryField)))
-                                            .addComponent(pageCombo, 0,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    Short.MAX_VALUE)
-                                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                                    .addComponent(creatorLabel,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 50,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(creatorField,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 144,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(subCombo))
-                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            Short.MAX_VALUE)));
-            itemMetadataLayout.setVerticalGroup(
-                    itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(itemMetadataLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(iconLabel)
-                                            .addComponent(iconField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(StringMetadata)
-                                            .addComponent(LAMSMetadata))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(titleLabel)
-                                            .addComponent(titleField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(descriptionLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(descriptionField,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE, 61,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(locationLabel)
-                                            .addComponent(locationField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(categoryLabel,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE, 16,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(categoryField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(itemMetadataLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(creatorLabel)
-                                            .addComponent(creatorField,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            Short.MAX_VALUE)));
-
-            entryModifiers.addTab("Inspector", itemMetadata);
-
-            fileDataPane.setRightComponent(entryModifiers);
-
-            infoCardPanel.add(fileDataPane, "card2");
-
-            jLabel1.setText("Thing UID 0");
-
-            jLabel2.setText("PCamera");
-
-            jLabel3.setText("Target Position");
-
-            cameraPosX.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
-            cameraPosX.setToolTipText("");
-
-            cameraPosY.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
-            cameraPosY.setToolTipText("");
-
-            cameraPosZ.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 100.0f));
-            cameraPosZ.setToolTipText("");
-
-            javax.swing.GroupLayout inspectorPaneLayout =
-             new javax.swing.GroupLayout(inspectorPane);
-            inspectorPane.setLayout(inspectorPaneLayout);
-            inspectorPaneLayout.setHorizontalGroup(
-                    inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(inspectorPaneLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(inspectorPaneLayout
-                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(cameraPosX)
-                                            .addComponent(cameraPosY,
-                                                    javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addGroup(inspectorPaneLayout.createSequentialGroup()
-                                                    .addGroup(inspectorPaneLayout
-                                                            .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(jLabel1)
-                                                            .addComponent(jLabel2)
-                                                            .addComponent(jLabel3))
-                                                    .addGap(0, 159, Short.MAX_VALUE))
-                                            .addComponent(cameraPosZ))
-                                    .addContainerGap()));
-            inspectorPaneLayout.setVerticalGroup(
-                    inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(inspectorPaneLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(jLabel1)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jLabel3)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(cameraPosX,
-javax.swing.GroupLayout.PREFERRED_SIZE,
-                                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(cameraPosY,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(cameraPosZ,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap(441, Short.MAX_VALUE)));
-
-            infoCardPanel.add(inspectorPane, "card3");
-
-            details.setRightComponent(infoCardPanel);
-
-            workspace.setRightComponent(details);
-
-            treeContainer.setDividerLocation(30);
-            treeContainer.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-            treeContainer.setMinimumSize(new java.awt.Dimension(150, 200));
-            treeContainer.setPreferredSize(new java.awt.Dimension(150, 200));
-
-            search.setEditable(false);
-            search.setText(" Search is currently disabled.");
-            search.setBorder(null);
-            search.setFocusable(false);
-            search.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        searchActionPerformed(evt);
-                  }
-            });
-            treeContainer.setLeftComponent(search);
-            treeContainer.setRightComponent(fileDataTabs);
-
-            resourceTabs.addTab("Assets", treeContainer);
-
-            javax.swing.GroupLayout hierachyPanelLayout =
-                    new javax.swing.GroupLayout(hierachyPanel);
-            hierachyPanel.setLayout(hierachyPanelLayout);
-            hierachyPanelLayout.setHorizontalGroup(
-                    hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 150, Short.MAX_VALUE));
-            hierachyPanelLayout.setVerticalGroup(
-                    hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGap(0, 558, Short.MAX_VALUE));
-
-            resourceTabs.addTab("Hierachy", hierachyPanel);
-
-            workspace.setLeftComponent(resourceTabs);
-
-            progressBar.setEnabled(false);
-
-            fileMenu.setText("File");
-
-            menuFileMenu.setText("New");
-
-            newGamedataGroup.setText("Gamedata");
-
-            newFileDBGroup.setText("FileDB");
-
-            newLegacyDB.setText("LBP1/2");
-            newLegacyDB.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newLegacyDBActionPerformed(evt);
-                  }
-            });
-            newFileDBGroup.add(newLegacyDB);
-
-            newVitaDB.setText("LBP Vita");
-            newVitaDB.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newVitaDBActionPerformed(evt);
-                  }
-            });
-            newFileDBGroup.add(newVitaDB);
-
-            newModernDB.setText("LBP3");
-            newModernDB.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newModernDBActionPerformed(evt);
-                  }
-            });
-            newFileDBGroup.add(newModernDB);
-
-            newGamedataGroup.add(newFileDBGroup);
-
-            createFileArchive.setText("File Archive");
-            createFileArchive.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        createFileArchiveActionPerformed(evt);
-                  }
-            });
-            newGamedataGroup.add(createFileArchive);
-
-            menuFileMenu.add(newGamedataGroup);
-
-            newMod.setText("Mod");
-            newMod.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        newModActionPerformed(evt);
-                  }
-            });
-            menuFileMenu.add(newMod);
-
-            fileMenu.add(menuFileMenu);
-
-            loadGroupMenu.setText("Load");
-
-            gamedataMenu.setText("Gamedata");
-
-            loadDB.setText("FileDB (.MAP)");
-            loadDB.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadDBActionPerformed(evt);
-                  }
-            });
-            gamedataMenu.add(loadDB);
-
-            loadArchive.setText("File Archive (.FARC)");
-            loadArchive.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadArchiveActionPerformed(evt);
-                  }
-            });
-            gamedataMenu.add(loadArchive);
-
-            loadGroupMenu.add(gamedataMenu);
-
-            savedataMenu.setText("Savedata");
-
-            loadBigProfile.setText("Big Profile");
-            loadBigProfile.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadBigProfileActionPerformed(evt);
-                  }
-            });
-            savedataMenu.add(loadBigProfile);
-
-            loadVitaProfile.setText("Vita Profile");
-            loadVitaProfile.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadVitaProfileActionPerformed(evt);
-                  }
-            });
-            savedataMenu.add(loadVitaProfile);
-
-            loadProfileBackup.setText("Profile Backup");
-            loadProfileBackup.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadProfileBackupActionPerformed(evt);
-                  }
-            });
-            savedataMenu.add(loadProfileBackup);
-
-            loadGroupMenu.add(savedataMenu);
-
-            loadMod.setText("Mod");
-            loadMod.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        loadModActionPerformed(evt);
-                  }
-            });
-            loadGroupMenu.add(loadMod);
-
-            fileMenu.add(loadGroupMenu);
-            fileMenu.add(jSeparator9);
-
-            manageProfile.setText("Profiles");
-            manageProfile.setToolTipText("Manage boot profiles and settings");
-            manageProfile.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        manageProfileActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(manageProfile);
-
-            manageSettings.setText("Settings");
-            manageSettings.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        manageSettingsActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(manageSettings);
-            fileMenu.add(saveDivider);
-
-            saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
-                    java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
-            saveAs.setText("Save as...");
-            saveAs.setToolTipText("Save a copy of selected database");
-            saveAs.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        saveAsActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(saveAs);
-
-            saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
-                    java.awt.event.InputEvent.CTRL_DOWN_MASK));
-            saveMenu.setText("Save");
-            saveMenu.setToolTipText("Save selected database and any archives that may have " +
- "changes");
-            saveMenu.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        saveMenuActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(saveMenu);
-            fileMenu.add(jSeparator4);
-
-            closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W,
-                    java.awt.event.InputEvent.CTRL_DOWN_MASK));
-            closeTab.setText("Close Tab");
-            closeTab.setToolTipText("Close currently selected tab");
-            closeTab.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        closeTabActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(closeTab);
-
-            reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R,
-                    java.awt.event.InputEvent.CTRL_DOWN_MASK));
-            reboot.setText("Reboot");
-            reboot.setToolTipText("Restart Toolkit");
-            reboot.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        rebootActionPerformed(evt);
-                  }
-            });
-            fileMenu.add(reboot);
-
-            navigation.add(fileMenu);
-
-            editMenu.setText("Edit");
-
-            editMenuDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
-            editMenuDelete.setText("Delete");
-            editMenuDelete.setToolTipText("Deletes selected entries from the database");
-            editMenuDelete.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editMenuDeleteActionPerformed(evt);
-                  }
-            });
-            editMenu.add(editMenuDelete);
-
-            navigation.add(editMenu);
-
-            archiveMenu.setText("Archive");
-
-            manageArchives.setText("Manage Archives");
-            manageArchives.setToolTipText("Add/Remove/Save loaded archives");
-            manageArchives.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        manageArchivesActionPerformed(evt);
-                  }
-            });
-            archiveMenu.add(manageArchives);
-            archiveMenu.add(jSeparator10);
-
-            addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A,
-                    java.awt.event.InputEvent.CTRL_DOWN_MASK));
-            addFile.setText("Add...");
-            addFile.setToolTipText("Add files to a loaded archive");
-            addFile.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        addFileActionPerformed(evt);
-                  }
-            });
-            archiveMenu.add(addFile);
-
-            addFolder.setText("Add Folder");
-            addFolder.setToolTipText("Add all files in a folder to a loaded archive");
-            addFolder.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        addFolderActionPerformed(evt);
-                  }
-            });
-            archiveMenu.add(addFolder);
-
-            navigation.add(archiveMenu);
-
-            databaseMenu.setText("FileDB");
-
-            patchMAP.setText("Patch");
-            patchMAP.setToolTipText("Patch another FileDB on-top of this one");
-            patchMAP.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        patchMAPActionPerformed(evt);
-                  }
-            });
-            databaseMenu.add(patchMAP);
-
-            remapDatabaseContext.setText("Remap");
-            remapDatabaseContext.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        remapDatabaseContextActionPerformed(evt);
-                  }
-            });
-            databaseMenu.add(remapDatabaseContext);
-            databaseMenu.add(jSeparator6);
-
-            dumpRLST.setText("Dump RLST");
-            dumpRLST.setToolTipText("Dump all entries to RLST");
-            dumpRLST.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        dumpRLSTActionPerformed(evt);
-                  }
-            });
-            databaseMenu.add(dumpRLST);
-
-            navigation.add(databaseMenu);
-
-            profileMenu.setText("Profile");
-
-            extractBigProfile.setText("Extract Profile");
-            extractBigProfile.setToolTipText("Extract RBigProfile from save, mostly used for " +
-                                             "debugging.");
-            extractBigProfile.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        extractBigProfileActionPerformed(evt);
-                  }
-            });
-            profileMenu.add(extractBigProfile);
-            profileMenu.add(jSeparator1);
-
-            editProfileSlots.setText("Edit Slots");
-            editProfileSlots.setToolTipText("Edit and add levels to this profile");
-            editProfileSlots.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editProfileSlotsActionPerformed(evt);
-                  }
-            });
-            profileMenu.add(editProfileSlots);
-
-            editProfileItems.setText("Edit Items");
-            editProfileItems.setToolTipText("Edit and add collected items to this profile");
-            editProfileItems.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        editProfileItemsActionPerformed(evt);
-                  }
-            });
-            profileMenu.add(editProfileItems);
-
-            navigation.add(profileMenu);
-
-            modMenu.setText("Mod");
-
-            openModMetadata.setText("Edit");
-            openModMetadata.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        openModMetadataActionPerformed(evt);
-                  }
-            });
-            modMenu.add(openModMetadata);
-
-            navigation.add(modMenu);
-
-            toolsMenu.setText("Tools");
-
-            openCompressinator.setText("Compressinator GUI");
-            openCompressinator.setToolTipText("Compress files to resources");
-            openCompressinator.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        openCompressinatorActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(openCompressinator);
-
-            openGfxCompiler.setText("Gfx Compiler GUI");
-            openGfxCompiler.setToolTipText("Compile GMATs from source shaders");
-            openGfxCompiler.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        openGfxCompilerActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(openGfxCompiler);
-            toolsMenu.add(dumpSep);
-
-            jMenu1.setText("Archive Utilities");
-
-            fileArchiveIntegrityCheck.setText("FARC Integrity Check");
-            fileArchiveIntegrityCheck.setToolTipText("Verify that all data in the FARC matches " +
-                                                     "hash " +
-                                                     "table");
-            fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        fileArchiveIntegrityCheckActionPerformed(evt);
-                  }
-            });
-            jMenu1.add(fileArchiveIntegrityCheck);
-
-            mergeFARCs.setText("Merge Archives");
-            mergeFARCs.setToolTipText("Merge two archives together");
-            mergeFARCs.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        mergeFARCsActionPerformed(evt);
-                  }
-            });
-            jMenu1.add(mergeFARCs);
-
-            swapProfilePlatform.setText("Swap FAR4 Endianness (PS3/PS4)");
-            swapProfilePlatform.setToolTipText(
-                    "Switch big/littlefart endianness, used for converting profile saves between " +
-                     "PS3 " +
-                    "and PS4");
-            swapProfilePlatform.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        swapProfilePlatformActionPerformed(evt);
-                  }
-            });
-            jMenu1.add(swapProfilePlatform);
-
-            toolsMenu.add(jMenu1);
-
-            jMenu2.setText("File Utilities");
-
-            convertTexture.setText("PNG/JPG to TEX");
-            convertTexture.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        convertTextureActionPerformed(evt);
-                  }
-            });
-            jMenu2.add(convertTexture);
-
-            decompressResource.setText("Decompress Resource");
-            decompressResource.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        decompressResourceActionPerformed(evt);
-                  }
-            });
-            jMenu2.add(decompressResource);
-
-            toolsMenu.add(jMenu2);
-
-            collectionD.setText("Collectors");
-            collectionD.setToolTipText("");
-
-            collectorPresets.setText("Presets");
-
-            collectAllLevelDependencies.setText("RLevel");
-            collectAllLevelDependencies.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        collectAllLevelDependenciesActionPerformed(evt);
-                  }
-            });
-            collectorPresets.add(collectAllLevelDependencies);
-
-            collectAllItemDependencies.setText("RPlan");
-            collectAllItemDependencies.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        collectAllItemDependenciesActionPerformed(evt);
-                  }
-            });
-            collectorPresets.add(collectAllItemDependencies);
-
-            collectionD.add(collectorPresets);
-
-            customCollector.setText("Custom");
-            customCollector.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        customCollectorActionPerformed(evt);
-                  }
-            });
-            collectionD.add(customCollector);
-
-            toolsMenu.add(collectionD);
-            toolsMenu.add(jSeparator3);
-
-            fixDependencyTable.setText("Calculate Dependency Table");
-            fixDependencyTable.setToolTipText(
-                    "Takes any compressed resource and attempts to automatically generate the " +
-                    "dependency table");
-            fixDependencyTable.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        fixDependencyTableActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(fixDependencyTable);
-
-            generateDiff.setText("Get FileDB diffs");
-            generateDiff.setToolTipText("Generates a text file showing differences between two " +
-                                        "FileDB's");
-            generateDiff.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        generateDiffActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(generateDiff);
-            toolsMenu.add(jSeparator5);
-
-            installProfileMod.setText("Install Mod(s)");
-            installProfileMod.setToolTipText("Installs mod file(s) to currently selected database");
-            installProfileMod.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        installProfileModActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(installProfileMod);
-
-            exportWorld.setText("Export RLevel");
-            exportWorld.setToolTipText("Exports the current scene graph as a level");
-            exportWorld.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportWorldActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(exportWorld);
-
-            exportSceneGraph.setText("Export Scene Graph");
-            exportSceneGraph.setToolTipText("Dumps the current scene graph to a file");
-            exportSceneGraph.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        exportSceneGraphActionPerformed(evt);
-                  }
-            });
-            toolsMenu.add(exportSceneGraph);
-
-            navigation.add(toolsMenu);
-
-            debugMenu.setText("Debug");
-
-            jMenuItem1.setText("open big profile gui");
-            jMenuItem1.addActionListener(new java.awt.event.ActionListener()
-            {
-                  public void actionPerformed(java.awt.event.ActionEvent evt)
-                  {
-                        jMenuItem1ActionPerformed(evt);
-                  }
-            });
-            debugMenu.add(jMenuItem1);
-
-            navigation.add(debugMenu);
-
-            setJMenuBar(navigation);
-
-            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-            getContentPane().setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(progressBar,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                    Short.MAX_VALUE)
-                                            .addComponent(workspace,
-                                                    javax.swing.GroupLayout.DEFAULT_SIZE, 1385,
-                                                    Short.MAX_VALUE))
-                                    .addContainerGap()));
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                            591, Short.MAX_VALUE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(progressBar,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE
-                                            , 7,
-                                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(12, 12, 12)));
-
-            pack();
-      }// </editor-fold>//GEN-END:initComponents
+                ResourceSystem.add(texture);
+                textureDescriptor = new ResourceDescriptor(SHA1.fromBuffer(texture), ResourceType.TEXTURE);
+            }
+            
+            Revision revision = new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Revisions.LD_LAMS_KEYS);
+            Thing thing = new Thing(1);
+            thing.setPart(Part.STICKERS, new PStickers(textureDescriptor));
+            
+            InventoryItemDetails details = new InventoryItemDetails();
+            details.type.add(InventoryObjectType.STICKER);
+            // Assume it's a user sticker if we're in a database that supports GUIDs.
+            if (!inGameDatabase)
+                details.type.add(InventoryObjectType.USER_STICKER);
+            
+            details.icon = textureDescriptor;
+            details.userCreatedDetails = new UserCreatedDetails("Imported Sticker", "");
+            
+            RPlan plan = new RPlan(revision, CompressionFlags.USE_ALL_COMPRESSION, thing, details);
+            ItemManager manager = new ItemManager(null, plan);
+            manager.setVisible(true);
+           
+            // Now that the user has configured the item details, import the finished asset to the database
+            byte[] planData = SerializedResource.compress(plan.build());
+            FileEntry planResourceEntry = DatabaseCallbacks.newEntry(planData);
+            if (inGameDatabase && planResourceEntry == null)
+                JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Sticker import was cancelled", "Item Importer", JOptionPane.INFORMATION_MESSAGE);
+            else 
+                JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Successfully imported sticker!", "Item Importer", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_newStickerContextActionPerformed
 
       private void loadDBActionPerformed(java.awt.event.ActionEvent evt)
       {// GEN-FIRST:event_loadDBActionPerformed
@@ -3322,7 +3113,7 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
 
             RLevel level = new RLevel();
 
-            PWorld world = level.world.getPart(Part.WORLD);
+            PWorld world = level.worldThing.getPart(Part.WORLD);
             ArrayList<Thing> things = world.things;
 
             for (ResourceDescriptor descriptor : palette.planList)
@@ -3752,13 +3543,16 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
 
             entryTable.setValueAt(entry.getPath(), 0, 1);
 
-            if (entry instanceof FileDBRow)
+            String timestamp = "N/A";
+            if (entry instanceof FileDBRow row) timestamp = new Timestamp(row.getDate() * 1000L).toString();
+            else if (entry instanceof SaveEntry row && row.isItem())
             {
-                  Timestamp timestamp = new Timestamp(((FileDBRow) entry).getDate() * 1000L);
-                  entryTable.setValueAt(timestamp.toString(), 1, 1);
+                  InventoryItem item = row.getItem();
+                  if (item.details != null)
+                        timestamp = new Timestamp(item.details.dateAdded * 1000L).toString();
             }
-            else
-                  entryTable.setValueAt("N/A", 1, 1);
+            
+            entryTable.setValueAt(timestamp, 1, 1);
             entryTable.setValueAt(entry.getSHA1(), 2, 1);
             entryTable.setValueAt(entry.getSize(), 3, 1);
 
@@ -3814,180 +3608,180 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
             return this;
       }
 
-      // Variables declaration - do not modify//GEN-BEGIN:variables
-      private javax.swing.JRadioButton LAMSMetadata;
-      private javax.swing.JRadioButton StringMetadata;
-      private javax.swing.JMenuItem addFile;
-      private javax.swing.JMenuItem addFolder;
-      public javax.swing.JMenu archiveMenu;
-      private javax.swing.JSpinner cameraPosX;
-      private javax.swing.JSpinner cameraPosY;
-      private javax.swing.JSpinner cameraPosZ;
-      private javax.swing.JTextField categoryField;
-      private javax.swing.JLabel categoryLabel;
-      private javax.swing.JMenuItem clear;
-      private javax.swing.JMenuItem closeTab;
-      private javax.swing.JMenuItem collectAllItemDependencies;
-      private javax.swing.JMenuItem collectAllLevelDependencies;
-      private javax.swing.JMenu collectionD;
-      private javax.swing.JMenu collectorPresets;
-      private javax.swing.JTextArea console;
-      private javax.swing.JScrollPane consoleContainer;
-      private javax.swing.JPopupMenu consolePopup;
-      private javax.swing.JMenuItem convertTexture;
-      private javax.swing.JMenu copyGroup;
-      private javax.swing.JMenuItem createFileArchive;
-      private javax.swing.JTextField creatorField;
-      private javax.swing.JLabel creatorLabel;
-      private javax.swing.JMenuItem customCollector;
-      private javax.swing.JMenu databaseMenu;
-      public javax.swing.JMenu debugMenu;
-      private javax.swing.JMenuItem decompressResource;
-      private javax.swing.JMenuItem deleteContext;
-      private javax.swing.JMenu dependencyGroup;
-      public javax.swing.JTree dependencyTree;
-      private javax.swing.JScrollPane dependencyTreeContainer;
-      private javax.swing.JTextArea descriptionField;
-      private javax.swing.JLabel descriptionLabel;
-      private javax.swing.JSplitPane details;
-      private javax.swing.JMenuItem dumpRLST;
-      private javax.swing.JPopupMenu.Separator dumpSep;
-      private javax.swing.JMenuItem duplicateContext;
-      private javax.swing.JMenuItem editGUIDContext;
-      private javax.swing.JMenu editGroup;
-      private javax.swing.JMenuItem editHashContext;
-      private javax.swing.JMenu editMenu;
-      private javax.swing.JMenuItem editMenuDelete;
-      private javax.swing.JMenuItem editPathContext;
-      private javax.swing.JMenuItem editProfileItems;
-      private javax.swing.JMenuItem editProfileSlots;
-      private javax.swing.JPopupMenu entryContext;
-      public javax.swing.JTabbedPane entryModifiers;
-      public javax.swing.JTable entryTable;
-      private javax.swing.JMenuItem exportAnimation;
-      private javax.swing.JMenuItem exportAsBackup;
-      private javax.swing.JMenuItem exportAsBackupGUID;
-      private javax.swing.JMenuItem exportAsMod;
-      private javax.swing.JMenuItem exportAsModCustom;
-      private javax.swing.JMenuItem exportAsModGUID;
-      private javax.swing.JMenu exportBackupGroup;
-      private javax.swing.JMenuItem exportDDS;
-      private javax.swing.JMenuItem exportGLTF;
-      private javax.swing.JMenu exportGroup;
-      private javax.swing.JMenuItem exportJSONContext;
-      private javax.swing.JMenu exportModGroup;
-      private javax.swing.JMenu exportModelGroup;
-      private javax.swing.JMenu exportOBJ;
-      private javax.swing.JMenuItem exportOBJTEXCOORD0;
-      private javax.swing.JMenuItem exportOBJTEXCOORD1;
-      private javax.swing.JMenuItem exportOBJTEXCOORD2;
-      private javax.swing.JMenuItem exportPNG;
-      private javax.swing.JMenuItem exportPaletteContext;
-      private javax.swing.JMenuItem exportSceneGraph;
-      private javax.swing.JMenu exportTextureGroupContext;
-      private javax.swing.JMenuItem exportWorld;
-      private javax.swing.JMenuItem extractBigProfile;
-      private javax.swing.JMenuItem extractContext;
-      private javax.swing.JMenuItem extractDecompressedContext;
-      private javax.swing.JMenu extractGroup;
-      private javax.swing.JMenuItem fileArchiveIntegrityCheck;
-      private javax.swing.JSplitPane fileDataPane;
-      public javax.swing.JTabbedPane fileDataTabs;
-      public javax.swing.JMenu fileMenu;
-      private javax.swing.JMenuItem fixDependencyTable;
-      private javax.swing.JMenu gamedataMenu;
-      private javax.swing.JMenuItem generateDiff;
-      private tv.porst.jhexview.JHexView hex;
-      private javax.swing.JPanel hierachyPanel;
-      private javax.swing.JTextField iconField;
-      private javax.swing.JLabel iconLabel;
-      private javax.swing.JMenuItem importJSONContext;
-      private javax.swing.JPanel infoCardPanel;
-      private javax.swing.JPanel inspectorPane;
-      private javax.swing.JMenuItem installProfileMod;
-      private javax.swing.JPanel itemMetadata;
-      private javax.swing.JLabel jLabel1;
-      private javax.swing.JLabel jLabel2;
-      private javax.swing.JLabel jLabel3;
-      private javax.swing.JMenu jMenu1;
-      private javax.swing.JMenu jMenu2;
-      private javax.swing.JMenuItem jMenuItem1;
-      private javax.swing.JPopupMenu.Separator jSeparator1;
-      private javax.swing.JPopupMenu.Separator jSeparator10;
-      private javax.swing.JPopupMenu.Separator jSeparator3;
-      private javax.swing.JPopupMenu.Separator jSeparator4;
-      private javax.swing.JPopupMenu.Separator jSeparator5;
-      private javax.swing.JPopupMenu.Separator jSeparator6;
-      private javax.swing.JPopupMenu.Separator jSeparator9;
-      private javax.swing.JMenuItem loadArchive;
-      public javax.swing.JMenuItem loadBigProfile;
-      public javax.swing.JMenuItem loadDB;
-      private javax.swing.JMenu loadGroupMenu;
-      private javax.swing.JMenuItem loadMod;
-      private javax.swing.JMenuItem loadProfileBackup;
-      private javax.swing.JMenuItem loadVitaProfile;
-      private javax.swing.JTextField locationField;
-      private javax.swing.JLabel locationLabel;
-      private javax.swing.JMenuItem manageArchives;
-      private javax.swing.JMenuItem manageProfile;
-      private javax.swing.JMenuItem manageSettings;
-      private javax.swing.JMenu menuFileMenu;
-      private javax.swing.JMenuItem mergeFARCs;
-      private javax.swing.ButtonGroup metadataButtonGroup;
-      public javax.swing.JMenu modMenu;
-      private javax.swing.JMenuBar navigation;
-      private javax.swing.JMenuItem newAnimationContext;
-      private javax.swing.JMenuItem newEntryContext;
-      private javax.swing.JMenu newEntryGroup;
-      public javax.swing.JMenu newFileDBGroup;
-      private javax.swing.JMenuItem newFolderContext;
-      private javax.swing.JMenu newGamedataGroup;
-      private javax.swing.JMenu newItemGroup;
-      private javax.swing.JMenuItem newLegacyDB;
-      private javax.swing.JMenuItem newMod;
-      private javax.swing.JMenuItem newModelContext;
-      private javax.swing.JMenuItem newModernDB;
-      private javax.swing.JMenu newResourceGroup;
-      private javax.swing.JMenuItem newStickerContext;
-      private javax.swing.JMenuItem newTextureContext;
-      private javax.swing.JMenuItem newVitaDB;
-      private javax.swing.JMenuItem openCompressinator;
-      private javax.swing.JMenuItem openGfxCompiler;
-      public javax.swing.JMenuItem openModMetadata;
-      public javax.swing.JSplitPane overviewPane;
-      private javax.swing.JComboBox<String> pageCombo;
-      private javax.swing.JMenuItem patchMAP;
-      private javax.swing.JSplitPane previewContainer;
-      private javax.swing.JMenu profileMenu;
-      public javax.swing.JProgressBar progressBar;
-      private javax.swing.JMenuItem reboot;
-      private javax.swing.JMenuItem remapDatabaseContext;
-      private javax.swing.JMenuItem removeDependenciesContext;
-      private javax.swing.JMenuItem removeMissingDependenciesContext;
-      private javax.swing.JMenuItem renameFolder;
-      private javax.swing.JTabbedPane renderPane;
-      private javax.swing.JMenuItem replaceCompressedContext;
-      private javax.swing.JMenuItem replaceDecompressedContext;
-      private javax.swing.JMenuItem replaceDependenciesContext;
-      private javax.swing.JMenu replaceGroup;
-      private javax.swing.JMenuItem replaceImageContext;
-      private javax.swing.JMenuItem replaceJSONContext;
-      private javax.swing.JTabbedPane resourceTabs;
-      public javax.swing.JMenuItem saveAs;
-      private javax.swing.JPopupMenu.Separator saveDivider;
-      public javax.swing.JMenuItem saveMenu;
-      public javax.swing.JMenu savedataMenu;
-      private javax.swing.JPanel scenePanel;
-      public javax.swing.JTextField search;
-      private javax.swing.JTextField subCombo;
-      private javax.swing.JMenuItem swapProfilePlatform;
-      private javax.swing.JScrollPane tableContainer;
-      public javax.swing.JLabel texture;
-      private javax.swing.JTextField titleField;
-      private javax.swing.JLabel titleLabel;
-      private javax.swing.JMenu toolsMenu;
-      private javax.swing.JSplitPane treeContainer;
-      private javax.swing.JSplitPane workspace;
-      private javax.swing.JMenuItem zeroContext;
-      // End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton LAMSMetadata;
+    private javax.swing.JRadioButton StringMetadata;
+    private javax.swing.JMenuItem addFile;
+    private javax.swing.JMenuItem addFolder;
+    public javax.swing.JMenu archiveMenu;
+    private javax.swing.JSpinner cameraPosX;
+    private javax.swing.JSpinner cameraPosY;
+    private javax.swing.JSpinner cameraPosZ;
+    private javax.swing.JTextField categoryField;
+    private javax.swing.JLabel categoryLabel;
+    private javax.swing.JMenuItem clear;
+    private javax.swing.JMenuItem closeTab;
+    private javax.swing.JMenuItem collectAllItemDependencies;
+    private javax.swing.JMenuItem collectAllLevelDependencies;
+    private javax.swing.JMenu collectionD;
+    private javax.swing.JMenu collectorPresets;
+    private javax.swing.JTextArea console;
+    private javax.swing.JScrollPane consoleContainer;
+    private javax.swing.JPopupMenu consolePopup;
+    private javax.swing.JMenuItem convertTexture;
+    private javax.swing.JMenu copyGroup;
+    private javax.swing.JMenuItem createFileArchive;
+    private javax.swing.JTextField creatorField;
+    private javax.swing.JLabel creatorLabel;
+    private javax.swing.JMenuItem customCollector;
+    private javax.swing.JMenu databaseMenu;
+    public javax.swing.JMenu debugMenu;
+    private javax.swing.JMenuItem decompressResource;
+    private javax.swing.JMenuItem deleteContext;
+    private javax.swing.JMenu dependencyGroup;
+    public javax.swing.JTree dependencyTree;
+    private javax.swing.JScrollPane dependencyTreeContainer;
+    private javax.swing.JTextArea descriptionField;
+    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JSplitPane details;
+    private javax.swing.JMenuItem dumpRLST;
+    private javax.swing.JPopupMenu.Separator dumpSep;
+    private javax.swing.JMenuItem duplicateContext;
+    private javax.swing.JMenuItem editGUIDContext;
+    private javax.swing.JMenu editGroup;
+    private javax.swing.JMenuItem editHashContext;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem editMenuDelete;
+    private javax.swing.JMenuItem editPathContext;
+    private javax.swing.JMenuItem editProfileItems;
+    private javax.swing.JMenuItem editProfileSlots;
+    private javax.swing.JPopupMenu entryContext;
+    public javax.swing.JTabbedPane entryModifiers;
+    public javax.swing.JTable entryTable;
+    private javax.swing.JMenuItem exportAnimation;
+    private javax.swing.JMenuItem exportAsBackup;
+    private javax.swing.JMenuItem exportAsBackupGUID;
+    private javax.swing.JMenuItem exportAsMod;
+    private javax.swing.JMenuItem exportAsModCustom;
+    private javax.swing.JMenuItem exportAsModGUID;
+    private javax.swing.JMenu exportBackupGroup;
+    private javax.swing.JMenuItem exportDDS;
+    private javax.swing.JMenuItem exportGLTF;
+    private javax.swing.JMenu exportGroup;
+    private javax.swing.JMenuItem exportJSONContext;
+    private javax.swing.JMenu exportModGroup;
+    private javax.swing.JMenu exportModelGroup;
+    private javax.swing.JMenu exportOBJ;
+    private javax.swing.JMenuItem exportOBJTEXCOORD0;
+    private javax.swing.JMenuItem exportOBJTEXCOORD1;
+    private javax.swing.JMenuItem exportOBJTEXCOORD2;
+    private javax.swing.JMenuItem exportPNG;
+    private javax.swing.JMenuItem exportPaletteContext;
+    private javax.swing.JMenuItem exportSceneGraph;
+    private javax.swing.JMenu exportTextureGroupContext;
+    private javax.swing.JMenuItem exportWorld;
+    private javax.swing.JMenuItem extractBigProfile;
+    private javax.swing.JMenuItem extractContext;
+    private javax.swing.JMenuItem extractDecompressedContext;
+    private javax.swing.JMenu extractGroup;
+    private javax.swing.JMenuItem fileArchiveIntegrityCheck;
+    private javax.swing.JSplitPane fileDataPane;
+    public javax.swing.JTabbedPane fileDataTabs;
+    public javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem fixDependencyTable;
+    private javax.swing.JMenu gamedataMenu;
+    private javax.swing.JMenuItem generateDiff;
+    private tv.porst.jhexview.JHexView hex;
+    private javax.swing.JPanel hierachyPanel;
+    private javax.swing.JTextField iconField;
+    private javax.swing.JLabel iconLabel;
+    private javax.swing.JMenuItem importJSONContext;
+    private javax.swing.JPanel infoCardPanel;
+    private javax.swing.JPanel inspectorPane;
+    private javax.swing.JMenuItem installProfileMod;
+    private javax.swing.JPanel itemMetadata;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
+    private javax.swing.JMenuItem loadArchive;
+    public javax.swing.JMenuItem loadBigProfile;
+    public javax.swing.JMenuItem loadDB;
+    private javax.swing.JMenu loadGroupMenu;
+    private javax.swing.JMenuItem loadMod;
+    private javax.swing.JMenuItem loadProfileBackup;
+    private javax.swing.JMenuItem loadVitaProfile;
+    private javax.swing.JTextField locationField;
+    private javax.swing.JLabel locationLabel;
+    private javax.swing.JMenuItem manageArchives;
+    private javax.swing.JMenuItem manageProfile;
+    private javax.swing.JMenuItem manageSettings;
+    private javax.swing.JMenu menuFileMenu;
+    private javax.swing.JMenuItem mergeFARCs;
+    private javax.swing.ButtonGroup metadataButtonGroup;
+    public javax.swing.JMenu modMenu;
+    private javax.swing.JMenuBar navigation;
+    private javax.swing.JMenuItem newAnimationContext;
+    private javax.swing.JMenuItem newEntryContext;
+    private javax.swing.JMenu newEntryGroup;
+    public javax.swing.JMenu newFileDBGroup;
+    private javax.swing.JMenuItem newFolderContext;
+    private javax.swing.JMenu newGamedataGroup;
+    private javax.swing.JMenu newItemGroup;
+    private javax.swing.JMenuItem newLegacyDB;
+    private javax.swing.JMenuItem newMod;
+    private javax.swing.JMenuItem newModelContext;
+    private javax.swing.JMenuItem newModernDB;
+    private javax.swing.JMenu newResourceGroup;
+    private javax.swing.JMenuItem newStickerContext;
+    private javax.swing.JMenuItem newTextureContext;
+    private javax.swing.JMenuItem newVitaDB;
+    private javax.swing.JMenuItem openCompressinator;
+    private javax.swing.JMenuItem openGfxCompiler;
+    public javax.swing.JMenuItem openModMetadata;
+    public javax.swing.JSplitPane overviewPane;
+    private javax.swing.JComboBox<String> pageCombo;
+    private javax.swing.JMenuItem patchMAP;
+    private javax.swing.JSplitPane previewContainer;
+    private javax.swing.JMenu profileMenu;
+    public javax.swing.JProgressBar progressBar;
+    private javax.swing.JMenuItem reboot;
+    private javax.swing.JMenuItem remapDatabaseContext;
+    private javax.swing.JMenuItem removeDependenciesContext;
+    private javax.swing.JMenuItem removeMissingDependenciesContext;
+    private javax.swing.JMenuItem renameFolder;
+    private javax.swing.JTabbedPane renderPane;
+    private javax.swing.JMenuItem replaceCompressedContext;
+    private javax.swing.JMenuItem replaceDecompressedContext;
+    private javax.swing.JMenuItem replaceDependenciesContext;
+    private javax.swing.JMenu replaceGroup;
+    private javax.swing.JMenuItem replaceImageContext;
+    private javax.swing.JMenuItem replaceJSONContext;
+    private javax.swing.JTabbedPane resourceTabs;
+    public javax.swing.JMenuItem saveAs;
+    private javax.swing.JPopupMenu.Separator saveDivider;
+    public javax.swing.JMenuItem saveMenu;
+    public javax.swing.JMenu savedataMenu;
+    private javax.swing.JPanel scenePanel;
+    public javax.swing.JTextField search;
+    private javax.swing.JTextField subCombo;
+    private javax.swing.JMenuItem swapProfilePlatform;
+    private javax.swing.JScrollPane tableContainer;
+    public javax.swing.JLabel texture;
+    private javax.swing.JTextField titleField;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JMenu toolsMenu;
+    private javax.swing.JSplitPane treeContainer;
+    private javax.swing.JSplitPane workspace;
+    private javax.swing.JMenuItem zeroContext;
+    // End of variables declaration//GEN-END:variables
 }

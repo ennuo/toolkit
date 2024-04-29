@@ -132,7 +132,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
             for (int i = 0; i < count; ++i)
             {
                   String path = stream.str(isLBP3 ? stream.i16() : stream.i32());
-                  long timestamp = isLBP3 ? stream.u32() : stream.i64();
+                  long timestamp = isLBP3 ? stream.u32() : stream.s64();
                   long size = stream.u32();
                   SHA1 sha1 = stream.sha1();
                   GUID guid = stream.guid();
@@ -438,7 +438,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
                   stream.str(entry.getPath(), length);
 
                   if (isLBP3) stream.u32(entry.getDate());
-                  else stream.i64(entry.getDate());
+                  else stream.s64(entry.getDate());
 
                   stream.u32(entry.getSize());
                   stream.sha1(entry.getSHA1());

@@ -439,20 +439,23 @@ public class DatabaseCallbacks
                   if (result == JOptionPane.NO_OPTION) return;
             }
 
-            FileData database = ResourceSystem.getSelectedDatabase();
             FileNode[] selections = ResourceSystem.getAllSelected();
-
             for (FileNode node : selections)
             {
                   FileEntry entry = node.getEntry();
                   if (entry == null)
                   {
+                        System.out.println("deleting folder " + node.getName());
                         node.delete();
                         continue;
                   }
-                  database.remove(entry);
+
+
+                  System.out.println("removing " + entry.getPath() + "(" + entry.getNode().getFilePath() + ")");
+                  entry.remove();
+                  entry.getSource().setHasChanges();
             }
-            database.setHasChanges();
+
             Toolkit.INSTANCE.updateWorkspace();
             ResourceSystem.reloadSelectedModel();
       }

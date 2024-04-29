@@ -496,13 +496,13 @@ public class RLocalProfile implements Resource
                   lastMmPicksCount = serializer.i32(lastMmPicksCount);
 
             if (version > 0x2cb || revision.has(Branch.LEERDAMMER, Revisions.LD_NEWS_TIMESTAMP))
-                  lastNewsItemTimestamp = serializer.i64(lastNewsItemTimestamp);
+                  lastNewsItemTimestamp = serializer.s64(lastNewsItemTimestamp);
 
             if (version > 0x323)
-                  lastStreamEventTimestamp = serializer.i64(lastStreamEventTimestamp);
+                  lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
 
             if (version > 0x2cc || revision.has(Branch.LEERDAMMER, Revisions.LD_QUEUE))
-                  lolcatFtwTimestamp = serializer.i64(lolcatFtwTimestamp);
+                  lolcatFtwTimestamp = serializer.s64(lolcatFtwTimestamp);
 
             if (version >= 0x328)
             {
@@ -763,7 +763,7 @@ public class RLocalProfile implements Resource
                                     if (revision.has(Branch.DOUBLE11, Revisions.D1_CREATE_BETA))
                                     {
                                           onlineBetaNetworkTimestamp =
-                                                  serializer.i64(onlineBetaNetworkTimestamp);
+                                                  serializer.s64(onlineBetaNetworkTimestamp);
                                           onlineBetaPlayTimeSinceOnline =
                                                   serializer.i32(onlineBetaPlayTimeSinceOnline);
                                           onlineBetaBootsSinceOnline =

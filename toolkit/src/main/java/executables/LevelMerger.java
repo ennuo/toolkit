@@ -80,12 +80,12 @@ public class LevelMerger
 
             RLevel level = levels.get(0);
 
-            ArrayList<Thing> things = ((PWorld) level.world.getPart(Part.WORLD)).things;
-            int uid = ((PWorld) level.world.getPart(Part.WORLD)).thingUIDCounter;
+            ArrayList<Thing> things = ((PWorld) level.worldThing.getPart(Part.WORLD)).things;
+            int uid = ((PWorld) level.worldThing.getPart(Part.WORLD)).thingUIDCounter;
 
             for (int i = 1; i < levels.size(); ++i)
             {
-                  PWorld world = levels.get(i).world.getPart(Part.WORLD);
+                  PWorld world = levels.get(i).worldThing.getPart(Part.WORLD);
                   for (Thing thing : world.things)
                   {
                         if (thing == null) continue;

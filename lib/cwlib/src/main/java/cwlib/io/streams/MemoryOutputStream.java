@@ -231,11 +231,11 @@ public class MemoryOutputStream
        * Writes a long to the stream, compressed depending on flags.
        *
        * @param value   Long to write
-       * @param force64 Whether or not to write as a 32-bit integer, regardless of compression
+       * @param force64 Whether or not to write as a 64-bit integer, regardless of compression
        *                flags.
        * @return This output stream
        */
-      public final MemoryOutputStream i64(long value, boolean force64)
+      public final MemoryOutputStream u64(long value, boolean force64)
       {
             if (!force64 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
                   return this.uleb128(value);
@@ -262,6 +262,21 @@ public class MemoryOutputStream
                     (byte) (value >>> 8),
                     (byte) (value)
             });
+      }
+
+      /**
+       * Writes a 64-bit signed integer to the stream, compressed depending on flags.
+       *
+       * @param value   Long to write
+       * @param force64 Whether or not to write as a 64-bit integer, regardless of compression
+       *                flags.
+       * @return This output stream
+       */
+      public final MemoryOutputStream s64(long value, boolean force64)
+      {
+            if (!force64 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+                  return this.uleb128(value << 1L ^ (value >> 0x3f));
+            return this.u64(value, true);
       }
 
       /**
@@ -292,9 +307,20 @@ public class MemoryOutputStream
        * @param value Long to write
        * @return This output stream
        */
-      public final MemoryOutputStream i64(long value)
+      public final MemoryOutputStream u64(long value)
       {
-            return this.i64(value, false);
+            return this.u64(value, false);
+      }
+
+      /**
+       * Writes a "signed" long to the stream.
+       *
+       * @param value Long to write
+       * @return This output stream
+       */
+      public final MemoryOutputStream s64(long value)
+      {
+            return this.s64(value, false);
       }
 
       /**
@@ -357,7 +383,7 @@ public class MemoryOutputStream
             if (values == null) return this.i32(0);
             this.i32(values.length);
             for (long value : values)
-                  this.i64(value);
+                  this.u64(value);
             return this;
       }
 

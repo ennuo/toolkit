@@ -243,7 +243,7 @@ public class MemoryInputStream
        * @param force64 Whether or not to read as a 64-bit long, regardless of compression flags.
        * @return Long read from the stream
        */
-      public final long i64(boolean force64)
+      public final long u64(boolean force64)
       {
             if (force64 || (this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0)
             {
@@ -272,6 +272,20 @@ public class MemoryInputStream
       }
 
       /**
+       * Reads a "signed" long from the stream, compressed depending on flags.
+       *
+       * @param force64 Whether or not to read as a 64-bit long, regardless of compression flags.
+       * @return Long read from the stream
+       */
+      public final long s64(boolean force64)
+      {
+            if (force64 || ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0))
+                  return this.u64(true);
+            long v = this.uleb128();
+            return v >> 1L ^ -(v & 1L);
+      }
+
+      /**
        * Reads an integer from the stream.
        *
        * @return Integer read from the stream
@@ -296,9 +310,19 @@ public class MemoryInputStream
        *
        * @return Long read from the stream
        */
-      public final long i64()
+      public final long u64()
       {
-            return this.i64(false);
+            return this.u64(false);
+      }
+
+      /**
+       * Reads a "signed" long from the stream.
+       *
+       * @return Long read from the stream
+       */
+      public final long s64()
+      {
+            return this.s64(false);
       }
 
       /**
@@ -358,7 +382,7 @@ public class MemoryInputStream
             int count = this.i32();
             long[] elements = new long[count];
             for (int i = 0; i < count; ++i)
-                  elements[i] = this.i64();
+                  elements[i] = this.u64();
             return elements;
       }
 

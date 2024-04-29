@@ -69,7 +69,7 @@ public class PlayedLevelData implements Serializable
 
             slotID = serializer.struct(slotID, SlotID.class);
             if (version > 0x1fd)
-                  lastPlayedTimestamp = serializer.i64(lastPlayedTimestamp);
+                  lastPlayedTimestamp = serializer.s64(lastPlayedTimestamp);
             if (version > 0x200)
                   localHighScore = serializer.intarray(localHighScore);
 
