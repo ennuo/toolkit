@@ -180,7 +180,7 @@ public class PCreature implements Serializable
 
     @GsonRevision(min = 0x240, max = 0x2c3)
     @Deprecated
-    public float switchScale;
+    public float switchScale = 1.0f;
 
     @GsonRevision(min = 0x243)
     public Vector3f gunDirAndDashVec;
