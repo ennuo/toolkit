@@ -165,6 +165,8 @@ public class PEmitter implements Serializable
 
         if (version < 0x2c4)
             lastUpdateFrame = serializer.f32(lastUpdateFrame);
+        else if (!serializer.isWriting())
+            lastUpdateFrame = speedScaleStartFrame + speedScaleDeltaFrames;
 
         if (version >= 0x137)
         {
