@@ -8,5 +8,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GsonResourceType
 {
-      ResourceType value();
+    ResourceType value();
 }

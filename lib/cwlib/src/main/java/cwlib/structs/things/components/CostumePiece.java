@@ -12,61 +12,61 @@ import cwlib.types.data.ResourceDescriptor;
 
 public class CostumePiece implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x8;
+    public static final int BASE_ALLOCATION_SIZE = 0x8;
 
-      public ResourceDescriptor mesh;
-      public int categoriesUsed;
-      public byte[] morphParamRemap;
-      public Primitive[] primitives;
-      @GsonRevision(min = 0x19a)
-      public ResourceDescriptor plan;
+    public ResourceDescriptor mesh;
+    public int categoriesUsed;
+    public byte[] morphParamRemap;
+    public Primitive[] primitives;
+    @GsonRevision(min = 0x19a)
+    public ResourceDescriptor plan;
 
-      public CostumePiece()
-      {
-            this.morphParamRemap = new byte[RMesh.MAX_MORPHS];
-            for (int i = 0; i < this.morphParamRemap.length; ++i)
-                  this.morphParamRemap[i] = -1;
-      }
+    public CostumePiece()
+    {
+        this.morphParamRemap = new byte[RMesh.MAX_MORPHS];
+        for (int i = 0; i < this.morphParamRemap.length; ++i)
+            this.morphParamRemap[i] = -1;
+    }
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            int version = serializer.getRevision().getVersion();
-            int subVersion = serializer.getRevision().getSubVersion();
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        int version = serializer.getRevision().getVersion();
+        int subVersion = serializer.getRevision().getSubVersion();
 
-            mesh = serializer.resource(mesh, ResourceType.MESH);
-            categoriesUsed = serializer.i32(categoriesUsed);
+        mesh = serializer.resource(mesh, ResourceType.MESH);
+        categoriesUsed = serializer.i32(categoriesUsed);
 
-            if (subVersion < 0x105)
+        if (subVersion < 0x105)
+        {
+            int size = serializer.i32(morphParamRemap != null ?
+                morphParamRemap.length : 0);
+            if (serializer.isWriting() && size != 0)
             {
-                  int size = serializer.i32(morphParamRemap != null ?
-                          morphParamRemap.length : 0);
-                  if (serializer.isWriting() && size != 0)
-                  {
-                        MemoryOutputStream stream = serializer.getOutput();
-                        for (byte param : morphParamRemap)
-                              stream.i32(param);
-                  }
-                  else if (!serializer.isWriting())
-                  {
-                        morphParamRemap = new byte[size];
-                        MemoryInputStream stream = serializer.getInput();
-                        for (int i = 0; i < size; ++i)
-                              morphParamRemap[i] = (byte) (stream.i32() & 0xFF);
-                  }
+                MemoryOutputStream stream = serializer.getOutput();
+                for (byte param : morphParamRemap)
+                    stream.i32(param);
             }
-            else morphParamRemap = serializer.bytearray(morphParamRemap);
+            else if (!serializer.isWriting())
+            {
+                morphParamRemap = new byte[size];
+                MemoryInputStream stream = serializer.getInput();
+                for (int i = 0; i < size; ++i)
+                    morphParamRemap[i] = (byte) (stream.i32() & 0xFF);
+            }
+        }
+        else morphParamRemap = serializer.bytearray(morphParamRemap);
 
-            primitives = serializer.array(primitives, Primitive.class);
+        primitives = serializer.array(primitives, Primitive.class);
 
-            if (version >= 0x19a)
-                  plan = serializer.resource(plan, ResourceType.PLAN, true);
-      }
+        if (version >= 0x19a)
+            plan = serializer.resource(plan, ResourceType.PLAN, true);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            int size = CostumePiece.BASE_ALLOCATION_SIZE;
-            return size;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        int size = CostumePiece.BASE_ALLOCATION_SIZE;
+        return size;
+    }
 }

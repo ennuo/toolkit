@@ -8,31 +8,31 @@ import cwlib.io.ValueEnum;
  */
 public enum SkeletonType implements ValueEnum<Byte>
 {
-      SACKBOY(0),
-      GIANT(1),
-      DWARF(2),
-      BIRD(3),
-      QUAD(4);
+    SACKBOY(0),
+    GIANT(1),
+    DWARF(2),
+    BIRD(3),
+    QUAD(4);
 
-      private final byte value;
+    private final byte value;
 
-      private SkeletonType(int value)
-      {
-            this.value = (byte) (value & 0xFF);
-      }
+    SkeletonType(int value)
+    {
+        this.value = (byte) (value & 0xFF);
+    }
 
-      public Byte getValue()
-      {
-            return this.value;
-      }
+    public Byte getValue()
+    {
+        return this.value;
+    }
 
-      public static SkeletonType fromValue(byte value)
-      {
-            for (SkeletonType type : SkeletonType.values())
-            {
-                  if (type.value == value)
-                        return type;
-            }
-            return null;
-      }
+    public static SkeletonType fromValue(byte value)
+    {
+        for (SkeletonType type : SkeletonType.values())
+        {
+            if (type.value == value)
+                return type;
+        }
+        return null;
+    }
 }

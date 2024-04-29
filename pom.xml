@@ -16,7 +16,7 @@
 
         <module>tools/jsoninator</module>
         <module>tools/descriptor</module>
-        
+
         <module>toolkit</module>
     </modules>
 </project>

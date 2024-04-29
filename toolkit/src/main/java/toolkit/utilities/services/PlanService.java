@@ -12,43 +12,43 @@ import javax.swing.*;
 
 public class PlanService implements ResourceService
 {
-      public static final int[] HEADERS = { 0x504c4e62 };
+    public static final int[] HEADERS = { 0x504c4e62 };
 
-      @Override
-      public void process(JTree tree, FileEntry entry, byte[] data)
-      {
-            ResourceInfo info = entry.getInfo();
-            if (info == null || info.getType() != ResourceType.PLAN || info.getResource() == null) ;
-            RPlan plan = info.getResource();
-            JTree selected = ResourceSystem.getSelectedDatabase().getTree();
-            if (ResourceSystem.getSelected().getEntry() != entry || selected != tree) return;
+    @Override
+    public void process(JTree tree, FileEntry entry, byte[] data)
+    {
+        ResourceInfo info = entry.getInfo();
+        if (info == null || info.getType() != ResourceType.PLAN || info.getResource() == null) ;
+        RPlan plan = info.getResource();
+        JTree selected = ResourceSystem.getSelectedDatabase().getTree();
+        if (ResourceSystem.getSelected().getEntry() != entry || selected != tree) return;
 
-            if (plan.inventoryData == null)
+        if (plan.inventoryData == null)
+        {
+            ResourceSystem.println("Attempting to guess icon of RPlan, this may not be " +
+                                   "accurate.");
+            try
             {
-                  ResourceSystem.println("Attempting to guess icon of RPlan, this may not be " +
-                                         "accurate.");
-                  try
-                  {
-                        for (ResourceDescriptor dependency : info.getDependencies())
-                        {
-                              if (dependency.getType().equals(ResourceType.TEXTURE))
-                                    Toolkit.INSTANCE.loadImage(dependency, plan);
-                        }
-                  }
-                  catch (Exception ex)
-                  {
-                        ResourceSystem.println("An error occurred processing texture for plan " +
-                                               "icon. " +
-                                               "Exiting.");
-                  }
+                for (ResourceDescriptor dependency : info.getDependencies())
+                {
+                    if (dependency.getType().equals(ResourceType.TEXTURE))
+                        Toolkit.INSTANCE.loadImage(dependency, plan);
+                }
             }
-            else Toolkit.INSTANCE.populateMetadata(plan);
+            catch (Exception ex)
+            {
+                ResourceSystem.println("An error occurred processing texture for plan " +
+                                       "icon. " +
+                                       "Exiting.");
+            }
+        }
+        else Toolkit.INSTANCE.populateMetadata(plan);
 
-      }
+    }
 
-      @Override
-      public int[] getSupportedHeaders()
-      {
-            return HEADERS;
-      }
+    @Override
+    public int[] getSupportedHeaders()
+    {
+        return HEADERS;
+    }
 }

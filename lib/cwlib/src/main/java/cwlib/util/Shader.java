@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 
 public class Shader
 {
-      public static BufferedImage render(RGfxMaterial material, BrdfPort port)
-      {
-            return null;
-      }
+    public static BufferedImage render(RGfxMaterial material, BrdfPort port)
+    {
+        return null;
+    }
 }

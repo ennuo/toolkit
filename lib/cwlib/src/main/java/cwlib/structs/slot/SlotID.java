@@ -12,62 +12,62 @@ import cwlib.io.serializer.Serializer;
 @JsonAdapter(SlotIDSerializer.class)
 public class SlotID implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x10;
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
 
-      public SlotType slotType = SlotType.DEVELOPER;
-      public long slotNumber;
+    public SlotType slotType = SlotType.DEVELOPER;
+    public long slotNumber;
 
-      /**
-       * Constructs an empty Slot ID.
-       */
-      public SlotID() { }
+    /**
+     * Constructs an empty Slot ID.
+     */
+    public SlotID() { }
 
-      /**
-       * Constructs a slot reference from a type and ID.
-       *
-       * @param type Type of slot
-       * @param ID   ID of slot
-       */
-      public SlotID(SlotType type, long ID)
-      {
-            if (type == null)
-                  throw new NullPointerException("SlotType cannot be null!");
-            this.slotType = type;
-            this.slotNumber = ID;
-      }
+    /**
+     * Constructs a slot reference from a type and ID.
+     *
+     * @param type Type of slot
+     * @param ID   ID of slot
+     */
+    public SlotID(SlotType type, long ID)
+    {
+        if (type == null)
+            throw new NullPointerException("SlotType cannot be null!");
+        this.slotType = type;
+        this.slotNumber = ID;
+    }
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            slotType = serializer.enum32(slotType);
-            slotNumber = serializer.u32(slotNumber);
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        slotType = serializer.enum32(slotType);
+        slotNumber = serializer.u32(slotNumber);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return BASE_ALLOCATION_SIZE;
+    }
 
-      @Override
-      public boolean equals(Object o)
-      {
-            if (o == this) return true;
-            if (!(o instanceof SlotID d)) return false;
-            return (slotType.equals(d.slotType) && slotNumber == d.slotNumber);
-      }
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == this) return true;
+        if (!(o instanceof SlotID d)) return false;
+        return (slotType.equals(d.slotType) && slotNumber == d.slotNumber);
+    }
 
-      @Override
-      public int hashCode()
-      {
-            int result = (int) (this.slotNumber ^ (this.slotNumber >>> 32));
-            result = 31 * result + (this.slotType != null ? this.slotType.hashCode() : 0);
-            return result;
-      }
+    @Override
+    public int hashCode()
+    {
+        int result = (int) (this.slotNumber ^ (this.slotNumber >>> 32));
+        result = 31 * result + (this.slotType != null ? this.slotType.hashCode() : 0);
+        return result;
+    }
 
-      @Override
-      public String toString()
-      {
-            return String.format("SlotID{%s, %d}", this.slotType, this.slotNumber);
-      }
+    @Override
+    public String toString()
+    {
+        return String.format("SlotID{%s, %d}", this.slotType, this.slotNumber);
+    }
 }

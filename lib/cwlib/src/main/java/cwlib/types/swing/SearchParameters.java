@@ -9,42 +9,42 @@ import cwlib.util.Strings;
  */
 public class SearchParameters
 {
-      /**
-       * Path to search for
-       */
-      private final String path;
+    /**
+     * Path to search for
+     */
+    private final String path;
 
-      /**
-       * Parsed resource reference from search query
-       */
-      private final ResourceDescriptor resource;
+    /**
+     * Parsed resource reference from search query
+     */
+    private final ResourceDescriptor resource;
 
-      /**
-       * Constructs search parameters from a query
-       *
-       * @param query Search query
-       */
-      public SearchParameters(String query)
-      {
-            this.path = query.toLowerCase().replaceAll("\\s", "");
-            if (query.startsWith("res:"))
-            {
-                  query = query.substring(4);
-                  if (Strings.isGUID(query) || Strings.isSHA1(query))
-                        this.resource = new ResourceDescriptor(query, ResourceType.INVALID);
-                  else
-                        this.resource = null;
-            }
-            else this.resource = null;
-      }
+    /**
+     * Constructs search parameters from a query
+     *
+     * @param query Search query
+     */
+    public SearchParameters(String query)
+    {
+        this.path = query.toLowerCase().replaceAll("\\s", "");
+        if (query.startsWith("res:"))
+        {
+            query = query.substring(4);
+            if (Strings.isGUID(query) || Strings.isSHA1(query))
+                this.resource = new ResourceDescriptor(query, ResourceType.INVALID);
+            else
+                this.resource = null;
+        }
+        else this.resource = null;
+    }
 
-      public String getPath()
-      {
-            return this.path;
-      }
+    public String getPath()
+    {
+        return this.path;
+    }
 
-      public ResourceDescriptor getResource()
-      {
-            return this.resource;
-      }
+    public ResourceDescriptor getResource()
+    {
+        return this.resource;
+    }
 }

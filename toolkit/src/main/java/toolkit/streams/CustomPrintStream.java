@@ -8,15 +8,15 @@ import java.util.Date;
 
 public class CustomPrintStream extends PrintStream
 {
-      public CustomPrintStream(OutputStream out)
-      {
-            super(out);
-      }
+    public CustomPrintStream(OutputStream out)
+    {
+        super(out);
+    }
 
-      public void println(String string)
-      {
-            Date date = new Date();
-            DateFormat df = new SimpleDateFormat("HH:mm:ss");
-            super.println("[" + df.format(date) + "] " + string);
-      }
+    public void println(String string)
+    {
+        Date date = new Date();
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        super.println("[" + df.format(date) + "] " + string);
+    }
 }

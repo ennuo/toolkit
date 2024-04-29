@@ -5,101 +5,101 @@ import java.util.Stack;
 
 public class XmlFormatter
 {
-      private final StringBuilder buffer;
-      private int depth;
-      private final Stack<String> tags;
+    private final StringBuilder buffer;
+    private int depth;
+    private final Stack<String> tags;
 
-      public XmlFormatter(int size)
-      {
-            buffer = new StringBuilder(size);
-            depth = 0;
-            tags = new Stack<>();
-      }
+    public XmlFormatter(int size)
+    {
+        buffer = new StringBuilder(size);
+        depth = 0;
+        tags = new Stack<>();
+    }
 
-      public void startTag(String name)
-      {
-            tabinate();
+    public void startTag(String name)
+    {
+        tabinate();
 
-            depth++;
+        depth++;
 
-            buffer.append(String.format("<%s>\n", name));
-            tags.push(name);
-      }
+        buffer.append(String.format("<%s>\n", name));
+        tags.push(name);
+    }
 
-      public void startTag(String name, String attributes)
-      {
-            if (attributes == null || attributes.isEmpty())
-            {
-                  startTag(name);
-                  return;
-            }
+    public void startTag(String name, String attributes)
+    {
+        if (attributes == null || attributes.isEmpty())
+        {
+            startTag(name);
+            return;
+        }
 
-            tabinate();
+        tabinate();
 
-            depth++;
+        depth++;
 
-            buffer.append(String.format("<%s %s>\n", name, attributes));
-            tags.push(name);
-      }
+        buffer.append(String.format("<%s %s>\n", name, attributes));
+        tags.push(name);
+    }
 
-      public void endTag()
-      {
-            if (depth == 0) return;
+    public void endTag()
+    {
+        if (depth == 0) return;
 
-            depth--;
+        depth--;
 
-            tabinate();
+        tabinate();
 
-            String name = tags.pop();
-            buffer.append(String.format("</%s>\n", name, name));
-      }
+        String name = tags.pop();
+        buffer.append(String.format("</%s>\n", name, name));
+    }
 
-      public void addTag(String name, Object value)
-      {
-            tabinate();
+    public void addTag(String name, Object value)
+    {
+        tabinate();
 
-            if (value == null || (value instanceof String && ((String) value).isEmpty()))
-            {
-                  buffer.append(String.format("<%s />\n", name));
-                  return;
-            }
+        if (value == null || (value instanceof String && ((String) value).isEmpty()))
+        {
+            buffer.append(String.format("<%s />\n", name));
+            return;
+        }
 
-            buffer.append(String.format("<%s>%s</%s>\n", name, value, name));
-      }
+        buffer.append(String.format("<%s>%s</%s>\n", name, value, name));
+    }
 
-      public void addTag(String name, String attributes, Object value)
-      {
-            if (attributes == null || attributes.isEmpty())
-            {
-                  addTag(name, value);
-                  return;
-            }
+    public void addTag(String name, String attributes, Object value)
+    {
+        if (attributes == null || attributes.isEmpty())
+        {
+            addTag(name, value);
+            return;
+        }
 
-            tabinate();
+        tabinate();
 
-            if (value == null || (value instanceof String && ((String) value).isEmpty()))
-            {
-                  buffer.append(String.format("<%s %s/>\n", name, attributes));
-                  return;
-            }
+        if (value == null || (value instanceof String && ((String) value).isEmpty()))
+        {
+            buffer.append(String.format("<%s %s/>\n", name, attributes));
+            return;
+        }
 
-            buffer.append(String.format("<%s %s>%s</%s>\n", name, attributes, value, name));
-      }
+        buffer.append(String.format("<%s %s>%s</%s>\n", name, attributes, value, name));
+    }
 
-      private void tabinate()
-      {
-            for (int i = 0; i < depth; ++i)
-                  buffer.append('\t');
-      }
+    private void tabinate()
+    {
+        for (int i = 0; i < depth; ++i)
+            buffer.append('\t');
+    }
 
-      @Override
-      public String toString()
-      {
-            return buffer.toString();
-      }
+    @Override
+    public String toString()
+    {
+        return buffer.toString();
+    }
 
-      public byte[] getBytes()
-      {
-            return buffer.toString().getBytes(StandardCharsets.UTF_8);
-      }
+    public byte[] getBytes()
+    {
+        return buffer.toString().getBytes(StandardCharsets.UTF_8);
+    }
 }

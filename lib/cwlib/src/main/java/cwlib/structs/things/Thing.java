@@ -28,343 +28,340 @@ import cwlib.util.Bytes;
 @JsonAdapter(ThingSerializer.class)
 public class Thing implements Serializable
 {
-      public static boolean SERIALIZE_WORLD_THING = true;
+    public static boolean SERIALIZE_WORLD_THING = true;
 
-      public static final int BASE_ALLOCATION_SIZE = 0x100;
+    public static final int BASE_ALLOCATION_SIZE = 0x100;
 
-      public String name;
+    public String name;
 
-      public int UID = 1;
-      public Thing world;
-      public Thing parent;
-      public Thing groupHead;
-      public Thing oldEmitter;
+    public int UID = 1;
+    public Thing world;
+    public Thing parent;
+    public Thing groupHead;
+    public Thing oldEmitter;
 
-      public short createdBy = -1, changedBy = -1;
-      public boolean isStamping;
-      public GUID planGUID;
-      public boolean hidden;
-      public short flags;
-      public byte extraFlags;
+    public short createdBy = -1, changedBy = -1;
+    public boolean isStamping;
+    public GUID planGUID;
+    public boolean hidden;
+    public short flags;
+    public byte extraFlags;
 
-      private Serializable[] parts = new Serializable[0x3f];
+    private final Serializable[] parts = new Serializable[0x3f];
 
-      public Thing() { }
+    public Thing() { }
 
-      ;
+    public Thing(int UID)
+    {
+        this.UID = UID;
+    }
 
-      public Thing(int UID)
-      {
-            this.UID = UID;
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        Revision revision = serializer.getRevision();
+        int version = revision.getVersion();
+        int subVersion = revision.getSubVersion();
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            Revision revision = serializer.getRevision();
-            int version = revision.getVersion();
-            int subVersion = revision.getSubVersion();
+        int maxPartsRevision = PartHistory.STREAMING_HINT;
+        if (version <= 0x3e2)
+            maxPartsRevision = PartHistory.CONTROLINATOR;
+        if (version <= 0x33a)
+            maxPartsRevision = PartHistory.MATERIAL_OVERRIDE;
+        if (version <= 0x2c3)
+            maxPartsRevision = PartHistory.MATERIAL_TWEAK;
+        if (version <= 0x272)
+            maxPartsRevision = PartHistory.GROUP;
 
-            int maxPartsRevision = PartHistory.STREAMING_HINT;
-            if (version <= 0x3e2)
-                  maxPartsRevision = PartHistory.CONTROLINATOR;
-            if (version <= 0x33a)
-                  maxPartsRevision = PartHistory.MATERIAL_OVERRIDE;
-            if (version <= 0x2c3)
-                  maxPartsRevision = PartHistory.MATERIAL_TWEAK;
-            if (version <= 0x272)
-                  maxPartsRevision = PartHistory.GROUP;
+        // Test serialization marker.
+        if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH))
+            name = serializer.wstr(name);
+        else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER,
+            Revisions.LD_TEST_MARKER))
+        {
+            serializer.log("TEST_SERIALISATION_MARKER");
+            if (serializer.u8(0xAA) != 0xaa)
+                throw new SerializationException("Test serialization marker is invalid, " +
+                                                 "something" +
+                                                 " has gone terribly wrong!");
+        }
 
-            // Test serialization marker.
-            if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH))
-                  name = serializer.wstr(name);
-            else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER,
-                    Revisions.LD_TEST_MARKER))
-            {
-                  serializer.log("TEST_SERIALISATION_MARKER");
-                  if (serializer.u8(0xAA) != 0xaa)
-                        throw new SerializationException("Test serialization marker is invalid, " +
-                                                         "something" +
-                                                         " has gone terribly wrong!");
-            }
-
-            if (version < 0x1fd)
-            {
-                  if (serializer.isWriting())
-                        serializer.reference(SERIALIZE_WORLD_THING ? world : null, Thing.class);
-                  else
-                        world = serializer.reference(world, Thing.class);
-            }
-            if (version < 0x27f)
-            {
-                  parent = serializer.reference(parent, Thing.class);
-                  UID = serializer.i32(UID);
-            }
-            else
-            {
-                  UID = serializer.i32(UID);
-                  parent = serializer.reference(parent, Thing.class);
-            }
-
-            groupHead = serializer.reference(groupHead, Thing.class);
-
-            if (version >= 0x1c7)
-                  oldEmitter = serializer.reference(oldEmitter, Thing.class);
-
-            if (version >= 0x1a6 && version < 0x1bc)
-                  serializer.array(null, PJoint.class, true);
-
-            if ((version >= 0x214 && !revision.isToolkit()) || revision.before(Branch.MIZUKI,
-                    Revisions.MZ_SCENE_GRAPH))
-            {
-                  createdBy = serializer.i16(createdBy);
-                  changedBy = serializer.i16(changedBy);
-            }
-
-            if (version < 0x341)
-            {
-                  if (version > 0x21a)
-                        isStamping = serializer.bool(isStamping);
-                  if (version >= 0x254)
-                        planGUID = serializer.guid(planGUID);
-                  if (version >= 0x2f2)
-                        hidden = serializer.bool(hidden);
-            }
-            else
-            {
-                  if (version >= 0x254)
-                        planGUID = serializer.guid(planGUID);
-
-                  if (version >= 0x341)
-                  {
-                        if (revision.has(Branch.DOUBLE11, 0x62))
-                              flags = serializer.i16(flags);
-                        else
-                              flags = serializer.i8((byte) flags);
-                  }
-                  if (subVersion >= 0x110)
-                        extraFlags = serializer.i8(extraFlags);
-            }
-
-            boolean isCompressed = (version >= 0x297 || revision.has(Branch.LEERDAMMER,
-                    Revisions.LD_RESOURCES));
-
-            int partsRevision = PartHistory.STREAMING_HINT;
-            long flags = -1;
-
+        if (version < 0x1fd)
+        {
             if (serializer.isWriting())
+                serializer.reference(SERIALIZE_WORLD_THING ? world : null, Thing.class);
+            else
+                world = serializer.reference(world, Thing.class);
+        }
+        if (version < 0x27f)
+        {
+            parent = serializer.reference(parent, Thing.class);
+            UID = serializer.i32(UID);
+        }
+        else
+        {
+            UID = serializer.i32(UID);
+            parent = serializer.reference(parent, Thing.class);
+        }
+
+        groupHead = serializer.reference(groupHead, Thing.class);
+
+        if (version >= 0x1c7)
+            oldEmitter = serializer.reference(oldEmitter, Thing.class);
+
+        if (version >= 0x1a6 && version < 0x1bc)
+            serializer.array(null, PJoint.class, true);
+
+        if ((version >= 0x214 && !revision.isToolkit()) || revision.before(Branch.MIZUKI,
+            Revisions.MZ_SCENE_GRAPH))
+        {
+            createdBy = serializer.i16(createdBy);
+            changedBy = serializer.i16(changedBy);
+        }
+
+        if (version < 0x341)
+        {
+            if (version > 0x21a)
+                isStamping = serializer.bool(isStamping);
+            if (version >= 0x254)
+                planGUID = serializer.guid(planGUID);
+            if (version >= 0x2f2)
+                hidden = serializer.bool(hidden);
+        }
+        else
+        {
+            if (version >= 0x254)
+                planGUID = serializer.guid(planGUID);
+
+            if (version >= 0x341)
             {
-                  serializer.log("GENERATING FLAGS");
-                  Part lastPart = null;
-                  if (isCompressed) flags = 0;
-                  for (Part part : Part.values())
-                  {
-                        int index = part.getIndex();
-                        if (version >= 0x13c && (index >= 0x36 && index <= 0x3c)) continue;
-                        if (version >= 0x18c && index == 0x3d) continue;
-                        if (subVersion >= 0x107 && index == 0x3e) continue;
-                        else if (index == 0x3e)
-                        {
-                              if (parts[index] != null)
-                              {
-                                    flags |= (1l << 0x29);
-                                    lastPart = part;
-                              }
-                              continue;
-                        }
-
-                        if (parts[index] != null)
-                        {
-                              // Offset due to PCreatorAnim
-                              if (subVersion < 0x107 && index > 0x28) index++;
-
-                              flags |= (1l << index);
-
-                              lastPart = part;
-                        }
-                  }
-                  partsRevision = (lastPart == null) ? 0 : lastPart.getVersion();
+                if (revision.has(Branch.DOUBLE11, 0x62))
+                    flags = serializer.i16(flags);
+                else
+                    flags = serializer.i8((byte) flags);
             }
+            if (subVersion >= 0x110)
+                extraFlags = serializer.i8(extraFlags);
+        }
 
-            if (serializer.isWriting())
+        boolean isCompressed = (version >= 0x297 || revision.has(Branch.LEERDAMMER,
+            Revisions.LD_RESOURCES));
+
+        int partsRevision = PartHistory.STREAMING_HINT;
+        long flags = -1;
+
+        if (serializer.isWriting())
+        {
+            serializer.log("GENERATING FLAGS");
+            Part lastPart = null;
+            if (isCompressed) flags = 0;
+            for (Part part : Part.values())
             {
-                  if (partsRevision > maxPartsRevision)
-                        partsRevision = maxPartsRevision;
-            }
+                int index = part.getIndex();
+                if (version >= 0x13c && (index >= 0x36 && index <= 0x3c)) continue;
+                if (version >= 0x18c && index == 0x3d) continue;
+                if (subVersion >= 0x107 && index == 0x3e) continue;
+                else if (index == 0x3e)
+                {
+                    if (parts[index] != null)
+                    {
+                        flags |= (1L << 0x29);
+                        lastPart = part;
+                    }
+                    continue;
+                }
 
-            partsRevision = serializer.s32(partsRevision);
-            if (isCompressed)
+                if (parts[index] != null)
+                {
+                    // Offset due to PCreatorAnim
+                    if (subVersion < 0x107 && index > 0x28) index++;
+
+                    flags |= (1L << index);
+
+                    lastPart = part;
+                }
+            }
+            partsRevision = (lastPart == null) ? 0 : lastPart.getVersion();
+        }
+
+        if (serializer.isWriting())
+        {
+            if (partsRevision > maxPartsRevision)
+                partsRevision = maxPartsRevision;
+        }
+
+        partsRevision = serializer.s32(partsRevision);
+        if (isCompressed)
+        {
+            // serializer.log("FLAGS");
+            flags = serializer.u64(flags);
+        }
+
+        // I have no idea why they did this
+        if (version == 0x13c) partsRevision += 7;
+
+        Part[] partsToSerialize = Part.fromFlags(revision.getHead(), flags, partsRevision);
+        serializer.log(Arrays.toString(partsToSerialize));
+
+        for (Part part : partsToSerialize)
+        {
+            serializer.log(part.name() + " [START]");
+            if (!part.serialize(this.parts, partsRevision, flags, serializer))
             {
-                  // serializer.log("FLAGS");
-                  flags = serializer.u64(flags);
+                serializer.log(part.name() + " FAILED");
+                throw new SerializationException(part.name() + " failed to serialize!");
             }
+            serializer.log(part.name() + " [END]");
+        }
 
-            // I have no idea why they did this
-            if (version == 0x13c) partsRevision += 7;
+        // if (subVersion >= 0x83 && subVersion < 0x8b)
+        // serializer.u8(0);
 
-            Part[] partsToSerialize = Part.fromFlags(revision.getHead(), flags, partsRevision);
-            serializer.log(Arrays.toString(partsToSerialize));
+        serializer.log("THING " + Bytes.toHex(UID) + " [END]");
+    }
 
-            for (Part part : partsToSerialize)
-            {
-                  serializer.log(part.name() + " [START]");
-                  if (!part.serialize(this.parts, partsRevision, flags, serializer))
-                  {
-                        serializer.log(part.name() + " FAILED");
-                        throw new SerializationException(part.name() + " failed to serialize!");
-                  }
-                  serializer.log(part.name() + " [END]");
-            }
+    public boolean isEnemyWard()
+    {
+        GUID enemyWardMeshKey = new GUID(43456);
+        GUID enemyWardPlanKey = new GUID(53114);
 
-            // if (subVersion >= 0x83 && subVersion < 0x8b)
-            // serializer.u8(0);
+        if (enemyWardPlanKey.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && enemyWardPlanKey.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
 
-            serializer.log("THING " + Bytes.toHex(UID) + " [END]");
-      }
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return enemyWardMeshKey.equals(mesh.mesh.getGUID());
+        }
 
-      public boolean isEnemyWard()
-      {
-            GUID enemyWardMeshKey = new GUID(43456);
-            GUID enemyWardPlanKey = new GUID(53114);
+        return false;
+    }
 
-            if (enemyWardPlanKey.equals(planGUID)) return true;
-            if (hasPart(Part.GROUP))
-            {
-                  PGroup group = getPart(Part.GROUP);
-                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && enemyWardPlanKey.equals(group.planDescriptor.getGUID()))
-                        return true;
-            }
+    public boolean isKey()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
 
-            if (hasPart(Part.RENDER_MESH))
-            {
-                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
-                  if (mesh.mesh != null && mesh.mesh.isGUID())
-                        return enemyWardMeshKey.equals(mesh.mesh.getGUID());
-            }
+        if (data.gameplayType == GameplayPartType.LEVEL_KEY) return true;
+        if (data.keyLink != null) return true;
 
-            return false;
-      }
+        GUID keyPlanGuid = new GUID(31738);
+        GUID keyMeshGuid = new GUID(3763);
 
-      public boolean isKey()
-      {
-            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
-            if (data == null) return false;
+        if (keyPlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && keyPlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
 
-            if (data.gameplayType == GameplayPartType.LEVEL_KEY) return true;
-            if (data.keyLink != null) return true;
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return keyMeshGuid.equals(mesh.mesh.getGUID());
+        }
 
-            GUID keyPlanGuid = new GUID(31738);
-            GUID keyMeshGuid = new GUID(3763);
+        return false;
+    }
 
-            if (keyPlanGuid.equals(planGUID)) return true;
-            if (hasPart(Part.GROUP))
-            {
-                  PGroup group = getPart(Part.GROUP);
-                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && keyPlanGuid.equals(group.planDescriptor.getGUID()))
-                        return true;
-            }
+    public boolean isScoreBubble()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
 
-            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
-            if (hasPart(Part.RENDER_MESH))
-            {
-                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
-                  if (mesh.mesh != null && mesh.mesh.isGUID())
-                        return keyMeshGuid.equals(mesh.mesh.getGUID());
-            }
+        // This is only relevant in LBP2 onwards
+        if (data.gameplayType == GameplayPartType.SCORE_BUBBLE) return true;
+        if (data.eggLink != null) return false;
 
-            return false;
-      }
+        GUID scoreBubblePlanGuid = new GUID(31733);
+        GUID scoreBubbleMeshGuid = new GUID(3753);
 
-      public boolean isScoreBubble()
-      {
-            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
-            if (data == null) return false;
+        if (scoreBubblePlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && scoreBubblePlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
 
-            // This is only relevant in LBP2 onwards
-            if (data.gameplayType == GameplayPartType.SCORE_BUBBLE) return true;
-            if (data.eggLink != null) return false;
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return scoreBubbleMeshGuid.equals(mesh.mesh.getGUID());
+        }
 
-            GUID scoreBubblePlanGuid = new GUID(31733);
-            GUID scoreBubbleMeshGuid = new GUID(3753);
-            
-            if (scoreBubblePlanGuid.equals(planGUID)) return true;
-            if (hasPart(Part.GROUP))
-            {
-                  PGroup group = getPart(Part.GROUP);
-                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && scoreBubblePlanGuid.equals(group.planDescriptor.getGUID()))
-                        return true;
-            }
+        return false;
+    }
 
-            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
-            if (hasPart(Part.RENDER_MESH))
-            {
-                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
-                  if (mesh.mesh != null && mesh.mesh.isGUID())
-                        return scoreBubbleMeshGuid.equals(mesh.mesh.getGUID());
-            }
+    public boolean isPrizeBubble()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
 
-            return false;
-      }
+        // This is only relevant in LBP2 onwards
+        if (data.gameplayType == GameplayPartType.PRIZE_BUBBLE) return true;
+        if (data.eggLink != null) return true;
 
-      public boolean isPrizeBubble()
-      {
-            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
-            if (data == null) return false;
+        GUID prizePlanGuid = new GUID(31743);
+        GUID prizeMeshGuid = new GUID(21180);
 
-            // This is only relevant in LBP2 onwards
-            if (data.gameplayType == GameplayPartType.PRIZE_BUBBLE) return true;
-            if (data.eggLink != null) return true;
-            
-            GUID prizePlanGuid = new GUID(31743);
-            GUID prizeMeshGuid = new GUID(21180);
-            
-            if (prizePlanGuid.equals(planGUID)) return true;
-            if (hasPart(Part.GROUP))
-            {
-                  PGroup group = getPart(Part.GROUP);
-                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && prizePlanGuid.equals(group.planDescriptor.getGUID()))
-                        return true;
-            }
+        if (prizePlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && prizePlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
 
-            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
-            if (hasPart(Part.RENDER_MESH))
-            {
-                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
-                  if (mesh.mesh != null && mesh.mesh.isGUID())
-                        return prizeMeshGuid.equals(mesh.mesh.getGUID());
-            }
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return prizeMeshGuid.equals(mesh.mesh.getGUID());
+        }
 
-            return false;
-      }
+        return false;
+    }
 
 
+    @SuppressWarnings("unchecked")
+    public <T extends Serializable> T getPart(Part part)
+    {
+        return (T) this.parts[part.getIndex()];
+    }
 
-      @SuppressWarnings("unchecked")
-      public <T extends Serializable> T getPart(Part part)
-      {
-            return (T) this.parts[part.getIndex()];
-      }
+    public <T extends Serializable> void setPart(Part part, T value)
+    {
+        this.parts[part.getIndex()] = value;
+    }
 
-      public <T extends Serializable> void setPart(Part part, T value)
-      {
-            this.parts[part.getIndex()] = value;
-      }
+    public boolean hasPart(Part part)
+    {
+        return this.parts[part.getIndex()] != null;
+    }
 
-      public boolean hasPart(Part part)
-      {
-            return this.parts[part.getIndex()] != null;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return BASE_ALLOCATION_SIZE;
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return BASE_ALLOCATION_SIZE;
-      }
-
-      @Override
-      public String toString()
-      {
-            if (this.name != null) return this.name;
-            return String.format("New Thing (%d)", this.UID);
-      }
+    @Override
+    public String toString()
+    {
+        if (this.name != null) return this.name;
+        return String.format("New Thing (%d)", this.UID);
+    }
 }

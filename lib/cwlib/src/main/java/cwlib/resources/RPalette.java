@@ -20,74 +20,74 @@ import cwlib.types.data.Revision;
  */
 public class RPalette implements Resource
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x20;
+    public static final int BASE_ALLOCATION_SIZE = 0x20;
 
-      public ArrayList<ResourceDescriptor> planList = new ArrayList<>();
-      public int location, description;
+    public ArrayList<ResourceDescriptor> planList = new ArrayList<>();
+    public int location, description;
 
-      @GsonRevision(min = 803)
-      public ResourceDescriptor[] convertedPlans;
+    @GsonRevision(min = 803)
+    public ResourceDescriptor[] convertedPlans;
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
+    @Override
+    public void serialize(Serializer serializer)
+    {
 
+        if (serializer.isWriting())
+        {
+            MemoryOutputStream stream = serializer.getOutput();
+            stream.i32(planList.size());
+            for (ResourceDescriptor descriptor : planList)
+                serializer.resource(descriptor, descriptor.getType());
+        }
+        else
+        {
+            int count = serializer.getInput().i32();
+            planList = new ArrayList<>(count);
+            for (int i = 0; i < count; ++i)
+                planList.add(serializer.resource(null, ResourceType.PLAN));
+        }
+
+        location = serializer.i32(location);
+        description = serializer.i32(description);
+
+        if (serializer.getRevision().getVersion() >= Revisions.PALETTE_CONVERTED_PLANS)
+        {
             if (serializer.isWriting())
             {
-                  MemoryOutputStream stream = serializer.getOutput();
-                  stream.i32(planList.size());
-                  for (ResourceDescriptor descriptor : planList)
-                        serializer.resource(descriptor, descriptor.getType());
+                MemoryOutputStream stream = serializer.getOutput();
+                stream.i32(convertedPlans.length);
+                for (ResourceDescriptor descriptor : convertedPlans)
+                    serializer.resource(descriptor, descriptor.getType());
             }
             else
             {
-                  int count = serializer.getInput().i32();
-                  planList = new ArrayList<>(count);
-                  for (int i = 0; i < count; ++i)
-                        planList.add(serializer.resource(null, ResourceType.PLAN));
+                int count = serializer.getInput().i32();
+                convertedPlans = new ResourceDescriptor[count];
+                for (int i = 0; i < count; ++i)
+                    convertedPlans[i] = serializer.resource(null, ResourceType.PLAN);
             }
+        }
+    }
 
-            location = serializer.i32(location);
-            description = serializer.i32(description);
+    @Override
+    public int getAllocatedSize()
+    {
+        return BASE_ALLOCATION_SIZE + (this.planList.size() * 0x24);
+    }
 
-            if (serializer.getRevision().getVersion() >= Revisions.PALETTE_CONVERTED_PLANS)
-            {
-                  if (serializer.isWriting())
-                  {
-                        MemoryOutputStream stream = serializer.getOutput();
-                        stream.i32(convertedPlans.length);
-                        for (ResourceDescriptor descriptor : convertedPlans)
-                              serializer.resource(descriptor, descriptor.getType());
-                  }
-                  else
-                  {
-                        int count = serializer.getInput().i32();
-                        convertedPlans = new ResourceDescriptor[count];
-                        for (int i = 0; i < count; ++i)
-                              convertedPlans[i] = serializer.resource(null, ResourceType.PLAN);
-                  }
-            }
-      }
-
-      @Override
-      public int getAllocatedSize()
-      {
-            return BASE_ALLOCATION_SIZE + (this.planList.size() * 0x24);
-      }
-
-      @Override
-      public SerializationData build(Revision revision, byte compressionFlags)
-      {
-            Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
-                    compressionFlags);
-            serializer.struct(this, RPalette.class);
-            return new SerializationData(
-                    serializer.getBuffer(),
-                    revision,
-                    compressionFlags,
-                    ResourceType.PALETTE,
-                    SerializationType.BINARY,
-                    serializer.getDependencies()
-            );
-      }
+    @Override
+    public SerializationData build(Revision revision, byte compressionFlags)
+    {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
+            compressionFlags);
+        serializer.struct(this, RPalette.class);
+        return new SerializationData(
+            serializer.getBuffer(),
+            revision,
+            compressionFlags,
+            ResourceType.PALETTE,
+            SerializationType.BINARY,
+            serializer.getDependencies()
+        );
+    }
 }

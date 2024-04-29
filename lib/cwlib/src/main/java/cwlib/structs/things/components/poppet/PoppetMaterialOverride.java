@@ -11,42 +11,42 @@ import cwlib.types.data.ResourceDescriptor;
 
 public class PoppetMaterialOverride implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0xA0;
+    public static final int BASE_ALLOCATION_SIZE = 0xA0;
 
-      public ResourceDescriptor plan, gfxMaterial, bevel, physicsMaterial;
-      public float bevelSize;
+    public ResourceDescriptor plan, gfxMaterial, bevel, physicsMaterial;
+    public float bevelSize;
 
-      @JsonAdapter(AudioMaterialSerializer.class)
-      public int soundEnum;
+    @JsonAdapter(AudioMaterialSerializer.class)
+    public int soundEnum;
 
-      @GsonRevision(lbp3 = true, min = 0x63)
-      public boolean headDucking;
+    @GsonRevision(lbp3 = true, min = 0x63)
+    public boolean headDucking;
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            int version = serializer.getRevision().getVersion();
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        int version = serializer.getRevision().getVersion();
 
-            if (version >= 0x2ed)
-                  plan = serializer.resource(plan, ResourceType.PLAN, true);
+        if (version >= 0x2ed)
+            plan = serializer.resource(plan, ResourceType.PLAN, true);
 
-            gfxMaterial = serializer.resource(gfxMaterial, ResourceType.GFX_MATERIAL);
-            bevel = serializer.resource(bevel, ResourceType.BEVEL);
-            physicsMaterial = serializer.resource(physicsMaterial,
-                    ResourceType.MATERIAL);
-            soundEnum = serializer.i32(soundEnum);
-            bevelSize = serializer.f32(bevelSize);
+        gfxMaterial = serializer.resource(gfxMaterial, ResourceType.GFX_MATERIAL);
+        bevel = serializer.resource(bevel, ResourceType.BEVEL);
+        physicsMaterial = serializer.resource(physicsMaterial,
+            ResourceType.MATERIAL);
+        soundEnum = serializer.i32(soundEnum);
+        bevelSize = serializer.f32(bevelSize);
 
-            if (version < 0x2ed)
-                  plan = serializer.resource(plan, ResourceType.PLAN, true);
+        if (version < 0x2ed)
+            plan = serializer.resource(plan, ResourceType.PLAN, true);
 
-            if (serializer.getRevision().getSubVersion() > 0x62)
-                  headDucking = serializer.bool(headDucking);
-      }
+        if (serializer.getRevision().getSubVersion() > 0x62)
+            headDucking = serializer.bool(headDucking);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return PoppetMaterialOverride.BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PoppetMaterialOverride.BASE_ALLOCATION_SIZE;
+    }
 }

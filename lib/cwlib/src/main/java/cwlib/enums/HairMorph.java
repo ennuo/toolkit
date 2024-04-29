@@ -4,29 +4,29 @@ import cwlib.io.ValueEnum;
 
 public enum HairMorph implements ValueEnum<Integer>
 {
-      HAT(0),
-      HELMET(1),
-      FRINGE(2);
+    HAT(0),
+    HELMET(1),
+    FRINGE(2);
 
-      private final int value;
+    private final int value;
 
-      HairMorph(int value)
-      {
-            this.value = value;
-      }
+    HairMorph(int value)
+    {
+        this.value = value;
+    }
 
-      public Integer getValue()
-      {
-            return this.value;
-      }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-      public static HairMorph fromValue(int value)
-      {
-            for (HairMorph morph : HairMorph.values())
-            {
-                  if (morph.value == value)
-                        return morph;
-            }
-            return null;
-      }
+    public static HairMorph fromValue(int value)
+    {
+        for (HairMorph morph : HairMorph.values())
+        {
+            if (morph.value == value)
+                return morph;
+        }
+        return null;
+    }
 }

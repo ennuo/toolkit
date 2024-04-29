@@ -5,5 +5,5 @@ package cwlib.io;
  */
 public interface ValueEnum<E>
 {
-      E getValue();
+    E getValue();
 }

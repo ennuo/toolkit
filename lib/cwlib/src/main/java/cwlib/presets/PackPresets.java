@@ -9,43 +9,43 @@ import cwlib.types.data.ResourceDescriptor;
 
 public class PackPresets
 {
-      public static Pack Group(String name, String description, String author,
-                               ResourceDescriptor icon)
-      {
-            Pack item = new Pack();
-            item.contentsType = ContentsType.GROUP;
-            item.mesh = new ResourceDescriptor(0x6a1a, ResourceType.MESH);
+    public static Pack Group(String name, String description, String author,
+                             ResourceDescriptor icon)
+    {
+        Pack item = new Pack();
+        item.contentsType = ContentsType.GROUP;
+        item.mesh = new ResourceDescriptor(0x6a1a, ResourceType.MESH);
 
-            item.slot.id = new SlotID(SlotType.DLC_PACK, 0x340);
+        item.slot.id = new SlotID(SlotType.DLC_PACK, 0x340);
 
-            item.slot.name = name;
-            item.slot.description = description;
+        item.slot.name = name;
+        item.slot.description = description;
 
-            item.slot.icon = icon;
-            item.slot.authorName = author;
+        item.slot.icon = icon;
+        item.slot.authorName = author;
 
-            return item;
-      }
+        return item;
+    }
 
-      public static Pack Level(String name, String description, String author,
-                               ResourceDescriptor icon)
-      {
-            Pack item = new Pack();
+    public static Pack Level(String name, String description, String author,
+                             ResourceDescriptor icon)
+    {
+        Pack item = new Pack();
 
-            item.contentID = null;
+        item.contentID = null;
 
-            item.contentsType = ContentsType.LEVEL;
-            item.mesh = new ResourceDescriptor(0x3e86, ResourceType.MESH);
+        item.contentsType = ContentsType.LEVEL;
+        item.mesh = new ResourceDescriptor(0x3e86, ResourceType.MESH);
 
-            item.slot.id = new SlotID(SlotType.DLC_LEVEL, 0x66062);
-            item.slot.group = new SlotID(SlotType.DLC_PACK, 0x340);
+        item.slot.id = new SlotID(SlotType.DLC_LEVEL, 0x66062);
+        item.slot.group = new SlotID(SlotType.DLC_PACK, 0x340);
 
-            item.slot.name = name;
-            item.slot.description = description;
+        item.slot.name = name;
+        item.slot.description = description;
 
-            item.slot.icon = icon;
-            item.slot.authorName = author;
+        item.slot.icon = icon;
+        item.slot.authorName = author;
 
-            return item;
-      }
+        return item;
+    }
 }

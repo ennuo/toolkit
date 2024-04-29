@@ -9,17 +9,17 @@ import cwlib.types.data.ResourceDescriptor;
 public class SlotPresets
 {
 
-      public static Slot Crater(ResourceDescriptor level, int ID)
-      {
-            Slot slot = new Slot();
+    public static Slot Crater(ResourceDescriptor level, int ID)
+    {
+        Slot slot = new Slot();
 
-            SlotID slotID = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, ID);
+        SlotID slotID = new SlotID(SlotType.USER_CREATED_STORED_LOCAL, ID);
 
-            slot.id = slotID;
-            slot.location = Crater.valueOf("SLOT_" + ID).getValue();
+        slot.id = slotID;
+        slot.location = Crater.valueOf("SLOT_" + ID).getValue();
 
-            slot.root = level;
+        slot.root = level;
 
-            return slot;
-      }
+        return slot;
+    }
 }

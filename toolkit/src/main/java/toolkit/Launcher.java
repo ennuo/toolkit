@@ -10,14 +10,14 @@ import java.awt.*;
 
 public class Launcher
 {
-      public static void main(String[] args)
-      {
-            Config.initialize();
-            LafManager.install(new DarculaTheme());
-            ResourceSystem.GUI_MODE = true;
-            EventQueue.invokeLater(() ->
-            {
-                  new Toolkit().run(args).setVisible(true);
-            });
-      }
+    public static void main(String[] args)
+    {
+        Config.initialize();
+        LafManager.install(new DarculaTheme());
+        ResourceSystem.GUI_MODE = true;
+        EventQueue.invokeLater(() ->
+        {
+            new Toolkit().run(args).setVisible(true);
+        });
+    }
 }

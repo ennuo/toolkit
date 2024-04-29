@@ -10,43 +10,43 @@ import cwlib.types.data.ResourceDescriptor;
 
 public class RegionOverride implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x80;
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
 
-      public int region;
+    public int region;
 
-      @GsonRevision(min = 0x360)
-      public ResourceDescriptor materialPlan;
+    @GsonRevision(min = 0x360)
+    public ResourceDescriptor materialPlan;
 
-      public ResourceDescriptor material;
+    public ResourceDescriptor material;
 
-      @GsonRevision(min = 0x31c)
-      public Vector3f uvScale = new Vector3f(10.0f, 10.0f, 10.0f);
+    @GsonRevision(min = 0x31c)
+    public Vector3f uvScale = new Vector3f(10.0f, 10.0f, 10.0f);
 
-      @GsonRevision(lbp3 = true, min = 0x158)
-      public int color;
+    @GsonRevision(lbp3 = true, min = 0x158)
+    public int color;
 
-      @GsonRevision(lbp3 = true, min = 0x158)
-      public byte brightness;
+    @GsonRevision(lbp3 = true, min = 0x158)
+    public byte brightness;
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            region = serializer.i32(region);
-            materialPlan = serializer.resource(materialPlan, ResourceType.PLAN, true);
-            material = serializer.resource(material, ResourceType.GFX_MATERIAL);
-            uvScale = serializer.v3(uvScale);
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        region = serializer.i32(region);
+        materialPlan = serializer.resource(materialPlan, ResourceType.PLAN, true);
+        material = serializer.resource(material, ResourceType.GFX_MATERIAL);
+        uvScale = serializer.v3(uvScale);
 
-            if (serializer.getRevision().getSubVersion() >= 0x158)
-            {
-                  color = serializer.i32(color);
-                  brightness = serializer.i8(brightness);
-            }
-      }
+        if (serializer.getRevision().getSubVersion() >= 0x158)
+        {
+            color = serializer.i32(color);
+            brightness = serializer.i8(brightness);
+        }
+    }
 
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return RegionOverride.BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return RegionOverride.BASE_ALLOCATION_SIZE;
+    }
 }

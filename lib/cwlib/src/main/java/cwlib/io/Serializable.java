@@ -9,17 +9,17 @@ import cwlib.io.serializer.Serializer;
  */
 public interface Serializable
 {
-      /**
-       * (De)serializes a structure that implements Serializable.
-       *
-       * @param serializer Serializer instance
-       */
-      void serialize(Serializer serializer);
+    /**
+     * (De)serializes a structure that implements Serializable.
+     *
+     * @param serializer Serializer instance
+     */
+    void serialize(Serializer serializer);
 
-      /**
-       * Calculates the size necessary to store this structure
-       *
-       * @return Size of this structure
-       */
-      int getAllocatedSize();
+    /**
+     * Calculates the size necessary to store this structure
+     *
+     * @return Size of this structure
+     */
+    int getAllocatedSize();
 }

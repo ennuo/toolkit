@@ -6,38 +6,38 @@ import cwlib.io.serializer.Serializer;
 
 public class PWormhole implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x30;
+    public static final int BASE_ALLOCATION_SIZE = 0x30;
 
-      public int type;
+    public int type;
 
-      @GsonRevision(min = 0x111, lbp3 = true)
-      public byte activeTypeForTwoWayHole;
+    @GsonRevision(min = 0x111, lbp3 = true)
+    public byte activeTypeForTwoWayHole;
 
-      public int playerMode;
-      public boolean audioEnabled, trigger, finished, activated;
-      public int exitCount, exitDelay;
+    public int playerMode;
+    public boolean audioEnabled, trigger, finished, activated;
+    public int exitCount, exitDelay;
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            type = serializer.s32(type);
-            if (serializer.getRevision().getSubVersion() >= 0x111)
-                  activeTypeForTwoWayHole = serializer.i8(activeTypeForTwoWayHole);
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        type = serializer.s32(type);
+        if (serializer.getRevision().getSubVersion() >= 0x111)
+            activeTypeForTwoWayHole = serializer.i8(activeTypeForTwoWayHole);
 
-            playerMode = serializer.s32(playerMode);
-            audioEnabled = serializer.bool(audioEnabled);
+        playerMode = serializer.s32(playerMode);
+        audioEnabled = serializer.bool(audioEnabled);
 
-            trigger = serializer.bool(trigger);
-            finished = serializer.bool(finished);
-            activated = serializer.bool(activated);
+        trigger = serializer.bool(trigger);
+        finished = serializer.bool(finished);
+        activated = serializer.bool(activated);
 
-            exitCount = serializer.i32(exitCount);
-            exitDelay = serializer.i32(exitDelay);
-      }
+        exitCount = serializer.i32(exitCount);
+        exitDelay = serializer.i32(exitDelay);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return PWormhole.BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PWormhole.BASE_ALLOCATION_SIZE;
+    }
 }

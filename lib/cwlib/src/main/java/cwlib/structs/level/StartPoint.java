@@ -9,27 +9,27 @@ import java.util.ArrayList;
 
 public class StartPoint implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x10;
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
 
-      public SlotID slot;
-      public ArrayList<StreamingID> ids = new ArrayList<>();
+    public SlotID slot;
+    public ArrayList<StreamingID> ids = new ArrayList<>();
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            slot = serializer.struct(slot, SlotID.class);
-            ids = serializer.arraylist(ids, StreamingID.class);
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        slot = serializer.struct(slot, SlotID.class);
+        ids = serializer.arraylist(ids, StreamingID.class);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            int size = StartPoint.BASE_ALLOCATION_SIZE;
-            if (this.ids != null)
-            {
-                  for (StreamingID id : this.ids)
-                        size += id.getAllocatedSize();
-            }
-            return size;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        int size = StartPoint.BASE_ALLOCATION_SIZE;
+        if (this.ids != null)
+        {
+            for (StreamingID id : this.ids)
+                size += id.getAllocatedSize();
+        }
+        return size;
+    }
 }

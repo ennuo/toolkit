@@ -10,29 +10,29 @@ import cwlib.io.serializer.Serializer;
  */
 public class PScriptName implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x4;
+    public static final int BASE_ALLOCATION_SIZE = 0x4;
 
-      public String name;
+    public String name;
 
-      public PScriptName() { }
+    public PScriptName() { }
 
-      public PScriptName(String name)
-      {
-            this.name = name;
-      }
+    public PScriptName(String name)
+    {
+        this.name = name;
+    }
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            name = serializer.str(name);
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        name = serializer.str(name);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            int size = PScriptName.BASE_ALLOCATION_SIZE;
-            if (this.name != null)
-                  size += this.name.length();
-            return size;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        int size = PScriptName.BASE_ALLOCATION_SIZE;
+        if (this.name != null)
+            size += this.name.length();
+        return size;
+    }
 }

@@ -17,7 +17,7 @@ public class ResPtr<T extends Resource>
     private SerializedResource serializedResource;
     private final ResourceType type;
     private GUID guid;
-    private SHA1 loadedHash = SHA1.EMPTY;
+    private final SHA1 loadedHash = SHA1.EMPTY;
     private int loadState;
 
     public ResPtr(ResourceDescriptor descriptor)

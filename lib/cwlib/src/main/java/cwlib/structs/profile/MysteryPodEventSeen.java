@@ -11,21 +11,21 @@ import cwlib.io.serializer.Serializer;
  */
 public class MysteryPodEventSeen implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x10;
+    public static final int BASE_ALLOCATION_SIZE = 0x10;
 
-      public int id;
-      public int type;
+    public int id;
+    public int type;
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            id = serializer.i32(id);
-            type = serializer.s32(type);
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        id = serializer.i32(id);
+        type = serializer.s32(type);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return MysteryPodEventSeen.BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return MysteryPodEventSeen.BASE_ALLOCATION_SIZE;
+    }
 }

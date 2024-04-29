@@ -8,35 +8,35 @@ import cwlib.types.data.ResourceDescriptor;
 
 public class PScript implements Serializable
 {
-      public static final int BASE_ALLOCATION_SIZE = 0x30;
+    public static final int BASE_ALLOCATION_SIZE = 0x30;
 
-      public ScriptInstance instance = new ScriptInstance();
+    public ScriptInstance instance = new ScriptInstance();
 
-      public PScript() { }
+    public PScript() { }
 
-      public PScript(ResourceDescriptor script)
-      {
-            this.instance.script = script;
-      }
+    public PScript(ResourceDescriptor script)
+    {
+        this.instance.script = script;
+    }
 
-      public boolean is(GUID guid)
-      {
-            if (instance == null || instance.script == null) return false;
-            return instance.script.isGUID() && guid.equals(instance.script.getGUID());
-      }
+    public boolean is(GUID guid)
+    {
+        if (instance == null || instance.script == null) return false;
+        return instance.script.isGUID() && guid.equals(instance.script.getGUID());
+    }
 
-      @Override
-      public void serialize(Serializer serializer)
-      {
-            int version = serializer.getRevision().getVersion();
-            if (0x179 < version && version < 0x1a1)
-                  serializer.bool(false); // unknown
-            instance = serializer.struct(instance, ScriptInstance.class);
-      }
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        int version = serializer.getRevision().getVersion();
+        if (0x179 < version && version < 0x1a1)
+            serializer.bool(false); // unknown
+        instance = serializer.struct(instance, ScriptInstance.class);
+    }
 
-      @Override
-      public int getAllocatedSize()
-      {
-            return PScript.BASE_ALLOCATION_SIZE;
-      }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PScript.BASE_ALLOCATION_SIZE;
+    }
 }
