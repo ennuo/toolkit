@@ -440,7 +440,7 @@ public class PWorld implements Serializable
             if (version >= 0x1c2 && version < 0x36e)
                   deathCount = serializer.i32(deathCount);
             if (version >= 0x1c4)
-                  maxNumPlayers = serializer.i32(maxNumPlayers);
+                  maxNumPlayers = serializer.s32(maxNumPlayers);
 
             if (version >= 0x1db)
             {
@@ -455,7 +455,7 @@ public class PWorld implements Serializable
             if (version >= 0x22e)
             {
                   everSpawned = serializer.bool(everSpawned);
-                  spawnFailureCount = serializer.i32(spawnFailureCount);
+                  spawnFailureCount = serializer.s32(spawnFailureCount);
             }
 
             if (version >= 0x25a)
@@ -466,7 +466,7 @@ public class PWorld implements Serializable
                           GlobalSettings.class);
                   globalSettingsBlendFactor = serializer.f32(globalSettingsBlendFactor);
                   hasLevelLightingBeenSetup = serializer.bool(hasLevelLightingBeenSetup);
-                  globalSettingsThingUID = serializer.i32(globalSettingsThingUID);
+                  globalSettingsThingUID = serializer.s32(globalSettingsThingUID);
             }
 
             if (version >= 0x370)
@@ -541,17 +541,17 @@ public class PWorld implements Serializable
 
             if (subVersion >= 0xf8)
             {
-                  waterMainColor = serializer.i32(waterMainColor);
-                  fromWaterMainColor = serializer.i32(fromWaterMainColor);
-                  targetWaterMainColor = serializer.i32(targetWaterMainColor);
+                  waterMainColor = serializer.s32(waterMainColor);
+                  fromWaterMainColor = serializer.s32(fromWaterMainColor);
+                  targetWaterMainColor = serializer.s32(targetWaterMainColor);
 
-                  waterHintColorOne = serializer.i32(waterHintColorOne);
-                  fromWaterHintColorOne = serializer.i32(fromWaterHintColorOne);
-                  targetWaterHintColorOne = serializer.i32(targetWaterHintColorOne);
+                  waterHintColorOne = serializer.s32(waterHintColorOne);
+                  fromWaterHintColorOne = serializer.s32(fromWaterHintColorOne);
+                  targetWaterHintColorOne = serializer.s32(targetWaterHintColorOne);
 
-                  waterHintColorTwo = serializer.i32(waterHintColorTwo);
-                  fromWaterHintColorTwo = serializer.i32(fromWaterHintColorTwo);
-                  targetWaterHintColorTwo = serializer.i32(targetWaterHintColorTwo);
+                  waterHintColorTwo = serializer.s32(waterHintColorTwo);
+                  fromWaterHintColorTwo = serializer.s32(fromWaterHintColorTwo);
+                  targetWaterHintColorTwo = serializer.s32(targetWaterHintColorTwo);
             }
 
             if (subVersion >= 0xf8 && subVersion < 0x189)

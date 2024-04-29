@@ -34,10 +34,10 @@ public final class Colors
                   if (rgba == null)
                         throw new NullPointerException("Can't convert null color!");
                   if (rgba.w != 1.0f) rgba.w = 1.0f;
-                  return (Math.round(rgba.w * 255.0f) << 24) |
-                         (Math.round(rgba.x * 255.0f) << 16) |
-                         (Math.round(rgba.y * 255.0f) << 8) |
-                         (Math.round(rgba.z * 255.0f));
+                  return ((Math.round(rgba.w * 255.0f) & 0xff) << 24) |
+                         ((Math.round(rgba.x * 255.0f) & 0xff) << 16) |
+                         ((Math.round(rgba.y * 255.0f) & 0xff) << 8) |
+                         (Math.round(rgba.z * 255.0f) & 0xff);
             }
 
             public static Vector4f fromARGB(int color)

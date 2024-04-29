@@ -29,7 +29,7 @@ public class PCameraTweak implements Serializable
 
       @GsonRevision(max = 0x37d)
       @Deprecated
-      public float zoomDistance;
+      public float zoomDistance = 1000.0f;
 
       public float positionFactor;
 
@@ -39,7 +39,7 @@ public class PCameraTweak implements Serializable
 
       @GsonRevision(min = 0x197, max = 0x2c3)
       @Deprecated
-      public float activationLimit;
+      public float activationLimit = 1.0f;
 
       @GsonRevision(min = 0x1ff)
       public boolean disableZoomMode;
@@ -239,8 +239,29 @@ public class PCameraTweak implements Serializable
                   cutSceneWasActiveLastFrame = serializer.bool(cutSceneWasActiveLastFrame);
 
             if (version > 0x37d)
+            {
                   nodes = serializer.array(nodes, CameraNode.class);
-
+                  
+                  // Fill in the LBP1 data with the first node if it exists
+                  if (!serializer.isWriting() && nodes != null && nodes.length > 0)
+                  {
+                        CameraNode node = nodes[0];
+                        pitchAngle = node.pitchAngle;
+                        targetBox = node.targetBox;
+                        zoomDistance = node.zoomDistance;
+                  }
+            }
+            // Cache an LBP2 node based on this data
+            else if (!serializer.isWriting())
+            {
+                  nodes = new CameraNode[1];
+                  CameraNode node = new CameraNode();
+                  node.pitchAngle = pitchAngle;
+                  node.targetBox = targetBox;
+                  node.zoomDistance = zoomDistance;
+                  nodes[0] = node;
+            }
+            
             if (subVersion > 0x7d)
                   frontDOF = serializer.f32(frontDOF);
             if (subVersion > 0x79)

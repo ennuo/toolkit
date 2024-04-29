@@ -1,21 +1,30 @@
 package toolkit.functions;
 
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.DatabaseType;
 import cwlib.enums.ResourceType;
+import cwlib.io.Resource;
+import cwlib.io.serializer.Serializer;
 import cwlib.resources.RAdventureCreateProfile;
 import cwlib.resources.RPacks;
 import cwlib.resources.RPlan;
 import cwlib.resources.RSlotList;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.slot.Slot;
+import cwlib.structs.things.Thing;
+import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceInfo;
+import cwlib.types.data.Revision;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.BigSave;
 import cwlib.types.save.SaveEntry;
+import toolkit.windows.Toolkit;
 import toolkit.windows.managers.ItemManager;
 import toolkit.windows.managers.SlotManager;
 
 import java.awt.event.ActionEvent;
+
+import javax.swing.JOptionPane;
 
 public class EditCallbacks
 {
@@ -54,5 +63,26 @@ public class EditCallbacks
             if (plan == null) return;
             ItemManager manager = new ItemManager(entry, plan);
             manager.setVisible(true);
+      }
+
+      public static void changeRevision(Revision revision)
+      {
+            FileEntry entry = ResourceSystem.getSelected().getEntry();
+            byte[] data = ResourceSystem.extract(entry.getSHA1());
+            if (data == null)
+            {
+                  JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Unable to extract root resource!", "Respec", JOptionPane.ERROR_MESSAGE);
+                  return;
+            }
+
+            data = SerializedResource.changeRevision(data, revision);
+
+            if (data == null)
+            {
+                  JOptionPane.showMessageDialog(Toolkit.INSTANCE, "There was an error processing this resource!", "Respec", JOptionPane.ERROR_MESSAGE);
+                  return;
+            }
+
+            ResourceSystem.replace(entry, data);
       }
 }

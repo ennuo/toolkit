@@ -442,7 +442,6 @@ public class Toolkit extends javax.swing.JFrame
                               {
                                     try
                                     {
-                                          ResourceSystem.DISABLE_LOGS = true;
                                           boolean enableDecalExport = false;
                                           RPlan plan = info.getResource();
                                           if (plan != null)
@@ -476,8 +475,6 @@ public class Toolkit extends javax.swing.JFrame
                                                    "for decals. " +
                                                   "Exporting will be disabled.");
                                     }
-
-                                    ResourceSystem.DISABLE_LOGS = false;
                               }
 
                               break;
@@ -614,7 +611,9 @@ public class Toolkit extends javax.swing.JFrame
                   boolean canExportJSON = type == ResourceType.TRANSLATION
                                           || (isLoadedResource && info.getMethod().equals(SerializationType.BINARY));
                   if (canExportJSON)
+                  {
                         this.exportGroup.add(this.exportJSONContext);
+                  }
 
                   if (this.exportGroup.getMenuComponentCount() != 0)
                         this.entryContext.add(this.exportGroup);
@@ -661,6 +660,12 @@ public class Toolkit extends javax.swing.JFrame
                         this.entryContext.add(editGroup);
                   if (isFile && ResourceSystem.canExtract())
                   {
+                        boolean canChangeRevision = type != ResourceType.GFX_MATERIAL
+                              && (isLoadedResource && info.getMethod().equals(SerializationType.BINARY));
+                        if (canChangeRevision)
+                              this.entryContext.add(this.changeResourceRevisionGroup);
+
+
                         this.entryContext.add(this.replaceGroup);
                         this.replaceImageContext.setVisible(type == ResourceType.TEXTURE || type == ResourceType.GTF_TEXTURE);
                         this.replaceDecompressedContext.setVisible(isCompressed && type != ResourceType.STATIC_MESH);
@@ -741,6 +746,10 @@ public class Toolkit extends javax.swing.JFrame
     private void initComponents() {
 
         entryContext = new javax.swing.JPopupMenu();
+        changeResourceRevisionGroup = new javax.swing.JMenu();
+        changeResourceRevisionLBP1Context = new javax.swing.JMenuItem();
+        changeResourceRevisionLBP2Context = new javax.swing.JMenuItem();
+        changeResourceRevisionLBP3Context = new javax.swing.JMenuItem();
         extractGroup = new javax.swing.JMenu();
         extractContext = new javax.swing.JMenuItem();
         extractDecompressedContext = new javax.swing.JMenuItem();
@@ -914,6 +923,34 @@ public class Toolkit extends javax.swing.JFrame
         exportSceneGraph = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+
+        changeResourceRevisionGroup.setText("Change Revision");
+
+        changeResourceRevisionLBP1Context.setText("LBP1");
+        changeResourceRevisionLBP1Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeResourceRevisionLBP1ContextActionPerformed(evt);
+            }
+        });
+        changeResourceRevisionGroup.add(changeResourceRevisionLBP1Context);
+
+        changeResourceRevisionLBP2Context.setText("LBP2");
+        changeResourceRevisionLBP2Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeResourceRevisionLBP2ContextActionPerformed(evt);
+            }
+        });
+        changeResourceRevisionGroup.add(changeResourceRevisionLBP2Context);
+
+        changeResourceRevisionLBP3Context.setText("LBP3");
+        changeResourceRevisionLBP3Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeResourceRevisionLBP3ContextActionPerformed(evt);
+            }
+        });
+        changeResourceRevisionGroup.add(changeResourceRevisionLBP3Context);
+
+        entryContext.add(changeResourceRevisionGroup);
 
         extractGroup.setText("Extract...");
         extractGroup.setToolTipText("Extract selected entries");
@@ -2231,6 +2268,18 @@ public class Toolkit extends javax.swing.JFrame
                 JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Successfully imported sticker!", "Item Importer", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_newStickerContextActionPerformed
 
+    private void changeResourceRevisionLBP3ContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeResourceRevisionLBP3ContextActionPerformed
+        EditCallbacks.changeRevision(new Revision(0x021803f9));
+    }//GEN-LAST:event_changeResourceRevisionLBP3ContextActionPerformed
+
+    private void changeResourceRevisionLBP1ContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeResourceRevisionLBP1ContextActionPerformed
+        EditCallbacks.changeRevision(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Revisions.LD_LAMS_KEYS));
+    }//GEN-LAST:event_changeResourceRevisionLBP1ContextActionPerformed
+
+    private void changeResourceRevisionLBP2ContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeResourceRevisionLBP2ContextActionPerformed
+        EditCallbacks.changeRevision(new Revision(0x3f6));
+    }//GEN-LAST:event_changeResourceRevisionLBP2ContextActionPerformed
+
       private void loadDBActionPerformed(java.awt.event.ActionEvent evt)
       {// GEN-FIRST:event_loadDBActionPerformed
             File file = FileChooser.openFile("blurayguids.map", "map", false);
@@ -3287,7 +3336,6 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
                   return;
 
             WrappedResource wrapper = null;
-            ResourceSystem.DISABLE_LOGS = true;
             try
             {
                   wrapper = new WrappedResource(resource);
@@ -3299,7 +3347,6 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
                                                       "export.",
                           "An error occurred", JOptionPane.ERROR_MESSAGE);
             }
-            ResourceSystem.DISABLE_LOGS = false;
 
             if (wrapper != null)
                   FileIO.write(wrapper.toJSON(), file.getAbsolutePath());
@@ -3312,7 +3359,6 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
                   return null;
 
             byte[] data = null;
-            ResourceSystem.DISABLE_LOGS = true;
             try
             {
                   WrappedResource wrapper = GsonUtils.fromJSON(
@@ -3328,8 +3374,6 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
                                                       " not import.",
                           "An error occurred", JOptionPane.ERROR_MESSAGE);
             }
-
-            ResourceSystem.DISABLE_LOGS = false;
 
             return data;
       }
@@ -3619,6 +3663,10 @@ new File(folder).listFiles((dir, name) -> moonRegex.matcher(name).matches());
     private javax.swing.JSpinner cameraPosZ;
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
+    private javax.swing.JMenu changeResourceRevisionGroup;
+    private javax.swing.JMenuItem changeResourceRevisionLBP1Context;
+    private javax.swing.JMenuItem changeResourceRevisionLBP2Context;
+    private javax.swing.JMenuItem changeResourceRevisionLBP3Context;
     private javax.swing.JMenuItem clear;
     private javax.swing.JMenuItem closeTab;
     private javax.swing.JMenuItem collectAllItemDependencies;

@@ -220,8 +220,8 @@ public class MemoryInputStream
       {
             if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) == 0))
                   return this.i32(true);
-            long v = this.uleb128();
-            return (int) ((v >> 1 ^ -(v & 1)) & 0xFFFFFFFF);
+            int v = (int)this.uleb128();
+            return (v >> 1 ^ -(v & 1));
       }
 
       /**

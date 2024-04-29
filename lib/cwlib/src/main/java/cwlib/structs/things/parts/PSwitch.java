@@ -477,7 +477,7 @@ public class PSwitch implements Serializable
             if (subVersion > 0x7a)
             {
                   breakSound = serializer.bool(breakSound);
-                  colorTimer = serializer.i32(colorTimer);
+                  colorTimer = serializer.s32(colorTimer);
             }
 
             if (subVersion > 0x67)

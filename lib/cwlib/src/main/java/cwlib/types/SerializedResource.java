@@ -10,9 +10,11 @@ import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RPlan;
+import cwlib.singleton.ResourceSystem;
 import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.structs.texture.CellGcmTexture;
+import cwlib.structs.things.Thing;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -21,7 +23,10 @@ import cwlib.util.Bytes;
 import cwlib.util.Compressor;
 import cwlib.util.Crypto;
 
+import java.awt.Toolkit;
 import java.util.HashSet;
+
+import javax.swing.JOptionPane;
 
 public class SerializedResource
 {
@@ -439,6 +444,40 @@ public class SerializedResource
 
             stream.shrink();
             return stream.getBuffer();
+      }
+
+      public static byte[] changeRevision(byte[] data, Revision revision)
+      {
+            int version = revision.getVersion();
+            byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+            if (version >= 0x297 || (version == 0x272 && (revision.getBranchID() == 0x4c44) && (revision.getBranchRevision() > 1)))
+                  compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+
+            Resource compressable = null;
+            try
+            {
+                  SerializedResource resource = new SerializedResource(data);
+                  Serializer serializer = resource.getSerializer();
+                  Object struct = serializer.struct(null,
+                          resource.getResourceType().getCompressable());
+                  if (struct instanceof RPlan)
+                  {
+                        RPlan plan = (RPlan) struct;
+                        Thing[] things = null;
+                        try { things = plan.getThings(); }
+                        catch (Exception ex) { return null; }
+                        plan.revision = revision;
+                        plan.compressionFlags = compressionFlags;
+                        plan.setThings(things);
+                  }
+                  compressable = (Resource) struct;
+            }
+            catch (Exception ex) 
+            { 
+                  return null; 
+            }
+
+            return SerializedResource.compress(compressable.build(revision, compressionFlags));
       }
 
       public void replaceDependency(ResourceDescriptor oldDescriptor,

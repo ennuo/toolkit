@@ -921,7 +921,7 @@ public class Serializer
             }
 
             int count = this.input.i32();
-            if (count == 0) return null;
+            if (count == 0) return new long[0];
             int bytes = this.input.u8();
             long[] vector = new long[count];
             for (int i = 0; i < bytes; ++i)
@@ -982,7 +982,7 @@ public class Serializer
             }
 
             int count = this.input.i32();
-            if (count == 0) return null;
+            if (count == 0) return new int[0];
             int bytes = this.input.u8();
             int[] vector = new int[count];
             for (int i = 0; i < bytes; ++i)
@@ -1293,8 +1293,8 @@ public class Serializer
 
       public void log(String message, int level)
       {
-            if (ResourceSystem.DISABLE_LOGS) return;
-            if (level < ResourceSystem.LOG_LEVEL) return;
+            if (level > ResourceSystem.LOG_LEVEL) return;
+
             if (this.isWriting)
             {
                   System.out.println("[WRITING] @ 0x" + Bytes.toHex(Bytes.toBytesBE(this.getOffset())) + " -> " + message);

@@ -33,7 +33,7 @@ public final class GsonUtils
                     .serializeSpecialFloatingPointValues()
                     .enableComplexMapKeySerialization()
                     .serializeNulls()
-                    .setExclusionStrategies(new ExclusionStrategy()
+                    .addSerializationExclusionStrategy(new ExclusionStrategy()
                     {
                           @Override
                           public boolean shouldSkipField(FieldAttributes field)

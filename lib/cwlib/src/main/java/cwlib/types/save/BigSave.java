@@ -18,11 +18,15 @@ import cwlib.types.databases.FileEntry;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileNode;
 import cwlib.util.Bytes;
+import cwlib.util.Resources;
 
+import java.awt.Toolkit;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import javax.swing.JOptionPane;
 
 public class BigSave extends FileData
 {
@@ -201,15 +205,35 @@ public class BigSave extends FileData
 
             if (data.length < 4) return;
 
-            ResourceType type = ResourceType.fromMagic(new String(new byte[] { data[0], data[1],
-                    data[2] }));
+            Revision gameRevision = this.archive.getGameRevision();
+            ResourceType resourceType = Resources.getResourceType(data);
+            Revision resourceRevision = Resources.getRevision(data);
             SerializationType method =
                     SerializationType.fromValue(Character.toString((char) data[3]));
             SaveEntry entry = null;
 
             if (method == SerializationType.BINARY)
             {
-                  switch (type)
+                  if (resourceType != ResourceType.GFX_MATERIAL && resourceRevision.getVersion() > gameRevision.getVersion())
+                  {
+                        int result = JOptionPane.showConfirmDialog(null, "This file appears to be built for a later version of LittleBigPlanet, do you want to convert it?", "Confirm", JOptionPane.YES_NO_OPTION);
+                        if (result == JOptionPane.YES_OPTION)
+                        {
+                              byte[] convertedData = SerializedResource.changeRevision(data, gameRevision);
+                              if (convertedData == null)
+                              {
+                                    JOptionPane.showMessageDialog(null, "An error occurred converting the resource!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    return;
+                              }
+
+                              sha1 = this.archive.add(convertedData);
+                              data = convertedData;
+                              resourceRevision = gameRevision;
+                        }
+
+                  }
+
+                  switch (resourceType)
                   {
                         case LEVEL:
                         {

@@ -25,7 +25,6 @@ public class Psyncer
 
       public static void main(String[] args)
       {
-            ResourceSystem.DISABLE_LOGS = true;
             if (args.length < 2 || args.length > 3)
             {
                   System.out.println("java -jar psyncer.jar <littlefart> <*.json> [-x]");

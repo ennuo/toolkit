@@ -203,7 +203,6 @@ public class ArchiveCallbacks
                   int total = 0;
                   String path = FileChooser.openDirectory();
                   if (path == null) return;
-                  ResourceSystem.DISABLE_LOGS = true;
                   for (int i = 0; i < selected.length; ++i)
                   {
                         FileNode node = selected[i];
@@ -227,7 +226,6 @@ public class ArchiveCallbacks
                                     success++;
                         }
                   }
-                  ResourceSystem.DISABLE_LOGS = false;
                   System.out.println("Finished extracting " + success + "/" + total + " entries.");
                   return;
             }

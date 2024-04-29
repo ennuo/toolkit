@@ -627,6 +627,7 @@ public class RLocalProfile implements Resource
             if (version > 0x35e)
                   hasSeenCalibrationScreen = serializer.bool(hasSeenCalibrationScreen);
 
+            // these are both s32[]
             if (version > 0x205)
                   lbp1VOPlayed = serializer.intvector(lbp1VOPlayed);
             if (version > 0x36b)
@@ -780,8 +781,8 @@ public class RLocalProfile implements Resource
 
             if (version > 0x3e4)
             {
-                  beakersUsedPart1 = serializer.i32(beakersUsedPart1);
-                  beakersUsedPart2 = serializer.i32(beakersUsedPart2);
+                  beakersUsedPart1 = serializer.s32(beakersUsedPart1);
+                  beakersUsedPart2 = serializer.s32(beakersUsedPart2);
             }
 
             if (version > 0x3eb)

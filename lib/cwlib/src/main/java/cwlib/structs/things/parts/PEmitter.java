@@ -80,7 +80,7 @@ public class PEmitter implements Serializable
 
       @GsonRevision(min = 0x230, max = 0x2c3)
       @Deprecated
-      public boolean modScaleActive;
+      public boolean modScaleActive = true;
 
       @GsonRevision(min = 0x2c4)
       public int behavior;

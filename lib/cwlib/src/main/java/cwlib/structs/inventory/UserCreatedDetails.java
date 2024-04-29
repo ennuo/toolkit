@@ -7,8 +7,8 @@ public class UserCreatedDetails implements Serializable
 {
       public static final int BASE_ALLOCATION_SIZE = 0x8;
 
-      public String name;
-      public String description;
+      public String name = "";
+      public String description = "";
 
       public UserCreatedDetails() { }
 

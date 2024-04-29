@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.script.ScriptInstance;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 
 public class PScript implements Serializable
@@ -16,6 +17,12 @@ public class PScript implements Serializable
       public PScript(ResourceDescriptor script)
       {
             this.instance.script = script;
+      }
+
+      public boolean is(GUID guid)
+      {
+            if (instance == null || instance.script == null) return false;
+            return instance.script.isGUID() && guid.equals(instance.script.getGUID());
       }
 
       @Override

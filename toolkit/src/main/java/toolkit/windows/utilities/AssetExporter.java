@@ -460,7 +460,6 @@ public class AssetExporter extends JDialog
                   if (shouldConvert && resource.getResourceType().equals(ResourceType.PLAN))
                   {
 
-                        ResourceSystem.DISABLE_LOGS = true;
                         // This could get messy with Vita and LBP3 plans
                         // so leave it in a try/catch for now
                         try
@@ -482,7 +481,6 @@ public class AssetExporter extends JDialog
                               System.out.println("Failed to convert a plan resource!");
                               data = resource.compress();
                         }
-                        ResourceSystem.DISABLE_LOGS = false;
                   }
                   else if (resource.getResourceType().equals(ResourceType.GFX_MATERIAL))
                   {
@@ -533,7 +531,6 @@ public class AssetExporter extends JDialog
                   {
 
                         // This surely won't cause any issues!
-                        ResourceSystem.DISABLE_LOGS = true;
                         try
                         {
                               Resource compressable =
@@ -547,8 +544,6 @@ public class AssetExporter extends JDialog
                                                  "resource!");
                               data = resource.compress();
                         }
-                        ResourceSystem.DISABLE_LOGS = false;
-
                   }
                   else
                   {

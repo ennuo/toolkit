@@ -22,12 +22,12 @@ public class ViewedPlayerData implements Serializable
       public void serialize(Serializer serializer)
       {
             onlineID = serializer.struct(onlineID, NetworkOnlineID.class);
-            lastReviewCount = serializer.i32(lastReviewCount);
-            lastCommentCount = serializer.i32(lastCommentCount);
-            lastPhotosByMeCount = serializer.i32(lastPhotosByMeCount);
-            lastPhotosWithMeCount = serializer.i32(lastPhotosWithMeCount);
-            lastFavouriteSlotsCount = serializer.i32(lastFavouriteSlotsCount);
-            lastFavouriteUsersCount = serializer.i32(lastFavouriteUsersCount);
+            lastReviewCount = serializer.s32(lastReviewCount);
+            lastCommentCount = serializer.s32(lastCommentCount);
+            lastPhotosByMeCount = serializer.s32(lastPhotosByMeCount);
+            lastPhotosWithMeCount = serializer.s32(lastPhotosWithMeCount);
+            lastFavouriteSlotsCount = serializer.s32(lastFavouriteSlotsCount);
+            lastFavouriteUsersCount = serializer.s32(lastFavouriteUsersCount);
             lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
             lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
       }

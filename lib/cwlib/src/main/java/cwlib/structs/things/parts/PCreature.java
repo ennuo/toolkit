@@ -548,7 +548,7 @@ public class PCreature implements Serializable
                   toolTetherJoint = serializer.thing(toolTetherJoint);
                   toolTetherWidth = serializer.f32(toolTetherWidth);
                   jetpack = serializer.thing(jetpack);
-                  wallJumpDir = serializer.i32(wallJumpDir);
+                  wallJumpDir = serializer.s32(wallJumpDir);
                   wallJumpPos = serializer.v3(wallJumpPos);
 
                   if (!serializer.isWriting())

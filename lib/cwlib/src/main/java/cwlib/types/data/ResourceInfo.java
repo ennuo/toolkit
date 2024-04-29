@@ -145,11 +145,9 @@ public class ResourceInfo
                         Class<? extends Serializable> clazz = this.type.getCompressable();
                         if (clazz != null)
                         {
-                              ResourceSystem.DISABLE_LOGS = true;
                               try { this.resource = resource.loadResource(clazz); }
                               catch (SerializationException ex)
                               {
-                                    ResourceSystem.DISABLE_LOGS = false;
                                     ResourceSystem.println("Encountered error while deserializing" +
                                                            " resource, " +
                                                            "received message:");
@@ -158,13 +156,11 @@ public class ResourceInfo
                               }
                               catch (Exception ex)
                               {
-                                    ResourceSystem.DISABLE_LOGS = false;
                                     ResourceSystem.println("An unknown error occurred while " +
                                                            "processing " +
                                                            "resource, printing stacktrace:");
                                     ex.printStackTrace();
                               }
-                              ResourceSystem.DISABLE_LOGS = false;
                         }
                         else ResourceSystem.println(this.type.name() + " is unregistered!");
                   }

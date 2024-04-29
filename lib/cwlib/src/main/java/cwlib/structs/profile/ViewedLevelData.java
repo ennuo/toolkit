@@ -20,10 +20,10 @@ public class ViewedLevelData implements Serializable
       public void serialize(Serializer serializer)
       {
             slotID = serializer.struct(slotID, SlotID.class);
-            lastReviewCount = serializer.i32(lastReviewCount);
-            lastCommentCount = serializer.i32(lastCommentCount);
-            lastPhotoCount = serializer.i32(lastPhotoCount);
-            lastAuthorPhotoCount = serializer.i32(lastAuthorPhotoCount);
+            lastReviewCount = serializer.s32(lastReviewCount);
+            lastCommentCount = serializer.s32(lastCommentCount);
+            lastPhotoCount = serializer.s32(lastPhotoCount);
+            lastAuthorPhotoCount = serializer.s32(lastAuthorPhotoCount);
             lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
             lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
       }

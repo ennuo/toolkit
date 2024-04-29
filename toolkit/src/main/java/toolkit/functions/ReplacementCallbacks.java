@@ -1,9 +1,14 @@
 package toolkit.functions;
 
+import cwlib.enums.ResourceType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.SerializedResource;
+import cwlib.types.data.ResourceInfo;
+import cwlib.types.data.Revision;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.swing.FileNode;
 import cwlib.util.FileIO;
+import cwlib.util.Resources;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 import toolkit.windows.bundlers.TextureImporter;
@@ -64,10 +69,11 @@ public class ReplacementCallbacks
 
       public static void replaceCompressed()
       {
-            File file = FileChooser.openFile(ResourceSystem.getSelected().getName(), null, false);
+            FileEntry entry = ResourceSystem.getSelected().getEntry();
+            File file = FileChooser.openFile(entry.getName(), null, false);
             if (file == null) return;
             byte[] data = FileIO.read(file.getAbsolutePath());
             if (data != null)
-                  ResourceSystem.replace(ResourceSystem.getSelected().getEntry(), data);
+                  ResourceSystem.replace(entry, data);
       }
 }

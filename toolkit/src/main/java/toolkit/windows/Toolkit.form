@@ -8,6 +8,37 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
+        <Menu class="javax.swing.JMenu" name="changeResourceRevisionGroup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Change Revision"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP1Context">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="LBP1"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP1ContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP2Context">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="LBP2"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP2ContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP3Context">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="LBP3"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP3ContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="extractGroup">
           <Properties>
             <Property name="text" type="java.lang.String" value="Extract..."/>

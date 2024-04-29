@@ -43,7 +43,7 @@ public class PJoint implements Serializable
 
       @GsonRevision(max = 0x306)
       @Deprecated
-      public byte interactPlayMode, interactEditMode;
+      public byte interactPlayMode = 0, interactEditMode = 2;
 
       public float renderScale = 1.0f;
 

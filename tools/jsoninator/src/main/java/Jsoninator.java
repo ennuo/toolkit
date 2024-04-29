@@ -11,8 +11,6 @@ public class Jsoninator
 {
       public static void main(String[] args)
       {
-            ResourceSystem.DISABLE_LOGS = true;
-            
             if (args.length != 2)
             {
                   System.out.println("java -jar jsoninator.java <input> <output>");

@@ -77,8 +77,7 @@ public class ExportCallbacks
 
                                 ArrayList<Thing> thingsWithDecals = new ArrayList<>();
 
-                                boolean oldLogStatus = ResourceSystem.DISABLE_LOGS;
-                                ResourceSystem.DISABLE_LOGS = true;
+
                                 try
                                 {
                                       Thing[] things = plan.getThings();
@@ -91,11 +90,9 @@ public class ExportCallbacks
                                 }
                                 catch (Exception ex)
                                 {
-                                      ResourceSystem.DISABLE_LOGS = oldLogStatus;
                                       state.setErrorMessage("Failed to parse thing data!");
                                       return -1;
                                 }
-                                ResourceSystem.DISABLE_LOGS = oldLogStatus;
 
                                 state.setMaxProgress(thingsWithDecals.size());
                                 int current = 0;

@@ -22,10 +22,10 @@ public class PPos implements Serializable
 
       @GsonRevision(max = 0x340)
       @JsonAdapter(TranslationSerializer.class)
-      public Matrix4f localPosition = new Matrix4f();
+      public Matrix4f localPosition = new Matrix4f().identity();
 
       @JsonAdapter(TranslationSerializer.class)
-      public Matrix4f worldPosition = new Matrix4f();
+      public Matrix4f worldPosition = new Matrix4f().identity();
 
       public PPos() { }
 

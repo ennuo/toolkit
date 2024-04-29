@@ -9,6 +9,7 @@ import cwlib.enums.BuiltinType;
 import cwlib.enums.MachineType;
 import cwlib.enums.ModifierType;
 import cwlib.enums.ResourceType;
+import cwlib.enums.ScriptObjectType;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
@@ -83,7 +84,7 @@ public class ScriptInstance implements Serializable
                                     field.value = serializer.bool(writing && (boolean) field.value);
                                     break;
                               case CHAR:
-                                    field.value = serializer.i8(writing ? (byte) field.value : 0);
+                                    field.value = serializer.i16(writing ? (short) field.value : 0);
                                     break;
                               case S32:
                                     field.value = serializer.i32(writing ? (int) field.value : 0);
@@ -135,6 +136,40 @@ public class ScriptInstance implements Serializable
             field.value = (int) value.getValue();
             this.instanceLayout.instanceSize += 4;
             this.instanceLayout.fields.add(field);
+      }
+
+      public void addField(String name, Thing value)
+      {
+            FieldLayoutDetails field = new FieldLayoutDetails();
+            field.modifiers.add(ModifierType.PUBLIC);
+            field.name = name;
+            field.instanceOffset = this.instanceLayout.instanceSize;
+            field.fishType = BuiltinType.VOID;
+            field.machineType = MachineType.SAFE_PTR;
+            field.value = value;
+            this.instanceLayout.instanceSize += 4;
+            this.instanceLayout.fields.add(field);
+      }
+
+      public void unsetField(String name)
+      {
+            for (FieldLayoutDetails field : instanceLayout.fields)
+            {
+                  if (field.name.equals(name))
+                  {
+                        switch (field.machineType)
+                        {
+                              case BOOL: field.value = false; break;
+                              case CHAR: field.value = (short)0;
+                              case S32: field.value = 0; break;
+                              case F32: field.value = 0.0f; break;
+                              case V4: field.value = new Vector4f(); break;
+                              case M44: field.value = new Matrix4f().identity(); break;
+                              case OBJECT_REF: field.value = new ScriptObject(ScriptObjectType.NULL, null); break;
+                              default: field.value = null; break;
+                        }
+                  }
+            }
       }
 
       public FieldLayoutDetails getField(String name)

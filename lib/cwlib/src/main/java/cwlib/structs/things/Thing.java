@@ -5,6 +5,7 @@ import java.util.Arrays;
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
+import cwlib.enums.GameplayPartType;
 import cwlib.enums.Part;
 import cwlib.enums.PartHistory;
 import cwlib.enums.Revisions;
@@ -13,7 +14,10 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.parts.PGameplayData;
+import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PJoint;
+import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
@@ -199,8 +203,7 @@ public class Thing implements Serializable
             if (version == 0x13c) partsRevision += 7;
 
             Part[] partsToSerialize = Part.fromFlags(revision.getHead(), flags, partsRevision);
-            if (!ResourceSystem.DISABLE_LOGS)
-                  serializer.log(Arrays.toString(partsToSerialize));
+            serializer.log(Arrays.toString(partsToSerialize));
 
             for (Part part : partsToSerialize)
             {
@@ -218,6 +221,123 @@ public class Thing implements Serializable
 
             serializer.log("THING " + Bytes.toHex(UID) + " [END]");
       }
+
+      public boolean isEnemyWard()
+      {
+            GUID enemyWardMeshKey = new GUID(43456);
+            GUID enemyWardPlanKey = new GUID(53114);
+
+            if (enemyWardPlanKey.equals(planGUID)) return true;
+            if (hasPart(Part.GROUP))
+            {
+                  PGroup group = getPart(Part.GROUP);
+                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && enemyWardPlanKey.equals(group.planDescriptor.getGUID()))
+                        return true;
+            }
+
+            if (hasPart(Part.RENDER_MESH))
+            {
+                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
+                  if (mesh.mesh != null && mesh.mesh.isGUID())
+                        return enemyWardMeshKey.equals(mesh.mesh.getGUID());
+            }
+
+            return false;
+      }
+
+      public boolean isKey()
+      {
+            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+            if (data == null) return false;
+
+            if (data.gameplayType == GameplayPartType.LEVEL_KEY) return true;
+            if (data.keyLink != null) return true;
+
+            GUID keyPlanGuid = new GUID(31738);
+            GUID keyMeshGuid = new GUID(3763);
+
+            if (keyPlanGuid.equals(planGUID)) return true;
+            if (hasPart(Part.GROUP))
+            {
+                  PGroup group = getPart(Part.GROUP);
+                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && keyPlanGuid.equals(group.planDescriptor.getGUID()))
+                        return true;
+            }
+
+            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+            if (hasPart(Part.RENDER_MESH))
+            {
+                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
+                  if (mesh.mesh != null && mesh.mesh.isGUID())
+                        return keyMeshGuid.equals(mesh.mesh.getGUID());
+            }
+
+            return false;
+      }
+
+      public boolean isScoreBubble()
+      {
+            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+            if (data == null) return false;
+
+            // This is only relevant in LBP2 onwards
+            if (data.gameplayType == GameplayPartType.SCORE_BUBBLE) return true;
+            if (data.eggLink != null) return false;
+
+            GUID scoreBubblePlanGuid = new GUID(31733);
+            GUID scoreBubbleMeshGuid = new GUID(3753);
+            
+            if (scoreBubblePlanGuid.equals(planGUID)) return true;
+            if (hasPart(Part.GROUP))
+            {
+                  PGroup group = getPart(Part.GROUP);
+                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && scoreBubblePlanGuid.equals(group.planDescriptor.getGUID()))
+                        return true;
+            }
+
+            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+            if (hasPart(Part.RENDER_MESH))
+            {
+                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
+                  if (mesh.mesh != null && mesh.mesh.isGUID())
+                        return scoreBubbleMeshGuid.equals(mesh.mesh.getGUID());
+            }
+
+            return false;
+      }
+
+      public boolean isPrizeBubble()
+      {
+            PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+            if (data == null) return false;
+
+            // This is only relevant in LBP2 onwards
+            if (data.gameplayType == GameplayPartType.PRIZE_BUBBLE) return true;
+            if (data.eggLink != null) return true;
+            
+            GUID prizePlanGuid = new GUID(31743);
+            GUID prizeMeshGuid = new GUID(21180);
+            
+            if (prizePlanGuid.equals(planGUID)) return true;
+            if (hasPart(Part.GROUP))
+            {
+                  PGroup group = getPart(Part.GROUP);
+                  if (group.planDescriptor != null && group.planDescriptor.isGUID() && prizePlanGuid.equals(group.planDescriptor.getGUID()))
+                        return true;
+            }
+
+            // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+            if (hasPart(Part.RENDER_MESH))
+            {
+                  PRenderMesh mesh = getPart(Part.RENDER_MESH);
+                  if (mesh.mesh != null && mesh.mesh.isGUID())
+                        return prizeMeshGuid.equals(mesh.mesh.getGUID());
+            }
+
+            return false;
+      }
+
+
 
       @SuppressWarnings("unchecked")
       public <T extends Serializable> T getPart(Part part)

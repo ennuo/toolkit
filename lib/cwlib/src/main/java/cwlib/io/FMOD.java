@@ -1965,7 +1965,6 @@ public class FMOD
             byte[] data = FMODSampleBank.fromAudioFile("C:/~/australia_neopolitan_dreams_inst.at3");
             FileIO.write(data, "C:/~/australia_neopolitan_dreams_inst.fsb");
 
-            // ResourceSystem.DISABLE_LOGS = true;
             // FMODEventFile file = new FMODEventFile
             // ("F:/ps3/game/NPUA80662/USRDIR/gamedata/audio/ps3_main.fev");
             // FileIO.write(file.toFDP("F:/ps3/game/NPUA80662/USRDIR/gamedata/audio", "E:/art/

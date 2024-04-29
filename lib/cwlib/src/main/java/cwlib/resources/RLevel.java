@@ -7,10 +7,12 @@ import java.util.HashMap;
 import org.joml.Matrix4f;
 
 import cwlib.enums.Branch;
+import cwlib.enums.EnemyPart;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.enums.TriggerType;
 import cwlib.ex.SerializationException;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
@@ -29,12 +31,17 @@ import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PBody;
+import cwlib.structs.things.parts.PCreature;
 import cwlib.structs.things.parts.PEffector;
+import cwlib.structs.things.parts.PEmitter;
+import cwlib.structs.things.parts.PEnemy;
 import cwlib.structs.things.parts.PGameplayData;
+import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PScript;
+import cwlib.structs.things.parts.PTrigger;
 import cwlib.structs.things.parts.PWorld;
 
 public class RLevel implements Resource
@@ -190,10 +197,16 @@ public class RLevel implements Resource
             {
                   for (Thing thing : world.things)
                   {
-                        if (thing == null || thing.parent == null) continue;
+                        if (thing == null) continue;
 
                         PPos pos = thing.getPart(Part.POS);
                         if (pos == null) continue;
+
+                        if (thing.parent == null)
+                        {
+                              pos.localPosition = new Matrix4f(pos.worldPosition);
+                              continue;
+                        }
 
                         PPos parent = thing.parent.getPart(Part.POS);
 
@@ -213,21 +226,235 @@ public class RLevel implements Resource
             int version = revision.getVersion();
             PWorld world = worldThing.getPart(Part.WORLD);
 
+            // If this is imported from a later version from JSON, the local matrices might not be correct,
+            // correct any that are identity matrices
+            if (version < 0x341)
+            {
+                  for (Thing thing : world.things)
+                  {
+                        if (thing == null) continue;
+
+                        PPos pos = thing.getPart(Part.POS);
+                        if (pos == null) continue;
+
+                        if ((pos.localPosition.properties() & Matrix4f.PROPERTY_IDENTITY) != 0) continue;
+                        if (thing.parent == null)
+                        {
+                              pos.localPosition = new Matrix4f(pos.worldPosition);
+                              continue;
+                        }
+
+                        PPos parent = thing.parent.getPart(Part.POS);
+
+                        // This generally shouldn't happen, but make sure to check it anyway
+                        if (parent == null) continue;
+
+                        Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
+                        pos.localPosition = inv.mul(pos.worldPosition);
+                  }
+            }
+
+            // Set the parents for emitters
+            if (version < 0x314)
+            {
+                  for (Thing thing : world.things)
+                  {
+                        if (thing == null || !thing.hasPart(Part.EMITTER)) continue;
+                        PEmitter emitter = thing.getPart(Part.EMITTER);
+                        if (emitter.parentThing == null)
+                              emitter.parentThing = thing.parent;
+                  }
+            }
+            
+            // Don't know the exact revision the scripts were removed, but deploy and below is a good guess,
+            // since that's when they overhauled the switch system, LBP2 already removes them so.
+            if (version <= 0x2c3)
+            {
+                  // Attach missing scripts to components if we're serializing to LBP1 from a later version.
+                  ResourceDescriptor switchBaseScript = new ResourceDescriptor(42511, ResourceType.SCRIPT);
+                  ResourceDescriptor tweakJointScript = new ResourceDescriptor(19749, ResourceType.SCRIPT);
+                  ResourceDescriptor checkpointScript = new ResourceDescriptor(11757, ResourceType.SCRIPT);
+                  ResourceDescriptor triggerCollectScript = new ResourceDescriptor(11538, ResourceType.SCRIPT);
+                  ResourceDescriptor tweakEggScript = new ResourceDescriptor(27432, ResourceType.SCRIPT);
+                  ResourceDescriptor enemyScript = new ResourceDescriptor(31617, ResourceType.SCRIPT);
+                  ResourceDescriptor triggerParentScript = new ResourceDescriptor(17789, ResourceType.SCRIPT);
+                  ResourceDescriptor tweakParentScript = new ResourceDescriptor(39027, ResourceType.SCRIPT);
+                  ResourceDescriptor cameraZoneScript = new ResourceDescriptor(26580, ResourceType.SCRIPT);
+                  ResourceDescriptor tweakKeyScript = new ResourceDescriptor(52759, ResourceType.SCRIPT);
+                  ResourceDescriptor triggerCollectKeyScript = new ResourceDescriptor(17022, ResourceType.SCRIPT);
+                  ResourceDescriptor enemyWardScript = new ResourceDescriptor(43463, ResourceType.SCRIPT);
+
+                  GUID scoreboardScriptKey = new GUID(11599);
+                  GUID noJoinMarkerScriptKey = new GUID(39394);
+                  GUID gunScriptKey = new GUID(66090);
+                  GUID speechBubbleScriptKey = new GUID(18420);
+
+                  for (Thing thing : world.things)
+                  {
+                        if (thing == null) continue;
+
+                        // Remap emitter objects and groups back to LBP1 plans if necessary
+                        {
+                              if (thing.planGUID != null)
+                                    thing.planGUID = RGuidSubst.LBP2_TO_LBP1_PLANS.getOrDefault(thing.planGUID, thing.planGUID);
+                              
+                              if (thing.hasPart(Part.EMITTER))
+                              {
+                                    PEmitter emitter = thing.getPart(Part.EMITTER);
+                                    if (emitter.plan != null && emitter.plan.isGUID())
+                                    {
+                                          GUID guid = emitter.plan.getGUID();
+                                          guid = RGuidSubst.LBP2_TO_LBP1_PLANS.getOrDefault(guid, guid);
+                                          emitter.plan = new ResourceDescriptor(guid, ResourceType.PLAN);
+                                    }
+                              }
+
+                              if (thing.hasPart(Part.GROUP))
+                              {
+                                    PGroup group = thing.getPart(Part.GROUP);
+                                    if (group.planDescriptor != null && group.planDescriptor.isGUID())
+                                    {
+                                          GUID guid = group.planDescriptor.getGUID();
+                                          guid = RGuidSubst.LBP2_TO_LBP1_PLANS.getOrDefault(guid, guid);
+                                          group.planDescriptor = new ResourceDescriptor(guid, ResourceType.PLAN);
+                                    }
+                              }
+                        }
+
+                        if (thing.hasPart(Part.SCRIPT))
+                        {
+                              PScript script = thing.getPart(Part.SCRIPT);
+
+                              // Remove the DialogueListGibberishFile from any script (magic mouths)
+                              // if they exist, since this will always trigger a dependencies error in LBP1
+                              if (script.is(speechBubbleScriptKey))
+                              {
+                                    script.instance.unsetField("DialogueListGibberishFile");
+                                    script.instance.unsetField("DialogueListFile");
+                              }
+
+                              // Deploy has custom gun, but LBP1 doesn't, will have to remove
+                              // these fields conditionally, don't know the exact revision, so we'll go
+                              // with 0x272, LBP1 retails final revision
+                              if (version <= 0x272 && script.is(gunScriptKey))
+                              {
+                                    script.instance.unsetField("Plan");
+                                    script.instance.unsetField("PlanIcon");
+                              }
+                        }
+
+                        // Fixup creature brains
+                        if (thing.hasPart(Part.ENEMY))
+                        {
+                              PEnemy enemy = thing.getPart(Part.ENEMY);
+                              if (enemy.partType == EnemyPart.BRAIN)
+                              {
+                                    if (!thing.hasPart(Part.SCRIPT))
+                                          thing.setPart(Part.SCRIPT, new PScript(enemyScript));
+
+                                    // Attach the prize bubble script to the life sources attached to this enemy
+                                    PCreature creature = thing.getPart(Part.CREATURE);
+                                    if (creature != null && creature.lifeSourceList != null)
+                                    {
+                                          for (Thing lifeSource : creature.lifeSourceList)
+                                          {
+                                                if (lifeSource == null) continue;
+
+                                                if (!lifeSource.hasPart(Part.SCRIPT))
+                                                {
+                                                      PScript script = new PScript(triggerCollectScript);
+                                                      script.instance.addField("CreatureThing", thing);
+                                                      lifeSource.setPart(Part.SCRIPT, script);
+                                                }
+                                          }
+                                    }
+                              }
+                        }
+
+                        // Only set the script instances if they don't already exist
+                        if (!thing.hasPart(Part.SCRIPT))
+                        {
+                              if (thing.isEnemyWard())
+                                    thing.setPart(Part.SCRIPT, new PScript(enemyWardScript));
+                              
+                              // Prize bubbles and score bubbles used a trigger collect script in LBP1
+                              else if (thing.hasPart(Part.GAMEPLAY_DATA))
+                              {
+                                    if (thing.isPrizeBubble())
+                                          thing.setPart(Part.SCRIPT, new PScript(tweakEggScript));
+                                    else if (thing.isScoreBubble())
+                                          thing.setPart(Part.SCRIPT, new PScript(triggerCollectScript));
+                              }
+
+                              // Checkpoint tweakable scripts
+                              else if (thing.hasPart(Part.CHECKPOINT))
+                                    thing.setPart(Part.SCRIPT, new PScript(checkpointScript));
+
+                              // Joint tweakable scripts
+                              else if (thing.hasPart(Part.JOINT))
+                                    thing.setPart(Part.SCRIPT, new PScript(tweakJointScript));
+
+                              else if (thing.hasPart(Part.SWITCH_KEY))
+                                    thing.setPart(Part.SCRIPT, new PScript(tweakKeyScript));
+
+                              // Switch base script get removed in later versions, I assume because it
+                              // just gets automatically added internally?
+                              else if (thing.hasPart(Part.SWITCH))
+                                    thing.setPart(Part.SCRIPT, new PScript(switchBaseScript));
+
+                              // Both camera types
+                              else if (thing.hasPart(Part.CAMERA_TWEAK))
+                                    thing.setPart(Part.SCRIPT, new PScript(cameraZoneScript));
+
+                              // Fixup scoreboard, no join posts, and anything with triggers
+                              else if (thing.parent != null)
+                              {
+                                    // Handle level keys
+                                    if (thing.parent.isKey() && thing.hasPart(Part.TRIGGER))
+                                    {
+                                          thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
+                                          continue;
+                                    }
+
+                                    PScript script = thing.parent.getPart(Part.SCRIPT);
+                                    if (script != null)
+                                    {
+                                          if (script.is(scoreboardScriptKey))
+                                          {
+                                                if (thing.hasPart(Part.TRIGGER))
+                                                      thing.setPart(Part.SCRIPT, new PScript(triggerParentScript));
+                                                else if (thing.hasPart(Part.CHECKPOINT))
+                                                      thing.setPart(Part.SCRIPT, new PScript(checkpointScript));
+                                                else
+                                                      thing.setPart(Part.SCRIPT, new PScript(tweakParentScript));
+
+                                          }
+                                          else if (thing.hasPart(Part.TRIGGER))
+                                                thing.setPart(Part.SCRIPT, new PScript(triggerParentScript));
+                                    }
+                              }
+                        }
+                  }
+            }
+
+            // Attach tweak joint scripts to components if we're serialized to LBP1
+
             // If we're writing a file that was originally from after LBP1, we need to
-            // put the backdropPlan as PRef component 
+            // put the backdropPlan as a PRef component 
             if (version < 0x321 && world.backdropPlan != null && world.backdrop != null)
             {
                   PRef ref;
                   if (!world.backdrop.hasPart(Part.REF))
                   {
                         ref = new PRef();
+
                         world.backdrop.setPart(Part.REF, ref);
                   }
-                  else ref = new PRef();
+                  else ref = world.backdrop.getPart(Part.REF);
 
-                  ref.plan = world.backdropPlan;
                   ref.childrenSelectable = false;
                   ref.stripChildren = true;
+                  ref.plan = world.backdropPlan;
             }
             else if (version >= 0x321 && world.backdropPlan == null && world.backdrop != null)
             {

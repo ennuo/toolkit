@@ -86,7 +86,6 @@ public class ResourceSystem
             CACHE[index] = node;
       }
 
-      public static boolean DISABLE_LOGS = false;
       public static boolean GUI_MODE = false;
 
       private static File workingDirectory;
@@ -122,13 +121,13 @@ public class ResourceSystem
 
       public static void println(Object message)
       {
-            if (ResourceSystem.DISABLE_LOGS || message == null) return;
+            if (message == null) return;
             System.out.println("[ResourceSystem] " + message.toString());
       }
 
       public static void println(String channel, Object message)
       {
-            if (ResourceSystem.DISABLE_LOGS || message == null) return;
+            if (message == null) return;
             System.out.println("[" + channel + "] " + message.toString());
       }
 
