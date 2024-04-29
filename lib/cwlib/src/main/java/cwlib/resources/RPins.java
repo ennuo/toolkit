@@ -1,60 +1,46 @@
 package cwlib.resources;
 
+import java.util.ArrayList;
+
 import cwlib.enums.ResourceType;
-import cwlib.io.Serializable;
+import cwlib.enums.SerializationType;
+import cwlib.io.Resource;
+import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
-import cwlib.types.data.ResourceDescriptor;
+import cwlib.structs.profile.Pin;
+import cwlib.types.data.Revision;
 
-public class RPins implements Serializable
+public class RPins implements Resource
 {
-      public Pin[] pins;
+      public static final int BASE_ALLOCATION_SIZE = 0x10;
 
-      public static class Pin implements Serializable
-      {
-            public long id, progressType, category;
-            public long titleLamsKey, descriptionLamsKey;
-            public ResourceDescriptor icon;
-            public long initialProgressValue, targetValue;
-            public byte trophyToUnlock;
-            public short behaviourFlags;
-            public byte trophyToUnlockLBP1;
-
-            @Override
-            public void serialize(Serializer serializer)
-            {
-
-                  id = serializer.u32(id);
-                  progressType = serializer.u32(progressType);
-                  category = serializer.u32(category);
-                  titleLamsKey = serializer.u32(titleLamsKey);
-                  descriptionLamsKey = serializer.u32(descriptionLamsKey);
-                  icon = serializer.resource(icon, ResourceType.TEXTURE, true);
-                  initialProgressValue = serializer.u32(initialProgressValue);
-                  targetValue = serializer.u32(targetValue);
-                  trophyToUnlock = serializer.i8(trophyToUnlock);
-                  behaviourFlags = serializer.i16(behaviourFlags);
-                  if (serializer.getRevision().getVersion() >= 0x3f7)
-                        trophyToUnlockLBP1 = serializer.i8(trophyToUnlockLBP1);
-            }
-
-            @Override
-            public int getAllocatedSize()
-            {
-                  return -1;
-            }
-
-
-      }
+      public ArrayList<Pin> pins = new ArrayList<>();
 
       @Override
       public void serialize(Serializer serializer)
       {
-            pins = serializer.array(pins, Pin.class);
+            pins = serializer.arraylist(pins, Pin.class);
       }
 
       @Override
       public int getAllocatedSize()
       {
-            return -1;
+            return BASE_ALLOCATION_SIZE + pins.size() * Pin.BASE_ALLOCATION_SIZE;
+      }
+
+      @Override
+      public SerializationData build(Revision revision, byte compressionFlags)
+      {
+            Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
+                    compressionFlags);
+            serializer.struct(this, RPins.class);
+            return new SerializationData(
+                    serializer.getBuffer(),
+                    revision,
+                    compressionFlags,
+                    ResourceType.PINS,
+                    SerializationType.BINARY,
+                    serializer.getDependencies()
+            );
       }
 }

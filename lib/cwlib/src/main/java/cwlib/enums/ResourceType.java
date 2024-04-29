@@ -61,7 +61,7 @@ public enum ResourceType implements ValueEnum<Integer>
       STATIC_MESH("SMH", 44, "static_meshes/", ".smh"),
       ANIMATED_TEXTURE("ATX", 45, "animated_textures/", ".atx"),
       VOIP_RECORDING("VOP", 46, "audio/", ".vop"),
-      PINS("PIN", 47, "pins/", ".pin"),
+      PINS("PIN", 47, RPins.class, "pins/", ".pin"),
       INSTRUMENT("INS", 48, RInstrument.class, "instruments/", ".rinst"),
       SAMPLE(null, 49, "samples/", ".smp"),
       OUTFIT_LIST("OFT", 50, "outfits/", ".oft"),
