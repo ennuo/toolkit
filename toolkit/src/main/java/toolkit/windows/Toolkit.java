@@ -743,8 +743,7 @@ public class Toolkit extends javax.swing.JFrame
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         entryContext = new javax.swing.JPopupMenu();
         changeResourceRevisionGroup = new javax.swing.JMenu();
@@ -928,30 +927,24 @@ public class Toolkit extends javax.swing.JFrame
         changeResourceRevisionGroup.setText("Change Revision");
 
         changeResourceRevisionLBP1Context.setText("LBP1");
-        changeResourceRevisionLBP1Context.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        changeResourceRevisionLBP1Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeResourceRevisionLBP1ContextActionPerformed(evt);
             }
         });
         changeResourceRevisionGroup.add(changeResourceRevisionLBP1Context);
 
         changeResourceRevisionLBP2Context.setText("LBP2");
-        changeResourceRevisionLBP2Context.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        changeResourceRevisionLBP2Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeResourceRevisionLBP2ContextActionPerformed(evt);
             }
         });
         changeResourceRevisionGroup.add(changeResourceRevisionLBP2Context);
 
         changeResourceRevisionLBP3Context.setText("LBP3");
-        changeResourceRevisionLBP3Context.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        changeResourceRevisionLBP3Context.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeResourceRevisionLBP3ContextActionPerformed(evt);
             }
         });
@@ -964,10 +957,8 @@ public class Toolkit extends javax.swing.JFrame
 
         extractContext.setText("Extract");
         extractContext.setToolTipText("Extract entries as-is");
-        extractContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        extractContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractContextActionPerformed(evt);
             }
         });
@@ -975,10 +966,8 @@ public class Toolkit extends javax.swing.JFrame
 
         extractDecompressedContext.setText("Decompress");
         extractDecompressedContext.setToolTipText("Extract entries and decompress where possible");
-        extractDecompressedContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        extractDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractDecompressedContextActionPerformed(evt);
             }
         });
@@ -991,10 +980,8 @@ public class Toolkit extends javax.swing.JFrame
 
         editPathContext.setText("Path");
         editPathContext.setToolTipText("Move this entry");
-        editPathContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editPathContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editPathContextActionPerformed(evt);
             }
         });
@@ -1002,10 +989,8 @@ public class Toolkit extends javax.swing.JFrame
 
         editHashContext.setText("Hash");
         editHashContext.setToolTipText("Edit the hash this entry loads");
-        editHashContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editHashContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editHashContextActionPerformed(evt);
             }
         });
@@ -1013,10 +998,8 @@ public class Toolkit extends javax.swing.JFrame
 
         editGUIDContext.setText("GUID");
         editGUIDContext.setToolTipText("Change the unique GUID for this entry");
-        editGUIDContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editGUIDContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editGUIDContextActionPerformed(evt);
             }
         });
@@ -1029,10 +1012,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportJSONContext.setText("JSON");
         exportJSONContext.setToolTipText("Converts resource to JSON file");
-        exportJSONContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportJSONContextActionPerformed(evt);
             }
         });
@@ -1043,10 +1024,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportPNG.setText("PNG");
         exportPNG.setToolTipText("Export texture as PNG file");
-        exportPNG.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportPNG.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportPNGActionPerformed(evt);
             }
         });
@@ -1054,10 +1033,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportDDS.setText("DDS");
         exportDDS.setToolTipText("Export texture as DDS file");
-        exportDDS.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportDDS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportDDSActionPerformed(evt);
             }
         });
@@ -1073,10 +1050,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportOBJTEXCOORD0.setText("TEXCOORD0");
         exportOBJTEXCOORD0.setToolTipText("Export as OBJ with first UV channel");
-        exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportOBJTEXCOORD0.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD0ActionPerformed(evt);
             }
         });
@@ -1084,10 +1059,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportOBJTEXCOORD1.setText("TEXCOORD1");
         exportOBJTEXCOORD1.setToolTipText("Export as OBJ with second UV channel");
-        exportOBJTEXCOORD1.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportOBJTEXCOORD1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD1ActionPerformed(evt);
             }
         });
@@ -1095,10 +1068,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportOBJTEXCOORD2.setText("TEXCOORD2");
         exportOBJTEXCOORD2.setToolTipText("Export as OBJ with third UV channel");
-        exportOBJTEXCOORD2.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportOBJTEXCOORD2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportOBJTEXCOORD2ActionPerformed(evt);
             }
         });
@@ -1108,10 +1079,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportGLTF.setText("glTF 2.0");
         exportGLTF.setToolTipText("Export model as glTF 2.0");
-        exportGLTF.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportGLTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportGLTFActionPerformed(evt);
             }
         });
@@ -1122,26 +1091,20 @@ public class Toolkit extends javax.swing.JFrame
         exportModGroup.setText("Mod");
         exportModGroup.setToolTipText("Exports selected resource as a mod file");
 
-        exportAsModCustom.setToolTipText("Manual mod export, choose which resources get exported " +
-                                         "as hash/GUID, as well as re-generating gmats");
+        exportAsModCustom.setToolTipText("Manual mod export, choose which resources get exported as hash/GUID, as well as re-generating gmats");
         exportAsModCustom.setActionCommand("Custom");
         exportAsModCustom.setLabel("Custom");
-        exportAsModCustom.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAsModCustom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModCustomActionPerformed(evt);
             }
         });
         exportModGroup.add(exportAsModCustom);
 
         exportAsMod.setText("Hash");
-        exportAsMod.setToolTipText("Export mod with GUID references replaced with hashes. You " +
-                                   "should use this if you're exporting custom content for others to use");
-        exportAsMod.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAsMod.setToolTipText("Export mod with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
+        exportAsMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModActionPerformed(evt);
             }
         });
@@ -1149,10 +1112,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportAsModGUID.setText("GUID");
         exportAsModGUID.setToolTipText("Export mod without modifying resource references");
-        exportAsModGUID.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAsModGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsModGUIDActionPerformed(evt);
             }
         });
@@ -1162,10 +1123,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportAnimation.setText("Animation");
         exportAnimation.setToolTipText("Export selected animation as glTF2.0 file");
-        exportAnimation.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAnimation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAnimationActionPerformed(evt);
             }
         });
@@ -1175,12 +1134,9 @@ public class Toolkit extends javax.swing.JFrame
         exportBackupGroup.setToolTipText("Convert this resource into a level backup.");
 
         exportAsBackup.setText("Hash");
-        exportAsBackup.setToolTipText("Export backup with GUID references replaced with hashes. " +
-         "You should use this if you're exporting custom content for others to use");
-        exportAsBackup.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAsBackup.setToolTipText("Export backup with GUID references replaced with hashes. You should use this if you're exporting custom content for others to use");
+        exportAsBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsBackupActionPerformed(evt);
             }
         });
@@ -1190,10 +1146,8 @@ public class Toolkit extends javax.swing.JFrame
         exportAsBackupGUID.setToolTipText("Export backup without modifying resource references");
         exportAsBackupGUID.setActionCommand("exportAsBackupGUID");
         exportAsBackupGUID.setName(""); // NOI18N
-        exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportAsBackupGUID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportAsBackupGUIDActionPerformed(evt);
             }
         });
@@ -1203,10 +1157,8 @@ public class Toolkit extends javax.swing.JFrame
 
         exportPaletteContext.setText("BIN");
         exportPaletteContext.setToolTipText("Convert this palette to a level");
-        exportPaletteContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportPaletteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportPaletteContextActionPerformed(evt);
             }
         });
@@ -1222,10 +1174,8 @@ public class Toolkit extends javax.swing.JFrame
 
         importJSONContext.setText("JSON");
         importJSONContext.setToolTipText("Import resource from exported JSON data");
-        importJSONContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importJSONContextActionPerformed(evt);
             }
         });
@@ -1233,10 +1183,8 @@ public class Toolkit extends javax.swing.JFrame
 
         newTextureContext.setText("Texture");
         newTextureContext.setToolTipText("Import texture resource from JPG/PNG/DDS");
-        newTextureContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newTextureContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newTextureContextActionPerformed(evt);
             }
         });
@@ -1244,10 +1192,8 @@ public class Toolkit extends javax.swing.JFrame
 
         newAnimationContext.setText("Animation");
         newAnimationContext.setToolTipText("Import animation from glTF2.0 file");
-        newAnimationContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newAnimationContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newAnimationContextActionPerformed(evt);
             }
         });
@@ -1265,10 +1211,8 @@ public class Toolkit extends javax.swing.JFrame
         newItemGroup.setEnabled(false);
 
         newStickerContext.setText("Sticker");
-        newStickerContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newStickerContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newStickerContextActionPerformed(evt);
             }
         });
@@ -1276,13 +1220,11 @@ public class Toolkit extends javax.swing.JFrame
 
         newEntryGroup.add(newItemGroup);
 
-        newEntryContext.setText("Entry");
+        newEntryContext.setText("File");
         newEntryContext.setToolTipText("Create a new blank entry in this database");
         newEntryContext.setActionCommand("File");
-        newEntryContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newEntryContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newEntryContextActionPerformed(evt);
             }
         });
@@ -1292,10 +1234,8 @@ public class Toolkit extends javax.swing.JFrame
 
         newFolderContext.setText("New Folder");
         newFolderContext.setToolTipText("Create a new folder here");
-        newFolderContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newFolderContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newFolderContextActionPerformed(evt);
             }
         });
@@ -1303,10 +1243,8 @@ public class Toolkit extends javax.swing.JFrame
 
         renameFolder.setText("Rename Folder");
         renameFolder.setToolTipText("Renames selected folder");
-        renameFolder.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        renameFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renameFolderActionPerformed(evt);
             }
         });
@@ -1316,24 +1254,18 @@ public class Toolkit extends javax.swing.JFrame
         replaceGroup.setToolTipText("Data replacement tools");
 
         replaceCompressedContext.setText("Replace");
-        replaceCompressedContext.setToolTipText("Replace resource data with a selected file from " +
-         "disk");
-        replaceCompressedContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        replaceCompressedContext.setToolTipText("Replace resource data with a selected file from disk");
+        replaceCompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceCompressedContextActionPerformed(evt);
             }
         });
         replaceGroup.add(replaceCompressedContext);
 
         replaceDecompressedContext.setText("Decompressed");
-        replaceDecompressedContext.setToolTipText("Re-compresses file selected from disk and " +
-         "replaces this entry's resource data");
-        replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        replaceDecompressedContext.setToolTipText("Re-compresses file selected from disk and replaces this entry's resource data");
+        replaceDecompressedContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceDecompressedContextActionPerformed(evt);
             }
         });
@@ -1341,10 +1273,8 @@ public class Toolkit extends javax.swing.JFrame
 
         replaceDependenciesContext.setText("Dependencies");
         replaceDependenciesContext.setToolTipText("Edit the dependencies of this resource");
-        replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        replaceDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceDependenciesContextActionPerformed(evt);
             }
         });
@@ -1352,20 +1282,16 @@ public class Toolkit extends javax.swing.JFrame
 
         replaceImageContext.setText("Image");
         replaceImageContext.setToolTipText("Replaces data with image loaded from disk");
-        replaceImageContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        replaceImageContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceImageContextActionPerformed(evt);
             }
         });
         replaceGroup.add(replaceImageContext);
 
         replaceJSONContext.setText("JSON");
-        replaceJSONContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        replaceJSONContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceJSONContextActionPerformed(evt);
             }
         });
@@ -1377,24 +1303,18 @@ public class Toolkit extends javax.swing.JFrame
         dependencyGroup.setToolTipText("Dependency management tools");
 
         removeDependenciesContext.setText("Remove Dependencies");
-        removeDependenciesContext.setToolTipText("Removes all resources from dependency table. " +
-                                                 "This can allow levels with missing dependencies to potentially load.");
-        removeDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        removeDependenciesContext.setToolTipText("Removes all resources from dependency table. This can allow levels with missing dependencies to potentially load.");
+        removeDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeDependenciesContextActionPerformed(evt);
             }
         });
         dependencyGroup.add(removeDependenciesContext);
 
         removeMissingDependenciesContext.setText("Remove Missing Dependencies");
-        removeMissingDependenciesContext.setToolTipText("Removes only missing resources from " +
-          "dependency table. This can allow levels with missing dependencies to potentially load.");
-        removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        removeMissingDependenciesContext.setToolTipText("Removes only missing resources from dependency table. This can allow levels with missing dependencies to potentially load.");
+        removeMissingDependenciesContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeMissingDependenciesContextActionPerformed(evt);
             }
         });
@@ -1403,12 +1323,9 @@ public class Toolkit extends javax.swing.JFrame
         entryContext.add(dependencyGroup);
 
         duplicateContext.setText("Duplicate");
-        duplicateContext.setToolTipText("Create a duplicate entry copying this one with a new " +
-                                        "GUID");
-        duplicateContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        duplicateContext.setToolTipText("Create a duplicate entry copying this one with a new GUID");
+        duplicateContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 duplicateContextActionPerformed(evt);
             }
         });
@@ -1419,12 +1336,9 @@ public class Toolkit extends javax.swing.JFrame
         entryContext.add(copyGroup);
 
         zeroContext.setText("Zero");
-        zeroContext.setToolTipText("Removes resource hash. Allows files to be loaded from disk " +
-          "rather than the FARC");
-        zeroContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        zeroContext.setToolTipText("Removes resource hash. Allows files to be loaded from disk rather than the FARC");
+        zeroContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 zeroContextActionPerformed(evt);
             }
         });
@@ -1432,20 +1346,16 @@ public class Toolkit extends javax.swing.JFrame
 
         deleteContext.setText("Delete");
         deleteContext.setToolTipText("Deletes selected entries from the database");
-        deleteContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        deleteContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteContextActionPerformed(evt);
             }
         });
         entryContext.add(deleteContext);
 
         clear.setText("Clear");
-        clear.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        clear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearActionPerformed(evt);
             }
         });
@@ -1470,10 +1380,8 @@ public class Toolkit extends javax.swing.JFrame
         console.setColumns(20);
         console.setLineWrap(true);
         console.setRows(5);
-        console.addMouseListener(new java.awt.event.MouseAdapter()
-        {
-            public void mouseReleased(java.awt.event.MouseEvent evt)
-            {
+        console.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
                 consoleMouseReleased(evt);
             }
         });
@@ -1493,11 +1401,11 @@ public class Toolkit extends javax.swing.JFrame
         hex.setLayout(hexLayout);
         hexLayout.setHorizontalGroup(
             hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         hexLayout.setVerticalGroup(
             hexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 292, Short.MAX_VALUE)
+            .addGap(0, 292, Short.MAX_VALUE)
         );
 
         overviewPane.setRightComponent(hex);
@@ -1508,11 +1416,11 @@ public class Toolkit extends javax.swing.JFrame
         scenePanel.setLayout(scenePanelLayout);
         scenePanelLayout.setHorizontalGroup(
             scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 850, Short.MAX_VALUE)
+            .addGap(0, 850, Short.MAX_VALUE)
         );
         scenePanelLayout.setVerticalGroup(
             scenePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 292, Short.MAX_VALUE)
+            .addGap(0, 292, Short.MAX_VALUE)
         );
 
         renderPane.addTab("Scene", scenePanel);
@@ -1534,34 +1442,31 @@ public class Toolkit extends javax.swing.JFrame
         tableContainer.setMinimumSize(new java.awt.Dimension(452, 6));
 
         entryTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object[][] {
-                { "Path", "N/A" },
-                { "Timestamp", "N/A" },
-                { "SHA1", "N/A" },
-                { "Size", "N/A" },
-                { "GUID", "N/A" },
-                { "GUID (Hex)", "N/A" },
-                { "GUID (7-bit)", "N/A" },
-                { "Revision", "N/A" }
+            new Object [][] {
+                {"Path", "N/A"},
+                {"Timestamp", "N/A"},
+                {"SHA1", "N/A"},
+                {"Size", "N/A"},
+                {"GUID", "N/A"},
+                {"GUID (Hex)", "N/A"},
+                {"GUID (7-bit)", "N/A"},
+                {"Revision", "N/A"}
             },
-            new String[] {
+            new String [] {
                 "Field", "Value"
             }
-        )
-        {
-            final boolean[] canEdit = new boolean[] {
+        ) {
+            boolean[] canEdit = new boolean [] {
                 true, false
             };
 
-            public boolean isCellEditable(int rowIndex, int columnIndex)
-            {
-                return canEdit[columnIndex];
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         entryTable.getTableHeader().setReorderingAllowed(false);
         tableContainer.setViewportView(entryTable);
-        if (entryTable.getColumnModel().getColumnCount() > 0)
-        {
+        if (entryTable.getColumnModel().getColumnCount() > 0) {
             entryTable.getColumnModel().getColumn(0).setResizable(false);
             entryTable.getColumnModel().getColumn(1).setResizable(false);
         }
@@ -1574,8 +1479,7 @@ public class Toolkit extends javax.swing.JFrame
 
         dependencyTreeContainer.setAlignmentX(2.0F);
 
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 =
-            new javax.swing.tree.DefaultMutableTreeNode("root");
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         dependencyTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         dependencyTree.setRootVisible(false);
         dependencyTreeContainer.setViewportView(dependencyTree);
@@ -1583,19 +1487,15 @@ public class Toolkit extends javax.swing.JFrame
         entryModifiers.addTab("Dependencies", dependencyTreeContainer);
 
         LAMSMetadata.setText("LAMS");
-        LAMSMetadata.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        LAMSMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 LAMSMetadataActionPerformed(evt);
             }
         });
 
         StringMetadata.setText("String");
-        StringMetadata.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        StringMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 StringMetadataActionPerformed(evt);
             }
         });
@@ -1619,10 +1519,8 @@ public class Toolkit extends javax.swing.JFrame
         locationLabel.setText("Location");
 
         locationField.setEditable(false);
-        locationField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        locationField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 locationFieldActionPerformed(evt);
             }
         });
@@ -1645,102 +1543,76 @@ public class Toolkit extends javax.swing.JFrame
         itemMetadata.setLayout(itemMetadataLayout);
         itemMetadataLayout.setHorizontalGroup(
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(itemMetadataLayout.createSequentialGroup()
-                    .addGap(12, 12, 12)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addGap(6, 6, 6)
-                            .addComponent(LAMSMetadata, javax.swing.GroupLayout.PREFERRED_SIZE,
-                            80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(StringMetadata, javax.swing.GroupLayout.PREFERRED_SIZE,
-                             80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(descriptionLabel)
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addComponent(iconLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, 171,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 166
-                            , javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 0
-                        , Short.MAX_VALUE)
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(locationLabel)
-                                .addComponent(categoryLabel,
-                                 javax.swing.GroupLayout.Alignment.TRAILING,
-                                  javax.swing.GroupLayout.PREFERRED_SIZE, 52,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(locationField)
-                                .addComponent(categoryField)))
-                        .addComponent(pageCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                Short.MAX_VALUE)
-                        .addGroup(itemMetadataLayout.createSequentialGroup()
-                            .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                             144, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(subCombo))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(itemMetadataLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(LAMSMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(StringMetadata, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionLabel)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(iconLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationLabel)
+                            .addComponent(categoryLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationField)
+                            .addComponent(categoryField)))
+                    .addComponent(pageCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(itemMetadataLayout.createSequentialGroup()
+                        .addComponent(creatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(subCombo))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         itemMetadataLayout.setVerticalGroup(
             itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(itemMetadataLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(iconLabel)
-                        .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                          javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(StringMetadata)
-                        .addComponent(LAMSMetadata))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(titleLabel)
-                        .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                         javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(descriptionLabel)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 61,
-                     javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(locationLabel)
-                        .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                         javax.swing.GroupLayout.DEFAULT_SIZE,
-                          javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(categoryLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16,
-                         javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(categoryField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE,
-                     javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE,
-                     javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(creatorLabel)
-                        .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE,
-                         javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(itemMetadataLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(iconLabel)
+                    .addComponent(iconField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(StringMetadata)
+                    .addComponent(LAMSMetadata))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(titleLabel)
+                    .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(locationLabel)
+                    .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(categoryLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(categoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pageCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(subCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(itemMetadataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(creatorLabel)
+                    .addComponent(creatorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         entryModifiers.addTab("Inspector", itemMetadata);
@@ -1768,39 +1640,36 @@ javax.swing.GroupLayout.PREFERRED_SIZE))
         inspectorPane.setLayout(inspectorPaneLayout);
         inspectorPaneLayout.setHorizontalGroup(
             inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(inspectorPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(cameraPosX)
-                        .addComponent(cameraPosY, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(inspectorPaneLayout.createSequentialGroup()
-                            .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel1)
-                                .addComponent(jLabel2)
-                                .addComponent(jLabel3))
-                            .addGap(0, 159, Short.MAX_VALUE))
-                        .addComponent(cameraPosZ))
-                    .addContainerGap())
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cameraPosX)
+                    .addComponent(cameraPosY, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(inspectorPaneLayout.createSequentialGroup()
+                        .addGroup(inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(0, 159, Short.MAX_VALUE))
+                    .addComponent(cameraPosZ))
+                .addContainerGap())
         );
         inspectorPaneLayout.setVerticalGroup(
             inspectorPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(inspectorPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jLabel1)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jLabel2)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jLabel3)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(cameraPosX, javax.swing.GroupLayout.PREFERRED_SIZE,
-javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(cameraPosY, javax.swing.GroupLayout.PREFERRED_SIZE,
-                     javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(cameraPosZ, javax.swing.GroupLayout.PREFERRED_SIZE,
-                     javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(441, Short.MAX_VALUE))
+            .addGroup(inspectorPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cameraPosZ, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(441, Short.MAX_VALUE))
         );
 
         infoCardPanel.add(inspectorPane, "card3");
@@ -1818,10 +1687,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         search.setText(" Search is currently disabled.");
         search.setBorder(null);
         search.setFocusable(false);
-        search.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchActionPerformed(evt);
             }
         });
@@ -1834,11 +1701,11 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         hierachyPanel.setLayout(hierachyPanelLayout);
         hierachyPanelLayout.setHorizontalGroup(
             hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 150, Short.MAX_VALUE)
+            .addGap(0, 150, Short.MAX_VALUE)
         );
         hierachyPanelLayout.setVerticalGroup(
             hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 558, Short.MAX_VALUE)
+            .addGap(0, 558, Short.MAX_VALUE)
         );
 
         resourceTabs.addTab("Hierachy", hierachyPanel);
@@ -1856,30 +1723,24 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         newFileDBGroup.setText("FileDB");
 
         newLegacyDB.setText("LBP1/2");
-        newLegacyDB.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newLegacyDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newLegacyDBActionPerformed(evt);
             }
         });
         newFileDBGroup.add(newLegacyDB);
 
         newVitaDB.setText("LBP Vita");
-        newVitaDB.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newVitaDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newVitaDBActionPerformed(evt);
             }
         });
         newFileDBGroup.add(newVitaDB);
 
         newModernDB.setText("LBP3");
-        newModernDB.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newModernDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModernDBActionPerformed(evt);
             }
         });
@@ -1888,10 +1749,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         newGamedataGroup.add(newFileDBGroup);
 
         createFileArchive.setText("File Archive");
-        createFileArchive.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        createFileArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createFileArchiveActionPerformed(evt);
             }
         });
@@ -1900,10 +1759,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         menuFileMenu.add(newGamedataGroup);
 
         newMod.setText("Mod");
-        newMod.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModActionPerformed(evt);
             }
         });
@@ -1916,20 +1773,16 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         gamedataMenu.setText("Gamedata");
 
         loadDB.setText("FileDB (.MAP)");
-        loadDB.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadDB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadDBActionPerformed(evt);
             }
         });
         gamedataMenu.add(loadDB);
 
         loadArchive.setText("File Archive (.FARC)");
-        loadArchive.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadArchiveActionPerformed(evt);
             }
         });
@@ -1940,30 +1793,24 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         savedataMenu.setText("Savedata");
 
         loadBigProfile.setText("Big Profile");
-        loadBigProfile.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadBigProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadBigProfileActionPerformed(evt);
             }
         });
         savedataMenu.add(loadBigProfile);
 
         loadVitaProfile.setText("Vita Profile");
-        loadVitaProfile.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadVitaProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadVitaProfileActionPerformed(evt);
             }
         });
         savedataMenu.add(loadVitaProfile);
 
         loadProfileBackup.setText("Profile Backup");
-        loadProfileBackup.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadProfileBackupActionPerformed(evt);
             }
         });
@@ -1972,10 +1819,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         loadGroupMenu.add(savedataMenu);
 
         loadMod.setText("Mod");
-        loadMod.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        loadMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadModActionPerformed(evt);
             }
         });
@@ -1986,74 +1831,58 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         manageProfile.setText("Profiles");
         manageProfile.setToolTipText("Manage boot profiles and settings");
-        manageProfile.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        manageProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageProfileActionPerformed(evt);
             }
         });
         fileMenu.add(manageProfile);
 
         manageSettings.setText("Settings");
-        manageSettings.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        manageSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageSettingsActionPerformed(evt);
             }
         });
         fileMenu.add(manageSettings);
         fileMenu.add(saveDivider);
 
-        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
-         java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAs.setText("Save as...");
         saveAs.setToolTipText("Save a copy of selected database");
-        saveAs.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveAs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsActionPerformed(evt);
             }
         });
         fileMenu.add(saveAs);
 
-        saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
-        java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenu.setText("Save");
         saveMenu.setToolTipText("Save selected database and any archives that may have changes");
-        saveMenu.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuActionPerformed(evt);
             }
         });
         fileMenu.add(saveMenu);
         fileMenu.add(jSeparator4);
 
-        closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W,
-         java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        closeTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeTab.setText("Close Tab");
         closeTab.setToolTipText("Close currently selected tab");
-        closeTab.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        closeTab.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeTabActionPerformed(evt);
             }
         });
         fileMenu.add(closeTab);
 
-        reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R,
-         java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        reboot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         reboot.setText("Reboot");
         reboot.setToolTipText("Restart Toolkit");
-        reboot.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        reboot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rebootActionPerformed(evt);
             }
         });
@@ -2066,10 +1895,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         editMenuDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
         editMenuDelete.setText("Delete");
         editMenuDelete.setToolTipText("Deletes selected entries from the database");
-        editMenuDelete.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editMenuDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editMenuDeleteActionPerformed(evt);
             }
         });
@@ -2081,24 +1908,19 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         manageArchives.setText("Manage Archives");
         manageArchives.setToolTipText("Add/Remove/Save loaded archives");
-        manageArchives.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        manageArchives.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageArchivesActionPerformed(evt);
             }
         });
         archiveMenu.add(manageArchives);
         archiveMenu.add(jSeparator10);
 
-        addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A,
-         java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addFile.setText("Add...");
         addFile.setToolTipText("Add files to a loaded archive");
-        addFile.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addFileActionPerformed(evt);
             }
         });
@@ -2106,10 +1928,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         addFolder.setText("Add Folder");
         addFolder.setToolTipText("Add all files in a folder to a loaded archive");
-        addFolder.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addFolderActionPerformed(evt);
             }
         });
@@ -2121,20 +1941,16 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         patchMAP.setText("Patch");
         patchMAP.setToolTipText("Patch another FileDB on-top of this one");
-        patchMAP.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        patchMAP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 patchMAPActionPerformed(evt);
             }
         });
         databaseMenu.add(patchMAP);
 
         remapDatabaseContext.setText("Remap");
-        remapDatabaseContext.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        remapDatabaseContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 remapDatabaseContextActionPerformed(evt);
             }
         });
@@ -2143,10 +1959,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         dumpRLST.setText("Dump RLST");
         dumpRLST.setToolTipText("Dump all entries to RLST");
-        dumpRLST.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        dumpRLST.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dumpRLSTActionPerformed(evt);
             }
         });
@@ -2157,12 +1971,9 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         profileMenu.setText("Profile");
 
         extractBigProfile.setText("Extract Profile");
-        extractBigProfile.setToolTipText("Extract RBigProfile from save, mostly used for " +
-         "debugging.");
-        extractBigProfile.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        extractBigProfile.setToolTipText("Extract RBigProfile from save, mostly used for debugging.");
+        extractBigProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 extractBigProfileActionPerformed(evt);
             }
         });
@@ -2171,10 +1982,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         editProfileSlots.setText("Edit Slots");
         editProfileSlots.setToolTipText("Edit and add levels to this profile");
-        editProfileSlots.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editProfileSlots.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editProfileSlotsActionPerformed(evt);
             }
         });
@@ -2182,10 +1991,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         editProfileItems.setText("Edit Items");
         editProfileItems.setToolTipText("Edit and add collected items to this profile");
-        editProfileItems.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editProfileItems.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editProfileItemsActionPerformed(evt);
             }
         });
@@ -2196,10 +2003,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         modMenu.setText("Mod");
 
         openModMetadata.setText("Edit");
-        openModMetadata.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openModMetadata.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openModMetadataActionPerformed(evt);
             }
         });
@@ -2211,10 +2016,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         openCompressinator.setText("Compressinator GUI");
         openCompressinator.setToolTipText("Compress files to resources");
-        openCompressinator.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openCompressinator.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openCompressinatorActionPerformed(evt);
             }
         });
@@ -2222,10 +2025,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         openGfxCompiler.setText("Gfx Compiler GUI");
         openGfxCompiler.setToolTipText("Compile GMATs from source shaders");
-        openGfxCompiler.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openGfxCompiler.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openGfxCompilerActionPerformed(evt);
             }
         });
@@ -2235,12 +2036,9 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         jMenu1.setText("Archive Utilities");
 
         fileArchiveIntegrityCheck.setText("FARC Integrity Check");
-        fileArchiveIntegrityCheck.setToolTipText("Verify that all data in the FARC matches hash " +
- "table");
-        fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        fileArchiveIntegrityCheck.setToolTipText("Verify that all data in the FARC matches hash table");
+        fileArchiveIntegrityCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileArchiveIntegrityCheckActionPerformed(evt);
             }
         });
@@ -2248,22 +2046,17 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         mergeFARCs.setText("Merge Archives");
         mergeFARCs.setToolTipText("Merge two archives together");
-        mergeFARCs.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mergeFARCs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mergeFARCsActionPerformed(evt);
             }
         });
         jMenu1.add(mergeFARCs);
 
         swapProfilePlatform.setText("Swap FAR4 Endianness (PS3/PS4)");
-        swapProfilePlatform.setToolTipText("Switch big/littlefart endianness, used for converting" +
-         " profile saves between PS3 and PS4");
-        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        swapProfilePlatform.setToolTipText("Switch big/littlefart endianness, used for converting profile saves between PS3 and PS4");
+        swapProfilePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 swapProfilePlatformActionPerformed(evt);
             }
         });
@@ -2274,20 +2067,16 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         jMenu2.setText("File Utilities");
 
         convertTexture.setText("PNG/JPG to TEX");
-        convertTexture.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        convertTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 convertTextureActionPerformed(evt);
             }
         });
         jMenu2.add(convertTexture);
 
         decompressResource.setText("Decompress Resource");
-        decompressResource.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        decompressResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 decompressResourceActionPerformed(evt);
             }
         });
@@ -2301,20 +2090,16 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         collectorPresets.setText("Presets");
 
         collectAllLevelDependencies.setText("RLevel");
-        collectAllLevelDependencies.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        collectAllLevelDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collectAllLevelDependenciesActionPerformed(evt);
             }
         });
         collectorPresets.add(collectAllLevelDependencies);
 
         collectAllItemDependencies.setText("RPlan");
-        collectAllItemDependencies.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        collectAllItemDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collectAllItemDependenciesActionPerformed(evt);
             }
         });
@@ -2323,10 +2108,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         collectionD.add(collectorPresets);
 
         customCollector.setText("Custom");
-        customCollector.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        customCollector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 customCollectorActionPerformed(evt);
             }
         });
@@ -2336,24 +2119,18 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         toolsMenu.add(jSeparator3);
 
         fixDependencyTable.setText("Calculate Dependency Table");
-        fixDependencyTable.setToolTipText("Takes any compressed resource and attempts to " +
-         "automatically generate the dependency table");
-        fixDependencyTable.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        fixDependencyTable.setToolTipText("Takes any compressed resource and attempts to automatically generate the dependency table");
+        fixDependencyTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixDependencyTableActionPerformed(evt);
             }
         });
         toolsMenu.add(fixDependencyTable);
 
         generateDiff.setText("Get FileDB diffs");
-        generateDiff.setToolTipText("Generates a text file showing differences between two " +
-         "FileDB's");
-        generateDiff.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        generateDiff.setToolTipText("Generates a text file showing differences between two FileDB's");
+        generateDiff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateDiffActionPerformed(evt);
             }
         });
@@ -2362,10 +2139,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         installProfileMod.setText("Install Mod(s)");
         installProfileMod.setToolTipText("Installs mod file(s) to currently selected database");
-        installProfileMod.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        installProfileMod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 installProfileModActionPerformed(evt);
             }
         });
@@ -2373,10 +2148,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         exportWorld.setText("Export RLevel");
         exportWorld.setToolTipText("Exports the current scene graph as a level");
-        exportWorld.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportWorld.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportWorldActionPerformed(evt);
             }
         });
@@ -2384,10 +2157,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 
         exportSceneGraph.setText("Export Scene Graph");
         exportSceneGraph.setToolTipText("Dumps the current scene graph to a file");
-        exportSceneGraph.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportSceneGraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportSceneGraphActionPerformed(evt);
             }
         });
@@ -2398,10 +2169,8 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         debugMenu.setText("Debug");
 
         jMenuItem1.setText("open big profile gui");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
             }
         });
@@ -2415,25 +2184,21 @@ javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 1385,
-Short.MAX_VALUE))
-                    .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 1385, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 591,
-                    Short.MAX_VALUE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7,
-                     javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(12, 12, 12))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(workspace, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12))
         );
 
         pack();

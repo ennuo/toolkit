@@ -344,7 +344,7 @@
             </Menu>
             <MenuItem class="javax.swing.JMenuItem" name="newEntryContext">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Entry"/>
+                <Property name="text" type="java.lang.String" value="File"/>
                 <Property name="toolTipText" type="java.lang.String" value="Create a new blank entry in this database"/>
                 <Property name="actionCommand" type="java.lang.String" value="File"/>
               </Properties>
