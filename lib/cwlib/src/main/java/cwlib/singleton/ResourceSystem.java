@@ -300,7 +300,7 @@ public class ResourceSystem
             if (GetSelectedCaches != null)
             {
                   Fart[] archives = GetSelectedCaches.get();
-                  if (archives == null) return false;
+                  if (archives == null || archives.length == 0) return false;
 
                   ResourceSystem.add(data, archives);
 
@@ -320,19 +320,23 @@ public class ResourceSystem
       {
             if (entry == null) return false;
 
-            entry.setDetails(data);
-            entry.setInfo(null);
-
-            entry.getSource().setHasChanges();
-            if (TriggerWorkSpaceUpdate != null)
-                  TriggerWorkSpaceUpdate.run();
-
             boolean code = true;
             if (ResourceSystem.getSelectedDatabase().getType() != DatabaseType.BIGFART)
                   code = ResourceSystem.add(data, entry.getSource());
 
-            if (entry.getNode() == ResourceSystem.lastSelected)
-                  ResourceSystem.refreshEditor();
+            if (code)
+            {
+                  entry.setDetails(data);
+                  entry.setInfo(null);
+      
+                  entry.getSource().setHasChanges();
+                  if (TriggerWorkSpaceUpdate != null)
+                        TriggerWorkSpaceUpdate.run();
+      
+      
+                  if (entry.getNode() == ResourceSystem.lastSelected)
+                        ResourceSystem.refreshEditor();
+            }
 
             return code;
       }
