@@ -445,13 +445,10 @@ public class DatabaseCallbacks
                   FileEntry entry = node.getEntry();
                   if (entry == null)
                   {
-                        System.out.println("deleting folder " + node.getName());
                         node.delete();
                         continue;
                   }
 
-
-                  System.out.println("removing " + entry.getPath() + "(" + entry.getNode().getFilePath() + ")");
                   entry.remove();
                   entry.getSource().setHasChanges();
             }
