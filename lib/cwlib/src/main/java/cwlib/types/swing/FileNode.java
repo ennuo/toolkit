@@ -84,7 +84,7 @@ public class FileNode extends DefaultMutableTreeNode
     public void delete()
     {
         if (this.parent != null)
-            this.removeFromParent();
+            this.parent.remove(this);
     }
 
     public FileData getSource()

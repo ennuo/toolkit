@@ -317,6 +317,7 @@ public class BigSave extends FileData
         {
             // TODO: Handle this case some other time, not that important.
         }
+        
         FileNode node = saveEntry.getNode();
         if (node != null) node.delete();
     }
@@ -376,7 +377,7 @@ public class BigSave extends FileData
 
         String title;
         if (item.details.userCreatedDetails != null && item.details.userCreatedDetails.name != null)
-            title = item.details.userCreatedDetails.name;
+            title = item.details.userCreatedDetails.name.trim();
         else
         {
             if (item.details.type.contains(InventoryObjectType.USER_STICKER))
@@ -388,6 +389,8 @@ public class BigSave extends FileData
             else
                 title = "Some kind of object";
         }
+
+        title = title.replaceAll("/", "&#x2f;");
 
         return path + title + ".plan";
     }

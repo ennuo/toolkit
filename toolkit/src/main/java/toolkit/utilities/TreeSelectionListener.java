@@ -48,6 +48,8 @@ public class TreeSelectionListener
             return;
 
         FileNode node = ResourceSystem.updateSelections(tree);
+        if (node == null) return;
+
         FileEntry entry = node.getEntry();
 
         toolkit.setEditorPanel(node);

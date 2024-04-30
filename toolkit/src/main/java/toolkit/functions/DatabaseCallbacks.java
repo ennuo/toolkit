@@ -11,6 +11,7 @@ import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileData;
+import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;

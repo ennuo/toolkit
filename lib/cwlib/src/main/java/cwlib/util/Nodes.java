@@ -115,30 +115,23 @@ public class Nodes
             strings = entry.getPath().split("/");
         else
             strings = override.split("/");
+        
         String relativePath = "";
-        for (int i = 0; i < strings.length; i++)
+        for (int i = 0; i < strings.length - 1; i++)
         {
             int index = Nodes.childIndex(node, strings[i]);
             if (index == -1)
             {
-                FileNode child = new FileNode(strings[i], relativePath,
-                    (i + 1 == strings.length) ? entry : null, node.getSource());
-                node.insert(child, node.getChildCount());
+                FileNode child = new FileNode(strings[i], relativePath, null, node.getSource());
+                node.add(child);
                 node = child;
             }
-            else
-            {
-                if (i + 1 == strings.length)
-                {
-                    FileNode child = new FileNode(strings[i], relativePath, entry,
-                        node.getSource());
-                    node.insert(child, node.getChildCount());
-                }
-                else
-                    node = (FileNode) node.getChildAt(index);
-            }
+            else node = (FileNode) node.getChildAt(index);
             relativePath = relativePath + (strings[i] + "/");
         }
-        return node;
+
+        FileNode child = new FileNode(strings[strings.length - 1], relativePath, entry, node.getSource());
+        node.add(child);
+        return child;
     }
 }

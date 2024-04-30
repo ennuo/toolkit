@@ -490,22 +490,22 @@ public class ResourceSystem
     {
         ResourceSystem.resetSelections();
         if (tree == null) return null;
-        TreePath[] paths = tree.getSelectionPaths();
-        if (paths == null) return null;
-        for (TreePath path : paths)
+        int[] rows = tree.getSelectionRows();
+        if (rows == null) return null;
+
+        FileNode selected = null;
+        for (int row  : rows)
         {
-            FileNode node = (FileNode) path.getLastPathComponent();
-            if (node == null)
-            {
-                ResourceSystem.lastSelected = null;
-                return null;
-            }
+            FileNode node = (FileNode) tree.getPathForRow(row).getLastPathComponent();
+            if (node == null) continue;
+
             if (node.getChildCount() > 0)
                 Nodes.loadChildren(ResourceSystem.selected, node, true);
+            
             ResourceSystem.selected.add(node);
+            selected = node;
         }
 
-        FileNode selected = (FileNode) paths[paths.length - 1].getLastPathComponent();
         ResourceSystem.lastSelected = selected;
         return selected;
     }
