@@ -346,7 +346,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="File"/>
                 <Property name="toolTipText" type="java.lang.String" value="Create a new blank entry in this database"/>
-                <Property name="actionCommand" type="java.lang.String" value="File"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newEntryContextActionPerformed"/>
@@ -630,20 +629,20 @@
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                       </AuxValues>
                     </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="loadVitaProfile">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Vita Profile"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadVitaProfileActionPerformed"/>
-                      </Events>
-                    </MenuItem>
                     <MenuItem class="javax.swing.JMenuItem" name="loadProfileBackup">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Profile Backup"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadProfileBackupActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="loadVitaProfile">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Vita Profile (Readonly)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadVitaProfileActionPerformed"/>
                       </Events>
                     </MenuItem>
                   </SubComponents>

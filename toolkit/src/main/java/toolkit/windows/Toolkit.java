@@ -867,8 +867,8 @@ public class Toolkit extends javax.swing.JFrame
         loadArchive = new javax.swing.JMenuItem();
         savedataMenu = new javax.swing.JMenu();
         loadBigProfile = new javax.swing.JMenuItem();
-        loadVitaProfile = new javax.swing.JMenuItem();
         loadProfileBackup = new javax.swing.JMenuItem();
+        loadVitaProfile = new javax.swing.JMenuItem();
         loadMod = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         manageProfile = new javax.swing.JMenuItem();
@@ -1222,7 +1222,6 @@ public class Toolkit extends javax.swing.JFrame
 
         newEntryContext.setText("File");
         newEntryContext.setToolTipText("Create a new blank entry in this database");
-        newEntryContext.setActionCommand("File");
         newEntryContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newEntryContextActionPerformed(evt);
@@ -1800,14 +1799,6 @@ public class Toolkit extends javax.swing.JFrame
         });
         savedataMenu.add(loadBigProfile);
 
-        loadVitaProfile.setText("Vita Profile");
-        loadVitaProfile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadVitaProfileActionPerformed(evt);
-            }
-        });
-        savedataMenu.add(loadVitaProfile);
-
         loadProfileBackup.setText("Profile Backup");
         loadProfileBackup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1815,6 +1806,14 @@ public class Toolkit extends javax.swing.JFrame
             }
         });
         savedataMenu.add(loadProfileBackup);
+
+        loadVitaProfile.setText("Vita Profile (Readonly)");
+        loadVitaProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadVitaProfileActionPerformed(evt);
+            }
+        });
+        savedataMenu.add(loadVitaProfile);
 
         loadGroupMenu.add(savedataMenu);
 
