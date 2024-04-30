@@ -12,6 +12,7 @@ import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.enums.SwitchType;
 import cwlib.enums.TriggerType;
 import cwlib.enums.VisibilityFlags;
 import cwlib.ex.SerializationException;
@@ -304,10 +305,12 @@ public class RLevel implements Resource
 
             GUID scoreboardScriptKey = new GUID(11599);
             GUID noJoinMarkerScriptKey = new GUID(39394);
+            GUID triggerGlobalSettingsScriptKey = new GUID(65238);
             GUID gunScriptKey = new GUID(66090);
             GUID speechBubbleScriptKey = new GUID(18420);
 
             GUID emitterMeshKey = new GUID(18299);
+            GUID paintSwitchMeshKey = new GUID(66172);
 
             for (Thing thing : world.things)
             {
@@ -380,15 +383,22 @@ public class RLevel implements Resource
                 // Some switches/logic/etc get their meshes removed if they aren't visible in play mode.
                 if (!thing.hasPart(Part.RENDER_MESH))
                 {
+                    GUID meshKey = null;
+
+                    if (thing.hasPart(Part.EMITTER)) meshKey = emitterMeshKey;
+                    if (thing.hasPart(Part.SWITCH))
+                    {
+                        PSwitch switchBase = thing.getPart(Part.SWITCH);
+                        if (switchBase.type == SwitchType.PAINT)
+                            meshKey = paintSwitchMeshKey;
+                    }
+
                     // Normally we'd have to account for bones from the mesh file itself,
                     // but it should mostly be fine since they only have a single root bone.
-                    if (thing.hasPart(Part.EMITTER))
+                    if (meshKey != null)
                     {
-                        PEmitter emitter = thing.getPart(Part.EMITTER);
-                        PRenderMesh mesh = new PRenderMesh(new ResourceDescriptor(emitterMeshKey, ResourceType.MESH), new Thing[] { thing });
-
-                        if (emitter.hideInPlayMode)
-                            mesh.visibilityFlags &= ~VisibilityFlags.PLAY_MODE;
+                        PRenderMesh mesh = new PRenderMesh(new ResourceDescriptor(meshKey, ResourceType.MESH), new Thing[] { thing });
+                        mesh.visibilityFlags &= ~VisibilityFlags.PLAY_MODE;
                         thing.setPart(Part.RENDER_MESH, mesh);
                     }
                 }
