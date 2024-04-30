@@ -2994,8 +2994,10 @@ public class Toolkit extends javax.swing.JFrame
                 fragment = Arrays.copyOfRange(fragment, 0, fragment.length - 4);
             data[i] = Crypto.XXTEA(fragment, true);
         }
-        File save = new File(ResourceSystem.getWorkingDirectory(), directory.getName());
-        save.deleteOnExit();
+        
+        File save = FileChooser.openFile("bigfart", null, true);
+        if (save == null) return;
+
         FileIO.write(Bytes.combine(data), save.getAbsolutePath());
         ProfileCallbacks.loadProfile(save);
     }// GEN-LAST:event_loadProfileBackupActionPerformed
