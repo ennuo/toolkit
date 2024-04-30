@@ -13,6 +13,7 @@ import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.enums.TriggerType;
+import cwlib.enums.VisibilityFlags;
 import cwlib.ex.SerializationException;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
@@ -44,6 +45,7 @@ import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRef;
+import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PScript;
 import cwlib.structs.things.parts.PSwitch;
 import cwlib.structs.things.parts.PTrigger;
@@ -298,11 +300,14 @@ public class RLevel implements Resource
                 ResourceType.SCRIPT);
             ResourceDescriptor enemyWardScript = new ResourceDescriptor(43463, ResourceType.SCRIPT);
             ResourceDescriptor soundObjectScript = new ResourceDescriptor(31319, ResourceType.SCRIPT);
+            ResourceDescriptor emitterScript = new ResourceDescriptor(27150, ResourceType.SCRIPT);
 
             GUID scoreboardScriptKey = new GUID(11599);
             GUID noJoinMarkerScriptKey = new GUID(39394);
             GUID gunScriptKey = new GUID(66090);
             GUID speechBubbleScriptKey = new GUID(18420);
+
+            GUID emitterMeshKey = new GUID(18299);
 
             for (Thing thing : world.things)
             {
@@ -372,6 +377,22 @@ public class RLevel implements Resource
                     }
                 }
 
+                // Some switches/logic/etc get their meshes removed if they aren't visible in play mode.
+                if (!thing.hasPart(Part.RENDER_MESH))
+                {
+                    // Normally we'd have to account for bones from the mesh file itself,
+                    // but it should mostly be fine since they only have a single root bone.
+                    if (thing.hasPart(Part.EMITTER))
+                    {
+                        PEmitter emitter = thing.getPart(Part.EMITTER);
+                        PRenderMesh mesh = new PRenderMesh(new ResourceDescriptor(emitterMeshKey, ResourceType.MESH), new Thing[] { thing });
+
+                        if (emitter.hideInPlayMode)
+                            mesh.visibilityFlags &= ~VisibilityFlags.PLAY_MODE;
+                        thing.setPart(Part.RENDER_MESH, mesh);
+                    }
+                }
+
                 // Fixup creature brains
                 if (thing.hasPart(Part.ENEMY))
                 {
@@ -403,8 +424,11 @@ public class RLevel implements Resource
                 // Only set the script instances if they don't already exist
                 if (!thing.hasPart(Part.SCRIPT))
                 {
+                    if (thing.hasPart(Part.EMITTER))
+                        thing.setPart(Part.SCRIPT, new PScript(emitterScript));
+                    
                     // Sound names got moved to a native field in later versions
-                    if (thing.hasPart(Part.AUDIO_WORLD))
+                    else if (thing.hasPart(Part.AUDIO_WORLD))
                     {
                         PAudioWorld sfx = thing.getPart(Part.AUDIO_WORLD);
                         sfx.triggerBySwitch = hasSwitchInput(thing);

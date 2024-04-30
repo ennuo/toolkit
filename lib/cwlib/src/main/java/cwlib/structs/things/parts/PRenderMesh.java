@@ -22,12 +22,9 @@ import cwlib.util.Colors;
 public class PRenderMesh implements Serializable
 {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
-    public static final HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
-    public static final HashSet<ResourceDescriptor> DISABLED_ANIMATIONS = new HashSet<>();
-
+    
     public ResourceDescriptor mesh;
     public Thing[] boneThings = new Thing[0];
-    public transient Matrix4f[] boneModels = new Matrix4f[0];
     public ResourceDescriptor anim;
     public float animPos = 0.0f, animSpeed = 1.0f;
     public boolean animLoop = true;
