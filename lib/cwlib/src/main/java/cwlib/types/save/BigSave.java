@@ -4,6 +4,7 @@ import cwlib.enums.*;
 import cwlib.resources.RAdventureCreateProfile;
 import cwlib.resources.RBigProfile;
 import cwlib.resources.RPlan;
+import cwlib.resources.RSlotList;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.slot.SlotID;
@@ -50,11 +51,51 @@ public class BigSave extends FileData
      */
     private RBigProfile profile;
 
-    public BigSave(File folder, SaveArchive master)
+    public BigSave(File folder, SaveArchive master, ArrayList<SaveArchive> downloadedLevels)
     {
         super(folder, DatabaseType.BIGFART);
         this.archive = master;
         this.process();
+
+
+        for (SaveArchive archive : downloadedLevels)
+        {
+            // Downloaded levels don't store their slot list in the save key for whatever reason,
+            // so we have to find it.
+            Slot slot = null;
+            for (Fat fat : archive)
+            {
+                byte[] data = fat.extract();
+                ResourceType type = Resources.getResourceType(data);
+                if (type == ResourceType.SLOT_LIST)
+                {
+                    ArrayList<Slot> slotList = new SerializedResource(data).loadResource(RSlotList.class).getSlots();
+                    if (slotList.size() > 0)
+                        slot = slotList.get(0);
+                }
+            }
+
+            if (slot == null) continue;
+
+            // Can't import a download if they're not actually in the data.
+            if (slot.root == null || slot.root.isGUID()) continue;
+            byte[] rootLevel = archive.extract(slot.root.getSHA1());
+            if (rootLevel == null) continue;
+
+            String levelName = ((slot.name.isEmpty()) ? "Unnamed Level" : slot.name).replaceAll("/", "&#x2f;");
+            String rootFolder = "downloaded_levels/" + levelName + "/";
+            for (Fat fat : archive)
+            {
+                if (fat.getSHA1().equals(slot.root.getSHA1())) continue;
+                byte[] data = fat.extract();
+                this.entries.add(new SaveEntry(this, rootFolder + this.generatePath(data, fat.getSHA1()), data.length, fat.getSHA1()));
+            }
+
+            this.entries.add(new SaveEntry(this, slot, rootFolder + levelName + ".bin", rootLevel.length, slot.root.getSHA1()));
+
+            // Make sure to copy all data into this archive
+            this.archive.add(archive);
+        }
     }
 
     public BigSave(File file)

@@ -44,6 +44,7 @@ public class ResourceSystem
 
     public static class ResourceLogLevel
     {
+        public static final int NONE = 0;
         public static final int INFO = 1;
         public static final int ERROR = 2;
         public static final int WARNING = 3;
@@ -121,13 +122,13 @@ public class ResourceSystem
 
     public static void println(Object message)
     {
-        if (message == null) return;
+        if (message == null || LOG_LEVEL < ResourceLogLevel.INFO) return;
         System.out.println("[ResourceSystem] " + message);
     }
 
     public static void println(String channel, Object message)
     {
-        if (message == null) return;
+        if (message == null || LOG_LEVEL < ResourceLogLevel.INFO) return;
         System.out.println("[" + channel + "] " + message);
     }
 

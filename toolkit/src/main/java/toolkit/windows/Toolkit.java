@@ -3056,6 +3056,14 @@ public class Toolkit extends javax.swing.JFrame
             return;
         }
 
+        // The I mean it works approach
+        // Sort to account for the whole 11 is before 2 thing
+        Arrays.sort(fragments, (a, z) -> {
+                return 
+                    Integer.valueOf(((File)a).getName().substring(7)) - 
+                    Integer.valueOf(((File)z).getName().substring(7));
+        });
+
         SaveArchive[] archives = new SaveArchive[fragments.length];
         HashMap<Integer, SaveArchive> archiveIDs = new HashMap<>(fragments.length);
 
@@ -3097,6 +3105,8 @@ public class Toolkit extends javax.swing.JFrame
         fragments =
             new File(folder).listFiles((dir, name) -> downloadRegex.matcher(name).matches());
 
+
+        ArrayList<SaveArchive> downloadedLevels = new ArrayList<>();
         if (fragments.length != 0)
         {
             boolean shouldLoadDownloads = JOptionPane.showConfirmDialog(this, "Do you want " +
@@ -3107,7 +3117,22 @@ public class Toolkit extends javax.swing.JFrame
                 "Load", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
             if (shouldLoadDownloads)
             {
-                Collections.addAll(extras, fragments);
+                for (File file : fragments)
+                {
+                    SaveArchive archive = null;
+                    try
+                    {
+                        archive = new SaveArchive(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        JOptionPane.showMessageDialog(this, ex.getMessage(), file.getName(),
+                            JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+        
+                    downloadedLevels.add(archive);
+                }
             }
         }
 
@@ -3131,7 +3156,7 @@ public class Toolkit extends javax.swing.JFrame
         BigSave profile = null;
         try
         {
-            profile = new BigSave(new File(folder), master);
+            profile = new BigSave(new File(folder), master, downloadedLevels);
         }
         catch (Exception ex)
         {
