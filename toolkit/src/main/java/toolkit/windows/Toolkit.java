@@ -3057,16 +3057,10 @@ public class Toolkit extends javax.swing.JFrame
             return;
         }
 
-        // The I mean it works approach
-        // Sort to account for the whole 11 is before 2 thing
-        Arrays.sort(fragments, (a, z) -> {
-                return 
-                    Integer.valueOf(((File)a).getName().substring(7)) - 
-                    Integer.valueOf(((File)z).getName().substring(7));
-        });
 
         SaveArchive[] archives = new SaveArchive[fragments.length];
         HashMap<Integer, SaveArchive> archiveIDs = new HashMap<>(fragments.length);
+        SaveArchive master = null;
 
         for (int i = 0; i < fragments.length; ++i)
         {
@@ -3075,6 +3069,19 @@ public class Toolkit extends javax.swing.JFrame
             try
             {
                 archive = new SaveArchive(fragment);
+
+                // Not entirely sure how Vita decides which profile gets the root resource,
+                // so we'll just go based on biggest ID that actually has a root resource.
+                if (archive.getKey().getRootType() == ResourceType.BIG_PROFILE)
+                {
+                    if (master != null)
+                    {
+                        if (archive.getID() > master.getID())
+                            master = archive;
+                    }
+                    else master = archive;
+                }
+
             }
             catch (Exception ex)
             {
@@ -3087,7 +3094,12 @@ public class Toolkit extends javax.swing.JFrame
             archiveIDs.put(archive.getID(), archive);
         }
 
-        SaveArchive master = archives[fragments.length - 1];
+        if (master == null)
+        {
+            JOptionPane.showMessageDialog(this, "No valid RBigProfile found in any archive!", "An error occurred", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         for (SaveArchive archive : archives)
         {
             if (archive == master) continue;
