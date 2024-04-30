@@ -15,11 +15,8 @@ public class PAudioWorld implements Serializable
     public float maxFalloff, impactTolerance;
 
     @GsonRevision(max = 0x2c3)
-    public boolean triggerByFalloff = true, triggerByImpact, triggerBySwitch;
-    @GsonRevision(min = 0x1ad, max = 0x2c3)
-    public boolean triggerByDestroy;
+    public boolean triggerBySwitch;
 
-    @GsonRevision(min = 0x2c4)
     public PlayMode playMode = PlayMode.TRIGGER_BY_FALLOFF;
 
     public boolean paramAffectVol;
@@ -61,35 +58,28 @@ public class PAudioWorld implements Serializable
 
         if (version < 0x2c4)
         {
-            triggerByFalloff = serializer.bool(triggerByFalloff); // = play mode 0
-            triggerByImpact = serializer.bool(triggerByImpact); // = play mode 1
+            boolean triggerByFalloff = playMode == PlayMode.TRIGGER_BY_FALLOFF;
+            boolean triggerByImpact = playMode == PlayMode.TRIGGER_BY_IMPACT;
+            boolean triggerByDestroy = playMode == PlayMode.TRIGGER_BY_DESTROY;
+
+            triggerByFalloff = serializer.bool(triggerByFalloff);
+            triggerByImpact = serializer.bool(triggerByImpact);
             if (version < 0x165)
                 serializer.bool(false); // unk
             triggerBySwitch = serializer.bool(triggerBySwitch);
             if (version < 0x165)
                 serializer.bool(false);
             if (version >= 0x1ad)
-                triggerByDestroy = serializer.bool(triggerByDestroy); // = play mode 2
+                triggerByDestroy = serializer.bool(triggerByDestroy);
 
-            // Not going to depreciate these just yet
             if (!serializer.isWriting())
             {
+                if (triggerByFalloff) playMode = PlayMode.TRIGGER_BY_FALLOFF;
                 if (triggerByImpact) playMode = PlayMode.TRIGGER_BY_IMPACT;
-                else if (triggerByDestroy) playMode = PlayMode.TRIGGER_BY_DESTROY;
-            }
-
-        }
-        else
-        {
-            playMode = serializer.enum32(playMode);
-
-            if (!serializer.isWriting())
-            {
-                if (playMode == PlayMode.TRIGGER_BY_DESTROY) triggerByDestroy = true;
-                else if (playMode == PlayMode.TRIGGER_BY_IMPACT) triggerByImpact = true;
-                else triggerByFalloff = true;
+                if (triggerByDestroy) playMode = PlayMode.TRIGGER_BY_DESTROY;
             }
         }
+        else playMode = serializer.enum32(playMode);
 
         paramAffectVol = serializer.bool(paramAffectVol);
         paramAffectPitch = serializer.bool(paramAffectPitch);

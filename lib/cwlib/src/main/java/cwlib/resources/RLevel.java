@@ -30,6 +30,9 @@ import cwlib.structs.level.CachedInventoryData;
 import cwlib.structs.level.PlayerRecord;
 import cwlib.structs.profile.InventoryItem;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.switches.SwitchOutput;
+import cwlib.structs.things.components.switches.SwitchTarget;
+import cwlib.structs.things.parts.PAudioWorld;
 import cwlib.structs.things.parts.PBody;
 import cwlib.structs.things.parts.PCreature;
 import cwlib.structs.things.parts.PEffector;
@@ -42,6 +45,7 @@ import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PScript;
+import cwlib.structs.things.parts.PSwitch;
 import cwlib.structs.things.parts.PTrigger;
 import cwlib.structs.things.parts.PWorld;
 
@@ -293,6 +297,7 @@ public class RLevel implements Resource
             ResourceDescriptor triggerCollectKeyScript = new ResourceDescriptor(17022,
                 ResourceType.SCRIPT);
             ResourceDescriptor enemyWardScript = new ResourceDescriptor(43463, ResourceType.SCRIPT);
+            ResourceDescriptor soundObjectScript = new ResourceDescriptor(31319, ResourceType.SCRIPT);
 
             GUID scoreboardScriptKey = new GUID(11599);
             GUID noJoinMarkerScriptKey = new GUID(39394);
@@ -398,10 +403,21 @@ public class RLevel implements Resource
                 // Only set the script instances if they don't already exist
                 if (!thing.hasPart(Part.SCRIPT))
                 {
-                    if (thing.isEnemyWard())
+                    // Sound names got moved to a native field in later versions
+                    if (thing.hasPart(Part.AUDIO_WORLD))
+                    {
+                        PAudioWorld sfx = thing.getPart(Part.AUDIO_WORLD);
+                        sfx.triggerBySwitch = hasSwitchInput(thing);
+                        PScript script = new PScript(soundObjectScript);
+                        if (sfx.soundNames != null)
+                            script.instance.addField("SoundNames", sfx.soundNames);
+                        thing.setPart(Part.SCRIPT, script);
+                    }
+
+                    else if (thing.isEnemyWard())
                         thing.setPart(Part.SCRIPT, new PScript(enemyWardScript));
 
-                        // Prize bubbles and score bubbles used a trigger collect script in LBP1
+                    // Prize bubbles and score bubbles used a trigger collect script in LBP1
                     else if (thing.hasPart(Part.GAMEPLAY_DATA))
                     {
                         if (thing.isPrizeBubble())
@@ -489,6 +505,29 @@ public class RLevel implements Resource
                 world.backdrop.setPart(Part.REF, null);
             }
         }
+    }
+
+    public boolean hasSwitchInput(Thing target)
+    {
+        if (!this.isValidLevel()) return false;
+        PWorld world = worldThing.getPart(Part.WORLD);
+        for (Thing thing : world.things)
+        {
+            if (thing == null || !thing.hasPart(Part.SWITCH)) continue;
+            PSwitch switchBase = thing.getPart(Part.SWITCH);
+            if (switchBase.outputs == null) continue;
+            for (SwitchOutput output : switchBase.outputs)
+            {
+                if (output.targetList == null) continue;
+                for (SwitchTarget switchTarget : output.targetList)
+                {
+                    if (switchTarget.thing == target) 
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing)
