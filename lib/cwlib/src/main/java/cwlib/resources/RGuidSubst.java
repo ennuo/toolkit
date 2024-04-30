@@ -10,7 +10,9 @@ public class RGuidSubst extends HashMap<GUID, GUID>
 {
     public static RGuidSubst LBP2_TO_LBP1_PLANS =
         RGuidSubst.fromCSV(FileIO.getResourceFileAsString("/poppet_lbp1.txt"));
-
+    public static RGuidSubst LBP2_TO_LBP1_GMATS =
+        RGuidSubst.fromCSV(FileIO.getResourceFileAsString("/gmat_lbp1.txt"));
+    
     public static RGuidSubst fromCSV(String data)
     {
         RGuidSubst subst = new RGuidSubst();

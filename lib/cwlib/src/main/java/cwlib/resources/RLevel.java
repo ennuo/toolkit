@@ -36,6 +36,7 @@ import cwlib.structs.things.parts.PEffector;
 import cwlib.structs.things.parts.PEmitter;
 import cwlib.structs.things.parts.PEnemy;
 import cwlib.structs.things.parts.PGameplayData;
+import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
@@ -302,7 +303,7 @@ public class RLevel implements Resource
             {
                 if (thing == null) continue;
 
-                // Remap emitter objects and groups back to LBP1 plans if necessary
+                // Remap any plans and gmats back to their original GUIDs in LBP1
                 {
                     if (thing.planGUID != null)
                         thing.planGUID =
@@ -328,6 +329,18 @@ public class RLevel implements Resource
                             GUID guid = group.planDescriptor.getGUID();
                             guid = RGuidSubst.LBP2_TO_LBP1_PLANS.getOrDefault(guid, guid);
                             group.planDescriptor = new ResourceDescriptor(guid, ResourceType.PLAN);
+                        }
+                    }
+
+                    // A bunch of gmats got remapped in LBP2
+                    if (thing.hasPart(Part.GENERATED_MESH))
+                    {
+                        PGeneratedMesh mesh = thing.getPart(Part.GENERATED_MESH);
+                        if (mesh.gfxMaterial != null && mesh.gfxMaterial.isGUID())
+                        {
+                            GUID guid = mesh.gfxMaterial.getGUID();
+                            guid = RGuidSubst.LBP2_TO_LBP1_GMATS.getOrDefault(guid, guid);
+                            mesh.gfxMaterial = new ResourceDescriptor(guid, ResourceType.GFX_MATERIAL);
                         }
                     }
                 }
