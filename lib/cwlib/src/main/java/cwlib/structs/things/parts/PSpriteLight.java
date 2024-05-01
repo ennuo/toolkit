@@ -32,14 +32,12 @@ public class PSpriteLight implements Serializable
     public boolean spotlight;
 
     @GsonRevision(max = 0x336)
-    @Deprecated
-    public boolean enableFogShadows = true, enableFog = true;
+    public boolean enableFogShadows = false, enableFog = false;
 
     @GsonRevision(min = 0x139)
     public float fogAmount = 0.6f;
 
     @GsonRevision(min = 0x13a, max = 0x2c3)
-    @Deprecated
     public float onDest = 1.0f;
 
     @GsonRevision(min = 0x13a)

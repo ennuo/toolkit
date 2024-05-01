@@ -48,7 +48,9 @@ import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PScript;
+import cwlib.structs.things.parts.PSpriteLight;
 import cwlib.structs.things.parts.PSwitch;
+import cwlib.structs.things.parts.PSwitchInput;
 import cwlib.structs.things.parts.PTrigger;
 import cwlib.structs.things.parts.PWorld;
 
@@ -302,6 +304,7 @@ public class RLevel implements Resource
             ResourceDescriptor enemyWardScript = new ResourceDescriptor(43463, ResourceType.SCRIPT);
             ResourceDescriptor soundObjectScript = new ResourceDescriptor(31319, ResourceType.SCRIPT);
             ResourceDescriptor emitterScript = new ResourceDescriptor(27150, ResourceType.SCRIPT);
+            ResourceDescriptor spriteLightScript = new ResourceDescriptor(46946, ResourceType.SCRIPT);
 
             GUID scoreboardScriptKey = new GUID(11599);
             GUID noJoinMarkerScriptKey = new GUID(39394);
@@ -378,6 +381,11 @@ public class RLevel implements Resource
                         script.instance.unsetField("Plan");
                         script.instance.unsetField("PlanIcon");
                     }
+
+                    // LBP3 has a non-divergent BasicIcons resource attached to the script
+                    // for some reason.
+                    if (script.is(switchBaseScript))
+                        script.instance.unsetField("BasicIcons");
                 }
 
                 // Some switches/logic/etc get their meshes removed if they aren't visible in play mode.
@@ -434,7 +442,41 @@ public class RLevel implements Resource
                 // Only set the script instances if they don't already exist
                 if (!thing.hasPart(Part.SCRIPT))
                 {
-                    if (thing.hasPart(Part.EMITTER))
+                    // Generally sprite lights are children of a tweakable mesh object
+                    if (thing.hasPart(Part.SPRITE_LIGHT))
+                    {
+                        PSpriteLight light = thing.getPart(Part.SPRITE_LIGHT);
+
+                        // It gets attached to both the child and parent?
+                        thing.setPart(Part.SCRIPT, new PScript(spriteLightScript));
+
+                        // Attach the parent script to the root of the group for more complex setups
+                        // This probably won't mess anything up, right?
+                        Thing root = thing;
+                        if (thing.parent != null)
+                        {
+                            root = thing.parent;
+                            Thing group = thing.groupHead;
+                            if (group != null)
+                            {
+                                while (true)
+                                {
+                                    if (root.parent == null || root.parent.groupHead != group) break;
+                                    root = root.parent;
+                                }
+                            }
+
+                            if (!root.hasPart(Part.SCRIPT))
+                                root.setPart(Part.SCRIPT, new PScript(spriteLightScript));
+                        }
+
+                        // Fixup the light activation
+                        SwitchOutput output = getSwitchInput(root);
+                        if (output != null)
+                            light.onDest = output.activation.activation;
+                    }
+                    
+                    else if (thing.hasPart(Part.EMITTER))
                         thing.setPart(Part.SCRIPT, new PScript(emitterScript));
                     
                     // Sound names got moved to a native field in later versions
@@ -543,7 +585,12 @@ public class RLevel implements Resource
 
     public boolean hasSwitchInput(Thing target)
     {
-        if (!this.isValidLevel()) return false;
+        return getSwitchInput(target) != null;
+    }
+
+    public SwitchOutput getSwitchInput(Thing target)
+    {
+        if (!this.isValidLevel()) return null;
         PWorld world = worldThing.getPart(Part.WORLD);
         for (Thing thing : world.things)
         {
@@ -556,12 +603,12 @@ public class RLevel implements Resource
                 for (SwitchTarget switchTarget : output.targetList)
                 {
                     if (switchTarget.thing == target) 
-                        return true;
+                        return output;
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
     private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing)

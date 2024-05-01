@@ -19,6 +19,12 @@ public class PScript implements Serializable
         this.instance.script = script;
     }
 
+    public boolean is(ResourceDescriptor descriptor)
+    {
+        if (instance == null || instance.script == null) return false;
+        return instance.script.equals(descriptor);
+    }
+
     public boolean is(GUID guid)
     {
         if (instance == null || instance.script == null) return false;
