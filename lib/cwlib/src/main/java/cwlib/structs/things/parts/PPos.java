@@ -1,11 +1,15 @@
 package cwlib.structs.things.parts;
 
 import com.google.gson.annotations.JsonAdapter;
+
+import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
+
 import org.joml.Matrix4f;
 
 /**
@@ -62,6 +66,30 @@ public class PPos implements Serializable
         this.localPosition = pos;
     }
 
+    public void recomputeLocalPos(Thing thing)
+    {
+        if (thing.parent == null)
+        {
+            localPosition = new Matrix4f(worldPosition);
+            return;
+        }
+
+        PPos parent = thing.parent.getPart(Part.POS);
+
+        // This generally shouldn't happen, but make sure to check it anyway
+        if (parent == null) return;
+
+        Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
+        localPosition = inv.mul(worldPosition);
+    }
+    
+    public void fixup(Thing thing, Revision revision)
+    {
+        // Local positions were removed, so we should re-calculate them
+        if (revision.getVersion() >= 0x341 || localPosition == null || (localPosition.properties() & Matrix4f.PROPERTY_IDENTITY) != 0)
+            recomputeLocalPos(thing);
+    }
+
     @Override
     public void serialize(Serializer serializer)
     {
@@ -73,9 +101,6 @@ public class PPos implements Serializable
         if (version < 0x341)
             localPosition = serializer.m44(localPosition);
         worldPosition = serializer.m44(worldPosition);
-
-        if (localPosition == null)
-            localPosition = worldPosition;
 
         // Unknown value, depreciated very early
         if (version < 0x155)

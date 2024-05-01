@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonResourceType;
@@ -11,6 +12,9 @@ import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.structs.things.components.switches.SwitchSignal;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -48,7 +52,7 @@ public class PEmitter implements Serializable
     public float lastUpdateFrame;
 
     @GsonRevision(min = 0x137, max = 0x313)
-    public Vector4f worldOffset;
+    public Vector4f worldOffset = new Vector4f().zero();
     @GsonRevision(min = 0x137, max = 0x313)
     public float worldRotation;
 
@@ -79,8 +83,7 @@ public class PEmitter implements Serializable
 
 
     @GsonRevision(min = 0x230, max = 0x2c3)
-    @Deprecated
-    public boolean modScaleActive = true;
+    public boolean modScaleActive;
 
     @GsonRevision(min = 0x2c4)
     public int behavior;
@@ -165,8 +168,6 @@ public class PEmitter implements Serializable
 
         if (version < 0x2c4)
             lastUpdateFrame = serializer.f32(lastUpdateFrame);
-        else if (!serializer.isWriting())
-            lastUpdateFrame = speedScaleStartFrame + speedScaleDeltaFrames;
 
         if (version >= 0x137)
         {
@@ -209,7 +210,11 @@ public class PEmitter implements Serializable
         // is the point
 
         if (version >= 0x230 && version < 0x2c4)
+        {
             modScaleActive = serializer.bool(modScaleActive);
+            if (!serializer.isWriting() && modScaleActive)
+                lastUpdateFrame = speedScaleStartFrame + speedScaleDeltaFrames;
+        }
 
         if (version >= 0x2c4)
             behavior = serializer.i32(behavior);
@@ -280,6 +285,36 @@ public class PEmitter implements Serializable
             emitByReferenceInPlayMode = serializer.bool(emitByReferenceInPlayMode);
         if (subVersion > 0x75)
             emitToNearestRearLayer = serializer.bool(emitToNearestRearLayer);
+    }
+
+    public void fixup(Thing thing, Revision revision)
+    {
+        int version = revision.getVersion();
+
+        if (version >= 0x314)
+        {
+            parentThing = thing.parent;
+            
+            // World offset was removed in later versions, so calculate it if necessary
+            if (plan != null && parentThing != null)
+            {
+                PPos parentPartPos = parentThing.getPart(Part.POS);
+                PPos partPos = thing.getPart(Part.POS);
+                if (partPos != null && parentPartPos != null)
+                {
+                    Matrix4f parentMatrix = parentPartPos.worldPosition;
+                    
+                    worldOffset = parentRelativeOffset.mul(parentMatrix.transpose(new Matrix4f()), new Vector4f());
+                    worldOffset.w = 0.0f;
+
+                    // Not the best at Matrix math, so this'll do
+                    float parentRotationRadians = (float)Math.toRadians(parentRelativeRotation);
+                    Matrix4f worldRotationMatrix = parentMatrix.rotateZ(parentRotationRadians, new Matrix4f());
+                    Vector3f worldEulerAngles = worldRotationMatrix.getNormalizedRotation(new Quaternionf()).getEulerAnglesXYZ(new Vector3f());
+                    worldRotation = (float)Math.toDegrees(worldEulerAngles.z);
+                }
+            }
+        }
     }
 
     @Override

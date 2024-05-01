@@ -3,6 +3,7 @@ package cwlib.io.gson;
 import com.google.gson.*;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
@@ -62,6 +63,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         if (resource.type.equals(ResourceType.PLAN))
         {
             PlanWrapper wrapper = jdc.deserialize(object.get("resource"), PlanWrapper.class);
+
+            // Fixup any fields that may have been lost during serialization.
+            for (Thing thing : wrapper.things)
+            {
+                if (thing != null) 
+                    thing.fixup(revision);
+            }
+            
             RPlan plan = new RPlan();
 
             plan.revision = resource.revision;
@@ -78,6 +87,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         resource.resource = jdc.deserialize(object.get("resource"),
             resourceType.getCompressable());
 
+        // Make sure to run fixup on the level to restore any fields
+        // that may have been lost during serialization.
+        if (resource.type.equals(ResourceType.LEVEL) && resource.resource != null)
+        {
+            RLevel level = (RLevel)resource.resource;
+            level.fixup(revision);
+        }
+        
         return resource;
     }
 

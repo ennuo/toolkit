@@ -5,6 +5,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import cwlib.enums.Branch;
 import cwlib.enums.EnemyPart;
@@ -181,6 +183,12 @@ public class RLevel implements Resource
         if (!serializer.isWriting()) onLoadFinished(revision);
     }
 
+    public void fixup(Revision revision)
+    {
+        if (worldThing != null)
+            worldThing.fixup(revision);
+    }
+
     private boolean isValidLevel()
     {
         // Who's serializing a level without a world thing?
@@ -195,36 +203,7 @@ public class RLevel implements Resource
     @Override
     public void onLoadFinished(Revision revision)
     {
-        if (!isValidLevel()) return;
-        int version = revision.getVersion();
-        PWorld world = worldThing.getPart(Part.WORLD);
-
-        // If we're reading a file from after local positions stopped being serialized,
-        // generate them.
-        if (version >= 0x341)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null) continue;
-
-                PPos pos = thing.getPart(Part.POS);
-                if (pos == null) continue;
-
-                if (thing.parent == null)
-                {
-                    pos.localPosition = new Matrix4f(pos.worldPosition);
-                    continue;
-                }
-
-                PPos parent = thing.parent.getPart(Part.POS);
-
-                // This generally shouldn't happen, but make sure to check it anyway
-                if (parent == null) continue;
-
-                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
-                pos.localPosition = inv.mul(pos.worldPosition);
-            }
-        }
+        fixup(revision);
     }
 
     @Override
@@ -233,47 +212,6 @@ public class RLevel implements Resource
         if (!isValidLevel()) return;
         int version = revision.getVersion();
         PWorld world = worldThing.getPart(Part.WORLD);
-
-        // If this is imported from a later version from JSON, the local matrices might not be
-          // correct,
-        // correct any that are identity matrices
-        if (version < 0x341)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null) continue;
-
-                PPos pos = thing.getPart(Part.POS);
-                if (pos == null) continue;
-
-                if ((pos.localPosition.properties() & Matrix4f.PROPERTY_IDENTITY) != 0) continue;
-                if (thing.parent == null)
-                {
-                    pos.localPosition = new Matrix4f(pos.worldPosition);
-                    continue;
-                }
-
-                PPos parent = thing.parent.getPart(Part.POS);
-
-                // This generally shouldn't happen, but make sure to check it anyway
-                if (parent == null) continue;
-
-                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
-                pos.localPosition = inv.mul(pos.worldPosition);
-            }
-        }
-
-        // Set the parents for emitters
-        if (version < 0x314)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null || !thing.hasPart(Part.EMITTER)) continue;
-                PEmitter emitter = thing.getPart(Part.EMITTER);
-                if (emitter.parentThing == null)
-                    emitter.parentThing = thing.parent;
-            }
-        }
 
         // Don't know the exact revision the scripts were removed, but deploy and below is a good
           // guess,
@@ -307,8 +245,6 @@ public class RLevel implements Resource
             ResourceDescriptor spriteLightScript = new ResourceDescriptor(46946, ResourceType.SCRIPT);
 
             GUID scoreboardScriptKey = new GUID(11599);
-            GUID noJoinMarkerScriptKey = new GUID(39394);
-            GUID triggerGlobalSettingsScriptKey = new GUID(65238);
             GUID gunScriptKey = new GUID(66090);
             GUID speechBubbleScriptKey = new GUID(18420);
             GUID triggerMusicScriptKey = new GUID(18256);
@@ -480,7 +416,7 @@ public class RLevel implements Resource
                         }
 
                         // Fixup the light activation
-                        SwitchOutput output = getSwitchInput(root);
+                        SwitchOutput output = world.getSwitchInput(root);
                         if (output != null)
                             light.onDest = output.activation.activation;
                     }
@@ -496,7 +432,7 @@ public class RLevel implements Resource
                             thing.<PTrigger>getPart(Part.TRIGGER).allZLayers = true;
 
                         PAudioWorld sfx = thing.getPart(Part.AUDIO_WORLD);
-                        sfx.triggerBySwitch = hasSwitchInput(thing);
+                        sfx.triggerBySwitch = world.hasSwitchInput(thing);
                         PScript script = new PScript(soundObjectScript);
                         if (sfx.soundNames != null)
                             script.instance.addField("SoundNames", sfx.soundNames);
@@ -544,7 +480,7 @@ public class RLevel implements Resource
                             thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
                             continue;
                         }
-                        
+
                         PScript script = thing.parent.getPart(Part.SCRIPT);
                         if (script != null)
                         {
@@ -594,34 +530,6 @@ public class RLevel implements Resource
                 world.backdrop.setPart(Part.REF, null);
             }
         }
-    }
-
-    public boolean hasSwitchInput(Thing target)
-    {
-        return getSwitchInput(target) != null;
-    }
-
-    public SwitchOutput getSwitchInput(Thing target)
-    {
-        if (!this.isValidLevel()) return null;
-        PWorld world = worldThing.getPart(Part.WORLD);
-        for (Thing thing : world.things)
-        {
-            if (thing == null || !thing.hasPart(Part.SWITCH)) continue;
-            PSwitch switchBase = thing.getPart(Part.SWITCH);
-            if (switchBase.outputs == null) continue;
-            for (SwitchOutput output : switchBase.outputs)
-            {
-                if (output.targetList == null) continue;
-                for (SwitchTarget switchTarget : output.targetList)
-                {
-                    if (switchTarget.thing == target) 
-                        return output;
-                }
-            }
-        }
-
-        return null;
     }
 
     private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing)

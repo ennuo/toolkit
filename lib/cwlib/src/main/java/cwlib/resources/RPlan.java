@@ -185,28 +185,13 @@ public class RPlan implements Resource
         Serializer serializer = new Serializer(this.thingData, this.revision,
             this.compressionFlags);
         Thing[] things = serializer.array(null, Thing.class, true);
-
-        // Fixup local positions in revisions where they were removed
-        // from serialization.
-        if (this.revision.getVersion() >= 0x341)
+        
+        for (Thing thing : things)
         {
-            for (Thing thing : things)
-            {
-                if (thing == null || thing.parent == null) continue;
-
-                PPos pos = thing.getPart(Part.POS);
-                if (pos == null) continue;
-
-                PPos parent = thing.parent.getPart(Part.POS);
-
-                // This generally shouldn't happen, but make sure to check it anyway
-                if (parent == null) continue;
-
-                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
-                pos.localPosition = inv.mul(pos.worldPosition);
-            }
+            if (thing != null)
+                thing.fixup(revision);
         }
-
+        
         return things;
     }
 

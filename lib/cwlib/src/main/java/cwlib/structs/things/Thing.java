@@ -2,6 +2,9 @@ package cwlib.structs.things;
 
 import java.util.Arrays;
 
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
@@ -14,10 +17,14 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.parts.PEmitter;
 import cwlib.structs.things.parts.PGameplayData;
 import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PJoint;
+import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.structs.things.parts.PShape;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
@@ -214,10 +221,32 @@ public class Thing implements Serializable
             serializer.log(part.name() + " [END]");
         }
 
-        // if (subVersion >= 0x83 && subVersion < 0x8b)
-        // serializer.u8(0);
-
         serializer.log("THING " + Bytes.toHex(UID) + " [END]");
+    }
+
+    public void fixup(Revision revision)
+    {
+        PWorld world;
+        PPos pos;
+        PEmitter emitter;
+
+        if ((world = getPart(Part.WORLD)) != null) world.fixup(this, revision);
+        if ((pos = getPart(Part.POS)) != null) pos.fixup(this, revision);
+        if ((emitter = getPart(Part.EMITTER)) != null) emitter.fixup(this, revision);
+    }
+
+    public Vector4f getBestGameplayPos()
+    {
+        if (!hasPart(Part.POS)) return new Vector4f().zero();
+
+        Matrix4f matrix = this.<PPos>getPart(Part.POS).worldPosition;
+        if (hasPart(Part.SHAPE))
+        {
+            Matrix4f posCom = this.<PShape>getPart(Part.SHAPE).COM;
+            return posCom.getColumn(3, new Vector4f()).mul(matrix);
+        }
+
+        return matrix.getColumn(3, new Vector4f());
     }
 
     public boolean isEnemyWard()
