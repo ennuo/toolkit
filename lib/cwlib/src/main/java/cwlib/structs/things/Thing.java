@@ -243,6 +243,34 @@ public class Thing implements Serializable
         return false;
     }
 
+    public boolean isNewKey()
+    {
+        if (!isKey()) return false;
+        GUID newKeyMeshGuid = new GUID(44679);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return newKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+        
+        return false;
+    }
+
+    public boolean isOldKey()
+    {
+        if (!isKey()) return false;
+        GUID oldKeyMeshGuid = new GUID(3763);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
     public boolean isKey()
     {
         PGameplayData data = getPart(Part.GAMEPLAY_DATA);
@@ -252,7 +280,8 @@ public class Thing implements Serializable
         if (data.keyLink != null) return true;
 
         GUID keyPlanGuid = new GUID(31738);
-        GUID keyMeshGuid = new GUID(3763);
+        GUID oldKeyMeshGuid = new GUID(3763);
+        GUID newKeyMeshGuid = new GUID(44679);
 
         if (keyPlanGuid.equals(planGUID)) return true;
         if (hasPart(Part.GROUP))
@@ -267,7 +296,7 @@ public class Thing implements Serializable
         {
             PRenderMesh mesh = getPart(Part.RENDER_MESH);
             if (mesh.mesh != null && mesh.mesh.isGUID())
-                return keyMeshGuid.equals(mesh.mesh.getGUID());
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID()) || newKeyMeshGuid.equals(mesh.mesh.getGUID());
         }
 
         return false;

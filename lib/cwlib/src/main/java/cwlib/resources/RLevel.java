@@ -311,6 +311,7 @@ public class RLevel implements Resource
             GUID triggerGlobalSettingsScriptKey = new GUID(65238);
             GUID gunScriptKey = new GUID(66090);
             GUID speechBubbleScriptKey = new GUID(18420);
+            GUID triggerMusicScriptKey = new GUID(18256);
 
             GUID emitterMeshKey = new GUID(18299);
             GUID paintSwitchMeshKey = new GUID(66172);
@@ -386,6 +387,10 @@ public class RLevel implements Resource
                     // for some reason.
                     if (script.is(switchBaseScript))
                         script.instance.unsetField("BasicIcons");
+
+                    // LBP music boxes should have all z layers enabled in their trigger range
+                    if (script.is(triggerMusicScriptKey) && thing.hasPart(Part.TRIGGER))
+                        thing.<PTrigger>getPart(Part.TRIGGER).allZLayers = true;
                 }
 
                 // Some switches/logic/etc get their meshes removed if they aren't visible in play mode.
@@ -442,6 +447,10 @@ public class RLevel implements Resource
                 // Only set the script instances if they don't already exist
                 if (!thing.hasPart(Part.SCRIPT))
                 {
+                    // Old keys have a child object with a trigger, handle that later
+                    if (thing.isNewKey())
+                        thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
+                    
                     // Generally sprite lights are children of a tweakable mesh object
                     if (thing.hasPart(Part.SPRITE_LIGHT))
                     {
@@ -482,6 +491,10 @@ public class RLevel implements Resource
                     // Sound names got moved to a native field in later versions
                     else if (thing.hasPart(Part.AUDIO_WORLD))
                     {
+                        // Sounds in LBP1 trigger at all layers
+                        if (thing.hasPart(Part.TRIGGER))
+                            thing.<PTrigger>getPart(Part.TRIGGER).allZLayers = true;
+
                         PAudioWorld sfx = thing.getPart(Part.AUDIO_WORLD);
                         sfx.triggerBySwitch = hasSwitchInput(thing);
                         PScript script = new PScript(soundObjectScript);
@@ -525,13 +538,13 @@ public class RLevel implements Resource
                         // Fixup scoreboard, no join posts, and anything with triggers
                     else if (thing.parent != null)
                     {
-                        // Handle level keys
-                        if (thing.parent.isKey() && thing.hasPart(Part.TRIGGER))
+                        // Handle old level keys
+                        if (thing.parent.isOldKey() && thing.hasPart(Part.TRIGGER))
                         {
                             thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
                             continue;
                         }
-
+                        
                         PScript script = thing.parent.getPart(Part.SCRIPT);
                         if (script != null)
                         {
