@@ -1001,7 +1001,7 @@ public class Serializer
         if (signed)
         {
             for (int i = 0; i < vector.length; ++i)
-                value[i] = (value[i] >> 1 ^ -(value[i] & 1));
+                vector[i] = (vector[i] >> 1 ^ -(vector[i] & 1));
         }
         
         return vector;
