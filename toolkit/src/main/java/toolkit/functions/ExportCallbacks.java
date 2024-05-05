@@ -275,7 +275,7 @@ public class ExportCallbacks
         FileEntry selected = ResourceSystem.getSelected().getEntry();
 
         File file = FileChooser.openFile(
-            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".dds",
+            Strings.setExtension(selected.getName(), "dds"),
             "dds",
             true
         );
@@ -345,7 +345,7 @@ public class ExportCallbacks
         FileEntry selected = ResourceSystem.getSelected().getEntry();
 
         File file = FileChooser.openFile(
-            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".png",
+            Strings.setExtension(selected.getName(), "png"),
             "png",
             true
         );
@@ -369,7 +369,7 @@ public class ExportCallbacks
 
         FileNode selected = ResourceSystem.getSelected();
         File file = FileChooser.openFile(
-            selected.getName().substring(0, selected.getName().lastIndexOf(".")) + ".json",
+            Strings.setExtension(selected.getName(), "json"),
             "json",
             true
         );
@@ -382,8 +382,7 @@ public class ExportCallbacks
     public static void exportMod(boolean hashinate)
     {
         FileEntry entry = ResourceSystem.getSelected().getEntry();
-        String name = entry.getName();
-        name = name.substring(0, name.lastIndexOf("."));
+        String name = Strings.getWithoutExtension(entry.getName());
 
 //        RPlan item = entry.getInfo().getResource();
 //        if (item == null) return;

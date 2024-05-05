@@ -9,6 +9,7 @@ import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
+import cwlib.util.Strings;
 import cwlib.util.gfx.CgAssembler;
 import cwlib.util.gfx.GfxAssembler;
 import executables.gfx.dialogues.ErrorDialogue;
@@ -125,9 +126,7 @@ public class GfxGUI extends javax.swing.JFrame
         File file = FileChooser.openFile("generatedmesh.gmat", "gmat", false);
         if (file == null || !file.exists()) return;
 
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        if (index != -1) name = name.substring(0, index);
+        String name = Strings.getWithoutExtension(file.getName());
 
         SerializedResource resource = null;
         try { resource = new SerializedResource(file.getAbsolutePath()); }

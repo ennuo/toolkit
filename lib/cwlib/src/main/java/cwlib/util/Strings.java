@@ -128,6 +128,24 @@ public final class Strings
         return path;
     }
 
+    /**
+     * Gets a filepath without its extension.
+     * @param path Path string
+     * @return Path without extension
+     */
+    public static String getWithoutExtension(String path)
+    {
+        int index = path.lastIndexOf(".");
+        if (index != -1) return path.substring(0, index);
+        return path;
+    }
+    
+    /**
+     * Sets the extension of a path.
+     * @param path Path string
+     * @param extension Extension to set
+     * @return Path with changed extension
+     */
     public static String setExtension(String path, String extension)
     {
         if (extension.startsWith("."))

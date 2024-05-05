@@ -14,7 +14,6 @@ public class FileIO
 {
     public static String getResourceFileAsString(String fileName)
     {
-        ResourceSystem.println("FileIO", "Reading " + fileName + " from class path");
         try (InputStream is = FileIO.class.getResourceAsStream(fileName))
         {
             if (is == null) return null;

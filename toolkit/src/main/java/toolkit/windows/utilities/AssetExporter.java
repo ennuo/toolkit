@@ -21,6 +21,7 @@ import cwlib.types.mods.Mod;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
 import cwlib.util.Resources;
+import cwlib.util.Strings;
 import cwlib.util.gfx.CgAssembler;
 import cwlib.util.gfx.GfxAssembler;
 import toolkit.utilities.FileChooser;
@@ -873,12 +874,8 @@ public class AssetExporter extends JDialog
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_exportButtonActionPerformed
-        String name = this.entry.getName();
-        int extIndex = name.lastIndexOf(".");
-        if (extIndex != -1)
-            name = name.substring(0, extIndex);
-
-        File file = FileChooser.openFile(name + ".mod", "mod", true);
+        String name = Strings.setExtension(this.entry.getName(), "mod");
+        File file = FileChooser.openFile(name, "mod", true);
         if (file == null) return;
 
         this.finalize(file.getAbsolutePath());
