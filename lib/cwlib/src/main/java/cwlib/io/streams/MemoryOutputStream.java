@@ -190,7 +190,7 @@ public class MemoryOutputStream
     public final MemoryOutputStream i32(int value, boolean force32)
     {
         if (!force32 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
-            return this.uleb128(value & 0xFFFFFFFFL);
+            return this.uleb128(Integer.toUnsignedLong(value));
         if (this.isLittleEndian)
             return this.bytes(Bytes.toBytesLE(value));
         return this.bytes(Bytes.toBytesBE(value));
@@ -206,7 +206,8 @@ public class MemoryOutputStream
     public final MemoryOutputStream s32(int value)
     {
         if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
-            return this.uleb128((long) ((value & 0x7fffffff)) << 1 ^ ((value >> 0x1f)));
+            return this.uleb128(Integer.toUnsignedLong(value << 1 ^ (value >> 0x1f)));
+            
         return this.i32(value, true);
     }
 
@@ -331,14 +332,15 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream uleb128(long value)
     {
-        while (true)
+        do
         {
             byte b = (byte) (value & 0x7f);
             value >>>= 7;
-            if (value > 0L) b |= 128;
+            if (value != 0L) b |= 0x80;
             this.i8(b);
-            if (value == 0) break;
-        }
+        } 
+        while (value != 0);
+
         return this;
     }
 
@@ -361,15 +363,31 @@ public class MemoryOutputStream
      * Writes a 32-bit integer array to the stream.
      *
      * @param values Integer array to write
+     * @param signed Whether ot not to write signed integers
      * @return This output stream
      */
-    public final MemoryOutputStream intarray(int[] values)
+    public final MemoryOutputStream intarray(int[] values, boolean signed)
     {
         if (values == null) return this.i32(0);
         this.i32(values.length);
         for (int value : values)
-            this.i32(value);
+        {
+            if (signed) this.s32(value);
+            else this.i32(value);
+        }
+
         return this;
+    }
+
+    /**
+     * Writes a 32-bit integer array to the stream.
+     *
+     * @param values Integer array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream intarray(int[] values)
+    {
+        return this.intarray(values, false);
     }
 
     /**

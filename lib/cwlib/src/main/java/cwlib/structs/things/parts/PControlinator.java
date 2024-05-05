@@ -23,7 +23,7 @@ public class PControlinator implements Serializable
     public Thing padSwitch;
 
     @GsonRevision(lbp3 = true, min = 0x4c)
-    public int parentBoneIndex;
+    public byte parentBoneIndex;
     @GsonRevision(lbp3 = true, min = 0x4c)
     public Matrix4f parentBoneOffset;
 
@@ -84,7 +84,7 @@ public class PControlinator implements Serializable
 
         if (subVersion > 0x4b)
         {
-            parentBoneIndex = serializer.i32(parentBoneIndex);
+            parentBoneIndex = serializer.i8(parentBoneIndex);
             parentBoneOffset = serializer.m44(parentBoneOffset);
         }
 

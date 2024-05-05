@@ -70,7 +70,7 @@ public class ScriptObject implements Serializable
                 value = serializer.boolarray((boolean[]) value);
                 break;
             case ARRAY_S32:
-                value = serializer.intvector((int[]) value);
+                value = serializer.intvector((int[]) value, true);
                 break;
             case ARRAY_F32:
                 value = serializer.floatarray((float[]) value);

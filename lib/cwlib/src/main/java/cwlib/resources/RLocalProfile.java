@@ -310,7 +310,10 @@ public class RLocalProfile implements Resource
     public int profileFlags;
 
     @GsonRevision(min = 0x3f2)
-    public byte goldMedalsAwarded, goldMedalStoryArcPins;
+    public int[] goldMedalsAwarded;
+
+    @GsonRevision(min = 0x3f2)
+    public byte goldMedalStoryArcPins;
 
     @GsonRevision(min = 0x3f3)
     public boolean twitterEnabled, facebookEnabled;
@@ -345,7 +348,7 @@ public class RLocalProfile implements Resource
     public int touchCreateCursorMode;
 
     @GsonRevision(lbp3 = true, min = 0x188)
-    public boolean showAdvancedEditModeMessageCounter;
+    public byte showAdvancedEditModeMessageCounter;
 
     @GsonRevision(lbp3 = true, min = 0x195)
     public boolean showAdventureSaveWarning;
@@ -431,13 +434,8 @@ public class RLocalProfile implements Resource
 
         if (version > 0x265)
         {
-
-            // TODO: Uses signed integer, make sure to fix it at some point
-            // HashSet<int> DLCPackViewed
-            // HashSet<int> DLCPackShown
-
-            dlcPackViewed = serializer.intarray(dlcPackViewed);
-            dlcPackShown = serializer.intarray(dlcPackShown);
+            dlcPackViewed = serializer.intarray(dlcPackViewed, true);
+            dlcPackShown = serializer.intarray(dlcPackShown, true);
         }
 
         if (version > 0x1e4)
@@ -627,11 +625,10 @@ public class RLocalProfile implements Resource
         if (version > 0x35e)
             hasSeenCalibrationScreen = serializer.bool(hasSeenCalibrationScreen);
 
-        // these are both s32[]
         if (version > 0x205)
-            lbp1VOPlayed = serializer.intvector(lbp1VOPlayed);
+            lbp1VOPlayed = serializer.intvector(lbp1VOPlayed, true);
         if (version > 0x36b)
-            lbp2VOPlayed = serializer.intvector(lbp2VOPlayed);
+            lbp2VOPlayed = serializer.intvector(lbp2VOPlayed, true);
 
         if (version > 0x23a)
             subtitleMode = serializer.s32(subtitleMode);
@@ -735,8 +732,10 @@ public class RLocalProfile implements Resource
             hasUsedMove = serializer.bool(hasUsedMove);
         }
 
-        // serializer.bool(true); // hasSeenCrossCompatInfo
-        // serializer.bool(false); // wantsCrossCompatDownloadNotification
+        if (revision.has(Branch.DOUBLE11, 0x86))
+            serializer.bool(true); // hasSeenCrossCompatInfo
+        if (revision.has(Branch.DOUBLE11, 0x87))
+            serializer.bool(false); // wantsCrossCompatDownloadNotification
 
         if (version > 0x3db)
             paintProperties = serializer.struct(paintProperties,
@@ -794,7 +793,7 @@ public class RLocalProfile implements Resource
 
         if (version > 0x3f1)
         {
-            goldMedalsAwarded = serializer.i8(goldMedalsAwarded);
+            goldMedalsAwarded = serializer.intvector(goldMedalsAwarded);
             goldMedalStoryArcPins = serializer.i8(goldMedalStoryArcPins);
         }
 
@@ -847,7 +846,7 @@ public class RLocalProfile implements Resource
 
         if (subVersion > 0x187)
             showAdvancedEditModeMessageCounter =
-                serializer.bool(showAdvancedEditModeMessageCounter);
+                serializer.i8(showAdvancedEditModeMessageCounter);
 
         if (subVersion > 0x194)
             showAdventureSaveWarning = serializer.bool(showAdventureSaveWarning);

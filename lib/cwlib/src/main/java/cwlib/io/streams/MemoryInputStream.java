@@ -331,16 +331,16 @@ public class MemoryInputStream
      */
     public final long uleb128()
     {
-        long result = 0, i = 0;
+        long result = 0, shift = 0;
         while (true)
         {
-            long b = this.u8() & 0xFFL;
-            result |= (b & 0x7fL) << 7L * i;
-            if ((b & 0x80L) == 0L)
-                break;
-            ++i;
+            byte b = this.i8();
+            result |= (b & 0x7fL) << shift;
+            if ((b & 0x80L) == 0) break;
+            shift += 7;
         }
-        return result >>> 0;
+
+        return result;
     }
 
     /**
@@ -360,15 +360,29 @@ public class MemoryInputStream
     /**
      * Reads a 32-bit integer array from the stream.
      *
+     * @param signed Whether ot not to read signed integers
      * @return Integer array read from the stream
      */
-    public final int[] intarray()
+    public final int[] intarray(boolean signed)
     {
         int count = this.i32();
         int[] elements = new int[count];
         for (int i = 0; i < count; ++i)
-            elements[i] = this.i32();
+        {
+            if (signed) elements[i] = this.s32();
+            else elements[i] = this.i32();
+        }
         return elements;
+    }
+    
+    /**
+     * Reads a 32-bit integer array from the stream.
+     *
+     * @return Integer array read from the stream
+     */
+    public final int[] intarray()
+    {
+        return intarray(false);
     }
 
     /**
