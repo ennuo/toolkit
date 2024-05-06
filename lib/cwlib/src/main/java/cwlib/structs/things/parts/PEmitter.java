@@ -306,12 +306,14 @@ public class PEmitter implements Serializable
                     
                     worldOffset = parentRelativeOffset.mul(parentMatrix.transpose(new Matrix4f()), new Vector4f());
                     worldOffset.w = 0.0f;
-
+                    
                     // Not the best at Matrix math, so this'll do
-                    float parentRotationRadians = (float)Math.toRadians(parentRelativeRotation);
-                    Matrix4f worldRotationMatrix = parentMatrix.rotateZ(parentRotationRadians, new Matrix4f());
+                    Matrix4f worldRotationMatrix = parentMatrix.rotateZ(parentRelativeRotation, new Matrix4f());
                     Vector3f worldEulerAngles = worldRotationMatrix.getNormalizedRotation(new Quaternionf()).getEulerAnglesXYZ(new Vector3f());
                     worldRotation = (float)Math.toDegrees(worldEulerAngles.z);
+
+                    // Convert parent rotation from radians to degrees
+                    parentRelativeRotation = (float)Math.toDegrees(parentRelativeRotation);
                 }
             }
         }
