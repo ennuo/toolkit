@@ -288,7 +288,7 @@ public class ExportCallbacks
         RTexture texture = selected.getInfo().getResource();
         if (texture == null) return;
 
-        byte[] output = texture.getData();
+        byte[] output = texture.getDDSFileData();
 
         // Each face of cubemaps are aligned to 128 byte boundaries
         CellGcmTexture gcm = texture.getInfo();

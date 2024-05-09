@@ -122,10 +122,11 @@ public final class DDSReader
         }
 
         int[] pixels = null;
+        System.out.println(type);
         switch (type)
         {
-            case 0xFF:
-                pixels = readB8(width, height, offset, buffer, order);
+            case 16711680:
+                pixels = readL8(width, height, offset, buffer, order);
                 break;
             case 1146639409:
                 pixels = decodeDXT1(width, height, offset, buffer, order);
@@ -543,16 +544,16 @@ public final class DDSReader
         return pixels;
     }
 
-    private static int[] readB8(int width, int height, int offset, byte[] buffer, Order order)
+    private static int[] readL8(int width, int height, int offset, byte[] buffer, Order order)
     {
         int index = offset;
         int[] pixels = new int[width * height];
         for (int i = 0; i < height * width; ++i)
         {
-            int b = buffer[index] & 0xFF;
+            int r = buffer[index] & 0xFF;
             index++;
             pixels[i] =
-                255 << order.alphaShift | 0 << order.redShift | 0 << order.greenShift | b << order.blueShift;
+                255 << order.alphaShift | r << order.redShift | r << order.greenShift | r << order.blueShift;
         }
         return pixels;
     }

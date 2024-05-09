@@ -4,6 +4,7 @@ import cwlib.io.serializer.SerializationData;
 import cwlib.structs.texture.CellGcmTexture;
 import cwlib.types.SerializedResource;
 import cwlib.util.Bytes;
+import cwlib.util.DDS;
 import cwlib.util.FileIO;
 import cwlib.util.Images;
 import gr.zdimensions.jsquish.Squish.CompressionType;
@@ -53,7 +54,9 @@ public class TextureImporter extends javax.swing.JDialog
             {
                 CellGcmTexture info = new CellGcmTexture(textureData, noSRGB);
                 textureData = Arrays.copyOfRange(textureData, 0x80, textureData.length);
-
+                if (!info.getFormat().isDXT())
+                    textureData = DDS.convertSwizzleGtf(info, textureData, false);
+                
                 return SerializedResource.compress(new SerializationData(textureData,
                     info));
             }

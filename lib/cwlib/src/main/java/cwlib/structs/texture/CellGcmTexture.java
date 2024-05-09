@@ -11,6 +11,9 @@ import cwlib.io.streams.MemoryOutputStream;
  */
 public final class CellGcmTexture
 {
+    public static final int REMAP_ARGB = 0xaae4;
+    public static final int REMAP_BBBB = 0xa9ff;
+
     private final CellGcmEnumForGtf format;
     private final byte mipmap;
     private final byte dimension;
@@ -27,7 +30,7 @@ public final class CellGcmTexture
         int type = DDSReader.getType(dds);
         switch (type)
         {
-            case 0xFF:
+            case 16711680:
                 this.format = CellGcmEnumForGtf.B8;
                 break;
             case 1146639409:
@@ -54,10 +57,11 @@ public final class CellGcmTexture
             default:
                 throw new IllegalArgumentException("Invalid format!");
         }
+
         this.mipmap = (byte) DDSReader.getMipmap(dds);
         this.dimension = 2;
         this.cubemap = 0;
-        this.remap = 0xaae4;
+        this.remap = format == CellGcmEnumForGtf.B8 ? CellGcmTexture.REMAP_BBBB : CellGcmTexture.REMAP_ARGB;
         this.width = (short) DDSReader.getWidth(dds);
         this.height = (short) DDSReader.getHeight(dds);
         this.depth = 1;

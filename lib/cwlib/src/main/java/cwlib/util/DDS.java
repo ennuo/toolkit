@@ -41,7 +41,6 @@ public class DDS
     public static int[] DDSPF_A16B16G16R16F = { 0x20, DDS_FOURCC, 113, 0, 0, 0, 0, 0 };
     public static int[] DDSPF_A8L8 = { 0x20, DDS_LUMINANCEA, 0, 16, 0xff, 0, 0, 0xff00 };
     public static int[] DDSPF_L8 = { 0x20, DDS_LUMINANCE, 0, 8, 0xff, 0, 0, 0 };
-    public static int[] DDSPF_B8 = { 0x20, DDS_LUMINANCE, 0, 8, 0, 0, 0x000000ff, 0 };
     public static int[] DDSPF_A1R5G5B5 = { 0x20, DDS_RGBA, 0, 16, 0x00007c00, 0x000003e0,
         0x0000001f, 0x00008000 };
 
@@ -82,8 +81,8 @@ public class DDS
 
         header.str("DDS ", 4);
         header.u32(0x7C); // dwSize
-        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((mips != 1) ? DDS.DDS_HEADER_FLAGS_MIPMAP
-                                                       : 0));
+        header.u32(DDS.DDS_HEADER_FLAGS_TEXTURE | ((mips != 1) ? DDS.DDS_HEADER_FLAGS_MIPMAP : 0));
+
         header.u32(height);
         header.u32(width);
         header.u32(0); // dwPitchOrLinearSize
@@ -97,7 +96,7 @@ public class DDS
         switch (format)
         {
             case B8:
-                pixelFormat = DDS.DDSPF_B8;
+                pixelFormat = DDS.DDSPF_L8;
                 break;
             case A1R5G5B5:
                 pixelFormat = DDS.DDSPF_A1R5G5B5;
@@ -159,49 +158,208 @@ public class DDS
 
         return header.getBuffer();
     }
+    
+    public static int getMortonNumber(int x, int y, int width, int height)
+    {
+        int logW = 31 - Integer.numberOfLeadingZeros(width);
+        int logH = 31 - Integer.numberOfLeadingZeros(height);
+
+        int d = Integer.min(logW, logH);
+        int m = 0;
+
+        for (int i = 0; i < d; ++i)
+            m |= ((x & (1 << i)) << (i + 1)) | ((y & (1 << i)) << i);
+
+        if (width < height)
+            m |= ((y & ~(width - 1)) << d);
+        else
+            m |= ((x & ~(height - 1)) << d);
+
+        return m;
+    }
 
     /**
-     * Unswizzles pixel data
+     * Unswizzles compressed DXT1/5 pixel data for PSVita GXT textures.
      *
-     * @param pixels Pixel data
-     * @param height Height of texture
-     * @param width  Width of texture
-     * @return Unswizzled pixels
+     * @param texture Texture metadata
+     * @param swizzled Swizzled texture data
+     * @return Unswizzled texture data
      */
-    public static int[] unswizzle(int[] pixels, int height, int width)
+    public static byte[] unswizzleGxtCompressed(CellGcmTexture texture, byte[] swizzled)
+    {
+        byte[] pixels = new byte[swizzled.length];
+
+        int blockWidth = 4, blockHeight = 4;
+        int bpp = 4;
+        if (texture.getFormat().equals(CellGcmEnumForGtf.DXT5))
+            bpp = 8;
+
+        int base = 0;
+
+        int width = Integer.max(texture.getWidth(), blockWidth);
+        int height = Integer.max(texture.getHeight(), blockHeight);
+
+        int log2width = 1 << (31 - Integer.numberOfLeadingZeros(width + (width - 1)));
+        int log2height = 1 << (31 - Integer.numberOfLeadingZeros(height + (height - 1)));
+
+        for (int i = 0; i < texture.getMipCount(); ++i)
+        {
+            int w = ((width + blockWidth - 1) / blockWidth);
+            int h = ((height + blockHeight - 1) / blockHeight);
+            int blockSize = bpp * blockWidth * blockHeight;
+
+            int log2w = 1 << (31 - Integer.numberOfLeadingZeros(w + (w - 1)));
+            int log2h = 1 << (31 - Integer.numberOfLeadingZeros(h + (h - 1)));
+
+            int mx = getMortonNumber(log2w - 1, 0, log2w, log2h);
+            int my = getMortonNumber(0, log2h - 1, log2w, log2h);
+
+            int pixelSize = blockSize / 8;
+
+            int oy = 0, tgt = base;
+            for (int y = 0; y < h; ++y)
+            {
+                int ox = 0;
+                for (int x = 0; x < w; ++x)
+                {
+                    int offset = base + ((ox + oy) * pixelSize);
+                    System.arraycopy(swizzled, offset, pixels, tgt, pixelSize);
+                    tgt += pixelSize;
+                    ox = (ox - mx) & mx;
+                }
+                oy = (oy - my) & my;
+            }
+
+            base += ((bpp * log2width * log2height) / 8);
+
+            width = width > blockWidth ? width / 2 : blockWidth;
+            height = height > blockHeight ? height / 2 : blockHeight;
+
+            log2width = log2width > blockWidth ? log2width / 2 : blockWidth;
+            log2height = log2height > blockHeight ? log2height / 2 : blockHeight;
+        }
+
+        return pixels;
+    }
+
+    /**
+     * Unswizzles pixel data for PS3 GTF textures.
+     *
+     * @param texture Texture metadata
+     * @param in Texture data to swizzle
+     * @param isInputSwizzled Whether input data is swizzled
+     * @return Unswizzled texture data
+     */
+    public static byte[] convertSwizzleGtf(CellGcmTexture texture, byte[] in, boolean isInputSwizzled)
     {
         // NOTE(Aidan): For original source, see:
         // https://github.com/RPCS3/rpcs3/blob/3d49976b3c0f2d2fe5fbd9dba0419c13b389c6ba/rpcs3/Emu/RSX/rsx_utils.h
 
-        int[] unswizzled = new int[pixels.length];
+        CellGcmEnumForGtf format = texture.getFormat();
+        if (format.isDXT()) return in;
 
-        int log2width = (int) (Math.log(width) / Math.log(2));
-        int log2height = (int) (Math.log(height) / Math.log(2));
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        int bpp = format.getDepth();
 
-        int xMask = 0x55555555;
-        int yMask = 0xAAAAAAAA;
+        byte[] out = new byte[in.length];
+        int textureLayoutOffset = 0;
 
-        int limitMask = (log2width < log2height) ? log2width : log2height;
-        limitMask = 1 << (limitMask << 1);
-
-
-        xMask = (xMask | ~(limitMask - 1));
-        yMask = (yMask & (limitMask - 1));
-
-        int offsetY = 0, offsetX = 0, offsetX0 = 0, yIncr = limitMask, adv = width;
-
-        for (int y = 0; y < height; ++y)
+        for (int i = 0; i < texture.getMipCount(); ++i)
         {
-            offsetX = offsetX0;
-            for (int x = 0; x < width; ++x)
+            int log2width = (int) (Math.log(width) / Math.log(2));
+            int log2height = (int) (Math.log(height) / Math.log(2));
+    
+            int xMask = 0x55555555;
+            int yMask = 0xAAAAAAAA;
+    
+            int limitMask = (log2width < log2height) ? log2width : log2height;
+            limitMask = 1 << (limitMask << 1);
+    
+    
+            xMask = (xMask | ~(limitMask - 1));
+            yMask = (yMask & (limitMask - 1));
+    
+            int offsetY = 0, offsetX = 0, offsetX0 = 0, yIncr = limitMask, adv = width;
+
+            if (isInputSwizzled)
             {
-                unswizzled[(y * adv) + x] = pixels[offsetY + offsetX];
-                offsetX = (offsetX - xMask) & xMask;
+                for (int y = 0; y < height; ++y)
+                {
+                    offsetX = offsetX0;
+                    for (int x = 0; x < width; ++x)
+                    {
+                        System.arraycopy(
+                            in, 
+                            textureLayoutOffset + ((offsetY + offsetX) * bpp), 
+                            out, 
+                            textureLayoutOffset + (((y * adv) + x) * bpp), 
+                            bpp
+                        );
+                        
+                        offsetX = (offsetX - xMask) & xMask;
+                    }
+                    offsetY = (offsetY - yMask) & yMask;
+                    if (offsetY == 0) offsetX0 += yIncr;
+                }
             }
-            offsetY = (offsetY - yMask) & yMask;
-            if (offsetY == 0) offsetX0 += yIncr;
+            else
+            {
+                for (int y = 0; y < height; ++y)
+                {
+                    offsetX = offsetX0;
+                    for (int x = 0; x < width; ++x)
+                    {
+                        System.arraycopy(
+                            in, 
+                            textureLayoutOffset + (((y * adv) + x) * bpp),
+                            out,
+                            textureLayoutOffset + ((offsetY + offsetX) * bpp),  
+                            bpp
+                        );
+                        
+                        offsetX = (offsetX - xMask) & xMask;
+                    }
+                    offsetY = (offsetY - yMask) & yMask;
+                    if (offsetY == 0) offsetX0 += yIncr;
+                }
+            }
+
+
+            textureLayoutOffset += format.getImageSize(width, height);
+            width >>>= 1;
+            height >>>= 1;
+
+            if (width == 0 && height == 0) break;
+            if (width == 0) width = 1;
+            if (height == 0) height = 1;
         }
 
-        return unswizzled;
+        // Swap the endianness around, PS3 data is in big endian
+        if (bpp == 2)
+        {
+            for (int i = 0; i < out.length; i += 2)
+            {
+                byte tmp = out[i];
+                out[i] = out[i + 1];
+                out[i + 1] = tmp;
+            }
+        }
+
+        if (bpp == 4)
+        {
+            for (int i = 0; i < out.length; i += 4)
+            {
+                byte tmp = out[i];
+                out[i] = out[i + 3];
+                out[i + 3] = tmp;
+
+                tmp = out[i + 1];
+                out[i + 1] = out[i + 2];
+                out[i + 2] = tmp;
+            }
+        }
+
+        return out;
     }
 }

@@ -373,7 +373,7 @@ public class AssetExporter extends JDialog
             if (remap != null && resource.getSerializationType() == SerializationType.GTF_SWIZZLED || resource.getSerializationType() == SerializationType.GXT_SWIZZLED)
             {
                 RTexture texture = new RTexture(resource);
-                byte[] textureData = texture.getData();
+                byte[] textureData = texture.getDDSFileData();
                 resource.getTextureInfo().setMethod(SerializationType.COMPRESSED_TEXTURE);
 
                 boolean useGTF = remap != MaterialLibrary.LBP1;
