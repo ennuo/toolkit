@@ -16,6 +16,7 @@
 
         <module>tools/jsoninator</module>
         <module>tools/descriptor</module>
+        <module>tools/sequencerdump</module>
 
         <module>toolkit</module>
     </modules>
