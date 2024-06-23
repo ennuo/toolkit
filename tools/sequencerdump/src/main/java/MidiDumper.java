@@ -56,10 +56,17 @@ public class MidiDumper {
 
         System.out.println(MessageFormat.format("Found sequencer: {0}", result.getName()));
 
+        // Snap to grid
+        // LBP positioning isn't very precise, round to fraction of 2 to have a bit of tolerance
+        for (CompactComponent component : microchip.components) {
+            component.x = MathUtils.roundToFraction(component.x, 2);
+            component.y = MathUtils.roundToFraction(component.y, 2);
+        }
+
         // Sort components, makes debugging easier
         Arrays.sort(microchip.components, (a, b) -> {
             if (a.x == b.x) {
-                return Float.compare(a.y, b.y);
+                return Float.compare(b.y, a.y);
             }
             return Float.compare(a.x, b.x);
         });
@@ -71,19 +78,16 @@ public class MidiDumper {
                 continue; // Skip non-instruments
             }
 
-            // LBP positioning isn't very precise, round to fraction of 2 to have a bit of tolerance
-            float xPosition = MathUtils.roundToFraction(component.x, 2);
-            float yPosition = MathUtils.roundToFraction(component.y, 2);
             Instrument instrumentType = Instrument.fromGUID(instrument.instrument.getGUID());
 
             // Since lbp doesn't group instruments into channels, treat instruments of the same type on same row as a channel
-            Sequence.Track track = result.getTrack(yPosition, instrumentType);
+            Sequence.Track track = result.getTrack(component.y, instrumentType);
             if (track == null) {
-                track = result.addTrack(yPosition, instrumentType);
+                track = result.addTrack(component.y, instrumentType);
             }
 
             // Calculate current instrument grid index and tick
-            int componentGridIndex = (int) Math.floor(xPosition / GRID_UNIT_SIZE);
+            int componentGridIndex = (int) Math.floor(component.x / GRID_UNIT_SIZE);
             int componentInitialStep = componentGridIndex * GRID_UNIT_STEPS;
 
             Sequence.Track.Note currentNote = null;
@@ -163,7 +167,7 @@ public class MidiDumper {
                     );
                     defaultTrack.add(new MidiEvent(message, point.toMidiTick()));
 
-                    MidiUtils.metaText(defaultTrack, point.toMidiTick(), "ON(t:" + point.toMidiTick() + "ch:" + channel + ";nt:" + point.getNote() + ";ni:" + point.getParent().getId() + ")");
+                    //MidiUtils.metaText(defaultTrack, point.toMidiTick(), "ON(t:" + point.toMidiTick() + "ch:" + channel + ";nt:" + point.getNote() + ";ni:" + point.getParent().getId() + ")");
                 } else {
                     // Update
                     Sequence.Track.Note.Point start = note.getStart();
@@ -240,7 +244,7 @@ public class MidiDumper {
                     defaultTrack.add(new MidiEvent(message, point.toMidiTick()));
                     automationChannels.pull(note.getId()); // Remove note from channel stack
 
-                    MidiUtils.metaText(defaultTrack, point.toMidiTick(), "OFF(t:" + point.toMidiTick() + "ch:" + channel + ";nt:" + point.getNote() + ";ni:" + point.getParent().getId() + ")");
+                    //MidiUtils.metaText(defaultTrack, point.toMidiTick(), "OFF(t:" + point.toMidiTick() + "ch:" + channel + ";nt:" + point.getNote() + ";ni:" + point.getParent().getId() + ")");
 
                     if (note.hasPitchBend()) {
                         MidiUtils.pitchBend(defaultTrack, point.toMidiTick(), channel, MidiUtils.ZERO_PITCH_VALUE); // Reset
