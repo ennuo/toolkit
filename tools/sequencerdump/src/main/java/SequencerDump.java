@@ -2,13 +2,14 @@ import cwlib.enums.Part;
 import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.structs.things.Thing;
-import cwlib.structs.things.parts.PMicrochip;
-import cwlib.structs.things.parts.PSequencer;
-import cwlib.structs.things.parts.PWorld;
+import cwlib.structs.things.components.CompactComponent;
+import cwlib.structs.things.parts.*;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.WrappedResource;
 import cwlib.util.FileIO;
 import cwlib.util.GsonUtils;
+import org.joml.Vector3f;
+import utils.PositionUtils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -72,11 +73,32 @@ public class SequencerDump {
                 // Skip null things
                 continue;
             }
+
             PMicrochip microchip = thing.getPart(Part.MICROCHIP);
             if (microchip == null) {
                 // Not a Microchip
                 continue;
             }
+
+            // Include instruments of sequencers with an open circuit board
+            Thing circuitBoardThing = microchip.circuitBoardThing;
+            if (circuitBoardThing.hasPart(Part.POS)) {
+                microchip.components = things.stream().filter(current ->
+                        current != null
+                        && current.parent != null
+                        && current.parent.UID == circuitBoardThing.UID
+                        && current.hasPart(Part.INSTRUMENT)
+                ).map(child -> {
+                    Vector3f instrumentPosition = PositionUtils.getRelativePosition(circuitBoardThing, child);
+                    CompactComponent component = new CompactComponent();
+                    component.x = instrumentPosition.x;
+                    component.y = instrumentPosition.y;
+                    component.thing = child;
+
+                    return component;
+                }).toArray(CompactComponent[]::new);
+            }
+
             PSequencer sequencer = thing.getPart(Part.SEQUENCER);
             if (sequencer == null) {
                 // Not a sequencer
