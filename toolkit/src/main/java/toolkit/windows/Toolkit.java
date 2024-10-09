@@ -665,7 +665,10 @@ public class Toolkit extends javax.swing.JFrame
         if (isFile && !isDependencyTree)
         {
             if (ResourceSystem.getDatabaseType().hasGUIDs())
+            {
                 this.entryContext.add(editGroup);
+            }
+            
             if (isFile && ResourceSystem.canExtract())
             {
                 boolean canChangeRevision = type != ResourceType.GFX_MATERIAL
@@ -765,6 +768,7 @@ public class Toolkit extends javax.swing.JFrame
         editPathContext = new javax.swing.JMenuItem();
         editHashContext = new javax.swing.JMenuItem();
         editGUIDContext = new javax.swing.JMenuItem();
+        setLocalGUIDContext = new javax.swing.JMenuItem();
         exportGroup = new javax.swing.JMenu();
         exportJSONContext = new javax.swing.JMenuItem();
         exportTextureGroupContext = new javax.swing.JMenu();
@@ -1012,6 +1016,14 @@ public class Toolkit extends javax.swing.JFrame
             }
         });
         editGroup.add(editGUIDContext);
+
+        setLocalGUIDContext.setText("Set to Local GUID");
+        setLocalGUIDContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setLocalGUIDContextActionPerformed(evt);
+            }
+        });
+        editGroup.add(setLocalGUIDContext);
 
         entryContext.add(editGroup);
 
@@ -2298,6 +2310,10 @@ public class Toolkit extends javax.swing.JFrame
     {//GEN-FIRST:event_changeResourceRevisionLBP2ContextActionPerformed
         EditCallbacks.changeRevision(new Revision(0x3f6));
     }//GEN-LAST:event_changeResourceRevisionLBP2ContextActionPerformed
+
+    private void setLocalGUIDContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setLocalGUIDContextActionPerformed
+        DatabaseCallbacks.setLocalGUID();
+    }//GEN-LAST:event_setLocalGUIDContextActionPerformed
 
     private void loadDBActionPerformed(java.awt.event.ActionEvent evt)
     {// GEN-FIRST:event_loadDBActionPerformed
@@ -3868,6 +3884,7 @@ public class Toolkit extends javax.swing.JFrame
     public javax.swing.JMenu savedataMenu;
     private javax.swing.JPanel scenePanel;
     public javax.swing.JTextField search;
+    private javax.swing.JMenuItem setLocalGUIDContext;
     private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JScrollPane tableContainer;

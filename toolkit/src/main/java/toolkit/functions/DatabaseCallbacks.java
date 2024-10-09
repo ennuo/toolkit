@@ -13,6 +13,7 @@ import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
+import cwlib.util.Crypto;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
 import toolkit.dialogues.EntryDialogue;
@@ -198,6 +199,24 @@ public class DatabaseCallbacks
         entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
 
+        Toolkit.INSTANCE.setEditorPanel(node);
+    }
+
+    public static void setLocalGUID()
+    {
+        FileNode node = ResourceSystem.getSelected();
+        FileEntry baseEntry = ResourceSystem.getSelected().getEntry();
+        if (!baseEntry.getSource().getType().hasGUIDs()) return;
+        FileDBRow entry = (FileDBRow) baseEntry;
+        if (entry.getGUID() == null) return;
+
+        GUID guid = Crypto.makePathGUID(entry.getPath());
+        if (guid.equals(entry.getGUID())) return;
+        
+        entry.setGUID(guid);
+
+        entry.getSource().setHasChanges();
+        Toolkit.INSTANCE.updateWorkspace();
         Toolkit.INSTANCE.setEditorPanel(node);
     }
 
