@@ -610,7 +610,7 @@ public class GfxAssembler
             shader = shader.replace("ENV.COSINE_POWER", String.format(Locale.ROOT, "%f",
                 material.cosinePower * 22.0f));
             shader = shader.replace("ENV.BUMP_LEVEL", String.format(Locale.ROOT, "%f",
-                material.bumpLevel));
+                material.bumpLevel * 2.0f));
 
             shader = shader.replace("ENV.REFLECTION_BLUR", String.format(Locale.ROOT, "%f",
                 material.reflectionBlur - 1.0f));
