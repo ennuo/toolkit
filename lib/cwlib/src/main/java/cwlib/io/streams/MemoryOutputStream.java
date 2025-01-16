@@ -12,6 +12,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -402,6 +403,66 @@ public class MemoryOutputStream
         this.i32(values.length);
         for (long value : values)
             this.u64(value);
+        return this;
+    }
+
+    /**
+     * Writes a GUID array to the stream.
+     * 
+     * @param values GUID array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream guidarray(GUID[] values)
+    {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (GUID value : values)
+            this.guid(value);
+        return this;
+    }
+
+    /**
+     * Writes a hash array to the stream.
+     * 
+     * @param values Hash array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream hasharray(SHA1[] values)
+    {
+        if (values == null) return this.i32(0);
+        this.i32(values.length);
+        for (SHA1 value : values)
+            this.sha1(value);
+        return this;
+    }
+
+    /**
+     * Writes a GUID list to the stream.
+     * 
+     * @param values GUID list to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream guidlist(ArrayList<GUID> values)
+    {
+        if (values == null) return this.i32(0);
+        this.i32(values.size());
+        for (GUID value : values)
+            this.guid(value);
+        return this;
+    }
+
+    /**
+     * Writes a hash list to the stream.
+     * 
+     * @param values Hash list to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream hashlist(ArrayList<SHA1> values)
+    {
+        if (values == null) return this.i32(0);
+        this.i32(values.size());
+        for (SHA1 value : values)
+            this.sha1(value);
         return this;
     }
 

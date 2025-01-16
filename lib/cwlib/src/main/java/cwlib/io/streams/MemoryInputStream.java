@@ -13,6 +13,7 @@ import org.joml.Vector4f;
 
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -400,6 +401,62 @@ public class MemoryInputStream
     }
 
     /**
+     * Reads a GUID array from the stream.
+     * 
+     * @return GUID array read from the stream
+     */
+    public final GUID[] guidarray()
+    {
+        int count = this.i32();
+        GUID[] elements = new GUID[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.guid();
+        return elements;
+    }
+
+    /**
+     * Reads a SHA1 array from the stream.
+     * 
+     * @return SHA1 array read from the stream
+     */
+    public final SHA1[] hasharray()
+    {
+        int count = this.i32();
+        SHA1[] elements = new SHA1[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.sha1();
+        return elements;
+    }
+
+    /**
+     * Reads a GUID list from the stream.
+     * 
+     * @return GUID list read from the stream
+     */
+    public final ArrayList<GUID> guidlist()
+    {
+        int count = this.i32();
+        ArrayList<GUID> elements = new ArrayList<>(count);
+        for (int i = 0; i < count; ++i)
+            elements.add(this.guid());
+        return elements;
+    }
+    
+    /**
+     * Reads a SHA1 list from the stream.
+     * 
+     * @return SHA1 list read from the stream
+     */
+    public final ArrayList<SHA1> hashlist()
+    {
+        int count = this.i32();
+        ArrayList<SHA1> elements = new ArrayList<>(count);
+        for (int i = 0; i < count; ++i)
+            elements.add(this.sha1());
+        return elements;
+    }
+
+    /**
      * Reads a 16 bit floating point number from the stream.
      * https://stackoverflow.com/questions/6162651/half-precision-floating-point-in-java
      *
@@ -505,7 +562,7 @@ public class MemoryInputStream
      */
     public Matrix4f m44()
     {
-        final float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+        final float[] matrix = new float[] { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 
         int flags = 0xFFFF;
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)

@@ -2,19 +2,15 @@ package cwlib.structs.things.components.script;
 
 import java.util.EnumSet;
 
-import com.google.gson.annotations.JsonAdapter;
-
 import cwlib.enums.BuiltinType;
 import cwlib.enums.MachineType;
 import cwlib.enums.ModifierType;
 import cwlib.io.Serializable;
-import cwlib.io.gson.FieldSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 
-@JsonAdapter(FieldSerializer.class)
 public class FieldLayoutDetails implements Serializable
 {
     public static final int BASE_ALLOCATION_SIZE = 0x20;
@@ -29,22 +25,7 @@ public class FieldLayoutDetails implements Serializable
     public byte dimensionCount;
     public MachineType arrayBaseMachineType = MachineType.VOID;
     public int instanceOffset;
-
-    public Object value;
-
-    public FieldLayoutDetails() { }
-
-    public FieldLayoutDetails(FieldLayoutDetails details)
-    {
-        this.name = details.name;
-        this.modifiers = details.modifiers.clone();
-        this.machineType = details.machineType;
-        this.fishType = details.fishType;
-        this.dimensionCount = details.dimensionCount;
-        this.arrayBaseMachineType = details.arrayBaseMachineType;
-        this.instanceOffset = details.instanceOffset;
-    }
-
+    
     @Override
     public void serialize(Serializer serializer)
     {

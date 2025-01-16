@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 
 /**
  * Reversible serializer for assets, also handles
@@ -40,10 +41,11 @@ public class Serializer
     private final Revision revision;
     private final byte compressionFlags;
 
-    private final HashMap<Integer, Object> referenceIDs = new HashMap<>();
-    private final HashMap<Object, Integer> referenceObjects = new HashMap<>();
-    private final HashSet<ResourceDescriptor> dependencies = new HashSet<>();
 
+    private final HashMap<Integer, Object> visited = new HashMap<>();
+    private final IdentityHashMap<Object, Integer> referenceObjects = new IdentityHashMap<>();
+    private final HashSet<ResourceDescriptor> dependencies = new HashSet<>();
+    
     private int nextReference = 1;
 
     /**
@@ -490,6 +492,70 @@ public class Serializer
     }
 
     /**
+     * (De)serializes a GUID array to/from the stream.
+     *
+     * @param values GUID array to write
+     * @return GUID array (de)serialized
+     */
+    public final GUID[] guidarray(GUID[] values)
+    {
+        if (this.isWriting)
+        {
+            this.output.guidarray(values);
+            return values;
+        }
+        return this.input.guidarray();
+    }
+
+    /**
+     * (De)serializes a SHA1 array to/from the stream.
+     *
+     * @param values Hash array to write
+     * @return Hash array (de)serialized
+     */
+    public final SHA1[] hasharray(SHA1[] values)
+    {
+        if (this.isWriting)
+        {
+            this.output.hasharray(values);
+            return values;
+        }
+        return this.input.hasharray();
+    }
+
+    /**
+     * (De)serializes a GUID list to/from the stream.
+     *
+     * @param values GUID list to write
+     * @return GUID list (de)serialized
+     */
+    public final ArrayList<GUID> guidlist(ArrayList<GUID> values)
+    {
+        if (this.isWriting)
+        {
+            this.output.guidlist(values);
+            return values;
+        }
+        return this.input.guidlist();
+    }
+
+    /**
+     * (De)serializes a SHA1 list to/from the stream.
+     *
+     * @param values Hash list to write
+     * @return Hash list (de)serialized
+     */
+    public final ArrayList<SHA1> hashlist(ArrayList<SHA1> values)
+    {
+        if (this.isWriting)
+        {
+            this.output.hashlist(values);
+            return values;
+        }
+        return this.input.hashlist();
+    }
+
+    /**
      * (De)serializes a 16-bit floating point number to/from the stream.
      *
      * @param value Float to write
@@ -800,16 +866,16 @@ public class Serializer
      * @param value        Resource to write
      * @param type         Type of resource
      * @param isDescriptor Whether or not to skip resource flags
-     * @param cp           Flag toggle
-     * @param t            Serialize resource type
+     * @param isClassPointer           Flag toggle
+     * @param includeType            Serialize resource type
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type,
-                                             boolean isDescriptor, boolean cp, boolean t)
+                                             boolean isDescriptor, boolean isClassPointer, boolean includeType)
     {
         byte NONE = 0, HASH = 1, GUID = 2;
         // is it 0x191 or 0x18c
-        if (this.revision.getVersion() < 0x191 && cp)
+        if (this.revision.getVersion() < 0x191 && isClassPointer)
         {
             HASH = 2;
             GUID = 1;
@@ -834,7 +900,7 @@ public class Serializer
             if ((guidHashFlag & HASH) != 0)
                 sha1 = this.input.sha1();
 
-            if (t) type = ResourceType.fromType(this.input.i32());
+            if (includeType) type = ResourceType.fromType(this.input.i32());
 
             descriptor = new ResourceDescriptor(guid, sha1, type);
             if (!descriptor.isValid()) return null;
@@ -868,10 +934,57 @@ public class Serializer
         }
         else this.i8(NONE);
 
-        if (t)
+        if (includeType)
             this.output.i32(value != null ? value.getType().getValue() : 0);
 
         return value;
+    }
+
+    /**
+     * (De)serializes a resource list to/from the stream.
+     *
+     * @param value Resource list to write
+     * @param type  Type of resource
+     * @return Resource list (de)serialized
+     */
+    public final ArrayList<ResourceDescriptor> resourcelist(ArrayList<ResourceDescriptor> value, ResourceType type)
+    {
+        return this.resourcelist(value, type, false, true, false);
+    }
+
+    /**
+     * (De)serializes a resource to/from the stream.
+     *
+     * @param value        Resource list to write
+     * @param type         Type of resource
+     * @param isDescriptor Whether or not to skip resource flags
+     * @return Resource list (de)serialized
+     */
+    public final ArrayList<ResourceDescriptor>  resourcelist(ArrayList<ResourceDescriptor>  value, ResourceType type,
+                                             boolean isDescriptor)
+    {
+        return this.resourcelist(value, type, isDescriptor, true, false);
+    }
+
+    public ArrayList<ResourceDescriptor> resourcelist(ArrayList<ResourceDescriptor> descriptors, ResourceType type, boolean isDescriptor, boolean isClassPointer, boolean includeType)
+    {
+        if (isWriting)
+        {
+            output.i32(descriptors.size());
+            for (ResourceDescriptor descriptor : descriptors)
+                resource(descriptor, type, isDescriptor, isClassPointer, includeType);
+
+            return descriptors;
+        }
+        else
+        {
+            descriptors = new ArrayList<>();
+            int count = input.i32();
+            for (int i = 0; i < count; ++i)
+                descriptors.add(resource(null, type, isDescriptor, isClassPointer, includeType));
+            
+            return descriptors;
+        }
     }
 
     /**
@@ -1099,12 +1212,13 @@ public class Serializer
                 this.output.i32(0);
                 return null;
             }
+            
             int reference = this.referenceObjects.getOrDefault(value, -1);
             if (reference == -1)
             {
                 int next = this.nextReference++;
                 this.output.i32(next);
-                this.referenceIDs.put(next, value);
+                this.visited.put(next, value);
                 this.referenceObjects.put(value, next);
                 value.serialize(this);
                 return value;
@@ -1114,8 +1228,8 @@ public class Serializer
         }
         int reference = this.input.i32();
         if (reference == 0) return null;
-        if (this.referenceIDs.containsKey(reference))
-            return (T) this.referenceIDs.get(reference);
+        if (this.visited.containsKey(reference))
+            return (T) this.visited.get(reference);
         T struct = null;
         try { struct = clazz.getDeclaredConstructor().newInstance(); }
         catch (Exception ex)
@@ -1123,7 +1237,7 @@ public class Serializer
             throw new SerializationException("Failed to create class instance in " +
                                              "serializer!");
         }
-        this.referenceIDs.put(reference, struct);
+        this.visited.put(reference, struct);
         this.referenceObjects.put(struct, reference);
         struct.serialize(this);
 
@@ -1340,15 +1454,15 @@ public class Serializer
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getPointer(int index)
+    public <T> T getVisited(int index)
     {
-        return (T) this.referenceIDs.get(index);
+        return (T) this.visited.get(index);
     }
 
-    public void setPointer(int index, Object value)
+    public void setVisited(int id, Object value)
     {
-        this.referenceIDs.put(index, value);
-        this.referenceObjects.put(value, index);
+        this.visited.put(id, value);
+        this.referenceObjects.put(value, id);
     }
 
     public int getNextReference()

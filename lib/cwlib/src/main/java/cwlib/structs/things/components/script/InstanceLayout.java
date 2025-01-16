@@ -11,18 +11,9 @@ import cwlib.io.streams.MemoryOutputStream;
 public class InstanceLayout implements Serializable
 {
     public static final int BASE_ALLOCATION_SIZE = 0x8;
-
+    
     public ArrayList<FieldLayoutDetails> fields = new ArrayList<>();
     public int instanceSize;
-
-    public InstanceLayout() { }
-
-    public InstanceLayout(InstanceLayout layout)
-    {
-        for (FieldLayoutDetails field : layout.fields)
-            this.fields.add(new FieldLayoutDetails(field));
-        this.instanceSize = layout.instanceSize;
-    }
 
     @Override
     public void serialize(Serializer serializer)
