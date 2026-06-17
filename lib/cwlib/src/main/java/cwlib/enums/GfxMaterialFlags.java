@@ -2,17 +2,30 @@ package cwlib.enums;
 
 public final class GfxMaterialFlags
 {
+    // WIRE | MAX_PRIORITY | NO_INSTANCE_TEXTURE | 0x80| RECEIVE_SHADOWS
+
+
+    // 10184 is default for vita
+        // MAX_PRIORITY | 0x40 | 0x80 | RECEIVE_SHADOWS | RECEIVE_SUN | RECEIVE_SPRITELIGHTS
+
+    // MAX_PRIORITY | RECEIVE_SHADOWS | RECEIVE_SUN
+
     public static final int TWO_SIDED = 0x1;
     public static final int FURRY = 0x2;
     public static final int WIRE = 0x4;
     public static final int MAX_PRIORITY = 0x8;
     public static final int SQUISHY = 0x10;
     public static final int NO_INSTANCE_TEXTURE = 0x20;
+    public static final int SPECULAR = 0x40;
+    public static final int NORMAL_MAP = 0x80 | 0x40;
     public static final int RECEIVE_SHADOWS = 0x100;
     public static final int RECEIVE_SUN = 0x200;
     public static final int RECEIVE_SPRITELIGHTS = 0x400;
     public static final int ALPHA_CLIP = 0x800; // If this flag is set in LBP2, if color_out.w ==
     // 0, the pixel will be discarded.
+
+
+    // da = Alphamode
 
     // 0x2000, some flag in LBP3, unknown usage (Only a few materials DONT have this set)
     // 0x8000, some flag in LBP3, unknown usage (related to toon shading)

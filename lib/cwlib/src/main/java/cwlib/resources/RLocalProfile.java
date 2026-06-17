@@ -769,6 +769,9 @@ public class RLocalProfile implements Resource
                             onlineBetaBootsSinceOnline =
                                 serializer.i32(onlineBetaBootsSinceOnline);
                         }
+
+                        if (revision.has(Branch.DOUBLE11, Revisions.D1_WAS_TRIAL))
+                            serializer.bool(false);
                     }
                 }
             }

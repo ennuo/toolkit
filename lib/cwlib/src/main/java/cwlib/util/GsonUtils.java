@@ -44,10 +44,18 @@ public final class GsonUtils
                     {
                         GsonRevision revision =
                             field.getAnnotation(GsonRevision.class);
-                        int head = (revision.lbp3()) ? REVISION.getSubVersion() :
-                            REVISION.getVersion();
 
-                        if (revision.branch() != -1 && REVISION.getBranchID() != revision.branch())
+                        int head = REVISION.getVersion();
+                        int branchId = REVISION.getBranchID();
+
+                        if (revision.lbp3()) head = REVISION.getSubVersion();
+                        if (revision.alear())
+                        {
+                            branchId = REVISION.getCustomBranchID();
+                            head = REVISION.getCustomVersion();
+                        }
+                        
+                        if (revision.branch() != -1 && branchId != revision.branch())
                             skip = true;
                         if (revision.max() != -1 && head > revision.max())
                             skip = true;
@@ -62,16 +70,23 @@ public final class GsonUtils
                         boolean anyTrue = false;
                         for (GsonRevision revision : revisions)
                         {
-                            int head = (revision.lbp3()) ?
-                                REVISION.getSubVersion() :
-                                REVISION.getVersion();
+                            int head = REVISION.getVersion();
+                            int branchId = REVISION.getBranchID();
+
+                            if (revision.lbp3()) head = REVISION.getSubVersion();
+
+                            if (revision.alear())
+                            {
+                                branchId = REVISION.getCustomBranchID();
+                                head = REVISION.getCustomVersion();
+                            }
 
                             boolean max =
                                 ((revision.max() == -1) || (revision.max() >= head));
                             boolean min =
                                 ((revision.min() == -1) || (revision.min() <= head));
                             boolean branch =
-                                ((revision.branch() == -1) || (revision.branch() == REVISION.getBranchID()));
+                                ((revision.branch() == -1) || (revision.branch() == branchId));
 
                             if (max && min && branch)
                             {

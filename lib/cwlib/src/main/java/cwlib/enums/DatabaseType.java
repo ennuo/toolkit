@@ -7,7 +7,7 @@ public enum DatabaseType
     BIGFART("Big Profile", "", false, true),
     SAVE("Profile Data", null, false, true),
     MOD("Mod", "mod", true, true);
-
+    
     /**
      * Whether or not this database type has entries
      * with GUIDs

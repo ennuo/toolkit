@@ -4,6 +4,7 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
+import cwlib.structs.things.components.RecordingPlayer;
 import cwlib.types.data.Revision;
 
 import org.joml.Vector3f;
@@ -133,6 +134,9 @@ public class PPhysicsTweak implements Serializable
 
     @GsonRevision(branch = 0x4c44, min = 0x55)
     public byte playerFilter;
+
+    @GsonRevision(min=0x3b9)
+    public RecordingPlayer recordingPlayer = new RecordingPlayer();
 
     @Override
     public void serialize(Serializer serializer)
@@ -266,19 +270,7 @@ public class PPhysicsTweak implements Serializable
         // move recording, again will figure out the fields later
         // RecordingPlayer
         if (version > 0x3b8 && configuration == 0xd)
-        {
-            serializer.resource(null, ResourceType.THING_RECORDING); // recording
-            serializer.f32(0); // playHead
-            if (version < 0x3c4) serializer.u8(0);
-            serializer.u8(0); // type
-            serializer.u8(0); // dir
-            serializer.v3(null); // prevDesiredPos
-            serializer.u8(0); // prevDesiredPosSet
-            serializer.m44(null); // startOrientation
-            serializer.f32(0); // speed
-            if (version > 0x3c4)
-                serializer.u8(0); // pathIsAbsolute
-        }
+            recordingPlayer = serializer.struct(recordingPlayer, RecordingPlayer.class);
 
         if (revision.isVita())
         {

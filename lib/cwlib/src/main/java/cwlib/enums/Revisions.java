@@ -638,7 +638,10 @@ public class Revisions
     public static final int D1_DETAILS_PROPORTIONAL = 0x7d; // add makeSizeProportional to
     // InventoryItemDetails
     public static final int D1_SLOT_REVISION = 0x80; // download revision added to slot
+    public static final int D1_WAS_TRIAL = 0x81; // added was trial to local profile
 
+    public static final int D1_CROSS_COMPATIBILITY_INFO = 0x86; // added hasseencrosscompatinfo to local profile
+    public static final int D1_CROSS_COMPATIBILITY_NOTIFICATION = 0x87; // added wants cross compat download notification
     public static final int D1_MAX = 0x87; // last revision for vita
 
     // LBP3 revisions
@@ -684,6 +687,20 @@ public class Revisions
     public static final int SLOT_ENFORCE_MINMAX = 0x215; // add enforceMinMaxPlayers to slot
 
     public static final int LBP3_MAX = 0x218;
+
+    // Alear br1 revisions
+
+    public static final int ALEAR_BR1 = 0x4C425031;
+    
+    public static final int ALEAR_POPIT_STYLES = 2;
+    public static final int ALEAR_HIDDEN_CATEGORIES = 3;
+    public static final int ALEAR_EMOTES = 4;
+    public static final int ALEAR_ANIMATION_STYLES = 5;
+    public static final int ALEAR_PARAMETER_ANIMATIONS = 6;
+    public static final int ALEAR_PINS = 7;
+    public static final int ALEAR_EXPLOSIVES = 8;
+
+    public static final int ALEAR_BR1_MAX = 8;
 
     // Toolkit revisions
 

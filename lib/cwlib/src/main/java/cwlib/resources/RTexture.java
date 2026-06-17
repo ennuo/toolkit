@@ -128,7 +128,29 @@ public class RTexture
         byte[] gtf = this.imageData;
         
         if (info.getFormat().isDXT())
+        {
             gtf = DDS.unswizzleGxtCompressed(info, this.imageData);
+        }
+        else
+        {
+            gtf = DDS.unswizzleGxt(info, this.imageData);
+            
+            // GXT internal formats are U8U8U8U8 rather than say U32
+            // so have to swap A8R8G8B8 for example
+            if (info.getFormat() == CellGcmEnumForGtf.A8R8G8B8)
+            {
+                for (int i = 0; i < gtf.length; i += 4)
+                {
+                    byte tmp = gtf[i];
+                    gtf[i] = gtf[i + 3];
+                    gtf[i + 3] = tmp;
+    
+                    tmp = gtf[i + 1];
+                    gtf[i + 1] = gtf[i + 2];
+                    gtf[i + 2] = tmp;
+                }
+            }
+        }
     
         byte[] DDS = new byte[gtf.length + header.length];
         System.arraycopy(header, 0, DDS, 0, header.length);

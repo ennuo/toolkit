@@ -7,6 +7,7 @@ import cwlib.singleton.ResourceSystem;
 import toolkit.windows.Toolkit;
 
 import java.awt.*;
+import toolkit.windows.CharmyBee;
 
 public class Launcher
 {
@@ -17,6 +18,7 @@ public class Launcher
         ResourceSystem.GUI_MODE = true;
         EventQueue.invokeLater(() ->
         {
+            // new CharmyBee().setVisible(true);
             new Toolkit().run(args).setVisible(true);
         });
     }

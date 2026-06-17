@@ -3,6 +3,7 @@ package cwlib.structs.things.parts;
 import org.joml.Vector3f;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
@@ -20,9 +21,11 @@ public class PMaterialOverride implements Serializable
     public ResourceDescriptor mesh;
 
     @GsonRevision(lbp3 = true, min = 0x15f)
+    @GsonRevision(alear = true)
     public int color;
 
     @GsonRevision(lbp3 = true, min = 0x191)
+    @GsonRevision(alear = true)
     public byte brightness;
 
     @Override

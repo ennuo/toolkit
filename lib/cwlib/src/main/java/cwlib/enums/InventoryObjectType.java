@@ -73,6 +73,11 @@ public enum InventoryObjectType
         this.flags = flags;
     }
 
+    public int getValue()
+    {
+        return value;
+    }
+    
     public static int getFlags(EnumSet<InventoryObjectType> set)
     {
         int flags = 0;

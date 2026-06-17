@@ -795,6 +795,11 @@ public class MemoryInputStream
         return this.compressionFlags;
     }
 
+    public final void setCompressionFlags(byte flags)
+    {
+        this.compressionFlags = flags;
+    }
+
     public void setLittleEndian(boolean value)
     {
         this.isLittleEndian = value;

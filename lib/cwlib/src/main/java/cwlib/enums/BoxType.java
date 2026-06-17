@@ -25,4 +25,20 @@ public class BoxType
     // 17, something with fur
     // 18 ???
     public static final int EXPONENT = 19;
+
+    public static final int BL_GENERIC = 128;
+    public static final int BL_MAPPING = 129;
+    public static final int BL_UV_MAP = 130;
+    public static final int BL_TEXTURE_SAMPLE = 131;
+    public static final int BL_MIX = 132;
+    public static final int BL_EXTENDED_INFO = 133;
+    public static final int BL_DATA_BLOB = 134;
+    public static final int BL_BLENDER_INFO = 135;
+    public static final int BL_INVERT_COLOR = 136;
+    public static final int BL_TEXTURE_COORDINATE = 137;
+    public static final int BL_SEPARATE_XYZ = 138;
+    public static final int BL_NORMAL_MAP = 139;
+    public static final int BL_VECTORMATH = 140;
+    public static final int BL_MATH = 141;
+    public static final int BL_VALUE = 142;
 }

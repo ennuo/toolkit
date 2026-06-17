@@ -104,12 +104,12 @@ public class Primitive implements Serializable
 
     public int getMinVert()
     {
-        return this.minVert;
+        return this.minVert & 0x7fffffff;
     }
 
     public int getMaxVert()
     {
-        return this.maxVert;
+        return this.maxVert & 0x7fffffff;
     }
 
     public int getFirstIndex()

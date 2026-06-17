@@ -1,6 +1,7 @@
 package cwlib.structs.mesh;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -15,11 +16,13 @@ public class SoftbodyCluster
 
     public static final int BASE_ALLOCATION_SIZE =
         MAX_CLUSTER_NAME_LENGTH + (QUAD_DYADIC_SUM_LENGTH * 0x4) + 0x60;
-
-    private String name;
-    private Vector4f restCenterOfMass;
-    private Matrix4f restDyadicSum;
+    
+    private String name = "";
+    private Vector4f restCenterOfMass = new Vector4f().zero();
+    private Matrix4f restDyadicSum = new Matrix4f().identity();
     private float[] restQuadraticDyadicSum = new float[QUAD_DYADIC_SUM_LENGTH];
+
+    public Vector3f TEMP3_BECAUSE_IM_LAZY = new Vector3f().zero();
 
     public SoftbodyCluster()
     {
@@ -27,6 +30,12 @@ public class SoftbodyCluster
         for (int i = 0; i < QUAD_DYADIC_SUM_LENGTH; ++i)
             if (i % 10 == 0)
                 this.restQuadraticDyadicSum[i] = 1.0f;
+    }
+
+    public SoftbodyCluster(String name)
+    {
+        super();
+        this.name = name;
     }
 
     public String getName()
@@ -37,6 +46,11 @@ public class SoftbodyCluster
     public Vector4f getRestCenterOfMass()
     {
         return this.restCenterOfMass;
+    }
+
+    public Vector3f getRestCenterOfMass3()
+    {
+        return new Vector3f(restCenterOfMass.x, restCenterOfMass.y, restCenterOfMass.z);
     }
 
     public Matrix4f getRestDyadicSum()

@@ -178,6 +178,51 @@ public class DDS
         return m;
     }
 
+    public static byte[] unswizzleGxt(CellGcmTexture texture, byte[] swizzled)
+    {
+        byte[] pixels = new byte[swizzled.length];
+
+        int pixelSize = texture.getFormat().getDepth();
+        int base = 0;
+
+        int w = texture.getWidth();
+        int h = texture.getHeight();
+
+        for (int i = 0; i < texture.getMipCount(); ++i)
+        {
+            int log2w = 1 << (31 - Integer.numberOfLeadingZeros(w + (w - 1)));
+            int log2h = 1 << (31 - Integer.numberOfLeadingZeros(h + (h - 1)));
+
+            int mx = getMortonNumber(log2w - 1, 0, log2w, log2h);
+            int my = getMortonNumber(0, log2h - 1, log2w, log2h);
+
+            int oy = 0, tgt = base;
+            for (int y = 0; y < h; ++y)
+            {
+                int ox = 0;
+                for (int x = 0; x < w; ++x)
+                {
+                    int offset = base + ((ox + oy) * pixelSize);
+                    System.arraycopy(swizzled, offset, pixels, tgt, pixelSize);
+                    tgt += pixelSize;
+                    ox = (ox - mx) & mx;
+                }
+                oy = (oy - my) & my;
+            }
+
+            base += w * h * pixelSize;
+
+            w >>>= 1;
+            h >>>= 1;
+
+            if (w == 0 && h == 0) break;
+            if (w == 0) w = 1;
+            if (h == 0) h = 1;
+        }
+        
+        return pixels;
+    }
+
     /**
      * Unswizzles compressed DXT1/5 pixel data for PSVita GXT textures.
      *

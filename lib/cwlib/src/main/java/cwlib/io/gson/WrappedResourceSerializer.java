@@ -9,6 +9,7 @@ import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
 import cwlib.types.data.WrappedResource;
+import cwlib.util.Bytes;
 import cwlib.util.GsonUtils;
 
 import java.lang.reflect.Type;
@@ -53,6 +54,24 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         if (head >= 0x297 || (head == 0x272 && (branchID == 0x4c44) && ((branchRevision & 0xffff) > 1)))
             compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+
+        if (object.has("alear") && !object.get("alear").isJsonNull())
+        {
+            JsonObject branch = object.get("alear").getAsJsonObject();
+
+            int customVersion = 1;
+            int customBranch = 0;
+
+            if (branch.has("id") && !branch.get("id").isJsonNull())
+            {
+                String text = branch.get("id").getAsString();
+                customBranch = Bytes.toMagic(text);
+            }
+
+            if (branch.has("revision")) customVersion = branch.get("revision").getAsInt();
+
+            revision.setCustomBranchDescription(customBranch, customVersion);
+        }
 
         resource.revision = revision;
         GsonUtils.REVISION = revision;
@@ -116,6 +135,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
             object.add("branch", branch);
         }
 
+        if (resource.revision.hasExtraData())
+        {
+            JsonObject branch = new JsonObject();
+            branch.add("id", new JsonPrimitive(Bytes.toMagic(resource.revision.getCustomBranchID())));
+            branch.add("revision", new JsonPrimitive(resource.revision.getCustomVersion()));
+            object.add("alear", branch);
+        }
+        
         object.add("type", jsc.serialize(resource.type));
 
         if (resource.type.equals(ResourceType.PLAN))

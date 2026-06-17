@@ -64,7 +64,7 @@ public class RPalette implements Resource
                 int count = serializer.getInput().i32();
                 convertedPlans = new ResourceDescriptor[count];
                 for (int i = 0; i < count; ++i)
-                    convertedPlans[i] = serializer.resource(null, ResourceType.PLAN);
+                    convertedPlans[i] = serializer.resource(null, ResourceType.PLAN, true);
             }
         }
     }

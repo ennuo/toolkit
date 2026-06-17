@@ -12,6 +12,8 @@ import cwlib.io.gson.GUIDSerializer;
 @JsonAdapter(GUIDSerializer.class)
 public final class GUID
 {
+    public static final int BYTES = Integer.BYTES;
+    
     /**
      * The serialized representation of a GUID is a uint32_t, so the
      * max value should be reflected as such.
@@ -26,6 +28,11 @@ public final class GUID
         this.value = value;
     }
 
+    public boolean isLocal()
+    {
+        return (value & 0x80000000L) != 0;
+    }
+    
     public long getValue()
     {
         return this.value;

@@ -16,20 +16,23 @@ public class StringLookupTable implements Serializable, Iterable<SortString>
     private int[] rawIndexToSortedIndex;
     private ArrayList<SortString> stringList = new ArrayList<>();
 
+    public void sort()
+    {
+        sortEnabled = true;
+        unsorted = false;
+        if (rawIndexToSortedIndex == null || rawIndexToSortedIndex.length != stringList.size())
+            rawIndexToSortedIndex = new int[stringList.size()];
+
+        Collections.sort(stringList, (a, z) -> a.string.compareTo(z.string));
+        for (int i = 0; i < stringList.size(); ++i)
+            rawIndexToSortedIndex[stringList.get(i).index] = i;
+    }
+
     @Override
     public void serialize(Serializer serializer)
     {
         // Let's make sure the indices are sorted.
-        if (serializer.isWriting())
-        {
-            sortEnabled = true;
-            unsorted = false;
-            rawIndexToSortedIndex = new int[stringList.size()];
-
-            Collections.sort(stringList, (a, z) -> a.string.compareTo(z.string));
-            for (int i = 0; i < stringList.size(); ++i)
-                rawIndexToSortedIndex[stringList.get(i).index] = i;
-        }
+        if (serializer.isWriting()) sort();
 
         unsorted = serializer.bool(unsorted);
         sortEnabled = serializer.bool(sortEnabled);
@@ -53,6 +56,17 @@ public class StringLookupTable implements Serializable, Iterable<SortString>
     public Iterator<SortString> iterator()
     {
         return this.stringList.iterator();
+    }
+
+    public int getSortedIndex(int i)
+    {
+        if (!sortEnabled) return i;
+        return rawIndexToSortedIndex[i];
+    }
+
+    public int size()
+    {
+        return stringList.size();
     }
 
     /**

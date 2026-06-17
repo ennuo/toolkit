@@ -54,7 +54,7 @@ public class RScript implements Resource
         if (version <= 0x1eb)
             throw new SerializationException("Inline script format not supported!");
 
-        if (version <= 0x33a)
+        if (version <= 0x360)
             serializer.resource(null, ResourceType.SCRIPT); // upToDateScript
 
         className = serializer.str(className);
@@ -278,7 +278,7 @@ public class RScript implements Resource
             }
         }
 
-        if (version >= 0x3e2)
+        if (version >= 0x30c)
         {
             if (serializer.isWriting())
             {

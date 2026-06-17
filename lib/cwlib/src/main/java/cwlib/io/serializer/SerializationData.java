@@ -15,13 +15,49 @@ import cwlib.types.data.Revision;
 public final class SerializationData
 {
     public byte[] buffer;
+    public byte[] extraBuffer;
     private final Revision revision;
     private final byte compressionFlags;
+    private final byte extraCompressionFlags;
     private final ResourceType type;
     private final SerializationType method;
     private final ResourceDescriptor[] dependencies;
     private final CellGcmTexture textureInfo;
     private final StaticMeshInfo staticMeshInfo;
+
+    /**
+     * Creates a serialization data structure with custom data.
+     *
+     * @param buffer           Buffer to be compressed
+     * @param extra            Additional data to be compressed
+     * @param revision         Revision of the serialized resource
+     * @param compressionFlags Compression flags used during resource serialization
+     * @param extraCompressionFlags Compression flags used during serialization of custom data.
+     * @param type             Type of resource
+     * @param method           Method of serialization
+     * @param dependencies     Resources this resource depends on
+     */
+    public SerializationData(
+        byte[] buffer,
+        byte[] extra,
+        Revision revision,
+        byte compressionFlags,
+        byte extraCompressionFlags,
+        ResourceType type,
+        SerializationType method,
+        ResourceDescriptor[] dependencies)
+    {
+        this.buffer = buffer;
+        this.extraBuffer = extra;
+        this.revision = revision;
+        this.compressionFlags = compressionFlags;
+        this.extraCompressionFlags = extraCompressionFlags;
+        this.type = type;
+        this.method = method;
+        this.dependencies = dependencies;
+        this.textureInfo = null;
+        this.staticMeshInfo = null;
+    }
 
 
     /**
@@ -43,8 +79,10 @@ public final class SerializationData
         ResourceDescriptor[] dependencies)
     {
         this.buffer = buffer;
+        this.extraBuffer = null;
         this.revision = revision;
         this.compressionFlags = compressionFlags;
+        this.extraCompressionFlags = 0;
         this.type = type;
         this.method = method;
         this.dependencies = dependencies;
@@ -60,8 +98,10 @@ public final class SerializationData
     public SerializationData(byte[] buffer)
     {
         this.buffer = buffer;
+        this.extraBuffer = null;
         this.revision = null;
         this.compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+        this.extraCompressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         this.type = ResourceType.TEXTURE;
         this.method = SerializationType.COMPRESSED_TEXTURE;
         this.dependencies = null;
@@ -78,8 +118,10 @@ public final class SerializationData
     public SerializationData(byte[] buffer, CellGcmTexture info)
     {
         this.buffer = buffer;
+        this.extraBuffer = null;
         this.revision = null;
         this.compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+        this.extraCompressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         this.type = ResourceType.GTF_TEXTURE;
         this.method = info.getMethod();
         this.dependencies = null;
@@ -97,8 +139,10 @@ public final class SerializationData
     public SerializationData(byte[] buffer, Revision revision, StaticMeshInfo info)
     {
         this.buffer = buffer;
+        this.extraBuffer = null;
         this.revision = revision;
         this.compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+        this.extraCompressionFlags = CompressionFlags.USE_NO_COMPRESSION;
         this.type = ResourceType.STATIC_MESH;
         this.method = SerializationType.BINARY;
 
@@ -120,6 +164,11 @@ public final class SerializationData
         return this.buffer;
     }
 
+    public byte[] getExtraBuffer()
+    {
+        return this.extraBuffer;
+    }
+
     public Revision getRevision()
     {
         return this.revision;
@@ -128,6 +177,11 @@ public final class SerializationData
     public byte getCompressionFlags()
     {
         return this.compressionFlags;
+    }
+
+    public byte getExtraCompressionFlags()
+    {
+        return this.extraCompressionFlags;
     }
 
     public ResourceType getType()
