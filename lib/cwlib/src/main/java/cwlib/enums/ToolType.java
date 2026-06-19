@@ -57,10 +57,25 @@ public enum ToolType implements ValueEnum<Byte>
     ADVENTURE_RESET(45),
     ADVENTURE_SAVE(46),
 
-    TOOL_SHAPE_SPIKE(53),
-    TOOL_SHAPE_DROWNED(54),
-    TOOL_SHAPE_CRUSH(55);
-
+    POPIT_GRADIENT(47),
+    MESH_CAPTURE(48),
+    EXPLOSION(49),
+    GENEALOGY(50),
+    METADATA(51),
+    EYEDROPPER(52),
+    SPIKE(53),
+    DROWNED(54),
+    CRUSH(55),
+    DOT_TO_DOT(56),
+    _CURSOR(57),
+    RANDOM_STICKER(58),
+    RANDOM_DECORATION(59),
+    RANDOM_MATERIAL(60),
+    RANDOM_OBJECT(61),
+    MORPH_RESET(62),
+    MORPH_SAVE(63),
+    MORPH_EDIT(64);
+    
     private final byte value;
 
     ToolType(int value)

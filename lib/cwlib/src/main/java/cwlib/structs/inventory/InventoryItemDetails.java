@@ -17,6 +17,7 @@ import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonResourceType;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
@@ -59,6 +60,7 @@ public class InventoryItemDetails implements Serializable
     @GsonRevision(min = 0x1b1)
     public CreationHistory creationHistory;
 
+    @GsonResourceType(ResourceType.TEXTURE)
     public ResourceDescriptor icon = new ResourceDescriptor(15525, ResourceType.TEXTURE);
 
     @GsonRevision(min = 0x17b)
@@ -410,11 +412,27 @@ public class InventoryItemDetails implements Serializable
         return size;
     }
 
+    public boolean hasAlearData()
+    {
+        return 
+            subcategory != 0 ||
+            loreKey != 0 ||
+            alearFlags != 0;
+    }
+
     public SHA1 generateHashCode(Revision revision)
     {
         // I wonder how slow this is...
         Serializer serializer = new Serializer(this.getAllocatedSize(), revision, (byte) 0);
         serializer.struct(this, InventoryItemDetails.class);
+        if (hasAlearData())
+        {
+            var stream = serializer.getOutput();
+            stream.u32(loreKey);
+            stream.u32(subcategory);
+            stream.u8(alearFlags);
+        }
+        
         return SHA1.fromBuffer(serializer.getBuffer());
     }
 

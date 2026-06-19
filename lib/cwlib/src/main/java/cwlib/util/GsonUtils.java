@@ -110,6 +110,7 @@ public final class GsonUtils
             .registerTypeAdapter(Vector3f.class, new Vector3fSerializer())
             .registerTypeAdapter(Vector4f.class, new Vector4fSerializer())
             .registerTypeAdapter(Matrix4f.class, new Matrix4fSerializer())
+            .registerTypeAdapter(byte[].class, new ByteArraySerializer())
             .create();
     }
 

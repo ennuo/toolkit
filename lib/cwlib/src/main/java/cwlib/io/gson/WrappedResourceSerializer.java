@@ -1,6 +1,8 @@
 package cwlib.io.gson;
 
 import com.google.gson.*;
+
+import cwlib.ConfigShared;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RLevel;
@@ -21,7 +23,10 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
     {
         @GsonRevision(lbp3 = true, min = 204)
         public boolean isUsedForStreaming;
+        
         public Thing[] things;
+        public byte[] thingData;
+
         @GsonRevision(min = 407)
         public InventoryItemDetails inventoryData;
     }
@@ -83,21 +88,29 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         {
             PlanWrapper wrapper = jdc.deserialize(object.get("resource"), PlanWrapper.class);
 
-            // Fixup any fields that may have been lost during serialization.
-            for (Thing thing : wrapper.things)
-            {
-                if (thing != null) 
-                    thing.fixup(revision);
-            }
-            
             RPlan plan = new RPlan();
 
             plan.revision = resource.revision;
             plan.compressionFlags = compressionFlags;
             plan.inventoryData = wrapper.inventoryData;
             plan.isUsedForStreaming = wrapper.isUsedForStreaming;
-            plan.setThings(wrapper.things);
 
+            if (wrapper.thingData != null)
+            {
+                plan.thingData = wrapper.thingData;
+            }
+            else
+            {
+                // Fixup any fields that may have been lost during serialization.
+                for (Thing thing : wrapper.things)
+                {
+                    if (thing != null) 
+                        thing.fixup(revision);
+                }
+
+                plan.setThings(wrapper.things);
+            }
+            
             resource.resource = plan;
 
             return resource;
@@ -150,7 +163,10 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
             PlanWrapper wrapper = new PlanWrapper();
             RPlan plan = (RPlan) resource.resource;
             wrapper.isUsedForStreaming = plan.isUsedForStreaming;
-            wrapper.things = plan.getThings();
+            if (ConfigShared.export().exportThingData)
+                wrapper.thingData = plan.thingData;
+            else
+                wrapper.things = plan.getThings();
             wrapper.inventoryData = plan.inventoryData;
             object.add("resource", jsc.serialize(wrapper));
         }

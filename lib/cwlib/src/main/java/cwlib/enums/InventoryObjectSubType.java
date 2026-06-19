@@ -28,6 +28,13 @@ public final class InventoryObjectSubType
     public static final int FULL_COSTUME = 0x80000000;
     public static final int MADE_BY_ANYONE = MADE_BY_ME | MADE_BY_OTHERS;
 
+    public static final int TOYS = 0x1;
+    public static final int POD_CONTROLLER = 0x1;
+    public static final int POD_MESH = 0x2;
+    public static final int ANIMATION_STYLE = 16384;
+    public static final int EMOTE = 32768;
+    public static final int MORPH = 65536;
+    
     public static String getTypeString(EnumSet<InventoryObjectType> type, int subType)
     {
         if (type.isEmpty()) return "NONE";
