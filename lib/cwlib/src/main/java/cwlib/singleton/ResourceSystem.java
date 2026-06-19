@@ -15,6 +15,7 @@ import cwlib.util.Nodes;
 import cwlib.types.SerializedResource;
 import cwlib.types.archives.Fart;
 import cwlib.types.data.ResourceInfo;
+import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileEntry;
 
 import java.io.File;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.swing.JTree;
@@ -40,6 +42,9 @@ public class ResourceSystem
     public static Runnable TriggerWorkSpaceUpdate;
     public static Supplier<Fart[]> GetSelectedCaches;
     public static Consumer<JTree> TreeSelectionListener;
+    public static Function<SHA1, byte[]> CustomExtractHash;
+    public static Function<SHA1, Boolean> CustomExists;
+    public static Supplier<Boolean> CustomCanExtract;
 
 
     public static class ResourceLogLevel
@@ -148,6 +153,9 @@ public class ResourceSystem
 
     public static boolean canExtract()
     {
+        if (CustomCanExtract != null && CustomCanExtract.get())
+            return true;
+
         FileData database = ResourceSystem.selectedDatabase;
         if (database == null) return false;
         DatabaseType type = database.getType();
@@ -218,6 +226,20 @@ public class ResourceSystem
         return null;
     }
 
+    public static boolean exists(SHA1 sha1)
+    {
+        for (Fart fart : ResourceSystem.getArchives())
+        {
+            if (fart.exists(sha1))
+                return true;
+        }
+
+        if (CustomExists != null)
+            return CustomExists.apply(sha1);
+
+        return false;
+    }
+
     public static byte[] extract(ResourceDescriptor descriptor)
     {
         if (descriptor == null) return null;
@@ -252,6 +274,9 @@ public class ResourceSystem
             byte[] data = fart.extract(hash);
             if (data != null) return data;
         }
+
+        if (CustomExtractHash != null)
+            return CustomExtractHash.apply(hash);
 
         return null;
     }
@@ -342,7 +367,7 @@ public class ResourceSystem
         return code;
     }
 
-    public static <T extends Serializable> T load(ResourceDescriptor descriptor, Class<T> clazz)
+    public static <T extends Resource> T load(ResourceDescriptor descriptor, Class<T> clazz)
     {
         byte[] resourceData = extract(descriptor);
         if (resourceData == null) return null;
@@ -394,12 +419,15 @@ public class ResourceSystem
     public static int getLoadedDatabase(File file)
     {
         if (file == null) return -1;
+
         for (int i = 0; i < ResourceSystem.databases.size(); ++i)
         {
             FileData database = ResourceSystem.databases.get(i);
+            if (database.getFile() == null) continue;
             if (database.getFile().equals(file))
                 return i;
         }
+
         return -1;
     }
 
@@ -419,10 +447,24 @@ public class ResourceSystem
     {
         if (database == null) return;
         JTree tree = database.getTree();
-        TreePath selectionPath = tree.getSelectionPath();
+
+        Nodes.cacheTreePaths(tree, (FileNode)tree.getModel().getRoot());
+
+        var selectionPath = tree.getSelectionPath();
+
         ((FileModel) tree.getModel()).reload();
-        tree.setSelectionPath(selectionPath);
-        tree.scrollPathToVisible(selectionPath);
+        
+        Nodes.restoreTreePaths(tree, (FileNode)tree.getModel().getRoot());
+        
+        if (selectionPath != null)
+        {
+            var node = (FileNode)selectionPath.getLastPathComponent();
+            if (node != null && node.isVisible())
+            {
+                tree.setSelectionPath(selectionPath);
+                tree.scrollPathToVisible(selectionPath);
+            }
+        }
     }
 
     public static void reloadSelectedModel()

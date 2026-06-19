@@ -19,7 +19,9 @@ import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Primitive;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.CostumePiece;
+import cwlib.structs.things.components.Decoration;
 import cwlib.structs.things.parts.PCostume;
+import cwlib.structs.things.parts.PDecorations;
 import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
@@ -215,12 +217,6 @@ public class MeshImporterCLI
             return;
         }
 
-        if (!isCostume && planFilePath != null)
-        {
-            System.out.println("Plan file outputs are only supported for costumes!");
-            return;
-        }
-
         if ((!config.categories.isEmpty() || !config.regionsIDsToHide.isEmpty()) && !isCostume)
         {
             System.out.println("No character skeleton type was specified, can't use regions/categories!");
@@ -251,63 +247,75 @@ public class MeshImporterCLI
 
         if (planFilePath != null)
         {
-            // Meshes by default are in Maya's coordinate system, this just rotates it into LBP's coordinate system, which is Y-Up
-            Matrix4f transform = new Matrix4f().identity().rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f), new Matrix4f());
             ResourceDescriptor descriptor = new ResourceDescriptor(SHA1.fromBuffer(resourceData), ResourceType.MESH);
-
-            // Build the costume piece bone hierarchy
-            ArrayList<Thing> things = new ArrayList<>();
-            int thingUIDCounter = 0;
-            Bone[] bones = mesh.getBones();
-            for (Bone bone : bones)
-            {
-                Thing thing = new Thing(++thingUIDCounter);
-                Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
-                thing.setPart(Part.POS, new PPos(null, bone.animHash, wpos));
-                things.add(thing);
-            }
-
-            // Fixup the parenting / positions
-            Thing root = things.get(0);
-            for (int i = 0; i < bones.length; ++i)
-            {
-                Bone bone = bones[i];
-                Thing thing = things.get(i);
-                PPos pos = thing.getPart(Part.POS);
-                pos.thingOfWhichIAmABone = root;
-
-                if (i != 0)
-                    thing.groupHead = root;
-                
-                if (bone.parent != -1)
-                {
-                    thing.parent = things.get(bone.parent);
-                    pos.recomputeLocalPos(thing);
-                }
-            }
-
-            root.setPart(Part.GROUP, new PGroup());
-            root.setPart(Part.RENDER_MESH, new PRenderMesh(descriptor, things.toArray(Thing[]::new)));
-
-            // Create the actual costume component
-            PCostume costume = new PCostume();
-            costume.mesh = descriptor;
-            costume.primitives = mesh.getPrimitives().toArray(Primitive[]::new);
-            
-            CostumePiece costumePiece = costume.costumePieces[primaryCostumePieceCategory.getIndex()];
-            costumePiece.mesh = descriptor;
-            costumePiece.categoriesUsed = mesh.getCostumeCategoriesUsed();
-            costumePiece.primitives = costume.primitives;
-
-            root.setPart(Part.COSTUME, costume);
 
             // Setup the inventory item details based on the import config
             InventoryItemDetails details = new InventoryItemDetails();
-            details.type = EnumSet.of(InventoryObjectType.COSTUME);
-            details.subType = mesh.getCostumeCategoriesUsed();
             details.creationHistory = new CreationHistory("MM_Studio");
             details.creator = new NetworkPlayerID("MM_Studio");
             details.userCreatedDetails = new UserCreatedDetails(inputFilePath.getName(), "");
+
+            Thing root;
+            ArrayList<Thing> things = new ArrayList<>();
+            if (isCostume)
+            {
+                // Meshes by default are in Maya's coordinate system, this just rotates it into LBP's coordinate system, which is Y-Up
+                Matrix4f transform = new Matrix4f().identity().rotate((float) Math.toRadians(-90.0f), new Vector3f(1.0f, 0.0f, 0.0f), new Matrix4f());
+
+                // Build the costume piece bone hierarchy
+                int thingUIDCounter = 0;
+                Bone[] bones = mesh.getBones();
+                for (Bone bone : bones)
+                {
+                    Thing thing = new Thing(++thingUIDCounter);
+                    Matrix4f wpos = transform.mul(bone.skinPoseMatrix, new Matrix4f());
+                    thing.setPart(Part.POS, new PPos(null, bone.animHash, wpos));
+                    things.add(thing);
+                }
+
+                // Fixup the parenting / positions
+                root = things.get(0);
+                for (int i = 0; i < bones.length; ++i)
+                {
+                    Bone bone = bones[i];
+                    Thing thing = things.get(i);
+                    PPos pos = thing.getPart(Part.POS);
+                    pos.thingOfWhichIAmABone = root;
+
+                    if (i != 0)
+                        thing.groupHead = root;
+                    
+                    if (bone.parent != -1)
+                    {
+                        thing.parent = things.get(bone.parent);
+                        pos.recomputeLocalPos(thing);
+                    }
+                }
+
+                root.setPart(Part.GROUP, new PGroup());
+                root.setPart(Part.RENDER_MESH, new PRenderMesh(descriptor, things.toArray(Thing[]::new)));
+
+                PCostume costume = new PCostume();
+                costume.mesh = descriptor;
+                costume.primitives = mesh.getPrimitives().toArray(Primitive[]::new);
+                
+                CostumePiece costumePiece = costume.costumePieces[primaryCostumePieceCategory.getIndex()];
+                costumePiece.mesh = descriptor;
+                costumePiece.categoriesUsed = mesh.getCostumeCategoriesUsed();
+                costumePiece.primitives = costume.primitives;
+
+                root.setPart(Part.COSTUME, costume);
+
+                details.type = EnumSet.of(InventoryObjectType.COSTUME);
+                details.subType = mesh.getCostumeCategoriesUsed();
+            }
+            else
+            {
+                root = new Thing(1);
+                root.setPart(Part.DECORATIONS, new PDecorations(new Decoration(descriptor)));
+                details.type = EnumSet.of(InventoryObjectType.DECORATION);
+                things.add(root);
+            }
 
             // Build the actual plan itself, use LAMS keys as the earliest revision,
             // just because tags are annoying, and Toolkit locks you to only editing tags if you don't change the revision.

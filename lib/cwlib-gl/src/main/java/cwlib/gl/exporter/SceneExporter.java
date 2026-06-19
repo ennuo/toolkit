@@ -3,6 +3,7 @@ package cwlib.gl.exporter;
 import cwlib.enums.*;
 import cwlib.gl.jobs.DecalBaker;
 import cwlib.gl.jobs.MaterialBaker;
+import cwlib.io.Resource;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.*;
 import cwlib.singleton.ResourceSystem;
@@ -21,6 +22,7 @@ import cwlib.types.archives.FileArchive;
 import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDB;
+import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.impl.v2.*;
@@ -387,7 +389,7 @@ public class SceneExporter
             material.addExtensions("KHR_materials_specular", spec);
         }
 
-        MaterialBox glow = gmat.getBoxConnectedToPort(output, BrdfPort.GLOW);
+        MaterialBox glow = gmat.getBoxConnectedToPort(output, BrdfPort.SELF_ILLUMINATION);
         if (glow != null)
         {
             material.setEmissiveFactor(new float[] { 1.0f, 1.0f, 1.0f });
@@ -425,7 +427,7 @@ public class SceneExporter
                 TextureInfo info = new TextureInfo();
                 System.out.println("Baking " + name + " glow texture");
                 byte[] png = new MaterialBaker(mesh, gmat, gfxMaterialDescriptor,
-                    materialTransform, BrdfPort.GLOW, 0).BakeToPNG();
+                    materialTransform, BrdfPort.SELF_ILLUMINATION, 0).BakeToPNG();
                 info.setIndex(registerTexture(name + "_baked.glow", png));
                 material.setEmissiveTexture(info);
             }
@@ -473,7 +475,7 @@ public class SceneExporter
 
 
         boolean isAlphaClip = ((gmat.flags & GfxMaterialFlags.ALPHA_CLIP) != 0);
-        boolean hasAlphaNode = gmat.getBoxConnectedToPort(output, BrdfPort.ALPHA_CLIP) != null;
+        boolean hasAlphaNode = gmat.getBoxConnectedToPort(output, BrdfPort.OPACITY) != null;
         boolean isAlphaBlend = gmat.alphaMode != 0;
 
         if (isAlphaBlend && !isAlphaClip) material.setAlphaMode(AlphaMode.BLEND);
@@ -634,7 +636,7 @@ public class SceneExporter
             material.addExtensions("KHR_materials_specular", spec);
         }
 
-        MaterialBox glow = gmat.getBoxConnectedToPort(output, BrdfPort.GLOW);
+        MaterialBox glow = gmat.getBoxConnectedToPort(output, BrdfPort.SELF_ILLUMINATION);
         if (glow != null)
         {
             material.setEmissiveFactor(new float[] { 1.0f, 1.0f, 1.0f });
@@ -673,7 +675,7 @@ public class SceneExporter
                 TextureInfo info = new TextureInfo();
                 System.out.println("Baking " + name + " glow texture");
                 byte[] png = new MaterialBaker(mesh, gmat, descriptor, materialTransform,
-                    BrdfPort.GLOW, 0).BakeToPNG();
+                    BrdfPort.SELF_ILLUMINATION, 0).BakeToPNG();
                 info.setIndex(registerTexture(name + "_baked.glow", png));
                 material.setEmissiveTexture(info);
             }
@@ -1547,5 +1549,49 @@ public class SceneExporter
     {
         public float[] specularColorFactor;
         public TextureInfo specularColorTexture;
+    }
+
+    public static void main(String[] args) 
+    {
+        ResourceSystem.GUI_MODE = false;
+
+        FileDB database = new FileDB("E:\\emu\\rpcs3\\dev_hdd0\\game\\LBP1DEBUG\\USRDIR\\gamedata\\alear\\sync\\alrs.map");
+
+        ResourceSystem.getDatabases().add(database);
+        ResourceSystem.getDatabases().add(new FileDB("E:\\emu\\rpcs3\\dev_hdd0\\game\\LBP1DEBUG\\USRDIR\\output\\brg_patch.map"));
+        ResourceSystem.getDatabases().add(new FileDB("E:\\emu\\rpcs3\\dev_hdd0\\game\\LBP1DEBUG\\USRDIR\\output\\blurayguids.map"));
+        ResourceSystem.getArchives().add(new FileArchive("E:\\\\emu\\\\rpcs3\\\\dev_hdd0\\\\game\\\\LBP1DEBUG\\\\USRDIR\\\\gamedata\\\\alear\\\\sync\\\\alrs.farc"));
+        ResourceSystem.getArchives().add(new FileArchive("E:\\\\emu\\\\rpcs3\\\\dev_hdd0\\\\game\\\\LBP1DEBUG\\\\USRDIR\\\\data.farc"));
+
+        List<String> fails = new ArrayList<>();
+
+        for (FileDBRow row : database)
+        {
+            if (!row.getPath().endsWith(".plan")) continue;
+            RPlan plan = ResourceSystem.load(new ResourceDescriptor(row.getGUID(), ResourceType.PLAN), RPlan.class);
+            if (plan == null) continue;
+            if (!plan.inventoryData.type.contains(InventoryObjectType.BACKGROUND)) continue;
+            
+            try
+            {
+                SceneExporter exporter = new SceneExporter();
+                exporter.registerPlan(plan);
+                exporter.export("C:/Users/Aidan/Desktop/out/" + row.getName().replace(".plan", ".glb"));
+            }
+            catch (Exception ex)
+            {
+                fails.add(row.getPath());
+                continue;
+            }
+        }
+
+        System.out.println("done");
+        System.out.println("fails:");
+        for (String fail : fails)
+            System.out.println("\t" + fail);
+
+
+
+
     }
 }

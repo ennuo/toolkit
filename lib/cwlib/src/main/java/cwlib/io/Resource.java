@@ -1,6 +1,7 @@
 package cwlib.io;
 
 import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
 import cwlib.types.data.Revision;
 
 /**
@@ -18,6 +19,20 @@ public interface Resource extends Serializable
      * @return Serialization data
      */
     SerializationData build(Revision revision, byte compressionFlags);
+
+    /**
+     * Serializes custom data for use in Alear patched versions of LittleBigPlanet.
+     * @param serializer Serializer instance
+     */
+    default void serializeExtraData(Serializer serializer)
+    {
+        // I know it's bad practice, but I'm definitely not adding this to everything.
+    }
+
+    default int getExtraDataAllocatedSize()
+    {
+        return 0;
+    }
 
     /**
      * Performs necessary fixes to a resource after serializing is finished.

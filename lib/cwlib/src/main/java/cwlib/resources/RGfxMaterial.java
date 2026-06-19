@@ -2,7 +2,9 @@ package cwlib.resources;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
@@ -27,7 +29,9 @@ import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import cwlib.util.Bytes;
 import cwlib.enums.BrdfPort;
+import cwlib.enums.CompressionFlags;
 
 /**
  * Resource that controls how meshes get rendered,
@@ -39,8 +43,8 @@ public class RGfxMaterial implements Resource
     public static final int BASE_ALLOCATION_SIZE = 0x250;
     public static final int MAX_TEXTURES = 8;
     public static final int MAX_WRAPS = 8;
-    public static final int UV_OFFSETS = 0x10;
-    public static final int UV_SCALES = 0x8;
+    public static final int UV_OFFSETS = 2;
+    public static final int UV_SCALES = 4;
     public static final int PERF_DATA = 0x2;
 
     public static final Vector4f SPECULAR_COLOR = new Vector4f(0.09f, 0.09f, 0.09f, 1.0f);
@@ -53,6 +57,7 @@ public class RGfxMaterial implements Resource
     public ShadowCastMode shadowCastMode = ShadowCastMode.ON;
     public float bumpLevel = 0.2f, cosinePower = 1.0f;
     public float reflectionBlur = 1.0f, refractiveIndex = 0.01f;
+    public transient boolean forceGenerateAsGlassy = false;
 
     public float refractiveFresnelFalloffPower = 1.0f;
     public float refractiveFresnelMultiplier = 1.0f;
@@ -72,6 +77,7 @@ public class RGfxMaterial implements Resource
 
     public byte[][] shaders;
     public byte[] code;
+    public byte[] blob;
 
     public ResourceDescriptor[] textures = new ResourceDescriptor[MAX_TEXTURES];
 
@@ -88,14 +94,18 @@ public class RGfxMaterial implements Resource
 
     /* PS Vita specific fields */
 
-    public float[] uvOffsets = new float[UV_OFFSETS];
-    public float[] uvScales = new float[UV_SCALES];
+
+    public Vector4f[] uvScales = new Vector4f[UV_SCALES];
+    public Vector4f[] uvOffsets = new Vector4f[UV_OFFSETS];
 
     public byte[] cycleCount = new byte[PERF_DATA];
     public byte[] conditionalTexLookups = new byte[PERF_DATA];
     public byte[] unconditionalTexLookups = new byte[PERF_DATA];
     public byte[] nonDependentTexLookups = new byte[PERF_DATA];
 
+    public transient boolean useVitaShaderSource = false;
+    public transient String sourceShaderName = null;
+    
     public RGfxMaterial()
     {
         this.wrapS = new TextureWrap[MAX_TEXTURES];
@@ -105,8 +115,82 @@ public class RGfxMaterial implements Resource
             this.wrapS[i] = TextureWrap.WRAP;
             this.wrapT[i] = TextureWrap.WRAP;
         }
+
+        for (int i = 0; i < UV_OFFSETS; ++i)
+            this.uvOffsets[i] = new Vector4f(0.0f);
+        for (int i = 0; i < UV_SCALES; ++i)
+            this.uvScales[i] = new Vector4f(0.0f);
+        this.uvScales[0] = new Vector4f(1.0f, 1.0f, 0.0f, 0.0f);
+
+        // specular sets to ???
+        // this.uvScales[0] = new Vector4f(1.0f);
+
     }
 
+    public boolean isBlenderMaterial()
+    {
+        for (var box : boxes)
+        {
+            if (box.type == BoxType.BL_EXTENDED_INFO)
+                return true;
+        }
+
+        return false;
+    }
+
+    public MaterialBox getExtendedInfo()
+    {
+        for (var box : boxes)
+        {
+            if (box.type == BoxType.BL_EXTENDED_INFO)
+                return box;
+        }
+
+        return null;
+    }
+
+    public MaterialBox getBlenderInfo()
+    {
+        for (var box : boxes)
+        {
+            if (box.type == BoxType.BL_BLENDER_INFO)
+                return box;
+        }
+
+        return null;
+    }
+
+    public byte[] getExtendedBinaryBlob()
+    {
+        return blob;
+    }
+
+    public Vector3f getFloat3(int offset)
+    {
+        return new Vector3f(
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 0)),
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 4)),
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 8))
+        );
+    }
+
+    public Vector4f getFloat4(int offset)
+    {
+        return new Vector4f(
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 0)),
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 4)),
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 8)),
+            Float.intBitsToFloat(Bytes.toIntegerBE(blob, offset + 12))
+        );
+    }
+
+    public String getString(int offset)
+    {
+        int end = offset;
+        while (blob[end] != 0) end++;
+        return new String(blob, offset, end - offset);
+    }
+    
     @Override
     public void serialize(Serializer serializer)
     {
@@ -152,14 +236,17 @@ public class RGfxMaterial implements Resource
 
         boolean serializeCode = !revision.isToolkit() || revision.before(Branch.MIZUKI,
             Revisions.MZ_REMOVE_GFX_CODE);
+        
         int sourceOffsets = getBlobOffsetCount(revision);
+        int shaderCount = getShaderCount(revision);
+
         if (serializer.isWriting())
         {
             if (serializeCode)
             {
                 MemoryOutputStream stream = serializer.getOutput();
                 int offset = 0;
-                for (int i = 0; i < sourceOffsets; ++i)
+                for (int i = 0; i < shaderCount; ++i)
                 {
                     byte[] shader = shaders[i];
                     if (version >= 0x34f)
@@ -168,13 +255,22 @@ public class RGfxMaterial implements Resource
                     if (version < 0x34f)
                         offset += shader.length;
                 }
+
+                for (int i = shaderCount; i < sourceOffsets; ++i)
+                    stream.i32(-1);
+
                 if (this.code != null) offset += this.code.length;
+                if (this.blob != null) offset += this.blob.length;
+
                 stream.i32(offset);
-                for (int i = 0; i < sourceOffsets; ++i)
+                for (int i = 0; i < shaderCount; ++i)
                     stream.bytes(shaders[i]);
                 if (this.code != null)
                     stream.bytes(this.code);
+                if (this.blob != null)
+                    stream.bytes(blob);
             }
+
             for (int i = 0; i < MAX_TEXTURES; ++i)
                 serializer.resource(textures[i], ResourceType.TEXTURE);
         }
@@ -187,42 +283,38 @@ public class RGfxMaterial implements Resource
                 for (int i = 0; i < sourceOffsets; ++i)
                     blobOffsets[i] = stream.i32();
 
-                byte[] code = stream.bytearray();
-
-                if (!revision.isVita())
+                byte[] ps3BinaryCode = stream.bytearray();
+                
+                shaders = new byte[shaderCount][];
+                if (version < 0x34f)
                 {
-                    shaders = new byte[sourceOffsets][];
-                    if (version < 0x34f)
-                    {
-                        for (int i = 1; i < sourceOffsets; ++i)
-                            shaders[i - 1] = Arrays.copyOfRange(code,
-                                blobOffsets[i - 1],
-                                blobOffsets[i]);
-                        shaders[sourceOffsets - 1] = Arrays.copyOfRange(code,
-                            blobOffsets[sourceOffsets - 1], code.length);
-                    }
-                    else
-                    {
-                        int offset = 0;
-
-                        for (int i = 0; i < sourceOffsets; ++i)
-                        {
-                            shaders[i] = Arrays.copyOfRange(code,
-                                offset % code.length,
-                                blobOffsets[i]);
-                            offset += shaders[i].length;
-                        }
-
-                        if (offset != code.length)
-                            this.code = Arrays.copyOfRange(code, offset, code.length);
-                    }
+                    for (int i = 1; i < sourceOffsets; ++i)
+                        shaders[i - 1] = Arrays.copyOfRange(ps3BinaryCode,
+                            blobOffsets[i - 1],
+                            blobOffsets[i]);
+                    shaders[sourceOffsets - 1] = Arrays.copyOfRange(ps3BinaryCode,
+                        blobOffsets[sourceOffsets - 1], ps3BinaryCode.length);
                 }
                 else
                 {
-                    shaders = new byte[4][];
-                    for (int i = 0; i < 4; i++)
-                        shaders[i] = new byte[0x500];
+                    int offset = 0;
+
+                    for (int i = 0; i < shaderCount; ++i)
+                    {
+                        shaders[i] = Arrays.copyOfRange(ps3BinaryCode,
+                            offset % ps3BinaryCode.length,
+                            blobOffsets[i]);
+                        offset += shaders[i].length;
+                    }
+                    
+                    if (!revision.isLBP1() && !revision.isVita())
+                    {
+                        if (offset != ps3BinaryCode.length)
+                            this.code = Arrays.copyOfRange(ps3BinaryCode, offset, ps3BinaryCode.length);
+                    }
+                    else this.code = null;
                 }
+
             }
 
             textures = new ResourceDescriptor[MAX_TEXTURES];
@@ -244,10 +336,41 @@ public class RGfxMaterial implements Resource
 
         if (revision.has(Branch.DOUBLE11, Revisions.D1_UV_OFFSCALE))
         {
-            for (int i = 0; i < UV_OFFSETS; ++i)
-                uvOffsets[i] = serializer.f16(uvOffsets[i]);
-            for (int i = 0; i < UV_SCALES; ++i)
-                uvScales[i] = serializer.f16(uvScales[i]);
+            if (serializer.isWriting())
+            {
+
+                // uv0 uses uvscale[0] and 
+                // uv1 uses uvscale[1]
+
+
+
+
+                var stream = serializer.getOutput();
+                for (int i = 0; i < UV_SCALES; ++i)
+                {
+                    stream.f16(uvScales[i].x);
+                    stream.f16(uvScales[i].y);
+                    stream.f16(uvScales[i].z);
+                    stream.f16(uvScales[i].w);
+                }
+
+                for (int i = 0; i < UV_OFFSETS; ++i)
+                {
+                    stream.f16(uvOffsets[i].x);
+                    stream.f16(uvOffsets[i].y);
+                    stream.f16(uvOffsets[i].z);
+                    stream.f16(uvOffsets[i].w);
+                }
+
+            }
+            else
+            {
+                var stream = serializer.getInput();
+                for (int i = 0; i < UV_SCALES; ++i)
+                    uvScales[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), stream.f16());
+                for (int i = 0; i < UV_OFFSETS; ++i)
+                    uvOffsets[i] = new Vector4f(stream.f16(), stream.f16(), stream.f16(), stream.f16());
+            }
         }
 
         if (revision.has(Branch.DOUBLE11, Revisions.D1_PERFDATA))
@@ -264,6 +387,29 @@ public class RGfxMaterial implements Resource
             nonDependentTexLookups[0] = serializer.i8(nonDependentTexLookups[0]);
             nonDependentTexLookups[1] = serializer.i8(nonDependentTexLookups[1]);
         }
+
+        // dumb hack, traditionally the extended data blob as i wrote it will always be at the end of the code buffer,
+        // so pull the size of it, then just slice from the end of either the last shader or the code blob depending on the revision
+        var box = getExtendedInfo();
+        if (box != null)
+        {
+            int size = box.getParameters()[4];
+            if (size == 0) return;
+
+            if (version < 0x34f)
+            {
+                byte[] shader = shaders[shaders.length - 1];
+                blob = Arrays.copyOfRange(shader, shader.length - size, shader.length);
+                shaders[shaders.length - 1] = Arrays.copyOf(shader, shader.length - size);
+            }
+            else if (code != null)
+            {
+                blob = Arrays.copyOfRange(code, code.length - size, code.length);
+                code = Arrays.copyOf(code, code.length - size);
+            }
+        }
+
+
     }
 
     @Override
@@ -287,20 +433,95 @@ public class RGfxMaterial implements Resource
         return size;
     }
 
+    @Override 
+    public void serializeExtraData(Serializer serializer)
+    {
+        if (serializer.getRevision().getCustomVersion() < Revisions.ALEAR_PARAMETER_ANIMATIONS) return;
+
+        alphaMode = serializer.i8(alphaMode);
+        parameterAnimations = serializer.array(parameterAnimations,
+        MaterialParameterAnimation.class);
+
+        if (serializer.isWriting())
+        {
+            MemoryOutputStream stream = serializer.getOutput();
+            stream.i32(boxes.size());
+            for (MaterialBox box : boxes)
+            {
+                stream.i32(box.subType);
+                stream.u16(getParameterAnimationIndex(box.anim.getName()));
+                stream.u16(getParameterAnimationIndex(box.anim2.getName()));
+                stream.i32(box.getParameters()[6]);
+                stream.i32(box.getParameters()[7]);
+            }
+        }
+        else
+        {
+            MemoryInputStream stream = serializer.getInput();
+            int len = stream.i32();
+            for (int i = 0; i < len; ++i)
+            {
+                MaterialBox box = boxes.get(i);
+                box.subType = stream.i32();
+                
+                int animIndex = stream.i16();
+                int secondaryAnimIndex = stream.i16();
+
+                if (animIndex != -1) box.anim = parameterAnimations[animIndex];
+                if (secondaryAnimIndex != -1) box.anim2 = parameterAnimations[secondaryAnimIndex];
+
+                box.getParameters()[6] = stream.i32();
+                box.getParameters()[7] = stream.i32();
+            }
+        }
+
+    }
+
     @Override
     public SerializationData build(Revision revision, byte compressionFlags)
     {
-        Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
+        int prealloc = this.getAllocatedSize();
+        Serializer serializer = new Serializer(prealloc, revision,
             compressionFlags);
         serializer.struct(this, RGfxMaterial.class);
+
+        byte extraCompressionFlags = (byte)(compressionFlags & ~(CompressionFlags.USE_COMPRESSED_VECTORS | CompressionFlags.USE_COMPRESSED_MATRICES));
+        byte[] extraData = null;
+
+        if (revision.getCustomVersion() >= Revisions.ALEAR_PARAMETER_ANIMATIONS)
+        {
+            Serializer extraSerializer = new Serializer(prealloc, revision, extraCompressionFlags);
+            serializeExtraData(extraSerializer);
+            extraData = extraSerializer.getBuffer();
+        }
+
         return new SerializationData(
             serializer.getBuffer(),
+            extraData,
             revision,
             compressionFlags,
+            extraCompressionFlags,
             ResourceType.GFX_MATERIAL,
             SerializationType.BINARY,
             serializer.getDependencies()
         );
+    }
+
+    public int getShaderCount(Revision revision)
+    {
+        int shaderCount = getBlobOffsetCount(revision);
+        if (revision.isVita())
+        {
+            shaderCount = 6;
+            if (alphaMode == 0) 
+                shaderCount = 12;
+            if ((flags & 0x10000) != 0)
+                shaderCount *= 2;
+            if ((flags & 0x4000) != 0)
+                shaderCount = 1;
+        }
+
+        return shaderCount;
     }
 
     /**
@@ -312,6 +533,7 @@ public class RGfxMaterial implements Resource
     public int getBlobOffsetCount(Revision revision)
     {
         int head = revision.getVersion();
+        
         int sourceOffsets = 0xC;
         if ((this.flags & 0x10000) != 0)
             sourceOffsets = 0x18;
@@ -411,6 +633,17 @@ public class RGfxMaterial implements Resource
         return null;
     }
 
+    public boolean hasWiredInputs(int box)
+    {
+        for (var wire : wires)
+        {
+            if (wire.boxTo == box)
+                return true;
+        }
+
+        return false;
+    }
+
     public MaterialBox getBoxFrom(MaterialWire wire)
     {
         return this.boxes.get(wire.boxFrom);
@@ -419,6 +652,33 @@ public class RGfxMaterial implements Resource
     public MaterialBox getBoxTo(MaterialWire wire)
     {
         return this.boxes.get(wire.boxTo);
+    }
+
+    public int getParameterAnimationIndex(String name)
+    {
+        if (name == null || name.isEmpty() || name.charAt(0) == '\0') return -1;
+        for (int i = 0; i < parameterAnimations.length; ++i)
+        {
+            if (name.equals(parameterAnimations[i].getName()))
+                return i;
+        }
+
+        return -1;
+    }
+
+    public boolean shouldSaveCustomData()
+    {
+        if (parameterAnimations != null && parameterAnimations.length != 0) return true;
+        if (alphaMode != 0) return true;
+
+        for (MaterialBox box : boxes)
+        {
+            if (box.subType != 0) return true;
+            int[] params = box.getParameters();
+            if (params[6] != 0 || params[7] != 0) return true;
+        }
+        
+        return false;
     }
 
     public static RGfxMaterial getBumpLayout(
@@ -447,7 +707,7 @@ public class RGfxMaterial implements Resource
             gfx.flags |= GfxMaterialFlags.TWO_SIDED;
 
         if (alphaClip)
-            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.ALPHA_CLIP));
+            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.OPACITY));
 
         return gfx;
     }
@@ -469,8 +729,47 @@ public class RGfxMaterial implements Resource
             gfx.flags |= GfxMaterialFlags.TWO_SIDED;
 
         if (alphaClip)
-            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.ALPHA_CLIP));
+            gfx.wires.add(new MaterialWire(1, 0, 0, BrdfPort.OPACITY));
 
         return gfx;
+    }
+
+    private void removeOrphanedBoxes()
+    {
+
+    }
+
+    public void removePort(int port)
+    {
+        int output = getOutputBox();
+        
+        
+        var box = getBoxConnectedToPort(output, port);
+        int index = boxes.indexOf(box);
+
+        for (var wire : wires)
+        {
+            if (wire.boxFrom == index && wire.boxTo == output && wire.portTo == port)
+            {
+                wires.remove(wire);
+                break;
+            }
+        }
+    }
+
+    public void pruneSamplers()
+    {
+        HashSet<Integer> samplers = new HashSet<>();
+        for (var box : boxes)
+        {
+            if (box.type == BoxType.TEXTURE_SAMPLE)
+                samplers.add(box.getParameters()[MaterialBox.TEXTURE_SAMPLE_INDEX]);
+        }
+
+        for (int i = 0; i < MAX_TEXTURES; ++i)
+        {
+            if (samplers.contains(i)) continue;
+            textures[i] = null;
+        }
     }
 }

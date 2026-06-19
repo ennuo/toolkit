@@ -3,13 +3,16 @@ package cwlib.resources;
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.CollideType;
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Resource;
 import cwlib.io.gson.AudioMaterialSerializer;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
@@ -18,7 +21,7 @@ import cwlib.types.data.Revision;
  */
 public class RMaterial implements Resource
 {
-    public static final int BASE_ALLOCATION_SIZE = 0x60;
+    public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public float traction = 1.0f, density = 20.0f;
     @GsonRevision(max = 0x13b)
@@ -61,6 +64,9 @@ public class RMaterial implements Resource
     public boolean bullet;
     @GsonRevision(min = 0x27b)
     public boolean circuitBoard, disableCSG;
+
+    @GsonRevision(alear = true, min = Revisions.ALEAR_EXPLOSIVES)
+    public int explosionType;
 
     @Override
     public void serialize(Serializer serializer)
@@ -156,9 +162,22 @@ public class RMaterial implements Resource
     }
 
     @Override
+    public void serializeExtraData(Serializer serializer)
+    {
+        if (serializer.getRevision().getCustomVersion() < Revisions.ALEAR_EXPLOSIVES) return;
+        explosionType = serializer.i32(explosionType);
+    }
+    
+    @Override
     public int getAllocatedSize()
     {
         return BASE_ALLOCATION_SIZE;
+    }
+
+    @Override
+    public int getExtraDataAllocatedSize()
+    {
+        return 0x10;
     }
 
     @Override
@@ -167,10 +186,23 @@ public class RMaterial implements Resource
         Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
             compressionFlags);
         serializer.struct(this, RMaterial.class);
+
+        byte extraCompressionFlags = (byte)(compressionFlags & ~(CompressionFlags.USE_COMPRESSED_VECTORS | CompressionFlags.USE_COMPRESSED_MATRICES));
+        byte[] extraData = null;
+        if (revision.getCustomVersion() >= Revisions.ALEAR_EXPLOSIVES)
+        {
+            Serializer extraSerializer = new Serializer(getExtraDataAllocatedSize(), revision, extraCompressionFlags);
+            serializeExtraData(extraSerializer);
+            extraData = extraSerializer.getBuffer();
+            serializer.addDependencies(extraSerializer);
+        }
+        
         return new SerializationData(
             serializer.getBuffer(),
+            extraData,
             revision,
             compressionFlags,
+            extraCompressionFlags,
             ResourceType.MATERIAL,
             SerializationType.BINARY,
             serializer.getDependencies()

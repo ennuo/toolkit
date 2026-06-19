@@ -34,7 +34,7 @@ public class SaveArchive extends Fart
     /**
      * Local user index that owns this save.
      */
-    private int localUserID;
+    public int localUserID;
 
     /**
      * Key used for keeping track of the
@@ -288,12 +288,12 @@ public class SaveArchive extends Fart
         }
 
         keyStream.i32(this.localUserID);
-        keyStream.pad(0x4 * 0xa); // deprecated1 int[10]
+        keyStream.clear(0x4 * 0xa); // deprecated1 int[10]
         keyStream.i32(this.key.getCopied() ? 1 : 0);
         keyStream.i32(this.key.getRootType().getValue());
-        keyStream.pad(0x4 * 0x3); // deprecated2 int[3]
+        keyStream.clear(0x4 * 0x3); // deprecated2 int[3]
         keyStream.sha1(this.key.getRootHash());
-        keyStream.pad(0x4 * 0xa); // deprecated3 int[10]
+        keyStream.clear(0x4 * 0xa); // deprecated3 int[10]
 
         return keyStream.getBuffer();
     }
@@ -404,7 +404,7 @@ public class SaveArchive extends Fart
         for (byte[] buffer : buffers)
             stream.bytes(buffer);
 
-        stream.pad(pad);
+        stream.clear(pad);
 
         stream.bytes(saveKey);
         int fatOffset = stream.getOffset();
@@ -414,7 +414,7 @@ public class SaveArchive extends Fart
         if (this.archiveRevision > 2)
         {
             // Pad out the hashinate, we need to actually generate it.
-            stream.pad(0x14);
+            stream.clear(0x14);
         }
 
         if (this.archiveRevision == 5)

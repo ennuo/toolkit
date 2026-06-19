@@ -142,7 +142,7 @@ public class ResourceInfo
                     this.getCompressionFlags()));
             if (this.type != ResourceType.STATIC_MESH)
             {
-                Class<? extends Serializable> clazz = this.type.getCompressable();
+                Class<? extends Resource> clazz = this.type.getCompressable();
                 if (clazz != null)
                 {
                     try { this.resource = resource.loadResource(clazz); }

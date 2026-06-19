@@ -17,16 +17,22 @@ public class Config
         "config.json");
     public static Config instance;
 
+    public static PusherSettings pusher() { return instance.pusher; }
+    public static SyncSettings sync() { return instance.sync; }
+
+    public PusherSettings pusher = new PusherSettings();
+    public SyncSettings sync = new SyncSettings();
+
     public List<Profile> profiles = new ArrayList<>();
     public int currentProfile = 0;
-
     public boolean isDebug = false;
-    public String ps3IpAddress = "127.0.0.1";
     public boolean useLegacyFileDialogue = !CwlibConfiguration.IS_WINDOWS;
     public boolean displayWarningOnDeletingEntry = true;
     public boolean displayWarningOnZeroEntry = true;
     public boolean addToArchiveOnCopy = true;
     public boolean enable3D = false;
+
+
 
     public static Profile newProfile()
     {

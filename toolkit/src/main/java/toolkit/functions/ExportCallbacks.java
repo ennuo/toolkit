@@ -24,6 +24,7 @@ import cwlib.util.Bytes;
 import cwlib.util.FileIO;
 import cwlib.util.Resources;
 import cwlib.util.Strings;
+import cwlib.util.gfx.GfxAssembler;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.SlowOp;
 import toolkit.windows.Toolkit;
@@ -55,6 +56,25 @@ public class ExportCallbacks
 
         if (file != null)
             MeshExporter.OBJ.export(file.getAbsolutePath(), info.getResource(), channel);
+    }
+    
+    public static void dumpShaderBinaries(ActionEvent event)
+    {
+        FileNode node = ResourceSystem.getSelected();
+        ResourceInfo info = node.getEntry().getInfo();
+        if (info == null || info.getResource() == null) return;
+
+        String folder = FileChooser.openDirectory();
+        if (folder == null) return;
+
+        RGfxMaterial gmat = info.getResource();
+
+        var root = new File(folder, Strings.getWithoutExtension(node.getName()));
+        for (int i = 0; i < gmat.shaders.length; ++i)
+            FileIO.write(gmat.shaders[i], String.format("%s/shader%d", root.getAbsolutePath(), i));
+        
+        if (gmat.code != null && gmat.code.length != 0)
+            FileIO.write(gmat.code, new File(root, "sharedcode").getAbsolutePath());
     }
 
     public static void exportDecalMaps(ActionEvent e)

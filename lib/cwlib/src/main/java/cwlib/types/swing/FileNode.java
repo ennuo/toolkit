@@ -1,6 +1,10 @@
 package cwlib.types.swing;
 
+import cwlib.types.data.GUID;
+import cwlib.types.databases.FileDB;
+import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.mods.Mod;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -27,6 +31,7 @@ public class FileNode extends DefaultMutableTreeNode
      * Whether or not the node is currently visible in the tree.
      */
     private boolean visible = true;
+    public boolean wasOpen = false;
 
     public FileNode(String name, String path, FileEntry entry, FileData source)
     {
@@ -79,6 +84,70 @@ public class FileNode extends DefaultMutableTreeNode
                 count++;
         }
         return count;
+    }
+
+    private static int sortByPath(TreeNode a, TreeNode z)
+    {
+        FileNode nodeA = (FileNode)a;
+        FileNode nodeB = (FileNode)z;
+
+        boolean aIsFolder = nodeA.entry == null;
+        boolean bIsFolder = nodeB.entry == null;
+
+        if (aIsFolder != bIsFolder)
+            return aIsFolder ? -1 : 1;
+
+        return nodeA.getName().compareTo(nodeB.getName());
+    }
+
+    private static int sortByTimestamp(TreeNode a, TreeNode z)
+    {
+        FileNode nodeA = (FileNode)a;
+        FileNode nodeB = (FileNode)z;
+
+        boolean aIsFolder = nodeA.entry == null;
+        boolean bIsFolder = nodeB.entry == null;
+
+        if (aIsFolder != bIsFolder)
+            return aIsFolder ? -1 : 1;
+        
+        if (!aIsFolder)
+            return Long.compareUnsigned(((FileDBRow)nodeA.getEntry()).getDate(), ((FileDBRow)nodeB.getEntry()).getDate());
+        
+        return nodeA.getName().compareTo(nodeB.getName());
+    }
+
+    private static int sortByKey(TreeNode a, TreeNode z)
+    {
+        FileNode nodeA = (FileNode)a;
+        FileNode nodeB = (FileNode)z;
+
+        boolean aIsFolder = nodeA.entry == null;
+        boolean bIsFolder = nodeB.entry == null;
+
+        if (aIsFolder != bIsFolder)
+            return aIsFolder ? -1 : 1;
+        
+        if (!aIsFolder)
+            return Long.compareUnsigned(((GUID)nodeA.getEntry().getKey()).getValue(), ((GUID)nodeB.getEntry().getKey()).getValue());
+        
+        return nodeA.getName().compareTo(nodeB.getName());
+    }
+
+    public void sort()
+    {
+        if (children == null || children.size() == 0) return;
+
+        if (this.source instanceof FileDB || this.source instanceof Mod)
+        {
+            children.sort(FileNode::sortByKey);
+
+            for (TreeNode node : children)
+            {
+                if (((FileNode)node).entry == null)
+                    ((FileNode)node).sort();
+            }
+        }
     }
 
     public void delete()

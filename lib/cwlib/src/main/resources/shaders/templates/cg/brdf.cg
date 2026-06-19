@@ -210,34 +210,74 @@ CREATE_SAMPLER_2D(cbuf, 15);
 //     CREATE_SAMPLER_3D(bouncevoldir, 17);
 // #endif
 
-#if (PROPERTIES & NORMAL)
-float3 NormalMap(float4 iNormal, float4 iTangent, float4 iSample) {
+float luminance(float4 rgb)
+{
+    return (0.2126 * rgb.r) + (0.7152 * rgb.g) + (0.0722 * rgb.b);
+}
+
+float3 rotateX(float3 v, float angle)
+{
+    return float3(
+        v.x,
+        v.y * cos(angle) - v.z * sin(angle),
+        v.y * sin(angle) + v.z * cos(angle)
+    );
+}
+
+float3 rotateY(float3 v, float angle)
+{
+    return float3(
+        v.x * cos(angle) + v.z * sin(angle),
+        v.y,
+        -v.x * sin(angle) + v.z * cos(angle)
+    );
+}
+
+float3 rotateZ(float3 v, float angle)
+{
+    return float3(
+        v.x * cos(angle) - v.y * sin(angle),
+        v.x * sin(angle) + v.y * cos(angle),
+        v.z
+    );
+}
+
+float3 rotate(float3 v, float3 angle)
+{
+    v = rotateX(v, angle.x);
+    v = rotateY(v, angle.y);
+    v = rotateZ(v, angle.z);
+    return v;
+}
+
+float3 NormalMap(float4 iNormal, float4 iTangent, float4 iSample, float iBumpLevel) {
     float2 n = iSample.yx;
     n.y = 1.0 - n.y;
     n -= 0.501953;
 
     float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
-    float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
+    float3 v = (-c * iBumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
     return v / length(v);
 }
 
-float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump) {
+float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump, float iBumpLevel) {
     #if (FLAGS & ORBIS)
         float2 bump = iBump.yw - 0.501961;
         float3 bitangent = cross(iTangent.xyz, iNormal.xyz);
         float3 normal = normalize(
             (iNormal.xyz * sqrt(abs(dot(bump, bump) - 0.25))) - 
-            (BumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
+            (iBumpLevel * ((bump.x * bitangent) + (bump.y * iTangent.xyz)))
         );
         return normal;
     #else
         float2 n = iBump.yw - 0.501953;
         float3 c = (n.y * iTangent.xyz) + (n.x * cross(iTangent.xyz, iNormal.xyz));
-        float3 v = (-c * BumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
+        float3 v = (-c * iBumpLevel) + (iNormal.xyz / rsqrt(dot(n, n) - 0.25));
         return v / length(v);
     #endif
 }
 
+#if (PROPERTIES & NORMAL)
 float3 GetNormalFromTexture(float4 iNormal, float4 iTangent, float4 iUV, float4 iColor) {
 ENV.AUTO_NORMAL_SETUP
 }
@@ -255,7 +295,14 @@ ENV.AUTO_SPECULAR_SETUP
 }
 #endif
 
-float4 GetDiffuseColor(float4 iUV, float4 iColor) {
+float4 GetDiffuseColor(
+    float3 iNormal,
+    float3 iTangent,
+    float4 iColor, 
+    float4 iUV,
+    float3 iVec2Eye,
+    float3 iPosition
+) {
 ENV.AUTO_DIFFUSE_SETUP
 }
 
@@ -417,6 +464,10 @@ float4 GetDecals(float3 iDecalUV) {
     #define DEFERRED_POS_OFFSET float2(0.00078125, 0.00138889)
     #define DEFERRED_ZBUF_OFFSET float2(0.000195313, 0.0)
     #define DEFERRED_LNBUF_OFFSET (zbfs * 0.0498047)
+
+    //#define DEFERRED_POS_OFFSET float2(0.00052083333, 0.00092592592)
+    //#define DEFERRED_ZBUF_OFFSET float2(0.00013020833, 0.0)
+    //#define DEFERRED_LNBUF_OFFSET (zbfs * 0.03320313333)
 #endif
 
 float2 encode(float3 normal) {
@@ -491,7 +542,7 @@ void main(
 
         float4 lbfs = SAMPLE_2D(lbuf, pixelPos);
 
-        float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+        float3 diffuse = GetDiffuseColor(iNormal.xyz, iTangent.xyz, iColor, iUV, iVec2Eye.xyz, iWorldPos.xyz).xyz;
         #if (FLAGS & DECALS)
             float4 decals = GetDecals(iDecalUV);
             diffuse = (diffuse * decals.w) + decals.xyz;
@@ -523,6 +574,7 @@ void main(
             float2 n = nbfs - 0.501961;
 
             float2 cuv = (n * (RefractiveIndex * float2(9.0, -16.0))) + (pos + float2(0.000195313, 0.0));
+            // cuv.x = (round(cuv.x * 1920.0) * 0.00052083333) - 0.00013020833;
             cuv.x = (round(cuv.x * 1280.0) * 0.00078125) - 0.000195313;
             float3 cbfs = SAMPLE_2D(cbuf, cuv).xyz;
 
@@ -660,7 +712,7 @@ void main(
 
     out half4 fragColor: COLOR0
 ) {
-    if (GetDiffuseColor(iUV, iColor).w < AlphaTestLevel) discard;
+    if (GetDiffuseColor(iNormal.xyz, iTangent.xyz, iColor, iUV, iVec2Eye.xyz, iWorldPos.xyz).w < AlphaTestLevel) discard;
 
     float3 viewVec = normalize(iVec2Eye.xyz);
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
@@ -680,7 +732,7 @@ void main(
 
     #endif
 
-    float3 diffuse = GetDiffuseColor(iUV, iColor).xyz;
+    float3 diffuse = GetDiffuseColor(iNormal.xyz, iTangent.xyz, iColor, iUV, iVec2Eye.xyz, iWorldPos.xyz).xyz;
     #if (FLAGS & DECALS)
         float4 decals = GetDecals(iDecalUV);
         diffuse = (diffuse * decals.w) + decals.xyz;

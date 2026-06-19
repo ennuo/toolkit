@@ -20,6 +20,31 @@ public class StaticPrimitive implements Serializable
     /* Not actually serialized, just used for exporting */
     public transient int numVerts;
 
+    public StaticPrimitive() {}
+    public StaticPrimitive(
+        Vector4f min, Vector4f max,
+        ResourceDescriptor gmat,
+        int vertexStart, int indexStart,
+        int numIndices, CellGcmPrimitive type
+    )
+    {
+        this.min = min;
+        this.max = max;
+        this.gmat = gmat;
+        this.vertexStart = vertexStart;
+        this.indexStart = indexStart;
+        this.numIndices = numIndices;
+        this.type = type;
+    }
+
+    public int getBufferHash()
+    {
+        int result = (int) (this.vertexStart ^ (this.vertexStart >>> 32));
+        result = 31 * result + indexStart;
+        result = 31 * result + numIndices;
+        return result;
+    }
+
     @Override
     public void serialize(Serializer serializer)
     {

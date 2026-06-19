@@ -186,7 +186,7 @@ public class GfxGUI extends javax.swing.JFrame
             }
 
             if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(),
-                BrdfPort.ALPHA_CLIP) != null)
+                BrdfPort.OPACITY) != null)
                 this.gmat.flags |= GfxMaterialFlags.ALPHA_CLIP;
         }
         catch (Exception ex)
@@ -659,7 +659,7 @@ public class GfxGUI extends javax.swing.JFrame
 
         gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1",
             "LBP2 " +
-            "Pre-Alpha", "LBP2/3", "LBP3 PS4" }));
+            "Pre-Alpha", "LBP2/3", "LBP3 PS4", "SHIT BUILD!", "LBP Vita" }));
         gameComboBox.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -961,9 +961,11 @@ public class GfxGUI extends javax.swing.JFrame
             return;
         }
 
-        boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0;
+        boolean isStupidBuild = this.gameComboBox.getSelectedIndex() == 4;
+        boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0 && !isStupidBuild;
         boolean isPreAlpha = this.gameComboBox.getSelectedIndex() == 1;
         boolean isPS4 = this.gameComboBox.getSelectedIndex() == 3;
+        boolean isVita = this.gameComboBox.getSelectedIndex() == 5;
 
         if (isPS4 && !CwlibConfiguration.CAN_COMPILE_ORBIS_SHADERS)
         {
@@ -994,6 +996,8 @@ public class GfxGUI extends javax.swing.JFrame
             if (this.alphaClipCheckbox.isSelected()) flags |= GfxMaterialFlags.ALPHA_CLIP;
         }
 
+        if (isVita) flags |= 0x10000;
+
         this.gmat.flags = flags;
 
         this.gmat.alphaTestLevel = (float) this.alphaTestLevelSpinner.getValue();
@@ -1007,7 +1011,7 @@ public class GfxGUI extends javax.swing.JFrame
             this.gmat.alphaMode = (byte) this.alphaModeCombo.getSelectedIndex();
 
 
-        this.gmat.shaders = new byte[isLBP2 ? ((isPreAlpha) ? 4 : 10) : 4][];
+        this.gmat.shaders = new byte[isLBP2 ? ((isPreAlpha) ? 4 : isVita ? 24 : 10) : isStupidBuild ? 3 : 4][];
         try
         {
             CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat,
@@ -1033,12 +1037,24 @@ public class GfxGUI extends javax.swing.JFrame
 
         Revision revision;
 
+        byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
         if (isPreAlpha) revision = new Revision(0x332);
+        else if (isVita) revision = new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision());
         else if (isLBP2) revision = new Revision(0x393);
-        else revision = new Revision(0x272, 0x4c44, 0x0013);
+        else 
+        {
+            if (isStupidBuild)
+            {
+                revision = new Revision(0x132);
+                compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+            }
+            else revision = new Revision(0x272, 0x4c44, 0x0013);
 
-        byte[] resource = SerializedResource.compress(gmat.build(revision,
-            CompressionFlags.USE_ALL_COMPRESSION));
+            if (gmat.shouldSaveCustomData())
+                revision.setCustomBranchDescription(Revisions.ALEAR_BR1, Revisions.ALEAR_BR1_MAX);
+        }
+
+        byte[] resource = SerializedResource.compress(gmat.build(revision, compressionFlags));
         File file = FileChooser.openFile("export.gmat", "gmat", true);
         if (file == null) return;
         if (FileIO.write(resource, file.getAbsolutePath()))
@@ -1072,7 +1088,7 @@ public class GfxGUI extends javax.swing.JFrame
     private void gameComboBoxActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_gameComboBoxActionPerformed
         int index = this.gameComboBox.getSelectedIndex();
-        boolean isLBP2 = index > 0;
+        boolean isLBP2 = index > 0 && index != 4;
         this.alphaClipCheckbox.setEnabled(isLBP2);
         this.alphaModeCombo.setEnabled(isLBP2);
     }//GEN-LAST:event_gameComboBoxActionPerformed

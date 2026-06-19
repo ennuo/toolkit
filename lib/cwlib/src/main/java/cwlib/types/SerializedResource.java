@@ -66,9 +66,19 @@ public class SerializedResource
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
 
     /**
+     * Controls which data types get compressed during serialization of extra data.
+     */
+    private byte extraCompressionFlags = CompressionFlags.USE_NO_COMPRESSION;
+
+    /**
      * Decompressed data from this resource.
      */
     private byte[] data = null;
+
+    /**
+     * Decompressed extra data for this resource.
+     */
+    private byte[] extraData = null;
 
     /**
      * Resources this resource depends on.
@@ -113,10 +123,16 @@ public class SerializedResource
             case ENCRYPTED_BINARY:
                 int head = stream.i32();
                 short branchID = 0, branchRevision = 0;
-                int dependencyTableOffset = -1;
+                int dependencyTableOffset = -1, eof = -1;
+
+                if (head < 0x132)
+                    isCompressed = false;
+                
                 if (head >= 0x109)
                 {
-                    dependencyTableOffset = this.processDependencies(stream);
+                    dependencyTableOffset = stream.i32();
+                    eof = this.processDependencies(stream, dependencyTableOffset);
+
                     if (head >= 0x189)
                     {
                         if (this.type != ResourceType.STATIC_MESH)
@@ -156,6 +172,25 @@ public class SerializedResource
                     this.data = stream.bytes(dependencyTableOffset - stream.getOffset());
                 else
                     this.data = stream.bytes(stream.getLength() - stream.getOffset());
+                
+                // This case shouldn't ever actually be hit, but whatever.
+                if (eof == -1) eof = stream.getOffset();
+
+                // Alear additional resource header is aligned to 16 byte boundary.
+                if ((eof % 16) != 0) eof += 16 - (eof % 16);
+                if (eof >= stream.getLength()) break;
+
+                stream.seek(eof, SeekMode.Begin);
+                if (stream.str(4).equals("ALSR"))
+                {
+                    short headerVersion = stream.i16();
+                    this.extraCompressionFlags = stream.i8();
+                    boolean compressed = stream.bool();
+                    this.revision.setCustomBranchDescription(stream.i32(), stream.i32());
+                    if (compressed) this.extraData = Compressor.decompressData(stream, stream.getLength());
+                    else this.extraData = stream.bytes(stream.getLength() - stream.getOffset());
+                }
+
                 break;
             case TEXT:
                 this.data = stream.bytes(stream.getLength() - stream.getOffset());
@@ -186,6 +221,19 @@ public class SerializedResource
     }
 
     /**
+     * Constructs a new serializer from this resource's extra data.
+     * 
+     * @return Data serializer from current resource custom data.
+     */
+    public Serializer getExtraSerializer()
+    {
+        Serializer serializer = new Serializer(this.extraData, this.revision, this.extraCompressionFlags);
+        for (ResourceDescriptor descriptor : this.dependencies)
+            serializer.addDependency(descriptor);
+        return serializer;
+    }
+
+    /**
      * Constructs a new memory input stream from this resource's data.
      *
      * @return Data stream from current resource data
@@ -202,21 +250,24 @@ public class SerializedResource
      * @param clazz Resource class reference that implements Serializable
      * @return Deserialized resource
      */
-    public <T extends Serializable> T loadResource(Class<T> clazz)
+    public <T extends Resource> T loadResource(Class<T> clazz)
     {
         Serializer serializer = this.getSerializer();
-        return serializer.struct(null, clazz);
+        T resource = serializer.struct(null, clazz);
+        if (this.extraData != null && this.extraData.length > 0)
+            resource.serializeExtraData(this.getExtraSerializer());
+        return resource;
     }
 
     /**
      * Reads the dependency table from current resource stream.
      *
      * @param stream Memory input stream to read from
-     * @return The offset of the dependency table
+     * @param dependencyTableOffset The offset in the stream of the dependency table
+     * @return The offset of the end of the dependency table
      */
-    private int processDependencies(MemoryInputStream stream)
+    private int processDependencies(MemoryInputStream stream, int dependencyTableOffset)
     {
-        int dependencyTableOffset = stream.i32();
         int originalOffset = stream.getOffset();
         stream.seek(dependencyTableOffset, SeekMode.Begin);
 
@@ -241,9 +292,10 @@ public class SerializedResource
                 this.dependencies.add(descriptor);
         }
 
-        stream.seek(originalOffset, SeekMode.Begin);
 
-        return dependencyTableOffset;
+        int eof = stream.getOffset();
+        stream.seek(originalOffset, SeekMode.Begin);
+        return eof;
     }
 
     /**
@@ -328,11 +380,19 @@ public class SerializedResource
         ResourceType type = data.getType();
         StaticMeshInfo meshInfo = data.getStaticMeshInfo();
         boolean isStaticMesh = type == ResourceType.STATIC_MESH;
+        boolean hasExtraData = 
+            (data.getMethod() == SerializationType.BINARY || data.getMethod() == SerializationType.ENCRYPTED_BINARY) && 
+            data.getRevision().hasExtraData() && 
+            data.getExtraBuffer() != null;
 
         byte[] buffer = data.getBuffer();
+        byte[] extraBuffer = data.getExtraBuffer();
+
         ResourceDescriptor[] dependencies = data.getDependencies();
 
         int size = buffer.length + 0x50;
+        if (hasExtraData) size += 0x50 + extraBuffer.length;
+
         if (dependencies != null)
             size += dependencies.length * 0x1c;
         if (data.getTextureInfo() != null) size += 0x24;
@@ -440,6 +500,22 @@ public class SerializedResource
 
                 stream.i32(dependency != null ? dependency.getType().getValue() : 0);
             }
+        }
+
+        if (hasExtraData)
+        {
+            boolean compressed = preferCompressed && extraBuffer.length >= 0x64;
+
+            stream.align(16);
+            stream.str("ALSR", 4);
+            stream.u16(1); // resource latest version is 1
+            stream.i8(data.getExtraCompressionFlags());
+            stream.bool(compressed);
+            stream.i32(revision.getCustomBranchID());
+            stream.i32(revision.getCustomVersion());
+
+            if (compressed) extraBuffer = Compressor.getCompressedStream(extraBuffer, preferCompressed);
+            stream.bytes(extraBuffer);
         }
 
         stream.shrink();

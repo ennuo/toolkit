@@ -699,8 +699,9 @@ public class Revisions
     public static final int ALEAR_PARAMETER_ANIMATIONS = 6;
     public static final int ALEAR_PINS = 7;
     public static final int ALEAR_EXPLOSIVES = 8;
-
-    public static final int ALEAR_BR1_MAX = 8;
+    public static final int ALEAR_INVENTORY_DATA = 9;
+    
+    public static final int ALEAR_BR1_MAX = 9;
 
     // Toolkit revisions
 

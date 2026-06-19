@@ -46,6 +46,10 @@ public abstract class FileEntry
      */
     private ResourceInfo info;
 
+
+    private boolean shouldHaveRevision = false;
+
+
     /**
      * Map of resources assigned to this entry.
      */
@@ -90,6 +94,8 @@ public abstract class FileEntry
             this.node = isHidden ? null : source.addNode(this);
         }
         else this.node = null;
+
+        updateConstants();
     }
 
     public FileData getSource()
@@ -170,6 +176,7 @@ public abstract class FileEntry
                     this);
         }
 
+        updateConstants();
         this.source.setHasChanges();
     }
 
@@ -258,9 +265,38 @@ public abstract class FileEntry
         this.resources[key] = resource;
     }
 
+    public boolean hasRevision()
+    {
+        return shouldHaveRevision;
+    }
+
     public void remove()
     {
         this.source.remove(this);
+    }
+
+    private void updateConstants()
+    {
+        if (path.endsWith(".fsb") || 
+            path.endsWith(".bik") || 
+            path.endsWith(".fnt") || 
+            path.endsWith(".tex") ||
+            path.endsWith(".png") ||
+            path.endsWith(".dds") ||
+            path.endsWith(".mp3") ||
+            path.endsWith(".wav") ||
+            path.endsWith(".trans") ||
+            path.endsWith(".fpo") ||
+            path.endsWith(".vpo") ||
+            path.endsWith(".sbu") ||
+            path.endsWith(".raw") ||
+            path.endsWith(".txt") ||
+            path.endsWith(".fev") ||
+            path.endsWith(".rlst")
+        )
+            shouldHaveRevision = false;
+        else
+            shouldHaveRevision = true;
     }
 
     @SuppressWarnings("unchecked")

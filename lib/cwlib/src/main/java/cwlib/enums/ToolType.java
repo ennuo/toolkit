@@ -55,7 +55,11 @@ public enum ToolType implements ValueEnum<Byte>
     RAIL_EDIT(43),
     ADD_LIGHT(44),
     ADVENTURE_RESET(45),
-    ADVENTURE_SAVE(46);
+    ADVENTURE_SAVE(46),
+
+    TOOL_SHAPE_SPIKE(53),
+    TOOL_SHAPE_DROWNED(54),
+    TOOL_SHAPE_CRUSH(55);
 
     private final byte value;
 

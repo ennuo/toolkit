@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Stack;
 
 /**
  * Reversible serializer for assets, also handles
@@ -45,7 +46,8 @@ public class Serializer
     private final HashMap<Integer, Object> visited = new HashMap<>();
     private final IdentityHashMap<Object, Integer> referenceObjects = new IdentityHashMap<>();
     private final HashSet<ResourceDescriptor> dependencies = new HashSet<>();
-    
+    private final Stack<Thing> things = new Stack<>();
+
     private int nextReference = 1;
 
     /**
@@ -117,7 +119,7 @@ public class Serializer
      */
     public final void pad(int size)
     {
-        if (this.isWriting) this.output.pad(size);
+        if (this.isWriting) this.output.clear(size);
         else this.input.bytes(size);
     }
 
@@ -1378,9 +1380,25 @@ public class Serializer
         }
         catch (Exception ex)
         {
+            // ex.printStackTrace();
             throw new SerializationException("There was an error (de)serializing an array!");
         }
         return output;
+    }
+
+    public final void push(Thing thing)
+    {
+        things.push(thing);
+    }
+
+    public final void pop()
+    {
+        things.pop();
+    }
+
+    public final Thing getThing()
+    {
+        return things.peek();
     }
 
     /**
@@ -1443,6 +1461,16 @@ public class Serializer
     public final void addDependency(ResourceDescriptor dependency)
     {
         this.dependencies.add(dependency);
+    }
+
+    /**
+     * Forcibly adds dependencies from another serializer to this serializer's collection.
+     * @param serializer Serializer instance
+     */
+    public final void addDependencies(Serializer serializer)
+    {
+        for (ResourceDescriptor dependency : serializer.dependencies)
+            this.dependencies.add(dependency);
     }
 
     /**

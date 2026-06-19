@@ -1,0 +1,348 @@
+#define NO_FLAGS (0)
+
+// LBPV compile flags
+#define DECALS (1 << 0)
+#define BLEND (1 << 25)
+#define LIGHT1 (1 << 26)
+#define LIGHT2 (1 << 27)
+#define LIGHTS (LIGHT1 | LIGHT2)
+#define LAYERTEST (1 << 28)
+
+// Material properties
+#define SPECULAR (1 << 9)
+#define NORMAL (1 << 10)
+#define ALPHA (1 << 11)
+#define REFRACT (1 << 12)
+#define GLOW (1 << 13)
+#define GLASS (1 << 14)
+#define ST7 (1 << 22)
+#define ANISO (1 << 16)
+#define TRANS (1 << 17)
+#define COLOR_CORRECTION (1 << 18)
+#define FUZZ (1 << 19)
+#define BRDF_REFLECTANCE (1 << 20)
+#define LIGHTING_RAMP (1 << 21)
+
+// Receive flags
+#define RECEIVE_SHADOWS (1 << 22)
+#define RECEIVE_SUN (1 << 23)
+#define RECEIVE_SPRITELIGHTS (1 << 24)
+
+// LBP2 alpha modes
+#define BLEND_MODE_DISABLE 0
+#define BLEND_MODE_ALPHA_BLEND 1
+#define BLEND_MODE_ADDITIVE 2
+#define BLEND_MODE_ADDITIVE_NO_ALPHA 3
+#define BLEND_MODE_PREMULTIPLIED_ALPHA 4
+
+// Set this variable to define what maps this material uses.
+#define PROPERTIES ENV.MATERIAL_PROPERTIES
+
+// Set this variable to define how this shader is compiled.
+// Refer to charts below for appropriate configurations.
+#define FLAGS ENV.COMPILE_FLAGS
+
+// Set this variable to define how alpha is handled.
+// Only available in LBP2 onward.
+#define ALPHA_MODE ENV.ALPHA_MODE
+
+#if (FLAGS & (1 << 29))
+	#define UNLIT_BACKGROUND
+#endif
+
+#define SAMPLE_2D(sampler, uv) h4tex2D(sampler, uv)
+#define SAMPLE_3D(sampler, uv) tex3D(sampler, uv)
+#define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, locd)
+#define SAMPLE_2D_PROJ(sampler, value) tex2Dproj(sampler, value)
+#define SAMPLE_2D_BIAS(sampler, uv, blur) tex2Dbias(sampler, float4(uv, 0.0, blur))
+
+#define CREATE_SAMPLER_2D(name, index) sampler2D name: TEXUNIT##index
+#define CREATE_SAMPLER_3D(name, index) sampler3D name: TEXUNIT##index
+
+#pragma register_buffer BUFFER[0]
+#pragma register_buffer BUFFER[1]
+
+uniform half3 ambcol: BUFFER[0];
+uniform half3 suncol: BUFFER[0];
+uniform half4 fogcol: BUFFER[0];
+uniform half4 fogccparams: BUFFER[0];
+uniform half3 vec2light: BUFFER[0];
+
+uniform half4 tintcol: BUFFER[1];
+uniform half4 uThingCol: BUFFER[1];
+uniform half3 light1col: BUFFER[1];
+uniform half3 light2col: BUFFER[1];
+uniform unsigned int2 layertest: BUFFER[1];
+
+uniform sampler2D s0: TEXUNIT0;
+uniform sampler2D s1: TEXUNIT1;
+uniform sampler2D s2: TEXUNIT2;
+uniform sampler2D s3: TEXUNIT3;
+uniform sampler2D s4: TEXUNIT4;
+uniform sampler2D s5: TEXUNIT5;
+uniform sampler2D s6: TEXUNIT6;
+uniform sampler2D s7: TEXUNIT7;
+
+uniform sampler2D shadowtex: TEXUNIT12;
+uniform sampler2D itex: TEXUNIT8;
+uniform sampler2D wstex: TEXUNIT14;
+
+#define AlphaTestLevel ENV.ALPHA_TEST_LEVEL
+#define CosinePower ENV.COSINE_POWER
+#define BumpLevel ENV.BUMP_LEVEL
+#define ReflectionBlur ENV.REFLECTION_BLUR
+#define RefractiveIndex ENV.REFRACTIVE_INDEX
+
+half4 GetDiffuseColor(
+    half3 iNormal,
+    half3 iTangent,
+    float4 iColor,
+    half4 iUV,
+    float3 iVec2Eye,
+    float3 iPosition
+)
+{
+ENV.AUTO_DIFFUSE_SETUP
+}
+
+half4 GetSpecularColor(half4 iUV, half4 iColor)
+{
+ENV.AUTO_SPECULAR_SETUP
+}
+
+half4 GetBumpColor(half4 iUV)
+{
+ENV.AUTO_NORMAL_SETUP
+}
+
+half4 GetGlowColor(half4 iUV, half4 iColor) 
+{
+ENV.AUTO_GLOW_SETUP
+}
+
+#if (PROPERTIES & REFRACT)
+half4 GetReflection(half2 iUV) {
+ENV.AUTO_REFLECTION_SETUP
+}
+#endif
+
+#if (PROPERTIES & ST7)
+half4 GetST7Sample(half4 iUV, half4 iColor) {
+ENV.AUTO_ST7_SETUP
+}
+#endif
+
+#if (PROPERTIES & LIGHTING_RAMP)
+half4 GetLightingRamp(float2 iUV, half4 iColor) {
+ENV.AUTO_RAMP_SETUP
+}
+#endif
+
+
+__nativecolor __msaa void main
+(
+#if ((FLAGS & BLEND) || (FLAGS & LAYERTEST)) 
+	__regformat unsigned char4 vFragColor : FRAGCOLOR,
+#endif
+	half4 vTexCoord: TEXCOORD0,
+	half4 vTex1: TEXCOORD1,
+	half4 vUV1: TEXCOORD2,
+	half4 vTangent: TEXCOORD3,
+	half4 vNormal: TEXCOORD4,
+	float4 vDecalUV: TEXCOORD5,
+	half4 vVec2Eye: TEXCOORD6,
+	float4 vShadowCoord: TEXCOORD7,
+	half4 vTex8: TEXCOORD8,
+	half4 vBitangent: TEXCOORD9,
+#ifdef UNLIT_BACKGROUND
+	half4
+#else
+	unsigned char4
+#endif
+	uLayerSet : COLOR,
+	out __regformat unsigned char4 oColor : COLOR
+)
+{	
+	half3 N = normalize(vNormal.xyz);
+	half3 L = vec2light;
+	
+	half4 diffuse = GetDiffuseColor(vNormal.xyz, vTangent.xyz, uThingCol, vTexCoord, vec2light, vTex1.xyz);
+	
+#if (PROPERTIES & ALPHA)
+	if (diffuse.a < AlphaTestLevel) discard;
+#endif
+
+#if (FLAGS & DECALS)
+	float4 indirection = tex2D(itex, vDecalUV.xy);
+	float2 wstex_uv = (frac(vDecalUV.zw) * 127.0 + (indirection.xy * 32640.0)) / 2048.0 + 0.000244;
+	half4 decals = tex2D(wstex, wstex_uv);
+	diffuse.rgb = (diffuse.rgb * decals.a) + decals.rgb;
+#endif
+
+#if (PROPERTIES & NORMAL)
+	half2 bump = GetBumpColor(vTexCoord).zw;
+	bump = bump * (BumpLevel * -2.0) + BumpLevel;
+	N = normalize(((vTangent * bump.y) + ((vBitangent * bump.x) + vNormal)).xyz);
+#endif
+
+	half NdotL = dot(N, L);
+	half NdotV = dot(N, vVec2Eye.xyz);
+
+#if (PROPERTIES & LIGHTING_RAMP)
+	float toon_dot = NdotL / sqrt(dot(L, L)) / 2.0;
+	diffuse *= GetLightingRamp(float2(0.5 - toon_dot, 0.5), uThingCol).rgb;
+#endif
+
+	half3 color = ambcol;
+
+
+#if ((FLAGS & RECEIVE_SHADOWS) && (FLAGS & RECEIVE_SPRITELIGHTS))
+	#if (FLAGS & LIGHT1)
+		half Ndot8 = dot(N, vTex8.xyz);	
+		half val = rsqrt(dot(vTex8.xyz, vTex8.xyz)) * max(-Ndot8, 0.0);
+		val = (min(dot(vTex8.xyz, vTex8.xyz), 1.0) * -val) + val;
+		color += val * light1col;
+	#endif
+
+	#if (FLAGS & LIGHT2)
+		half3 vLight2Tex = half3(vTexCoord.zw, vTex1.z);
+		half NdotL2 = dot(N, vLight2Tex.xyz);
+
+		half val2 = rsqrt(dot(vLight2Tex.xyz, vLight2Tex.xyz)) * max(-NdotL2, 0.0);
+		val2 = (min(dot(vLight2Tex.xyz, vLight2Tex.xyz), 1.0) * -val2) + val2;
+		color += val2 * light2col;
+	#endif
+#endif
+
+
+#if (FLAGS & RECEIVE_SHADOWS)
+	float occluder = f1tex2Dproj<float>(shadowtex, vShadowCoord.xyw);
+	half shadow = min(exp((occluder * 184.664963) + vShadowCoord.z), 1.0);
+	color += (shadow * max(-NdotL, 0.0)) * suncol;
+#else
+	color += suncol;
+#endif
+
+	
+	color *= color;
+
+	half3 reflection = float3(0.0);
+	#if (PROPERTIES & REFRACT)
+		reflection = GetReflection(reflect(vVec2Eye.xyz, N.xyz).xy).rgb;
+		reflection *= dot(color, half3(0.299072, 0.586914, 0.114014));
+	#endif
+
+
+#if (PROPERTIES & GLASS)
+	diffuse.rgb *= (half3)(vFragColor.rgb / 255.0);
+#endif
+
+#if (PROPERTIES & SPECULAR)
+	half lbfsw = pow(NdotV, CosinePower);
+	half3 specular = GetSpecularColor(vTexCoord, uThingCol).rgb;
+
+	half3 lobe = (((lbfsw * color) * specular) + (specular * reflection)) * 2.0;
+
+	#if (PROPERTIES & GLASS)
+		lobe *= 2.0;
+		float n = saturate((dot(N.xy, N.xy) * 10.0) - 0.5);
+		color.rgb += (half3)(color.rgb * pow(n, 2));
+		diffuse.rgb *= tintcol.rgb;
+	#endif
+
+
+	color = (color * diffuse.rgb) + lobe;
+
+
+	// color *= (specular * GetSpecularColor(vTexCoord, uThingCol).rgb + diffuse.rgb);
+#else
+	color *= diffuse.rgb;
+	color += reflection;
+#endif
+
+	half illumination = uLayerSet.w;
+#if (PROPERTIES & GLOW)
+    float3 glow = GetGlowColor(vTexCoord, uThingCol).xyz;
+    color += glow;
+	illumination = (dot(glow, glow) * -vNormal.w) + dot(glow, glow);
+#endif
+
+
+#if ((PROPERTIES & GLASS) == 0)
+	color *= tintcol.rgb;
+#endif
+
+#if (PROPERTIES & ST7)
+	color += (ambcol.rgb * GetST7Sample(vTexCoord, uThingCol).xyz);
+#endif
+
+#ifdef UNLIT_BACKGROUND
+	color = diffuse * uLayerSet.rgb;
+	half fogcc = (dot(color, half3(0.3, 0.6, 0.1)) * fogccparams.x) + fogccparams.y;
+	half3 fog = (fogcc * fogcol.rgb) - color;
+	color += (fog * vUV1.z);
+	illumination = 0.0;
+
+#else
+	color += vNormal.w * (-color + fogcol.rgb);
+#endif
+
+	unsigned char4 c = unsigned char4(
+		(unsigned char3)(color * 255.0),
+#if ((FLAGS & BLEND) && ALPHA_MODE != BLEND_MODE_ALPHA_BLEND)
+#ifndef UNLIT_BACKGROUND
+		tintcol.a * 
+#endif
+		diffuse.a
+#else
+		illumination
+#endif
+	);
+
+#ifndef UNLIT_BACKGROUND
+	#if (PROPERTIES & GLOW)
+		c.w = (c.w & 0xfc) | uLayerSet.w;
+	#endif
+#endif
+
+#if (FLAGS & LAYERTEST)
+		if ((bit_cast<int>(vFragColor) & 0x3000000) > layertest.x)
+		{
+#endif
+
+#if (FLAGS & BLEND)
+
+		#if (ALPHA_MODE == BLEND_MODE_ADDITIVE_NO_ALPHA)
+			oColor = __fastblend(
+				c,
+				vFragColor,
+				__BLEND_OP_ADD,
+				__BLEND_FACTOR_ONE,
+				__BLEND_FACTOR_ONE,
+				__BLEND_OP_ADD,
+				__BLEND_FACTOR_ONE,
+				__BLEND_FACTOR_ONE
+			);
+		#elif (ALPHA_MODE != BLEND_MODE_ALPHA_BLEND)
+
+			oColor = __fastblend(
+				c,
+				vFragColor,
+				__BLEND_OP_ADD,
+				__BLEND_FACTOR_SRC1_ALPHA,
+				__BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+				__BLEND_OP_ADD,
+				__BLEND_FACTOR_ZERO,
+				__BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA
+			);
+		#else
+			oColor = c;
+		#endif
+#else
+		oColor = c;
+#endif
+
+#if (FLAGS & LAYERTEST)
+		}
+#endif
+}

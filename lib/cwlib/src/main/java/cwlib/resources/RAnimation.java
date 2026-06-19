@@ -3,15 +3,19 @@ package cwlib.resources;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.io.Resource;
+import cwlib.io.exports.MeshExporter;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.animation.Locator;
+import cwlib.structs.mesh.SoftbodySpring;
+import cwlib.types.SerializedResource;
 import cwlib.types.data.Revision;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -57,7 +61,7 @@ public class RAnimation implements Resource
 
     public Vector4f posOffset = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f), posScale =
         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-    public boolean fat; // if fat, each element is 4 bytes, otherwise 2 bytes, probably just
+    public byte fat; // if fat, each element is 4 bytes, otherwise 2 bytes, probably just
     // alignment?
 
     public Vector4f[] packedRotation;
@@ -226,7 +230,7 @@ public class RAnimation implements Resource
                 stream.v4(posOffset);
                 stream.v4(posScale);
                 if (version > 0x3b1)
-                    stream.bool(fat);
+                    stream.i8(fat);
             }
 
             stream.bytearray(animData);
@@ -250,7 +254,7 @@ public class RAnimation implements Resource
             posOffset = stream.v4();
             posScale = stream.v4();
             if (version > 0x3b1)
-                fat = stream.bool();
+                fat = stream.i8();
         }
 
         byte[] animData = stream.bytearray();
@@ -271,7 +275,14 @@ public class RAnimation implements Resource
         scaledBonesAnimated = new byte[scaleAnims];
         morphsAnimated = new byte[morphAnims];
 
-        if (locatorKeys != 0) stream.bytes(0x4 * locatorKeys);
+        if (locatorKeys != 0) 
+        {
+            // short - index?
+            // byte
+            // padded to 4 bytes
+
+            stream.bytes(0x4 * locatorKeys);
+        }
 
         for (int i = 0; i < rotAnims; ++i) rotBonesAnimated[i] = stream.i8();
         for (int i = 0; i < posAnims; ++i) posBonesAnimated[i] = stream.i8();
@@ -287,6 +298,9 @@ public class RAnimation implements Resource
 
         for (int i = 0; i < packedRotation.length; ++i)
         {
+            // if 
+
+
             short xrot = stream.i16();
             boolean flag = (xrot & 1) != 0;
             xrot &= (short) ~1;

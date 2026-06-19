@@ -1,7 +1,13 @@
 package toolkit.functions;
 
 import cwlib.enums.DatabaseType;
+import cwlib.enums.Part;
+import cwlib.enums.ResourceType;
+import cwlib.resources.RLevel;
+import cwlib.resources.RPalette;
+import cwlib.resources.RPlan;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.SerializedResource;
 import cwlib.types.archives.Fart;
 import cwlib.types.archives.Fat;
@@ -19,10 +25,60 @@ import toolkit.windows.managers.ModManager;
 import toolkit.windows.utilities.SlowOpGUI;
 
 import javax.swing.*;
+
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Comparator;
+import java.util.HashSet;
 
 public class UtilityCallbacks
 {
+    public static void paletteToLevel(ActionEvent event)
+    {
+        var entry = ResourceSystem.getSelected().getEntry();
+        var info = entry.getInfo();
+        if (info == null || info.getType() != ResourceType.PALETTE || info.getResource() == null)
+            return;
+
+        var revision = info.getRevision();
+        RPalette palette = info.getResource();
+
+        var level = new RLevel();
+        var world = level.worldThing.<PWorld>getPart(Part.WORLD);
+
+        for (var descriptor : palette.planList)
+        {
+            byte[] planData = ResourceSystem.extract(descriptor);
+            if (planData == null)
+            {
+                System.out.printf("Skipping %s because resource was not found in caches\n", descriptor);
+                continue;
+            }
+
+            var plan = new SerializedResource(planData).loadResource(RPlan.class);
+            for (var thing : plan.getThings())
+                world.things.add(thing);
+        }
+
+        world.things.removeIf(thing -> thing == null);
+        world.thingUIDCounter = world.things.stream().max(Comparator.comparingInt(x -> x.UID)).get().UID;
+        
+        var set = new HashSet<Integer>();
+        for (var thing : world.things)
+        {
+            if (!set.add(thing.UID))
+                thing.UID = ++world.thingUIDCounter;
+        }
+        
+        world.things.sort((a, z) -> a.UID - z.UID);
+        
+        byte[] fileData = SerializedResource.compress(level.build(revision, revision.getDefaultCompressionFlags()));
+        
+        File file = FileChooser.openFile(ResourceSystem.getSelected().getName().replace(".pal", ".bin"), ".bin", true);
+        if (file == null) return;
+        FileIO.write(fileData, file.getAbsolutePath());
+    }
+
     public static void newMod()
     {
         File file = FileChooser.openFile("template.mod", "mod", true);

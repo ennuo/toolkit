@@ -3,6 +3,7 @@ package cwlib.enums;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.*;
+import cwlib.types.data.Revision;
 
 import java.util.ArrayList;
 
@@ -155,12 +156,12 @@ public enum Part
      * @param version Parts revision
      * @return Parts
      */
-    public static Part[] fromFlags(int head, long flags, int version)
+    public static Part[] fromFlags(Revision revision, long flags, int version)
     {
         ArrayList<Part> parts = new ArrayList<>(64);
         for (Part part : Part.values())
         {
-            if (part.hasPart(head, flags, version))
+            if (part.hasPart(revision.getHead(), flags, version))
                 parts.add(part);
         }
         return parts.toArray(Part[]::new);

@@ -20,9 +20,11 @@ import cwlib.enums.VisibilityFlags;
 import cwlib.ex.SerializationException;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
+import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.util.Bytes;
 import cwlib.io.Resource;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
@@ -635,9 +637,9 @@ public class RLevel implements Resource
     @Override
     public SerializationData build(Revision revision, byte compressionFlags)
     {
-        // 16MB buffer for generation of levels, since the allocated size will get
-        // stuck in a recursive loop until I fix it.
-        Serializer serializer = new Serializer(0x1000000, revision, compressionFlags);
+        // output stream is resizable and get allocated size isnt 
+        // implemented, start with around ~64kbs
+        Serializer serializer = new Serializer(0x10000 , revision, compressionFlags);
         serializer.struct(this, RLevel.class);
         return new SerializationData(
             serializer.getBuffer(),

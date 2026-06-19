@@ -1659,7 +1659,7 @@ public class FMOD
                 paddedMP3.bytes(header);
                 paddedMP3.bytes(stream.bytes(frameLength - 4));
                 for (int n = paddedMP3.getOffset(); (n % 0x2) != 0; n++)
-                    paddedMP3.pad(0x1);
+                    paddedMP3.clear(0x1);
             }
 
             for (int n = paddedMP3.getOffset(); (n & 0xf) != 0; n++)
@@ -1705,7 +1705,9 @@ public class FMOD
 
             size += sampleDataSize;
 
-            MemoryOutputStream stream = new MemoryOutputStream(size);
+            MemoryOutputStream stream = new MemoryOutputStream();
+            stream.setLength(size);
+            
             stream.setLittleEndian(true);
             stream.str("FSB4", 4);
             stream.i32(this.samples.size());

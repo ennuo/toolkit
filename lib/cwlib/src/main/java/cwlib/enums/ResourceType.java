@@ -1,5 +1,6 @@
 package cwlib.enums;
 
+import cwlib.io.Resource;
 import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
 import cwlib.resources.*;
@@ -92,11 +93,11 @@ public enum ResourceType implements ValueEnum<Integer>
 
     private final String header;
     private final int value;
-    private final Class<? extends Serializable> compressable;
+    private final Class<? extends Resource> compressable;
     private final String folder;
     private final String extension;
 
-    ResourceType(String magic, int value, Class<? extends Serializable> clazz,
+    ResourceType(String magic, int value, Class<? extends Resource> clazz,
                  String folder, String extension)
     {
         this.header = magic;
@@ -125,7 +126,7 @@ public enum ResourceType implements ValueEnum<Integer>
         return this.value;
     }
 
-    public Class<? extends Serializable> getCompressable()
+    public Class<? extends Resource> getCompressable()
     {
         return this.compressable;
     }

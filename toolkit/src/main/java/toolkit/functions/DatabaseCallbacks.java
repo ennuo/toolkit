@@ -16,6 +16,8 @@ import cwlib.types.swing.FileNode;
 import cwlib.util.Crypto;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
+import sync.NetworkFileDB;
+import sync.SyncManager;
 import toolkit.dialogues.EntryDialogue;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
@@ -378,7 +380,48 @@ public class DatabaseCallbacks
 
         }
 
-        if (Config.instance.addToArchiveOnCopy && ResourceSystem.getArchives().size() > 1)
+        if (destination instanceof NetworkFileDB remote)
+        {
+            var cache = SyncManager.instance.getCache();
+            for (int i = 0; i < nodes.length; ++i)
+            {
+                var node = nodes[i];
+
+                var source = node.getEntry();
+                if (source == null) continue;
+
+                // just to check if we actually copied or not
+                var hash = hashes[i];
+                if (hash == null) continue;
+
+                if (cache.exists(hash)) continue;
+
+                var copy = remote.get((GUID)source.getKey());
+                boolean exists = ResourceSystem.exists(hash);
+                
+                if (hash.equals(SHA1.EMPTY) || !exists)
+                {
+                    var base = source.getSource().getBase();
+                    if (base != null)
+                    {
+                        var file = new File(base, source.getPath());
+                        if (file.exists())
+                        {
+                            byte[] fileData = FileIO.read(file.getAbsolutePath());
+                            copy.setDetails(fileData);
+                            cache.add(fileData);
+                        }
+                    }
+                }
+                else if (exists)
+                {
+                    cache.add(ResourceSystem.extract(hash));
+                }
+            }
+
+            cache.save();
+        }
+        else if (Config.instance.addToArchiveOnCopy && ResourceSystem.getArchives().size() > 1)
         {
             boolean canCopy = false;
             boolean existsInAllArchives = true;

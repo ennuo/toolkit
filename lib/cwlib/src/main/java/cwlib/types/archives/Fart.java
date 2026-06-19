@@ -1,6 +1,7 @@
 package cwlib.types.archives;
 
 import cwlib.enums.ArchiveType;
+import cwlib.io.Resource;
 import cwlib.io.Serializable;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.SerializedResource;
@@ -54,10 +55,12 @@ public abstract class Fart implements Iterable<Fat>
      */
     protected HashMap<SHA1, Fat> lookup = new HashMap<>();
 
+    private boolean _disableQueue;
+
     protected Fart(File file, ArchiveType type)
     {
         // Only save archives can have null paths
-        if (file == null && type != ArchiveType.SAVE)
+        if (file == null && type == ArchiveType.FARC)
             throw new NullPointerException("Archive path cannot be null!");
         if (type == null)
             throw new NullPointerException("Archive type cannot be null!");
@@ -140,6 +143,9 @@ public abstract class Fart implements Iterable<Fat>
 
         this.queue.put(sha1, data);
 
+        if (_disableQueue)
+            save();
+        
         return sha1;
     }
 
@@ -230,7 +236,7 @@ public abstract class Fart implements Iterable<Fat>
      * @param clazz Resource class reference that implements Serializable
      * @return Deserialized resource
      */
-    public <T extends Serializable> T loadResource(SHA1 hash, Class<T> clazz)
+    public <T extends Resource> T loadResource(SHA1 hash, Class<T> clazz)
     {
         byte[] data = this.extract(hash);
         if (data == null) return null;
@@ -294,5 +300,11 @@ public abstract class Fart implements Iterable<Fat>
     public Iterator<Fat> iterator()
     {
         return Arrays.stream(this.entries).iterator();
+    }
+
+    public void setDisableQueue()
+    {
+        if (queue.size() != 0) save();
+        _disableQueue = true;
     }
 }

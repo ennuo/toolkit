@@ -15,15 +15,18 @@ public final class CellGcmTexture
     public static final int REMAP_BBBB = 0xa9ff;
 
     private final CellGcmEnumForGtf format;
-    private final byte mipmap;
+    public byte mipmap;
     private final byte dimension;
     private final byte cubemap;
     private final int remap;
-    private final short width, height, depth;
+    public short width, height, depth;
     private final byte location;
     private byte flags;
     private final int pitch, offset;
     private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
+
+    public int[] borders = new int[4];
+
 
     public CellGcmTexture(byte[] dds, boolean noSRGB)
     {
@@ -132,6 +135,18 @@ public final class CellGcmTexture
      */
     public void write(MemoryOutputStream stream)
     {
+        if (method == SerializationType.GXT_SWIZZLED)
+        {
+            // should be argb, so always write in big endian
+            boolean endian = stream.isLittleEndian();
+            stream.setLittleEndian(false);
+
+            stream.i32(0x10000000);
+            for (int i = 0; i < 4; ++i)
+                stream.i32(borders[i]);
+            stream.setLittleEndian(endian);
+        }
+
         stream.u8(this.format.getValue());
         stream.i8(this.mipmap);
         stream.i8(this.dimension);

@@ -76,6 +76,8 @@ public class FileIO
     {
         try
         {
+            ResourceSystem.println("FileIO", "Reading file at " + path);
+
             byte[] data = Files.readAllBytes(path);
             return new String(data, StandardCharsets.UTF_8);
         }

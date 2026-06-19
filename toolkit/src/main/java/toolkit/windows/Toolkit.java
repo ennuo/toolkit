@@ -35,6 +35,11 @@ import cwlib.types.swing.FileNode;
 import cwlib.types.swing.SearchParameters;
 import cwlib.util.*;
 import executables.gfx.GfxGUI;
+import sync.Depot;
+import sync.NetworkFileDB;
+import sync.SyncManager;
+import sync.SyncManager.ConnectionState;
+import sync.SyncManager.SyncEvent;
 import toolkit.functions.*;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
@@ -58,6 +63,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +73,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.regex.Pattern;
+import sync.CreateDepotModal;
 
 public class Toolkit extends javax.swing.JFrame
 {
@@ -77,6 +84,7 @@ public class Toolkit extends javax.swing.JFrame
     {
         /* Reset the state in case of a reboot. */
         ResourceSystem.reset();
+        SyncManager.instance.reset();
         Toolkit.INSTANCE = this;
 
         ResourceSystem.TriggerWorkSpaceUpdate = () -> updateWorkspace();
@@ -108,6 +116,7 @@ public class Toolkit extends javax.swing.JFrame
         });
 
         this.progressBar.setVisible(false);
+
         this.fileDataTabs.addChangeListener(l ->
         {
             FileData database =
@@ -177,6 +186,9 @@ public class Toolkit extends javax.swing.JFrame
 
         /* Auto-load configurations from whatever profile is currently enabled. */
 
+        syncMenu.setVisible(Config.sync().enabled);
+        crafteroidsMenu.setVisible(false);
+
         Profile profile = Config.instance.getCurrentProfile();
         if (profile == null)
             return;
@@ -217,7 +229,151 @@ public class Toolkit extends javax.swing.JFrame
         PrintStream out = new CustomPrintStream(new TextAreaOutputStream(console));
         System.setOut(out);
         System.setErr(out);
+
+        if (Config.sync().enabled)
+        {
+            SyncManager.instance.registerCallback((SyncEvent evt, Object data) -> onSyncEvent(evt, data));
+            ResourceSystem.CustomExtractHash = hash -> 
+            {
+                var cache = SyncManager.instance.getCache();
+                if (cache != null)
+                {
+                    byte[] data = cache.extract(hash);
+                    if (data != null)
+                        return data;
+                }
+
+                return SyncManager.instance.downloadSync(hash);
+            };
+
+            ResourceSystem.CustomCanExtract = () ->
+            {
+                return ResourceSystem.getSelectedDatabase() instanceof NetworkFileDB && SyncManager.instance.getCache() != null;
+            };
+
+            ResourceSystem.CustomExists = hash ->
+            {
+                var cache = SyncManager.instance.getCache();
+                if (cache != null)
+                    return cache.exists(hash);
+
+                return false;
+            };
+        }
     }
+    
+    public void onSyncEvent(SyncEvent event, Object userData)
+    {
+        switch (event)
+        {
+            case ConnectionEstablished:
+            {
+                EventQueue.invokeLater(() ->
+                {
+                    syncConnectMenuItem.setSelected(true);
+                    syncConnectMenuItem.setText("Connected");
+                    syncConnectMenuItem.repaint();
+
+                    depotsMenu.removeAll();
+                    depotsMenu.setEnabled(true);
+                    depotsMenu.add(createDepotMenuItem);
+                    depotsMenu.add(depotSeparator);
+                    
+                    
+                    var depots = SyncManager.instance.getDepots();
+                    depotSeparator.setVisible(depots.size() > 0);
+                    for (var depot : depots)
+                    {
+                        Swing.createMenuItem(depot.DisplayName, (evt) -> {
+                            SyncManager.instance.request(depot.Id);
+                        }, depotsMenu);
+                    }
+                    
+                });
+
+                break;
+            }
+            case ConnectionLost:
+            {
+                System.out.println("Lost connection to sync server!");
+                EventQueue.invokeLater(() ->
+                {
+                    syncConnectMenuItem.setSelected(false);
+                    syncConnectMenuItem.setEnabled(true);
+                    syncConnectMenuItem.setText("Connect");
+                    syncConnectMenuItem.repaint();
+
+                    depotsMenu.removeAll();
+                    depotsMenu.setEnabled(false);  
+
+                    for (int i = 0; i < ResourceSystem.getDatabases().size(); ++i)
+                    {
+                        var database = ResourceSystem.getDatabases().get(i);
+                        if (database instanceof NetworkFileDB)
+                        {
+                            ResourceSystem.getDatabases().remove(i);
+                            Toolkit.INSTANCE.fileDataTabs.removeTabAt(i);
+                            i--;
+                        }
+                    }
+                });
+
+                break;
+            }
+
+            case DepotCreated:
+            {
+                var depot = (Depot)userData;
+                depotSeparator.setVisible(true);
+                Swing.createMenuItem(depot.DisplayName, (evt) -> {
+                    SyncManager.instance.request(depot.Id);
+                }, depotsMenu);
+                break;
+            }
+            
+            case DepotDownloaded:
+            {
+                var depot = (Depot)userData;
+                EventQueue.invokeLater(() -> {
+
+                    var databases = ResourceSystem.getDatabases();
+                    
+                    int index = -1;
+                    for (int i = 0; i < databases.size(); ++i)
+                    {
+                        if (databases.get(i) == depot.WorkingDatabase)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if (index != -1)
+                    {
+                        fileDataTabs.setSelectedIndex(index);
+                        return;
+                    }
+
+                    addTab(depot.WorkingDatabase);
+                });
+
+                break;
+            }
+        }
+    }
+
+    private void syncConnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
+    {//GEN-FIRST:event_syncConnectMenuItemActionPerformed
+
+        if (SyncManager.instance.getState() == ConnectionState.Disconnected && SyncManager.instance.connect())
+        {
+            syncConnectMenuItem.setSelected(false);
+            syncConnectMenuItem.setEnabled(false);
+            syncConnectMenuItem.setText("Connecting...");
+            syncConnectMenuItem.repaint();
+        }
+    }//GEN-LAST:event_syncConnectMenuItemActionPerformed
+
 
     private void disable3DView()
     {
@@ -267,18 +423,7 @@ public class Toolkit extends javax.swing.JFrame
     private void checkForChanges()
     {
         for (FileData data : ResourceSystem.getDatabases())
-        {
-            if (data.hasChanges())
-            {
-                int result = JOptionPane.showConfirmDialog(null,
-                    String.format("Your %s (%s) has pending changes, do you want to " +
-                                  "save?",
-                        data.getType().getName(), data.getFile().getAbsolutePath()),
-                    "Pending changes", JOptionPane.YES_NO_OPTION);
-                if (result == JOptionPane.YES_OPTION)
-                    data.save();
-            }
-        }
+            data.promptSave();
 
         for (Fart archive : ResourceSystem.getArchives())
         {
@@ -429,16 +574,8 @@ public class Toolkit extends javax.swing.JFrame
                         EditCallbacks::editItem,
                         this.entryContext);
 
-                    if (ApplicationFlags.ALEAR_INTEGRATION)
-                    {
-                        Swing.createMenuItem(
-                            "Upload",
-                            "Sends the item to the local Alear server",
-                            AlearCallbacks::upload,
-                            this.entryContext);
-                    }
-
-                    Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
+                    if (Config.pusher().enabled)
+                        Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
 
                     if (ApplicationFlags.CAN_USE_3D)
                     {
@@ -505,6 +642,14 @@ public class Toolkit extends javax.swing.JFrame
                             LoadCallbacks::loadPalette3D,
                             this.entryContext);
                     }
+
+                    Swing.createMenuItem(
+                        "Convert to Level",
+                        "Generates a level from this palette resource",
+                        UtilityCallbacks::paletteToLevel,
+                        this.entryContext
+                    );
+
                     break;
                 }
                 case LEVEL:
@@ -521,7 +666,8 @@ public class Toolkit extends javax.swing.JFrame
                 }
                 case MESH:
                 {
-                    Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
+                    if (Config.pusher().enabled)
+                        Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
                     if (Config.instance.enable3D)
                     {
                         Swing.createMenuItem(
@@ -534,7 +680,17 @@ public class Toolkit extends javax.swing.JFrame
                 }
                 case GFX_MATERIAL:
                 {
-                    Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
+                    Swing.createMenuItem(
+                        "Extract Shader Binaries",
+                        "Extracts all individual shader binaries contained by this material",
+                        ExportCallbacks::dumpShaderBinaries,
+                        this.entryContext
+                    );
+                
+                    if (Config.pusher().enabled)
+                        Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
+
+
                     break;
                 }
             }
@@ -640,7 +796,7 @@ public class Toolkit extends javax.swing.JFrame
                 this.entryContext.add(this.newEntryGroup);
 
             boolean canAddItems =
-                ResourceSystem.getSelectedDatabase().getType().containsData();
+                ResourceSystem.getSelectedDatabase().getType().containsData() || ResourceSystem.getSelectedDatabase() instanceof NetworkFileDB;
             if (!canAddItems)
                 canAddItems = ResourceSystem.getArchives().size() != 0;
 
@@ -929,10 +1085,19 @@ public class Toolkit extends javax.swing.JFrame
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         fixDependencyTable = new javax.swing.JMenuItem();
         generateDiff = new javax.swing.JMenuItem();
+        dumpFileList = new javax.swing.JMenuItem();
+        dumpNonSourceFileList = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         installProfileMod = new javax.swing.JMenuItem();
         exportWorld = new javax.swing.JMenuItem();
         exportSceneGraph = new javax.swing.JMenuItem();
+        syncMenu = new javax.swing.JMenu();
+        syncConnectMenuItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        depotsMenu = new javax.swing.JMenu();
+        createDepotMenuItem = new javax.swing.JMenuItem();
+        depotSeparator = new javax.swing.JPopupMenu.Separator();
+        crafteroidsMenu = new javax.swing.JMenuItem();
         debugMenu = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
 
@@ -2154,6 +2319,22 @@ public class Toolkit extends javax.swing.JFrame
             }
         });
         toolsMenu.add(generateDiff);
+
+        dumpFileList.setText("Dump file list");
+        dumpFileList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dumpFileListActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(dumpFileList);
+
+        dumpNonSourceFileList.setText("Dump non-sourced file list");
+        dumpNonSourceFileList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dumpNonSourceFileListActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(dumpNonSourceFileList);
         toolsMenu.add(jSeparator5);
 
         installProfileMod.setText("Install Mod(s)");
@@ -2184,6 +2365,37 @@ public class Toolkit extends javax.swing.JFrame
         toolsMenu.add(exportSceneGraph);
 
         navigation.add(toolsMenu);
+
+        syncMenu.setText("Sync");
+
+        syncConnectMenuItem.setText("Connect");
+        syncConnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                syncConnectMenuItemActionPerformed(evt);
+            }
+        });
+        syncMenu.add(syncConnectMenuItem);
+        syncMenu.add(jSeparator2);
+
+        depotsMenu.setText("Depots");
+        depotsMenu.setEnabled(false);
+
+        createDepotMenuItem.setText("Create...");
+        createDepotMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createDepotMenuItemActionPerformed(evt);
+            }
+        });
+        depotsMenu.add(createDepotMenuItem);
+        depotsMenu.add(depotSeparator);
+
+        syncMenu.add(depotsMenu);
+
+        crafteroidsMenu.setText("Crafteroids");
+        crafteroidsMenu.setEnabled(false);
+        syncMenu.add(crafteroidsMenu);
+
+        navigation.add(syncMenu);
 
         debugMenu.setText("Debug");
 
@@ -2315,6 +2527,67 @@ public class Toolkit extends javax.swing.JFrame
         DatabaseCallbacks.setLocalGUID();
     }//GEN-LAST:event_setLocalGUIDContextActionPerformed
 
+    private void dumpNonSourceFileListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpNonSourceFileListActionPerformed
+
+        File file = FileChooser.openFile("dmp.txt", "txt", true);
+        if (file == null) return;
+
+        StringBuilder builder = new StringBuilder(500000);
+        for (FileData source : ResourceSystem.getDatabases())
+        {
+            if (!(source instanceof FileDB database)) continue;
+            builder.append(String.format("%s\n\n", database.getFile().getAbsolutePath()));
+
+            File root = source.getBase();
+
+            for (FileDBRow row : database)
+            {
+                SHA1 hash = row.getSHA1();
+                if (hash.equals(SHA1.EMPTY)) continue;
+                if (ResourceSystem.exists(hash)) continue;
+
+                File looseFile = new File(root, row.getPath());
+                if (looseFile.exists()) continue;
+
+                builder.append(String.format("\t%s (%s)\n", hash, row.getPath()));
+            }
+            
+            builder.append('\n');
+        }
+
+        FileIO.write(builder.toString().getBytes(StandardCharsets.US_ASCII), file.getAbsolutePath());
+    }//GEN-LAST:event_dumpNonSourceFileListActionPerformed
+
+    private void editMenuRenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuRenameActionPerformed
+        DatabaseCallbacks.renameItem();
+    }//GEN-LAST:event_editMenuRenameActionPerformed
+
+    private void dumpFileListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dumpFileListActionPerformed
+        FileData source = ResourceSystem.getSelectedDatabase();
+        if (!(source instanceof FileDB database)) return;
+        
+        File file = FileChooser.openFile("dmp.txt", "txt", true);
+        if (file == null) return;
+
+        StringBuilder builder = new StringBuilder(500000);
+        builder.append(String.format("%s\n\n", database.getFile().getAbsolutePath()));
+
+        database.sort();
+
+        for (FileDBRow row : database)
+        {
+            builder.append(String.format("g%-10s %s %s\n", Long.toUnsignedString(row.getGUID().getValue()), new Timestamp(row.getDate() * 1000L).toString(), row.getPath()));
+        }
+        
+        builder.append('\n');
+
+        FileIO.write(builder.toString().getBytes(StandardCharsets.US_ASCII), file.getAbsolutePath());
+    }//GEN-LAST:event_dumpFileListActionPerformed
+
+    private void createDepotMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createDepotMenuItemActionPerformed
+        new CreateDepotModal();
+    }//GEN-LAST:event_createDepotMenuItemActionPerformed
+
     private void loadDBActionPerformed(java.awt.event.ActionEvent evt)
     {// GEN-FIRST:event_loadDBActionPerformed
         File file = FileChooser.openFile("blurayguids.map", "map", false);
@@ -2326,7 +2599,8 @@ public class Toolkit extends javax.swing.JFrame
     {
         ResourceSystem.getDatabases().add(data);
         JTree tree = data.getTree();
-
+        ((FileNode)tree.getModel().getRoot()).sort();
+        
         tree.addTreeSelectionListener(e -> TreeSelectionListener.listener(tree));
         tree.addMouseListener(showContextMenu);
 
@@ -2481,6 +2755,9 @@ public class Toolkit extends javax.swing.JFrame
 
     public Fart[] getSelectedArchives()
     {
+        if (ResourceSystem.getSelectedDatabase() instanceof NetworkFileDB)
+            return new Fart[] { SyncManager.instance.getCache() };
+
         if (ResourceSystem.getArchives().size() == 0)
             return null;
         if (ResourceSystem.getArchives().size() > 1)
@@ -2503,8 +2780,7 @@ public class Toolkit extends javax.swing.JFrame
         JTree tree = database.getTree();
         Nodes.filter((FileNode) tree.getModel().getRoot(),
             new SearchParameters(search.getText()));
-        ((FileModel) tree.getModel()).reload();
-        tree.updateUI();
+        ResourceSystem.reloadModel(database);
     }// GEN-LAST:event_searchActionPerformed
 
     private void extractBigProfileActionPerformed(java.awt.event.ActionEvent evt)
@@ -2693,6 +2969,7 @@ public class Toolkit extends javax.swing.JFrame
     {// GEN-FIRST:event_rebootActionPerformed
         this.search.getParent().remove(this.search);
         this.checkForChanges();
+        SyncManager.instance.reset();
         this.dispose();
         EventQueue.invokeLater(() -> new Toolkit().setVisible(true));
     }// GEN-LAST:event_rebootActionPerformed
@@ -3344,7 +3621,7 @@ public class Toolkit extends javax.swing.JFrame
         }
         catch (Exception ex)
         {
-            JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Animation failed to convert!",
+            JOptionPane.showMessageDialog(Toolkit.INSTANCE, String.format("Animation failed to convert! (%s)", ex.getMessage()),
                 "Animation Importer",
                 JOptionPane.ERROR_MESSAGE);
             return;
@@ -3741,6 +4018,8 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JPopupMenu consolePopup;
     private javax.swing.JMenuItem convertTexture;
     private javax.swing.JMenu copyGroup;
+    private javax.swing.JMenuItem crafteroidsMenu;
+    private javax.swing.JMenuItem createDepotMenuItem;
     private javax.swing.JMenuItem createFileArchive;
     private javax.swing.JTextField creatorField;
     private javax.swing.JLabel creatorLabel;
@@ -3752,9 +4031,13 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JMenu dependencyGroup;
     public javax.swing.JTree dependencyTree;
     private javax.swing.JScrollPane dependencyTreeContainer;
+    private javax.swing.JPopupMenu.Separator depotSeparator;
+    private javax.swing.JMenu depotsMenu;
     private javax.swing.JTextArea descriptionField;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JSplitPane details;
+    private javax.swing.JMenuItem dumpFileList;
+    private javax.swing.JMenuItem dumpNonSourceFileList;
     private javax.swing.JMenuItem dumpRLST;
     private javax.swing.JPopupMenu.Separator dumpSep;
     private javax.swing.JMenuItem duplicateContext;
@@ -3819,6 +4102,7 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -3887,6 +4171,8 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JMenuItem setLocalGUIDContext;
     private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
+    private javax.swing.JCheckBoxMenuItem syncConnectMenuItem;
+    private javax.swing.JMenu syncMenu;
     private javax.swing.JScrollPane tableContainer;
     public javax.swing.JLabel texture;
     private javax.swing.JTextField titleField;

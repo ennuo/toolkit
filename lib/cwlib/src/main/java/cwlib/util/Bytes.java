@@ -2,8 +2,10 @@ package cwlib.util;
 
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryOutputStream;
+import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import org.joml.Vector3f;
@@ -38,6 +40,31 @@ public final class Bytes
             hex[(i * 2) + 1] = Bytes.HEX_ARRAY[b & 0xF];
         }
         return String.valueOf(hex);
+    }
+
+    public static int toMagic(String string)
+    {
+        if (string == null) return 0;
+
+        int len = string.length();
+        int magic = 0;
+
+        if (len >= 1) magic |= ((string.charAt(0) & 0xff) << 24);
+        if (len >= 2) magic |= ((string.charAt(1) & 0xff) << 16);
+        if (len >= 3) magic |= ((string.charAt(2) & 0xff) << 8);
+        if (len >= 4) magic |= (string.charAt(3) & 0xff);
+
+        return magic;
+    }
+
+    public static String toMagic(int magic)
+    {
+        char a = (char) ((magic >>> 24) & 0xff);
+        char b = (char) ((magic >>> 16) & 0xff);
+        char c = (char) ((magic >>> 8) & 0xff);
+        char d = (char) ((magic >>> 0) & 0xff);
+
+        return "" + a + b + c + d;
     }
 
     /**
@@ -109,6 +136,23 @@ public final class Bytes
                (b[2] & 0xFF) << 8 |
                (b[3] & 0xFF);
     }
+
+    /**
+     * Converts a big-order byte array to an integer primitive.
+     *
+     * @param b 4-byte array containing big-order integer
+     * @return the integer from the byte array
+     */
+    public static int toIntegerBE(byte[] b, int offset)
+    {
+        if (b == null)
+            throw new NullPointerException("Can't read data type from null byte array!");
+        return (b[offset + 0] & 0xFF) << 24 |
+               (b[offset + 1] & 0xFF) << 16 |
+               (b[offset + 2] & 0xFF) << 8 |
+               (b[offset + 3] & 0xFF);
+    }
+
 
     /**
      * Converts a little-order byte array to an integer primitive.
@@ -185,6 +229,13 @@ public final class Bytes
             (byte) (v >>> 24),
         };
     }
+    
+    public static byte[] getFloatBuffer(float value)
+    {
+        MemoryOutputStream output = new MemoryOutputStream(0x4);
+        output.f32(value);
+        return output.getBuffer();
+    }
 
     public static byte[] getIntegerBuffer(long value, byte compressionFlags)
     {
@@ -192,6 +243,13 @@ public final class Bytes
         output.u32(value);
         output.shrink();
         return output.getBuffer();
+    }
+
+    public static byte[] GetHandleBytes(NetworkPlayerID id)
+    {
+        Serializer serializer = new Serializer(NetworkPlayerID.BASE_ALLOCATION_SIZE, new Revision(Revisions.LBP2_MAX), CompressionFlags.USE_NO_COMPRESSION);
+        serializer.struct(id, NetworkPlayerID.class);
+        return serializer.getBuffer();
     }
 
     public static byte[] getResourceReference(ResourceDescriptor res, Revision revision,

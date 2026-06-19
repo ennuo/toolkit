@@ -486,10 +486,13 @@ public class PWorld implements Serializable
         }
 
         if (0x1a3 < version && version < 0x1d1)
-            throw new SerializationException("CGameCamera serialization unsupported!");
+        {
+            return;
+            //throw new SerializationException("CGameCamera serialization unsupported!");
+        }
 
         if (0x1bd < version && version < 0x213)
-            serializer.i32(0);
+            serializer.i32(0); // SpawnsPerPlayer
 
         if (version >= 0x1c2 && version < 0x36e)
             deathCount = serializer.i32(deathCount);

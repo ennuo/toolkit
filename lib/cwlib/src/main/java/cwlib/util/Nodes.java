@@ -5,8 +5,11 @@ import cwlib.types.databases.FileEntry;
 import cwlib.types.swing.FileNode;
 import cwlib.types.swing.SearchParameters;
 
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -40,6 +43,38 @@ public class Nodes
         }
     }
 
+    public static void cacheTreePaths(JTree tree, FileNode root)
+    {
+        if (root.getChildCount() == 0) return;
+
+        for (var e = root.children(); e.hasMoreElements(); )
+        {
+            var node = (FileNode) e.nextElement();
+            if (!node.isLeaf() && tree.isExpanded(new TreePath(node.getPath())))
+                node.wasOpen = true;
+
+            cacheTreePaths(tree, node);
+        }
+    }
+
+    public static void restoreTreePaths(JTree tree, FileNode root)
+    {
+        if (root.getChildCount() == 0) return;
+
+        for (var e = root.children(); e.hasMoreElements(); )
+        {
+            var node = (FileNode) e.nextElement();
+            if (!node.isLeaf() && node.isVisible() && node.wasOpen)
+            {
+                var fp = new TreePath(node.getPath());
+                if (!tree.isExpanded(fp))
+                    tree.expandPath(fp);
+            }
+            
+            restoreTreePaths(tree, node);
+        }
+    }
+
     public static int filter(FileNode root, SearchParameters params)
     {
         int visibleCount = 0;
@@ -51,18 +86,7 @@ public class Nodes
                 FileEntry entry = node.getEntry();
                 if (entry != null)
                 {
-                    ResourceDescriptor resource = params.getResource();
-                    if (resource != null)
-                    {
-                        if (resource.isHash())
-                            isVisible = entry.getSHA1().equals(resource.getSHA1());
-                        else if (resource.isGUID())
-                        {
-                            isVisible = entry.getKey().equals(resource.getGUID());
-                        }
-                    }
-                    else if (entry.getPath().contains(params.getPath()))
-                        isVisible = true;
+                    isVisible = params.matches(node);
                     node.setVisible(isVisible);
                     if (isVisible)
                         visibleCount++;
