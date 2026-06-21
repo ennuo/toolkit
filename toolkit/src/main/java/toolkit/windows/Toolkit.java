@@ -4,6 +4,7 @@ import configurations.ApplicationFlags;
 import configurations.Config;
 import configurations.Profile;
 import cwlib.ConfigShared;
+import cwlib.CwlibConfiguration;
 import cwlib.SortMode;
 import cwlib.enums.*;
 import cwlib.ex.SerializationException;
@@ -203,6 +204,13 @@ public class Toolkit extends javax.swing.JFrame
 
         /* Auto-load configurations from whatever profile is currently enabled. */
 
+        for (var revision : Config.revisions())
+        {
+            Swing.createMenuItem(revision.name, (evt) -> {
+                EditCallbacks.changeRevision(revision.revision);
+            }, changeResourceRevisionGroup);
+        }
+        
         syncMenu.setVisible(Config.sync().enabled);
         crafteroidsMenu.setVisible(false);
 
@@ -949,9 +957,6 @@ public class Toolkit extends javax.swing.JFrame
 
         entryContext = new javax.swing.JPopupMenu();
         changeResourceRevisionGroup = new javax.swing.JMenu();
-        changeResourceRevisionLBP1Context = new javax.swing.JMenuItem();
-        changeResourceRevisionLBP2Context = new javax.swing.JMenuItem();
-        changeResourceRevisionLBP3Context = new javax.swing.JMenuItem();
         extractGroup = new javax.swing.JMenu();
         extractContext = new javax.swing.JMenuItem();
         extractDecompressedContext = new javax.swing.JMenuItem();
@@ -1145,31 +1150,6 @@ public class Toolkit extends javax.swing.JFrame
         jMenuItem1 = new javax.swing.JMenuItem();
 
         changeResourceRevisionGroup.setText("Change Revision");
-
-        changeResourceRevisionLBP1Context.setText("LBP1");
-        changeResourceRevisionLBP1Context.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeResourceRevisionLBP1ContextActionPerformed(evt);
-            }
-        });
-        changeResourceRevisionGroup.add(changeResourceRevisionLBP1Context);
-
-        changeResourceRevisionLBP2Context.setText("LBP2");
-        changeResourceRevisionLBP2Context.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeResourceRevisionLBP2ContextActionPerformed(evt);
-            }
-        });
-        changeResourceRevisionGroup.add(changeResourceRevisionLBP2Context);
-
-        changeResourceRevisionLBP3Context.setText("LBP3");
-        changeResourceRevisionLBP3Context.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeResourceRevisionLBP3ContextActionPerformed(evt);
-            }
-        });
-        changeResourceRevisionGroup.add(changeResourceRevisionLBP3Context);
-
         entryContext.add(changeResourceRevisionGroup);
 
         extractGroup.setText("Extract...");
@@ -2599,22 +2579,6 @@ public class Toolkit extends javax.swing.JFrame
             JOptionPane.showMessageDialog(Toolkit.INSTANCE, "Successfully imported sticker!",
             "Item Importer", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_newStickerContextActionPerformed
-
-    private void changeResourceRevisionLBP3ContextActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_changeResourceRevisionLBP3ContextActionPerformed
-        EditCallbacks.changeRevision(new Revision(0x021803f9));
-    }//GEN-LAST:event_changeResourceRevisionLBP3ContextActionPerformed
-
-    private void changeResourceRevisionLBP1ContextActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_changeResourceRevisionLBP1ContextActionPerformed
-        EditCallbacks.changeRevision(new Revision(Branch.LEERDAMMER.getHead(),
-         Branch.LEERDAMMER.getID(), Revisions.LD_LAMS_KEYS));
-    }//GEN-LAST:event_changeResourceRevisionLBP1ContextActionPerformed
-
-    private void changeResourceRevisionLBP2ContextActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_changeResourceRevisionLBP2ContextActionPerformed
-        EditCallbacks.changeRevision(new Revision(0x3f6));
-    }//GEN-LAST:event_changeResourceRevisionLBP2ContextActionPerformed
 
     private void setLocalGUIDContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setLocalGUIDContextActionPerformed
         DatabaseCallbacks.setLocalGUID();
@@ -4118,9 +4082,6 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JTextField categoryField;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JMenu changeResourceRevisionGroup;
-    private javax.swing.JMenuItem changeResourceRevisionLBP1Context;
-    private javax.swing.JMenuItem changeResourceRevisionLBP2Context;
-    private javax.swing.JMenuItem changeResourceRevisionLBP3Context;
     private javax.swing.JMenuItem clear;
     private javax.swing.JMenuItem closeTab;
     private javax.swing.JMenuItem collectAllItemDependencies;

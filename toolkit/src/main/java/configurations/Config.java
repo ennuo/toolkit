@@ -7,7 +7,10 @@ import cwlib.ConfigShared;
 import cwlib.CwlibConfiguration;
 import cwlib.ExportSettings;
 import cwlib.SearchSettings;
+import cwlib.enums.Branch;
+import cwlib.enums.Revisions;
 import cwlib.resources.RTranslationTable;
+import cwlib.types.data.Revision;
 import cwlib.util.FileIO;
 
 import java.io.File;
@@ -31,11 +34,13 @@ public class Config extends ConfigShared
     public static PusherSettings pusher() { return instance.pusher; }
     public static SyncSettings sync() { return instance.sync; }
     public static ExportSettings export() { return instance.export; }
+    public static List<RecompileRevision> revisions() { return instance.revisions; }
     
     public PusherSettings pusher = new PusherSettings();
     public SyncSettings sync = new SyncSettings();
     
     public List<Profile> profiles = new ArrayList<>();
+    public List<RecompileRevision> revisions = new ArrayList<>();
     public int currentProfile = 0;
     public boolean showAlearData = true;
     public boolean isDebug = false;
@@ -95,6 +100,27 @@ public class Config extends ConfigShared
         return FileIO.write(gson.toJson(Config.instance).getBytes(), Config.path.toString());
     }
 
+    private static void generateDefaultRevisions()
+    {
+        if (instance == null) Config.generate();
+        if (instance.revisions.size() > 0) return;
+
+        instance.revisions.add(new RecompileRevision(
+            "LBP1",
+            new Revision(Revisions.LBP1_MAX, Branch.LEERDAMMER.getID(), Revisions.LD_LAMS_KEYS)
+        ));
+
+        instance.revisions.add(new RecompileRevision(
+            "LBP2",
+            new Revision(0x3f6)
+        ));
+
+        instance.revisions.add(new RecompileRevision(
+            "LBP3",
+            new Revision(0x021803f9)
+        ));
+    }
+
     public static void initialize()
     {
         var keys = new File(CwlibConfiguration.JAR_DIRECTORY, "keys.txt");
@@ -121,5 +147,7 @@ public class Config extends ConfigShared
             }
         }
         else Config.generate();
+
+        generateDefaultRevisions();
     }
 }
