@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import cwlib.ConfigShared;
 import cwlib.CwlibConfiguration;
 import cwlib.ExportSettings;
+import cwlib.SearchSettings;
 import cwlib.resources.RTranslationTable;
 import cwlib.util.FileIO;
 
@@ -33,7 +34,7 @@ public class Config extends ConfigShared
     
     public PusherSettings pusher = new PusherSettings();
     public SyncSettings sync = new SyncSettings();
-
+    
     public List<Profile> profiles = new ArrayList<>();
     public int currentProfile = 0;
     public boolean showAlearData = true;

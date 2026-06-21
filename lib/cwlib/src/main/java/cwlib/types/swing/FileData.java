@@ -1,5 +1,7 @@
 package cwlib.types.swing;
 
+import cwlib.ConfigShared;
+import cwlib.SortMode;
 import cwlib.enums.DatabaseType;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
@@ -55,6 +57,9 @@ public abstract class FileData
     protected FileNode root;
 
     protected boolean hasChanges = false;
+
+    private SortMode lastSortMode = null;
+    private boolean lastFoldersHoisted = ConfigShared.search().hoistFolders;
 
     protected FileData(File file, DatabaseType type)
     {
@@ -267,4 +272,18 @@ public abstract class FileData
     }
     
     public boolean isRemote() { return false; }
+
+    public boolean needsResort()
+    {
+        var config = ConfigShared.search();
+        return config.hoistFolders != lastFoldersHoisted || config.sortMode != lastSortMode;
+    }
+
+    public void sortUI()
+    {
+        var config = ConfigShared.search();
+        if (needsResort()) root.sort();
+        lastFoldersHoisted = config.hoistFolders;
+        lastSortMode = config.sortMode;
+    }
 }

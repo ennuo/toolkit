@@ -443,7 +443,8 @@ public class ResourceSystem
         return info.getResource();
     }
 
-    public static void reloadModel(FileData database)
+    public static void reloadModel(FileData database) { reloadModel(database, false); }
+    public static void reloadModel(FileData database, boolean resort)
     {
         if (database == null) return;
         JTree tree = database.getTree();
@@ -451,6 +452,8 @@ public class ResourceSystem
         Nodes.cacheTreePaths(tree, (FileNode)tree.getModel().getRoot());
 
         var selectionPath = tree.getSelectionPath();
+
+        if (resort) database.sortUI();
 
         ((FileModel) tree.getModel()).reload();
         

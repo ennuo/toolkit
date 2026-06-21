@@ -3,6 +3,8 @@ package toolkit.windows;
 import configurations.ApplicationFlags;
 import configurations.Config;
 import configurations.Profile;
+import cwlib.ConfigShared;
+import cwlib.SortMode;
 import cwlib.enums.*;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
@@ -134,6 +136,8 @@ public class Toolkit extends javax.swing.JFrame
 
             this.search.setEnabled(true);
             this.search.setText(database.getLastSearch());
+            if (database.needsResort())
+                ResourceSystem.reloadModel(database, true);
 
             if (this.search.getText().equals("Search..."))
                 search.setForeground(Color.GRAY);
@@ -147,6 +151,19 @@ public class Toolkit extends javax.swing.JFrame
         this.entryModifiers.setEnabledAt(1, false);
         this.StringMetadata.setEnabled(false);
         this.updateWorkspace();
+
+        this.searchFilterButton.addMouseListener(new MouseAdapter() {
+        public void mousePressed(MouseEvent e)
+        {
+            var sortMode = ConfigShared.search().sortMode;
+            sortByPathMenuItem.setSelected(sortMode == SortMode.PATH);
+            sortByGuidMenuItem.setSelected(sortMode == SortMode.GUID);
+            sortByDateMenuItem.setSelected(sortMode == SortMode.DATE);
+
+            if (SwingUtilities.isLeftMouseButton(e))
+                searchContext.show(searchFilterButton, e.getX(), e.getY());
+        }
+        });
 
         this.search.addFocusListener(new FocusListener()
         {
@@ -378,7 +395,7 @@ public class Toolkit extends javax.swing.JFrame
     private void disable3DView()
     {
         this.renderPane.removeTabAt(1);
-        this.resourceTabs.removeTabAt(1);
+        // this.resourceTabs.removeTabAt(1);
 
         // Disable 3D specific tools
         this.exportWorld.setVisible(false);
@@ -464,9 +481,13 @@ public class Toolkit extends javax.swing.JFrame
         {
             editMenu.setVisible(true);
             saveMenu.setEnabled(database.hasChanges());
+            searchFilterButton.setVisible(database.getType().hasGUIDs());
         }
         else
+        {
             editMenu.setVisible(false);
+            searchFilterButton.setVisible(false);
+        }
 
         if (archiveCount != 0 || database != null)
         {
@@ -972,6 +993,13 @@ public class Toolkit extends javax.swing.JFrame
         consolePopup = new javax.swing.JPopupMenu();
         clear = new javax.swing.JMenuItem();
         metadataButtonGroup = new javax.swing.ButtonGroup();
+        searchContext = new javax.swing.JPopupMenu();
+        hoistFoldersMenuItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        sortByPathMenuItem = new javax.swing.JRadioButtonMenuItem();
+        sortByGuidMenuItem = new javax.swing.JRadioButtonMenuItem();
+        sortByDateMenuItem = new javax.swing.JRadioButtonMenuItem();
+        sortModeGroup = new javax.swing.ButtonGroup();
         workspace = new javax.swing.JSplitPane();
         details = new javax.swing.JSplitPane();
         previewContainer = new javax.swing.JSplitPane();
@@ -1015,9 +1043,10 @@ public class Toolkit extends javax.swing.JFrame
         cameraPosZ = new javax.swing.JSpinner();
         resourceTabs = new javax.swing.JTabbedPane();
         treeContainer = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
         search = new javax.swing.JTextField();
+        searchFilterButton = new javax.swing.JButton();
         fileDataTabs = new javax.swing.JTabbedPane();
-        hierachyPanel = new javax.swing.JPanel();
         progressBar = new javax.swing.JProgressBar();
         navigation = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -1548,6 +1577,45 @@ public class Toolkit extends javax.swing.JFrame
         metadataButtonGroup.add(LAMSMetadata);
         metadataButtonGroup.add(StringMetadata);
 
+        hoistFoldersMenuItem.setSelected(true);
+        hoistFoldersMenuItem.setText("Hoist Folders");
+        hoistFoldersMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hoistFoldersMenuItemActionPerformed(evt);
+            }
+        });
+        searchContext.add(hoistFoldersMenuItem);
+        searchContext.add(jSeparator7);
+
+        sortModeGroup.add(sortByPathMenuItem);
+        sortByPathMenuItem.setSelected(true);
+        sortByPathMenuItem.setText("Path");
+        sortByPathMenuItem.setToolTipText("");
+        sortByPathMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortByPathMenuItemActionPerformed(evt);
+            }
+        });
+        searchContext.add(sortByPathMenuItem);
+
+        sortModeGroup.add(sortByGuidMenuItem);
+        sortByGuidMenuItem.setText("GUID");
+        sortByGuidMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortByGuidMenuItemActionPerformed(evt);
+            }
+        });
+        searchContext.add(sortByGuidMenuItem);
+
+        sortModeGroup.add(sortByDateMenuItem);
+        sortByDateMenuItem.setText("Date");
+        sortByDateMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortByDateMenuItemActionPerformed(evt);
+            }
+        });
+        searchContext.add(sortByDateMenuItem);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Craftworld Toolkit");
         setMinimumSize(new java.awt.Dimension(698, 296));
@@ -1834,7 +1902,7 @@ public class Toolkit extends javax.swing.JFrame
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3))
-                        .addGap(0, 159, Short.MAX_VALUE))
+                        .addGap(0, 158, Short.MAX_VALUE))
                     .addComponent(cameraPosZ))
                 .addContainerGap())
         );
@@ -1876,23 +1944,34 @@ public class Toolkit extends javax.swing.JFrame
                 searchActionPerformed(evt);
             }
         });
-        treeContainer.setLeftComponent(search);
-        treeContainer.setRightComponent(fileDataTabs);
+
+        searchFilterButton.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        searchFilterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tweak_sackbot_costume.png"))); // NOI18N
+        searchFilterButton.setBorder(null);
+        searchFilterButton.setIconTextGap(0);
+        searchFilterButton.setMargin(new java.awt.Insets(30, 30, 30, 30));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(search, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(searchFilterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(search, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(searchFilterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        treeContainer.setTopComponent(jPanel1);
+        treeContainer.setBottomComponent(fileDataTabs);
 
         resourceTabs.addTab("Assets", treeContainer);
-
-        javax.swing.GroupLayout hierachyPanelLayout = new javax.swing.GroupLayout(hierachyPanel);
-        hierachyPanel.setLayout(hierachyPanelLayout);
-        hierachyPanelLayout.setHorizontalGroup(
-            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 150, Short.MAX_VALUE)
-        );
-        hierachyPanelLayout.setVerticalGroup(
-            hierachyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 558, Short.MAX_VALUE)
-        );
-
-        resourceTabs.addTab("Hierachy", hierachyPanel);
 
         workspace.setLeftComponent(resourceTabs);
 
@@ -2588,6 +2667,26 @@ public class Toolkit extends javax.swing.JFrame
         new CreateDepotModal();
     }//GEN-LAST:event_createDepotMenuItemActionPerformed
 
+    private void sortByPathMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByPathMenuItemActionPerformed
+        Config.search().sortMode = SortMode.PATH;
+        ResourceSystem.reloadModel(ResourceSystem.getSelectedDatabase(), true);
+    }//GEN-LAST:event_sortByPathMenuItemActionPerformed
+
+    private void sortByGuidMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByGuidMenuItemActionPerformed
+        Config.search().sortMode = SortMode.GUID;
+        ResourceSystem.reloadModel(ResourceSystem.getSelectedDatabase(), true);
+    }//GEN-LAST:event_sortByGuidMenuItemActionPerformed
+
+    private void sortByDateMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByDateMenuItemActionPerformed
+        Config.search().sortMode = SortMode.DATE;
+        ResourceSystem.reloadModel(ResourceSystem.getSelectedDatabase(), true);
+    }//GEN-LAST:event_sortByDateMenuItemActionPerformed
+
+    private void hoistFoldersMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hoistFoldersMenuItemActionPerformed
+        Config.search().hoistFolders = !Config.search().hoistFolders;
+        ResourceSystem.reloadModel(ResourceSystem.getSelectedDatabase(), true);
+    }//GEN-LAST:event_hoistFoldersMenuItemActionPerformed
+
     private void loadDBActionPerformed(java.awt.event.ActionEvent evt)
     {// GEN-FIRST:event_loadDBActionPerformed
         File file = FileChooser.openFile("blurayguids.map", "map", false);
@@ -2599,7 +2698,8 @@ public class Toolkit extends javax.swing.JFrame
     {
         ResourceSystem.getDatabases().add(data);
         JTree tree = data.getTree();
-        ((FileNode)tree.getModel().getRoot()).sort();
+        data.sortUI();
+    
         
         tree.addTreeSelectionListener(e -> TreeSelectionListener.listener(tree));
         tree.addMouseListener(showContextMenu);
@@ -4086,7 +4186,7 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JMenu gamedataMenu;
     private javax.swing.JMenuItem generateDiff;
     private tv.porst.jhexview.JHexView hex;
-    private javax.swing.JPanel hierachyPanel;
+    private javax.swing.JCheckBoxMenuItem hoistFoldersMenuItem;
     private javax.swing.JTextField iconField;
     private javax.swing.JLabel iconLabel;
     private javax.swing.JMenuItem importJSONContext;
@@ -4100,6 +4200,7 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator2;
@@ -4107,6 +4208,7 @@ public class Toolkit extends javax.swing.JFrame
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JMenuItem loadArchive;
     public javax.swing.JMenuItem loadBigProfile;
@@ -4168,7 +4270,13 @@ public class Toolkit extends javax.swing.JFrame
     public javax.swing.JMenu savedataMenu;
     private javax.swing.JPanel scenePanel;
     public javax.swing.JTextField search;
+    private javax.swing.JPopupMenu searchContext;
+    private javax.swing.JButton searchFilterButton;
     private javax.swing.JMenuItem setLocalGUIDContext;
+    private javax.swing.JRadioButtonMenuItem sortByDateMenuItem;
+    private javax.swing.JRadioButtonMenuItem sortByGuidMenuItem;
+    private javax.swing.JRadioButtonMenuItem sortByPathMenuItem;
+    private javax.swing.ButtonGroup sortModeGroup;
     private javax.swing.JTextField subCombo;
     private javax.swing.JMenuItem swapProfilePlatform;
     private javax.swing.JCheckBoxMenuItem syncConnectMenuItem;

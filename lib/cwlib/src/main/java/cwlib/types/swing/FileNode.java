@@ -1,5 +1,7 @@
 package cwlib.types.swing;
 
+import cwlib.ConfigShared;
+import cwlib.SortMode;
 import cwlib.types.data.GUID;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
@@ -91,11 +93,14 @@ public class FileNode extends DefaultMutableTreeNode
         FileNode nodeA = (FileNode)a;
         FileNode nodeB = (FileNode)z;
 
-        boolean aIsFolder = nodeA.entry == null;
-        boolean bIsFolder = nodeB.entry == null;
+        if (ConfigShared.search().hoistFolders)
+        {
+            boolean aIsFolder = nodeA.entry == null;
+            boolean bIsFolder = nodeB.entry == null;
 
-        if (aIsFolder != bIsFolder)
-            return aIsFolder ? -1 : 1;
+            if (aIsFolder != bIsFolder)
+                return aIsFolder ? -1 : 1;
+        }
 
         return nodeA.getName().compareTo(nodeB.getName());
     }
@@ -108,13 +113,17 @@ public class FileNode extends DefaultMutableTreeNode
         boolean aIsFolder = nodeA.entry == null;
         boolean bIsFolder = nodeB.entry == null;
 
-        if (aIsFolder != bIsFolder)
-            return aIsFolder ? -1 : 1;
-        
-        if (!aIsFolder)
-            return Long.compareUnsigned(((FileDBRow)nodeA.getEntry()).getDate(), ((FileDBRow)nodeB.getEntry()).getDate());
-        
-        return nodeA.getName().compareTo(nodeB.getName());
+        if (ConfigShared.search().hoistFolders)
+        {
+            if (aIsFolder != bIsFolder)
+                return aIsFolder ? -1 : 1;
+        }
+
+        long keyA = aIsFolder ? nodeA.getFirstDate() : ((FileDBRow)nodeA.getEntry()).getDate();
+        long keyB = bIsFolder ? nodeB.getFirstDate() : ((FileDBRow)nodeB.getEntry()).getDate();
+
+        return Long.compareUnsigned(keyA, keyB);
+
     }
 
     private static int sortByKey(TreeNode a, TreeNode z)
@@ -125,13 +134,42 @@ public class FileNode extends DefaultMutableTreeNode
         boolean aIsFolder = nodeA.entry == null;
         boolean bIsFolder = nodeB.entry == null;
 
-        if (aIsFolder != bIsFolder)
-            return aIsFolder ? -1 : 1;
-        
-        if (!aIsFolder)
-            return Long.compareUnsigned(((GUID)nodeA.getEntry().getKey()).getValue(), ((GUID)nodeB.getEntry().getKey()).getValue());
-        
-        return nodeA.getName().compareTo(nodeB.getName());
+        if (ConfigShared.search().hoistFolders)
+        {
+            if (aIsFolder != bIsFolder)
+                return aIsFolder ? -1 : 1;
+        }
+
+        GUID keyA = aIsFolder ? nodeA.getFirstGUID() : (GUID)nodeA.getEntry().getKey();
+        GUID keyB = bIsFolder ? nodeB.getFirstGUID() : (GUID)nodeB.getEntry().getKey();
+
+        return Long.compareUnsigned(keyA.getValue(), keyB.getValue());
+    }
+
+    private GUID getFirstGUID()
+    {
+        for (TreeNode node : children)
+        {
+            var fn = (FileNode)node;
+            if (fn.entry == null)
+                return fn.getFirstGUID();
+            return (GUID)fn.entry.getKey();
+        }
+
+        return new GUID(~0l);
+    }
+
+    private long getFirstDate()
+    {
+        for (TreeNode node : children)
+        {
+            var fn = (FileNode)node;
+            if (fn.entry == null)
+                return fn.getFirstDate();
+            return ((FileDBRow)fn.entry).getDate();
+        }
+
+        return ~0l;
     }
 
     public void sort()
@@ -140,13 +178,22 @@ public class FileNode extends DefaultMutableTreeNode
 
         if (this.source instanceof FileDB || this.source instanceof Mod)
         {
-            children.sort(FileNode::sortByKey);
-
+            // Sort all child nodes first so we can 
+            // sort folders depending on the mode.
             for (TreeNode node : children)
             {
                 if (((FileNode)node).entry == null)
                     ((FileNode)node).sort();
             }
+
+
+            var mode = ConfigShared.search().sortMode;
+            if (mode == SortMode.PATH)
+                children.sort(FileNode::sortByPath);
+            else if (mode == SortMode.GUID)
+                children.sort(FileNode::sortByKey);
+            else if (mode == SortMode.DATE)
+                children.sort(FileNode::sortByTimestamp);
         }
     }
 
