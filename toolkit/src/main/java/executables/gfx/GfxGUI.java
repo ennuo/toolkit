@@ -81,6 +81,12 @@ public class GfxGUI extends javax.swing.JFrame
                 JOptionPane.WARNING_MESSAGE);
     }
 
+    public GfxGUI(String name, RGfxMaterial m)
+    {
+        this();
+        set(name, m);
+    }
+
     private void reset()
     {
         this.gmat = new RGfxMaterial();
@@ -121,43 +127,8 @@ public class GfxGUI extends javax.swing.JFrame
         this.alphaModeCombo.setSelectedIndex(this.gmat.alphaMode & 0xff);
     }
 
-    private void load()
+    private void set(String name, RGfxMaterial gmat)
     {
-        File file = FileChooser.openFile("generatedmesh.gmat", "gmat", false);
-        if (file == null || !file.exists()) return;
-
-        String name = Strings.getWithoutExtension(file.getName());
-
-        SerializedResource resource = null;
-        try { resource = new SerializedResource(file.getAbsolutePath()); }
-        catch (Exception ex)
-        {
-            JOptionPane.showMessageDialog(this, "An error occurred while processing " +
-                                                "compressed " +
-                                                "resource!", "Error",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if (resource.getResourceType() != ResourceType.GFX_MATERIAL)
-        {
-            JOptionPane.showMessageDialog(this, "Resource isn't of type RGfxMaterial!",
-                "Error",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        RGfxMaterial gmat = null;
-        try { gmat = resource.loadResource(RGfxMaterial.class); }
-        catch (Exception ex)
-        {
-            JOptionPane.showMessageDialog(this, "An error occurred while reading " +
-                                                "RGfxMaterial, is" +
-                                                " resource corrupted?", "Error",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         this.reset();
 
         this.gmat = gmat;
@@ -198,6 +169,46 @@ public class GfxGUI extends javax.swing.JFrame
         }
 
         this.update();
+    }
+
+    private void load()
+    {
+        File file = FileChooser.openFile("generatedmesh.gmat", "gmat", false);
+        if (file == null || !file.exists()) return;
+
+        String name = Strings.getWithoutExtension(file.getName());
+
+        SerializedResource resource = null;
+        try { resource = new SerializedResource(file.getAbsolutePath()); }
+        catch (Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "An error occurred while processing " +
+                                                "compressed " +
+                                                "resource!", "Error",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (resource.getResourceType() != ResourceType.GFX_MATERIAL)
+        {
+            JOptionPane.showMessageDialog(this, "Resource isn't of type RGfxMaterial!",
+                "Error",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        RGfxMaterial gmat = null;
+        try { gmat = resource.loadResource(RGfxMaterial.class); }
+        catch (Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "An error occurred while reading " +
+                                                "RGfxMaterial, is" +
+                                                " resource corrupted?", "Error",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        set(name, gmat);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

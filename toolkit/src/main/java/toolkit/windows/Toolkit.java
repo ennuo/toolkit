@@ -707,6 +707,20 @@ public class Toolkit extends javax.swing.JFrame
                         ExportCallbacks::dumpShaderBinaries,
                         this.entryContext
                     );
+
+                    if (CwlibConfiguration.CAN_COMPILE_CELL_SHADERS)
+                    {
+                        Swing.createMenuItem(
+                            "Open in Shader Compiler",
+                            "Opens the selected material in the shader compiler window",
+                            (evt) ->
+                            {
+                                RGfxMaterial gmat = info.getResource();
+                                new GfxGUI(Strings.getWithoutExtension(node.getName()), gmat).setVisible(true);
+                            },
+                            this.entryContext
+                        );
+                    }
                 
                     if (Config.pusher().enabled)
                         Swing.createMenuItem("Render Icon on PS3", "Requests a render for this item from the PS3", PusherCallbacks::getItemRender, this.entryContext);
