@@ -38,12 +38,15 @@ import cwlib.types.swing.FileNode;
 import cwlib.types.swing.SearchParameters;
 import cwlib.util.*;
 import executables.gfx.GfxGUI;
+import scelib.Gxm;
 import sync.Depot;
 import sync.NetworkFileDB;
 import sync.SyncManager;
 import sync.SyncManager.ConnectionState;
 import sync.SyncManager.SyncEvent;
 import toolkit.functions.*;
+import toolkit.functions.UtilityCallbacks.GameTextureType;
+import toolkit.functions.UtilityCallbacks.TargetTextureType;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
 import toolkit.utilities.EasterEgg;
@@ -210,7 +213,7 @@ public class Toolkit extends javax.swing.JFrame
                 EditCallbacks.changeRevision(revision.revision);
             }, changeResourceRevisionGroup);
         }
-        
+
         syncMenu.setVisible(Config.sync().enabled);
         crafteroidsMenu.setVisible(false);
 
@@ -705,6 +708,21 @@ public class Toolkit extends javax.swing.JFrame
                             LoadCallbacks::loadModel3D,
                             this.entryContext);
                     }
+                    break;
+                }
+                case TEXTURE:
+                case GTF_TEXTURE:
+                {
+                    var menu = Swing.createMenu("Convert", entryContext);
+                    var texture = info.getTextureType();
+
+                    if (texture != GameTextureType.COMPRESSED)
+                        Swing.createMenuItem("TEX (LBP1)", (evt) -> UtilityCallbacks.convertTextureType(GameTextureType.COMPRESSED), menu);
+                    if (texture != GameTextureType.GTF)
+                        Swing.createMenuItem("GTF (LBP2/LBP3)", (evt) -> UtilityCallbacks.convertTextureType(GameTextureType.GTF), menu);
+                    if (Gxm.IsReady() && texture != GameTextureType.GXT)
+                        Swing.createMenuItem("GXT (LBPV)", (evt) -> UtilityCallbacks.convertTextureType(GameTextureType.GXT), menu);
+
                     break;
                 }
                 case GFX_MATERIAL:

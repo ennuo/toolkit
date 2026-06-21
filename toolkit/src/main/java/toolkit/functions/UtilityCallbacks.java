@@ -1,12 +1,17 @@
 package toolkit.functions;
 
 import cwlib.enums.DatabaseType;
+import cwlib.enums.GameTextureType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
+import cwlib.enums.SerializationType;
+import cwlib.io.serializer.SerializationData;
 import cwlib.resources.RLevel;
 import cwlib.resources.RPalette;
 import cwlib.resources.RPlan;
+import cwlib.resources.RTexture;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.texture.CellGcmTexture;
 import cwlib.structs.things.parts.PWorld;
 import cwlib.types.SerializedResource;
 import cwlib.types.archives.Fart;
@@ -17,7 +22,10 @@ import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileData;
+import cwlib.util.Bytes;
+import cwlib.util.DDS;
 import cwlib.util.FileIO;
+import scelib.Gxm;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.SlowOp;
 import toolkit.windows.Toolkit;
@@ -28,11 +36,65 @@ import javax.swing.*;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 
 public class UtilityCallbacks
 {
+    public static void convertTextureType(GameTextureType target)
+    {
+        var entry = ResourceSystem.getSelected().getEntry();
+        var info = entry.getInfo();
+        if (info == null || info.getTextureType() == GameTextureType.INVALID || info.getResource() == null)
+            return;
+
+
+        GameTextureType source = info.getTextureType();
+        if (source == target) return;
+
+        RTexture texture = info.getResource();
+        byte[] textureData = texture.getDDSFileData();
+        
+        var gcm = texture.getInfo();
+        if (source == GameTextureType.COMPRESSED)
+            gcm = new CellGcmTexture(textureData, texture.noSRGB);
+
+        if (target == GameTextureType.PNG || target == GameTextureType.JPEG)
+        {
+            ResourceSystem.println("Not supported!");
+            return;
+        }
+
+        if (target == GameTextureType.COMPRESSED)
+        {
+            // LBP1 compressed textures store BUMP or VLME at the end of the DDS file
+            // rather than any flags.
+            textureData = Bytes.combine(textureData, (gcm.isBumpTexture() ? "BUMP" : "\0\0\0\0").getBytes());
+            textureData = SerializedResource.compress(new SerializationData(textureData));
+        }
+        else if (target != GameTextureType.DDS)
+        {
+            if (target == GameTextureType.GXT)
+            {
+                textureData = Gxm.convert(textureData);
+                textureData = Arrays.copyOfRange(textureData, 0x40, textureData.length);
+                gcm.setMethod(SerializationType.GTF_SWIZZLED);
+            }
+            else 
+            {
+                gcm.setMethod(SerializationType.COMPRESSED_TEXTURE);
+                textureData = Arrays.copyOfRange(textureData, 0x80, textureData.length);
+                if (!gcm.getFormat().isDXT())
+                    textureData = DDS.convertSwizzleGtf(gcm, textureData, false);
+            }
+
+            textureData = SerializedResource.compress(new SerializationData(textureData, gcm));
+        }
+
+        ResourceSystem.replace(entry, textureData);
+    }
+
     public static void paletteToLevel(ActionEvent event)
     {
         var entry = ResourceSystem.getSelected().getEntry();

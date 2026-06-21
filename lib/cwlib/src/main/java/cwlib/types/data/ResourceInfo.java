@@ -2,6 +2,7 @@ package cwlib.types.data;
 
 import cwlib.enums.Branch;
 import cwlib.enums.CompressionFlags;
+import cwlib.enums.GameTextureType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
@@ -35,6 +36,7 @@ public class ResourceInfo
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
     private ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     private boolean isMissingDependencies;
+    private GameTextureType textureType = GameTextureType.INVALID;
     private final FileModel model = new FileModel(new FileNode("DEPENDENCIES", null, null, null));
 
     public <T extends Resource> ResourceInfo(String name, byte[] source)
@@ -43,8 +45,11 @@ public class ResourceInfo
 
         int magic = Bytes.toIntegerBE(source);
 
-        // PNG, JPG, DDS
-        if (magic == 0x89504e47 || magic == 0xFFD8FFE0 || magic == 0x44445320)
+        if (magic == 0x89504e47) { textureType = GameTextureType.PNG; }
+        else if (magic == 0xFFD8FFE0) { textureType = GameTextureType.JPEG; }
+        else if (magic == 0x44445320) { textureType = GameTextureType.DDS; }
+
+        if (textureType != GameTextureType.INVALID)
         {
             this.type = ResourceType.TEXTURE;
             this.method = SerializationType.COMPRESSED_TEXTURE;
@@ -174,6 +179,15 @@ public class ResourceInfo
 
         if (this.type == ResourceType.GTF_TEXTURE || this.type == ResourceType.TEXTURE)
         {
+            if (type == ResourceType.TEXTURE) textureType = GameTextureType.COMPRESSED;
+            else
+            {
+                if (method == SerializationType.GXT_SWIZZLED || method == SerializationType.GTF_SWIZZLED)
+                    textureType = GameTextureType.GXT;
+                else
+                    textureType = GameTextureType.GTF;
+            }
+            
             RTexture texture = new RTexture(resource);
             this.resource = texture;
         }
@@ -240,6 +254,11 @@ public class ResourceInfo
     public ResourceType getType()
     {
         return this.type;
+    }
+
+    public GameTextureType getTextureType()
+    {
+        return textureType;
     }
 
     public SerializationType getMethod()
