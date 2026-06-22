@@ -1,11 +1,13 @@
 package toolkit.functions;
 
 import cwlib.enums.DatabaseType;
+import cwlib.enums.GameShader;
 import cwlib.enums.GameTextureType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.io.serializer.SerializationData;
+import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RLevel;
 import cwlib.resources.RPalette;
 import cwlib.resources.RPlan;
@@ -25,6 +27,9 @@ import cwlib.types.swing.FileData;
 import cwlib.util.Bytes;
 import cwlib.util.DDS;
 import cwlib.util.FileIO;
+import cwlib.util.gfx.CgAssembler;
+import cwlib.util.gfx.GfxAssembler;
+import executables.gfx.dialogues.ErrorDialogue;
 import scelib.Gxm;
 import toolkit.utilities.FileChooser;
 import toolkit.utilities.SlowOp;
@@ -42,6 +47,41 @@ import java.util.HashSet;
 
 public class UtilityCallbacks
 {
+    public static void convertMaterial(GameShader target)
+    {
+        var entry = ResourceSystem.getSelected().getEntry();
+        var info = entry.getInfo();
+        if (info == null || info.getType() != ResourceType.GFX_MATERIAL)
+            return;
+
+        RGfxMaterial material = info.getResource();
+        var source = GameShader.fromMaterial(material, info.getRevision());
+
+        if (source == target) return;
+
+        material.shaders = new byte[target.getShaderCount()][];
+        try
+        {
+            material.useVitaShaderSource = target == GameShader.VITA;
+            String cgShaderSource = GfxAssembler.generateShaderSource(material, -1, false);
+            CgAssembler.compile(cgShaderSource, material, target);
+        }
+        catch (Exception ex)
+        {
+            new ErrorDialogue(Toolkit.INSTANCE, true, "An error occurred while compiling BRDF shader.",
+                ex.getMessage());
+            return;
+        }
+
+        var revision = target.getRevision();
+        byte[] resource = SerializedResource.compress(material.build(
+            revision,
+            revision.getDefaultCompressionFlags()
+        ));
+
+        ResourceSystem.replace(entry, resource);
+    }
+    
     public static void convertTextureType(GameTextureType target)
     {
         var entry = ResourceSystem.getSelected().getEntry();

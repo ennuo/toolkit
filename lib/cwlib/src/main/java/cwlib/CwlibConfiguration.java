@@ -72,6 +72,11 @@ public class CwlibConfiguration
     public static boolean CAN_COMPILE_PSP2_SHADERS = false;
 
     /**
+     * Whether or not we're able to compile at least one shader source.
+     */
+    public static boolean CAN_COMPILE_ANY_SHADER_SOURCE = false;
+
+    /**
      * Whether Toolkit is running on Windows
      */
     public static boolean IS_WINDOWS =
@@ -90,5 +95,7 @@ public class CwlibConfiguration
             CAN_COMPILE_CELL_SHADERS = SCE_CGC_EXECUTABLE.exists();
         if (SCE_PSP2_CGC_EXECUTABLE != null)
             CAN_COMPILE_PSP2_SHADERS = SCE_PSP2_CGC_EXECUTABLE.exists();
+        
+        CAN_COMPILE_ANY_SHADER_SOURCE = CAN_COMPILE_CELL_SHADERS || CAN_COMPILE_ORBIS_SHADERS || CAN_COMPILE_PSP2_SHADERS;
     }
 }

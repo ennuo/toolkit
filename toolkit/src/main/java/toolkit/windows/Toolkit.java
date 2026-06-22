@@ -45,8 +45,6 @@ import sync.SyncManager;
 import sync.SyncManager.ConnectionState;
 import sync.SyncManager.SyncEvent;
 import toolkit.functions.*;
-import toolkit.functions.UtilityCallbacks.GameTextureType;
-import toolkit.functions.UtilityCallbacks.TargetTextureType;
 import toolkit.streams.CustomPrintStream;
 import toolkit.streams.TextAreaOutputStream;
 import toolkit.utilities.EasterEgg;
@@ -215,8 +213,9 @@ public class Toolkit extends javax.swing.JFrame
         }
 
         syncMenu.setVisible(Config.sync().enabled);
+        openGfxCompiler.setVisible(CwlibConfiguration.CAN_COMPILE_ANY_SHADER_SOURCE);
         crafteroidsMenu.setVisible(false);
-
+        
         Profile profile = Config.instance.getCurrentProfile();
         if (profile == null)
             return;
@@ -713,7 +712,7 @@ public class Toolkit extends javax.swing.JFrame
                 case TEXTURE:
                 case GTF_TEXTURE:
                 {
-                    var menu = Swing.createMenu("Convert", entryContext);
+                    var menu = Swing.createMenu("Convert...", entryContext);
                     var texture = info.getTextureType();
 
                     if (texture != GameTextureType.COMPRESSED)
@@ -734,18 +733,27 @@ public class Toolkit extends javax.swing.JFrame
                         this.entryContext
                     );
 
-                    if (CwlibConfiguration.CAN_COMPILE_CELL_SHADERS)
+                    if (CwlibConfiguration.CAN_COMPILE_ANY_SHADER_SOURCE)
                     {
                         Swing.createMenuItem(
                             "Open in Shader Compiler",
                             "Opens the selected material in the shader compiler window",
-                            (evt) ->
-                            {
-                                RGfxMaterial gmat = info.getResource();
-                                new GfxGUI(Strings.getWithoutExtension(node.getName()), gmat).setVisible(true);
-                            },
+                            (evt) -> GfxGUI.edit(entry),
                             this.entryContext
                         );
+
+                        var menu = Swing.createMenu("Recompile...", entryContext);
+                        var source = GameShader.fromMaterial(info.getResource(), info.getRevision());
+                        for (var target : GameShader.values())
+                        {
+                            if (source == target || !target.compilable()) continue;
+                            Swing.createMenuItem(target.getName(), "Re-compiles shader for target game", (evt) -> {
+                                UtilityCallbacks.convertMaterial(target);
+                            }, menu);
+                        }
+                        
+                        if (menu.getMenuComponentCount() > 0) 
+                            entryContext.add(menu);
                     }
                 
                     if (Config.pusher().enabled)
