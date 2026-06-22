@@ -291,7 +291,7 @@ ENV.AUTO_REFLECTION_SETUP
 #endif
 
 #if (PROPERTIES & SPECULAR)
-float4 GetSpecularColor(float4 iUV, float4 iColor) {
+float4 GetSpecularColor(float4 iUV, float3 iNormal, float3 iVec2Eye, float4 iColor) {
 ENV.AUTO_SPECULAR_SETUP
 }
 #endif
@@ -554,7 +554,7 @@ void main(
         #endif
 
         #if (PROPERTIES & SPECULAR)
-            float3 specular = GetSpecularColor(iUV, iColor).xyz;
+            float3 specular = GetSpecularColor(iUV, normal, iVec2Eye.xyz, iColor).xyz;
             float3 lobe = (((lbfs.w * prod) * specular) + (specular * reflection)) * 2;
         #else
             float3 lobe = reflection;
@@ -760,7 +760,7 @@ void main(
     #endif
 
     #if (PROPERTIES & SPECULAR)
-        float3 specular = GetSpecularColor(iUV, iColor).xyz;
+        float3 specular = GetSpecularColor(iUV, normal, iVec2Eye.xyz, iColor).xyz;
 
         #if (PROPERTIES & ANISO)
             float anisoOffset = -0.5;
