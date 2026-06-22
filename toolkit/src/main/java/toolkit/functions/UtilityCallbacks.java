@@ -5,6 +5,7 @@ import cwlib.enums.GameShader;
 import cwlib.enums.GameTextureType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.serializer.SerializationData;
 import cwlib.resources.RGfxMaterial;
@@ -74,6 +75,9 @@ public class UtilityCallbacks
         }
 
         var revision = target.getRevision();
+        if (target == GameShader.LBP1 && material.shouldSaveCustomData())
+            revision.setCustomBranchDescription(Revisions.ALEAR_BR1, Revisions.ALEAR_BR1_MAX);
+
         byte[] resource = SerializedResource.compress(material.build(
             revision,
             revision.getDefaultCompressionFlags()

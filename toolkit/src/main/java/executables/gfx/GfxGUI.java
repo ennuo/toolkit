@@ -746,6 +746,8 @@ public class GfxGUI extends javax.swing.JFrame
             this.gmat.cosinePower * 22.0f));
         shader = shader.replace("ENV.BUMP_LEVEL", String.format(Locale.ROOT, "%f",
             this.gmat.bumpLevel * 2.0f));
+        
+        shader = shader.replace("ENV.FRESNEL_POWER", String.format(Locale.ROOT, "%f", gmat.getFresnelPower()));
 
         shader = shader.replace("ENV.REFLECTION_BLUR", String.format(Locale.ROOT, "%f",
             this.gmat.reflectionBlur - 1.0f));

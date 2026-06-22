@@ -23,7 +23,7 @@ public class BoxType
     public static final int MAKE_FLOAT4 = 15;
     public static final int BLEND = 16;
     // 17, something with fur
-    // 18 ???
+    public static final int FRESNEL = 18;
     public static final int EXPONENT = 19;
 
     public static final int BL_GENERIC = 128;

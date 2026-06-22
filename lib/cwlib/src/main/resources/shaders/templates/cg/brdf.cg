@@ -32,6 +32,7 @@
 #define FUZZ (1 << 19)
 #define BRDF_REFLECTANCE (1 << 20)
 #define LIGHTING_RAMP (1 << 21)
+#define FRESNEL (1 << 29)
 
 // Receive flags
 #define RECEIVE_SHADOWS (1 << 22)
@@ -91,14 +92,14 @@
     #define SAMPLE_3D(sampler, uv) tex3D(sampler, uv)
     #define SAMPLE_3D_LOD(sampler, locd) tex3Dlod(sampler, locd)
     #define SAMPLE_2D_PROJ(sampler, value) tex2Dproj(sampler, value)
-    #define SAMPLE_2D_BIAS(sampler, uv, blur) tex2Dbias(sampler, uv, blur)
+    #define SAMPLE_2D_BIAS(sampler, uv, blur) tex2Dlod(sampler, float4(uv, 0.0, blur))
 
     #define CREATE_SAMPLER_2D(name, index) sampler2D name: TEXUNIT##index
     #define CREATE_SAMPLER_3D(name, index) sampler3D name: TEXUNIT##index
 #endif
 
 float AlphaTestLevel = ENV.ALPHA_TEST_LEVEL;
-
+float FresnelPower = ENV.FRESNEL_POWER;
 float CosinePower = ENV.COSINE_POWER;
 
 float BumpLevel = ENV.BUMP_LEVEL;
@@ -278,7 +279,7 @@ float3 BumpMap(float4 iNormal, float4 iTangent, float4 iBump, float iBumpLevel) 
 }
 
 #if (PROPERTIES & NORMAL)
-float3 GetNormalFromTexture(float4 iNormal, float4 iTangent, float4 iUV, float4 iColor) {
+float3 GetNormalFromTexture(float4 iNormal, float3 iVec2Eye, float4 iTangent, float4 iUV, float4 iColor) {
 ENV.AUTO_NORMAL_SETUP
 }
 #endif
@@ -307,13 +308,13 @@ ENV.AUTO_DIFFUSE_SETUP
 }
 
 #if (PROPERTIES & GLOW)
-float4 GetGlowColor(float4 iUV, float4 iColor) {
+float4 GetGlowColor(float4 iUV, float3 iNormal, float3 iVec2Eye, float4 iColor) {
 ENV.AUTO_GLOW_SETUP
 }
 #endif
 
 #if (PROPERTIES & ALPHA)
-float4 GetAlpha(float4 iUV, float4 iColor) {
+float4 GetAlpha(float4 iUV, float3 iNormal, float3 iVec2Eye, float4 iColor) {
 ENV.AUTO_ALPHA_SETUP
 }
 #endif
@@ -499,19 +500,10 @@ void main(
 
     out half4 fragColor
 ) {
-    #if (PROPERTIES & ALPHA)
-        float4 alpha = GetAlpha(iUV, iColor);
-        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
-            if (GetAlpha(iUV, iColor).x < AlphaTestLevel) discard;
-        #else
-            if (GetAlpha(iUV, iColor).w < AlphaTestLevel) discard;
-        #endif
-    #endif
-
     // First normal pass shader
     #if ((FLAGS & DEFERRED_NORMAL_PASS) == (DEFERRED_NORMAL_PASS))
         #if (PROPERTIES & NORMAL)
-            float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+            float3 normal = GetNormalFromTexture(iNormal, iVec2Eye.xyz, iTangent, iUV, iColor);
         #else
             float3 normal = normalize(iNormal.xyz);
         #endif
@@ -535,10 +527,8 @@ void main(
             float2 pixelPos = float2(DEFERRED_LNBUF_OFFSET + pos.x, pos.y);
         #endif
 
-        #if ((PROPERTIES & GLASS) || (PROPERTIES & REFRACT) || (PROPERTIES & LIGHTING_RAMP))
-            float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
-            float3 normal = decode(nbfs);
-        #endif
+        float2 nbfs = SAMPLE_2D(nbuf, pixelPos).xy;
+        float3 normal = decode(nbfs);
 
         float4 lbfs = SAMPLE_2D(lbuf, pixelPos);
 
@@ -584,7 +574,7 @@ void main(
         #endif
 
         #if (PROPERTIES & GLOW)
-            color += GetGlowColor(iUV, iColor).xyz;
+            color += GetGlowColor(iUV, normal, iVec2Eye.xyz, iColor).xyz;
         #endif
 
         #if (PROPERTIES & GLASS)
@@ -600,6 +590,16 @@ void main(
             );
         #endif
     #endif
+
+    #if (PROPERTIES & ALPHA)
+        float4 alpha = GetAlpha(iUV, normal, iVec2Eye.xyz, iColor);
+        #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
+            if (alpha.x < AlphaTestLevel) discard;
+        #else
+            if (alpha.w < AlphaTestLevel) discard;
+        #endif
+    #endif
+
 }
 #else
 
@@ -718,7 +718,7 @@ void main(
     float3 lightVec = normalize((iVec2Eye.xyz - sunpos) * lightscaleadd.x);
 
     #if (PROPERTIES & NORMAL)
-        float3 normal = GetNormalFromTexture(iNormal, iTangent, iUV, iColor);
+        float3 normal = GetNormalFromTexture(iNormal, iVec2Eye.xyz, iTangent, iUV, iColor);
     #else
         float3 normal = normalize(iNormal.xyz);
     #endif
@@ -790,7 +790,7 @@ void main(
     float factor = saturate(iDecalUV.z);
 
     #if (PROPERTIES & GLOW)
-        float3 glow = GetGlowColor(iUV, iColor).xyz;
+        float3 glow = GetGlowColor(iUV, normal, iVec2Eye.xyz, iColor).xyz;
         color += glow;
         float r = 1.0 / ((dot(glow, glow) * 4.0) + 1.0);
         illumination *= (r + ((-r * factor) + factor));
@@ -815,7 +815,7 @@ void main(
     float3 fog = (fogcc * fogcol.xyz) - color;
     
     #if (PROPERTIES & ALPHA)
-        float4 alpha = GetAlpha(iUV, iColor);
+        float4 alpha = GetAlpha(iUV, normal, iVec2Eye.xyz, iColor);
 
         #if (ALPHA_MODE == BLEND_MODE_PREMULTIPLIED_ALPHA)
             illumination = alpha.x * tintcol.w;

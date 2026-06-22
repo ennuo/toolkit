@@ -451,6 +451,12 @@ public class GfxAssembler
                 // INPUT[2] = MASK
                 // return v;
             }
+            case BoxType.FRESNEL:
+            {
+                variableName = "fresnel" + index;
+                assignment = "pow(saturate(1.0 - (dot(-iNormal.xyz, iVec2Eye.xyz) / length(iVec2Eye.xyz))), FresnelPower)";
+                break;
+            }
             case BoxType.EXPONENT:
             {
                 MaterialBox node = gmat.getBoxConnectedToPort(box, 0);
@@ -995,6 +1001,9 @@ public class GfxAssembler
         MaterialBox glow = material.getBoxConnectedToPort(output, BrdfPort.SELF_ILLUMINATION);
         MaterialBox reflection = material.getBoxConnectedToPort(output, BrdfPort.REFLECT);
 
+        if (material.getFresnelBox() != null)
+            properties.add("FRESNEL");
+        
         if (alpha != null) properties.add("ALPHA");
         else if ((material.flags & GfxMaterialFlags.ALPHA_CLIP) != 0)
         {
@@ -1063,6 +1072,8 @@ public class GfxAssembler
             shader = shader.replace("ENV.BUMP_LEVEL", String.format(Locale.ROOT, "%f",
                 material.bumpLevel * 2.0f));
 
+            shader = shader.replace("ENV.FRESNEL_POWER", String.format(Locale.ROOT, "%f", material.getFresnelPower()));
+            
             shader = shader.replace("ENV.REFLECTION_BLUR", String.format(Locale.ROOT, "%f",
                 material.reflectionBlur - 1.0f));
             shader = shader.replace("ENV.REFRACTIVE_INDEX", String.format(Locale.ROOT, "%f",

@@ -38,6 +38,8 @@ public class MaterialBox implements Serializable
     public static final int TEXTURE_SAMPLE_CHANNEL = 4;
     public static final int TEXTURE_SAMPLE_INDEX = 5;
 
+    public static final int FRESNEL_EXPONENT = 0;
+    
     /**
      * Creates an output node
      */

@@ -564,6 +564,25 @@ public class RGfxMaterial implements Resource
         return null;
     }
 
+    public MaterialBox getFresnelBox()
+    {
+        for (var box : boxes)
+        {
+            if (box.type == BoxType.FRESNEL)
+                return box;
+        }
+
+        return null;
+    }
+
+    public float getFresnelPower()
+    {
+        var box = getFresnelBox();
+        if (box != null)
+            return Float.intBitsToFloat(box.getParameters()[MaterialBox.FRESNEL_EXPONENT]);
+        return 1.0f;
+    }
+    
     /**
      * Gets the index of the shader output box
      *

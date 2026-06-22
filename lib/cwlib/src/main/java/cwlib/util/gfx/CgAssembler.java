@@ -102,6 +102,7 @@ public class CgAssembler
     public static final int LIGHT1 = (1 << 26);
     public static final int LIGHT2 = (1 << 27);
     public static final int LAYER_TEST = (1 << 28);
+    public static final int FRESNEL = (1 << 29);
 
     public static final int[] LBP2_FLAGS = {
         BAKED_AO | BAKED_SHADOWS,
