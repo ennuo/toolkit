@@ -412,6 +412,8 @@ public class BigSave extends FileData
 
             if ((item.details.subType & InventoryObjectSubType.FULL_COSTUME) != 0)
                 path += "outfits/";
+            else if (item.details.subType == InventoryObjectSubType.MORPH)
+                path += "morphs/";
             else
                 path += (CostumePieceCategory.getPrimaryName(CostumePieceCategory.fromFlags(item.details.subType)) + "/");
         }
@@ -426,7 +428,11 @@ public class BigSave extends FileData
             else if (item.details.type.contains(InventoryObjectType.USER_POD))
                 title = "A Pod";
             else if (item.details.type.contains(InventoryObjectType.USER_COSTUME) || item.details.type.contains(InventoryObjectType.COSTUME))
+            {
                 title = "A Costume";
+                if (item.details.subType == InventoryObjectSubType.MORPH)
+                    title = "A Morph";
+            }
             else
                 title = "Some kind of object";
         }
