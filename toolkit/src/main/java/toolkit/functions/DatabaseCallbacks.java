@@ -39,7 +39,7 @@ public class DatabaseCallbacks
             bar.setVisible(true);
             bar.setIndeterminate(true);
 
-            FileDB database = null;
+            FileDB database;
             try { database = new FileDB(file); }
             catch (Exception ex)
             {
@@ -49,22 +49,23 @@ public class DatabaseCallbacks
 
             bar.setVisible(false);
 
+            EventQueue.invokeLater(() -> {
+                int loadedIndex = ResourceSystem.getLoadedDatabase(file);
+                if (loadedIndex != -1)
+                {
+                    ResourceSystem.getDatabases().set(loadedIndex, database);
 
-            int loadedIndex = ResourceSystem.getLoadedDatabase(file);
-            if (loadedIndex != -1)
-            {
-                ResourceSystem.getDatabases().set(loadedIndex, database);
+                    toolkit.fileDataTabs.setSelectedIndex(loadedIndex);
 
-                toolkit.fileDataTabs.setSelectedIndex(loadedIndex);
+                    toolkit.search.setEditable(true);
+                    toolkit.search.setFocusable(true);
+                    toolkit.search.setText("Search...");
+                    toolkit.search.setForeground(Color.GRAY);
+                }
+                else toolkit.addTab(database);
 
-                toolkit.search.setEditable(true);
-                toolkit.search.setFocusable(true);
-                toolkit.search.setText("Search...");
-                toolkit.search.setForeground(Color.GRAY);
-            }
-            else toolkit.addTab(database);
-
-            toolkit.updateWorkspace();
+                toolkit.updateWorkspace();
+            });
         });
     }
 

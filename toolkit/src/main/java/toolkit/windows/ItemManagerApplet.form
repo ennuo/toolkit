@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="translationTypeButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="this.translationTypeButtonGroup.add(this.translationKeysRadio);&#xa;this.translationTypeButtonGroup.add(this.ucdRadio);"/>
+      </AuxValues>
+    </Component>
+  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -8,7 +15,7 @@
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
-    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="3"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
   </AuxValues>
@@ -16,23 +23,20 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="itemSettings" min="-2" pref="580" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
+          <Component id="itemSettings" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="itemSettings" min="-2" pref="401" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
+          <Component id="itemSettings" alignment="0" pref="579" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="itemSettings">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="DLC"/>
+      </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
@@ -58,21 +62,21 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Component id="jPanel2" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
                                   <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="titleTextEntry" max="32767" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="descriptionPane" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="descriptionPane" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -85,7 +89,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="titleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="titleTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -95,7 +99,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="descriptionPane" min="-2" pref="78" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="itemIcon" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
+                              <Component id="itemIcon" min="-2" pref="128" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                           <Component id="jPanel2" max="32767" attributes="0"/>
@@ -149,7 +153,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="creatorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -167,7 +171,7 @@
                                   <Component id="titleDescPane" alignment="0" max="32767" attributes="0"/>
                                   <Component id="locationTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="catLocPane" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="jPanel1" alignment="1" pref="446" max="32767" attributes="0"/>
+                                  <Component id="jPanel1" alignment="1" pref="451" max="32767" attributes="0"/>
                                   <Component id="categoryTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="translationKeyTextEntry" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
@@ -177,11 +181,11 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <Component id="creationHistoryCheckbox" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="creationHistoryPane" alignment="0" max="32767" attributes="0"/>
+                          <Component id="creationHistoryPane" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -200,8 +204,8 @@
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="translationTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jPanel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="translationTypeLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -210,18 +214,18 @@
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="titleKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="titleDescPane" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleDescPane" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="categoryKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="catLocPane" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="catLocPane" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="categoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="categoryTextEntry" alignment="0" max="-2" attributes="0"/>
+                                  <Component id="categoryLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryTextEntry" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -297,7 +301,7 @@
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="translationKeysRadio" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="ucdRadio" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -372,47 +376,33 @@
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="titleKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <Component id="titleKeyTextField" min="-2" pref="128" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                   <Component id="descKeyLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Component id="descKeySpinner" pref="209" max="32767" attributes="0"/>
+                                  <Component id="descriptionKeyTextField" pref="214" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                  <Component id="titleKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="titleKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="descKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="descKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descriptionKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JSpinner" name="titleKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                            <Property name="toolTipText" type="java.lang.String" value=""/>
-                            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                              <Color id="Default Cursor"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="titleKeyTextField">
                         </Component>
                         <Component class="javax.swing.JLabel" name="descKeyLabel">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Description Key:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="descKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="descriptionKeyTextField">
                         </Component>
                       </SubComponents>
                     </Container>
@@ -436,31 +426,26 @@
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="categoryKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyTextField" min="-2" pref="128" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                   <Component id="locationKeyLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Component id="locationKeySpinner" max="32767" attributes="0"/>
+                                  <Component id="locationKeyTextField" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                  <Component id="categoryKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="locationKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="locationKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JSpinner" name="categoryKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="categoryKeyTextField">
                         </Component>
                         <Component class="javax.swing.JLabel" name="locationKeyLabel">
                           <Properties>
@@ -476,12 +461,7 @@
                             </Property>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="locationKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="locationKeyTextField">
                         </Component>
                       </SubComponents>
                     </Container>
@@ -532,16 +512,16 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="creatorsLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="creatorsScrollPane" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="removeCreatorButton" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="addCreatorButton" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="removeCreatorButton" max="32767" attributes="0"/>
+                                              <Component id="addCreatorButton" max="32767" attributes="0"/>
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                       </Group>
@@ -555,12 +535,12 @@
                                   <Component id="creatorsLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="addCreatorButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="removeCreatorButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="creatorsScrollPane" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
+                                      <Component id="creatorsScrollPane" min="-2" pref="106" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
@@ -647,7 +627,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
@@ -660,13 +640,13 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="characterMaskCombo" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="planetTypeCombo" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="characterMaskCombo" max="32767" attributes="0"/>
+                                      <Component id="planetTypeCombo" max="32767" attributes="0"/>
                                       <Component id="colorIndexSpinner" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
-                              <Component id="outfitFlagsPane" alignment="0" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Component id="outfitFlagsPane" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="lbp2TypeContainer" alignment="1" max="32767" attributes="0"/>
                                       <Component id="generalTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -677,7 +657,7 @@
                                       <Component id="lbp3TypesContainer" alignment="0" max="32767" attributes="0"/>
                                       <Component id="subTypesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="costumeCategoriesPane" alignment="0" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                                           <Component id="costumeCategoriesLabel" min="-2" max="-2" attributes="0"/>
                                       </Group>
@@ -777,7 +757,7 @@
                                           <Component id="jointsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="userObjectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="backgroundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="userStickersCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="userStickersCheckbox" min="-2" max="-2" attributes="0"/>
                                           <Component id="shapesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
@@ -785,22 +765,22 @@
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="gadgetsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="eyetoyCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="toolsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="gadgetsCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="eyetoyCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="toolsCheckbox" min="-2" max="-2" attributes="0"/>
                                           <Component id="dangerCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="userCostumesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="userCostumesCheckbox" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="musicCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="musicCheckbox" min="-2" max="-2" attributes="0"/>
                                           <Component id="soundsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="photoboothCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="playerColorsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="playerColorsCheckbox" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -1160,7 +1140,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="communityPhotosCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1169,13 +1149,13 @@
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="pictureToolsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="stickerToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="communityObjectsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="pictureToolsCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="stickerToolCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="communityObjectsCheckbox" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="photoToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="photoToolCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="costumeToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1183,8 +1163,8 @@
                                       </Group>
                                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="podsLbp1Checkbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="podToolLbp1Checkbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="podsLbp1Checkbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="podToolLbp1Checkbox" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1396,18 +1376,18 @@
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="userPlanetCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userPlanetCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Component id="npcCostumeCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="podToolLbp2Checkbox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="instrumentCheckbox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Component id="podsLbp2Checkbox" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="earthToolCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="earthToolCheckbox" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="levelKeyCheckbox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
@@ -1693,7 +1673,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="eyesCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1702,30 +1682,30 @@
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="mouthCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="neckCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="noseCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="mouthCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="neckCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="noseCheckbox" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="torsoCheckbox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                                       <Component id="legsCheckbox" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="headCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="waistCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="headCheckbox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="waistCheckbox" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
                                               <Component id="handsCheckbox" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                                               <Component id="glassesCheckbox" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Group type="102" alignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
                                               <Component id="hairCheckbox" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                                               <Component id="moustacheCheckbox" min="-2" max="-2" attributes="0"/>
@@ -2049,7 +2029,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="madeByMeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="madeByOthersCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="fullCostumeCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -2149,7 +2129,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
@@ -2160,14 +2140,14 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="unlockSlotTypeCombo" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="unlockSlotNumberSpinner" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="unlockSlotTypeCombo" max="32767" attributes="0"/>
+                                  <Component id="unlockSlotNumberSpinner" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="highlightSoundLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="unlockSlotIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="unlockSlotIDLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="dateAddedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="colorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -2180,17 +2160,17 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="colorBlueSpinner" min="-2" pref="106" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="colorAlphaSpinner" max="32767" attributes="0"/>
+                                      <Component id="colorAlphaSpinner" pref="131" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="dateAddedSpinner" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="dateAddedSpinner" max="32767" attributes="0"/>
                                   <Component id="highlightSoundSpinner" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="planFlagsContainer" alignment="0" max="32767" attributes="0"/>
+                          <Component id="planFlagsContainer" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2233,7 +2213,7 @@
                       <Component id="planFlagsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="planFlagsContainer" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="130" max="32767" attributes="0"/>
+                      <EmptySpace pref="308" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2332,7 +2312,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="restrictedDecorateCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -2340,13 +2320,13 @@
                           </Group>
                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="allowEmitCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="restrictedLevelCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="allowEmitCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Component id="restrictedLevelCheckbox" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="unusedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Component id="unusedCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
                                   <Component id="copyrightCheckbox" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="hiddenCheckbox" min="-2" max="-2" attributes="0"/>
@@ -2447,14 +2427,14 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="photoDataPane" alignment="0" max="32767" attributes="0"/>
+                              <Component id="photoDataPane" max="32767" attributes="0"/>
                               <Component id="eyetoyDataPane" alignment="0" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="photoDataCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="photoDataCheckbox" min="-2" max="-2" attributes="0"/>
                                       <Component id="eyetoyDataCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -2491,7 +2471,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
@@ -2502,8 +2482,8 @@
                                       </Group>
                                       <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="photoLevelNumberSpinner" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="photoLevelTypeCombo" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="photoLevelNumberSpinner" max="32767" attributes="0"/>
+                                          <Component id="photoLevelTypeCombo" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -2523,12 +2503,12 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="stickerResourceTextEntry" alignment="1" max="32767" attributes="0"/>
                                           <Component id="paintingResourceTextEntry" alignment="1" max="32767" attributes="0"/>
-                                          <Component id="photoResourceTextEntry" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="photoIconResourceTextEntry" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="photoResourceTextEntry" max="32767" attributes="0"/>
+                                          <Component id="photoIconResourceTextEntry" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jPanel3" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
                                       <Component id="photoUsersLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
@@ -2675,16 +2655,16 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="photoUserListScrollPane" min="-2" pref="199" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="photoUserPsidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="photoUserLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="photoUserBoundsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserPsidLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="photoUserBoundsLabel" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
@@ -2695,7 +2675,7 @@
                                   </Group>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Component id="boundsZSpinner" min="-2" pref="113" max="-2" attributes="0"/>
                                           <EmptySpace max="32767" attributes="0"/>
                                           <Component id="boundsWSpinner" min="-2" pref="114" max="-2" attributes="0"/>
@@ -2719,7 +2699,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <Group type="103" groupAlignment="3" attributes="0">
                                               <Component id="photoUserPsidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                               <Component id="photoPsidTextEntry" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -2741,11 +2721,11 @@
                                               <Component id="boundsWSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <Component id="photoUserListScrollPane" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="photoUserListScrollPane" pref="0" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                      <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="addPhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="removePhotoUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
@@ -2874,7 +2854,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="alphaMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -2884,7 +2864,7 @@
                               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="frameTextEntry" alignment="1" max="32767" attributes="0"/>
-                                  <Component id="alphaMaskTextEntry" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="alphaMaskTextEntry" max="32767" attributes="0"/>
                                   <Component id="outlineTextEntry" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2942,11 +2922,11 @@
             </Container>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JPanel" name="inventoryPane">
+        <Container class="javax.swing.JPanel" name="alearPane">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Inventory">
-                <Property name="tabTitle" type="java.lang.String" value="Inventory"/>
+              <JTabbedPaneConstraints tabName="Alear">
+                <Property name="tabTitle" type="java.lang.String" value="Alear"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -2954,32 +2934,22 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="planLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="guidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="uidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="guidSpinner" alignment="1" max="32767" attributes="0"/>
-                                  <Component id="uidSpinner" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="planTextField" alignment="0" max="32767" attributes="0"/>
-                              </Group>
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="75" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="toyCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Component id="lockedCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Component id="colorableCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="subcategoryTextField" pref="424" max="32767" attributes="0"/>
+                              <Component id="loreTextField" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="inventoryFlagsContainer" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="inventoryFlagsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="categoryIndexLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="categoryIndexSpinner" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="animatedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2990,163 +2960,62 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="planLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="planTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="subcategoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="guidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="guidSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="loreTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="colorableCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="uidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="uidSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="animatedCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="categoryIndexLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="categoryIndexSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="lockedCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="inventoryFlagsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="inventoryFlagsContainer" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="168" max="32767" attributes="0"/>
+                      <Component id="toyCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="378" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="planLabel">
+            <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Plan:"/>
+                <Property name="text" type="java.lang.String" value="Subcategory"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="planTextField">
+            <Component class="javax.swing.JTextField" name="subcategoryTextField">
             </Component>
-            <Component class="javax.swing.JLabel" name="guidLabel">
+            <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
-                <Property name="text" type="java.lang.String" value="GUID:"/>
+                <Property name="text" type="java.lang.String" value="Lore"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="uidLabel">
+            <Component class="javax.swing.JTextField" name="loreTextField">
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="colorableCheckbox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="UID:"/>
+                <Property name="text" type="java.lang.String" value="Colorable"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JSpinner" name="guidSpinner">
+            <Component class="javax.swing.JCheckBox" name="animatedCheckbox">
               <Properties>
-                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
-                </Property>
+                <Property name="text" type="java.lang.String" value="Animated"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JSpinner" name="uidSpinner">
-            </Component>
-            <Component class="javax.swing.JLabel" name="categoryIndexLabel">
+            <Component class="javax.swing.JCheckBox" name="lockedCheckbox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="User Category Index:"/>
+                <Property name="text" type="java.lang.String" value="Locked"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JSpinner" name="categoryIndexSpinner">
+            <Component class="javax.swing.JCheckBox" name="toyCheckbox">
               <Properties>
-                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                  <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
-                </Property>
+                <Property name="text" type="java.lang.String" value="Toy"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="inventoryFlagsLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Flags:"/>
-              </Properties>
-            </Component>
-            <Container class="javax.swing.JPanel" name="inventoryFlagsContainer">
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="uploadedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="heartedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="unsavedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="cheatCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="erroredCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="inventoryHiddenCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="autosavedCheckbox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="231" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="heartedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="cheatCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="erroredCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="autosavedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="uploadedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="unsavedCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="inventoryHiddenCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="heartedCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Hearted"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="cheatCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Cheat"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="unsavedCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Unsaved"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="erroredCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Errored"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="uploadedCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Uploaded"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="inventoryHiddenCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Hidden"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="autosavedCheckbox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Autosaved"/>
-                  </Properties>
-                </Component>
-              </SubComponents>
-            </Container>
           </SubComponents>
         </Container>
       </SubComponents>

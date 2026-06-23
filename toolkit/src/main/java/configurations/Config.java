@@ -48,7 +48,6 @@ public class Config extends ConfigShared
     public boolean displayWarningOnDeletingEntry = true;
     public boolean displayWarningOnZeroEntry = true;
     public boolean addToArchiveOnCopy = true;
-    public boolean enable3D = false;
 
     public static void loadTranslations(File file)
     {
@@ -134,8 +133,6 @@ public class Config extends ConfigShared
                 Config.instance = new Gson().fromJson(FileIO.readString(Config.path),
                     Config.class);
                 ConfigShared.instance = Config.instance;
-                if (!CwlibConfiguration.IS_WINDOWS)
-                    Config.instance.enable3D = false;
                 // Generate default profiles if they don't exist.
                 if (Config.instance.profiles == null || Config.instance.profiles.size() == 0)
                     Config.generate();

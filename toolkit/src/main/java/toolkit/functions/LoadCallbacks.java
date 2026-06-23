@@ -13,16 +13,4 @@ public class LoadCallbacks
         if (data == null) return;
         ResourceSystem.setLAMS(new RTranslationTable(data));
     }
-
-    public static void loadPalette3D(ActionEvent event)
-    {
-    }
-
-    public static void loadLevel3D(ActionEvent event)
-    {
-    }
-
-    public static void loadModel3D(ActionEvent event)
-    {
-    }
 }

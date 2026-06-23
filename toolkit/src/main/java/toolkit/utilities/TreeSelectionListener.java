@@ -1,11 +1,11 @@
 package toolkit.utilities;
 
+import cwlib.enums.ResourceType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.data.ResourceInfo;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.swing.FileNode;
 import cwlib.util.Bytes;
-import toolkit.utilities.services.PlanService;
 import toolkit.utilities.services.ResourceService;
 import toolkit.utilities.services.TextureService;
 import toolkit.windows.Toolkit;
@@ -20,7 +20,6 @@ public class TreeSelectionListener
     static
     {
         TreeSelectionListener.addService(new TextureService());
-        TreeSelectionListener.addService(new PlanService());
     }
 
     public static void addService(ResourceService service)
@@ -36,12 +35,7 @@ public class TreeSelectionListener
         Toolkit toolkit = Toolkit.INSTANCE;
         toolkit.setImage(null);
         JTree currentTree = ResourceSystem.getSelectedDatabase().getTree();
-
-        if (tree == currentTree)
-        {
-            toolkit.entryModifiers.setEnabledAt(1, false);
-            toolkit.entryModifiers.setSelectedIndex(0);
-        }
+        
         if (tree == currentTree)
             toolkit.dependencyTree.setModel(null);
         if (tree.getSelectionPath() == null)
@@ -57,6 +51,7 @@ public class TreeSelectionListener
         {
             if (ResourceSystem.getAllSelected().length > 1)
                 ResourceSystem.setCanExtractSelected(true);
+            toolkit.setActiveInventoryItem(null);
             toolkit.updateWorkspace();
             return;
         }
@@ -90,6 +85,7 @@ public class TreeSelectionListener
                 toolkit.dependencyTree.setModel(info.getModel());
 
             toolkit.setEditorPanel(node);
+            toolkit.setActiveInventoryItem(entry);
 
             if (services.containsKey(magic))
                 services.get(magic).process(tree, entry, data);
