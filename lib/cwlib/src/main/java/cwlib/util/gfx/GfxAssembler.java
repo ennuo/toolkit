@@ -350,9 +350,30 @@ public class GfxAssembler
             {
                 Variable l = getWithSwizzle(shader, gmat, box, 0, type);
                 Variable r = getWithSwizzle(shader, gmat, box, 1, type);
+
                 if (l == null || r == null)
+                {
+
+                    for (int i = 0; i < 16; ++i)
+                    {
+                        if (getWithSwizzle(shader, gmat, box, i, type) != null)
+                            System.out.printf("box[%d:%d]\n", index, i);
+                    }
+
+                    if (l != null)
+                    {
+                        variableName = "sum" + index;
+                        assignment = l.toString();
+                        returnType = l.type;
+                        break;
+                    }
+
+                    
                     throw new RuntimeException("Add node is supposed to take two " +
                                                "inputs!");
+
+                }
+
 
                 returnType = l.type;
                 if (r.type > l.type)

@@ -19,6 +19,7 @@ import org.joml.Vector4f;
 
 import configurations.Config;
 import toolkit.windows.Toolkit;
+import toolkit.windows.utilities.ResourcePicker;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -2833,11 +2834,11 @@ public class ItemManagerApplet extends javax.swing.JPanel
 
     private void selectIconButonActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_selectIconButonActionPerformed
-        // this.iconTextEntry.setText(ResourcePicker.getResourceString(
-        //     this,
-        //     this.iconTextEntry.getText(),
-        //     ResourceType.TEXTURE
-        // ));
+        this.iconTextEntry.setText(ResourcePicker.getResourceString(
+            Toolkit.INSTANCE,
+            this.iconTextEntry.getText(),
+            ResourceType.TEXTURE
+        ));
         this.updateIcon();
     }//GEN-LAST:event_selectIconButonActionPerformed
 

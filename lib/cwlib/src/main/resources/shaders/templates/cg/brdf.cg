@@ -285,7 +285,7 @@ ENV.AUTO_NORMAL_SETUP
 #endif
 
 #if (PROPERTIES & REFRACT)
-float4 GetReflection(float2 iUV) {
+float4 GetReflection(float2 iUV, float3 iNormal, float3 iVec2Eye, float4 iColor) {
 ENV.AUTO_REFLECTION_SETUP
 }
 #endif
@@ -320,7 +320,7 @@ ENV.AUTO_ALPHA_SETUP
 #endif
 
 #if (PROPERTIES & ST7)
-float4 GetST7Sample(float4 iUV, float4 iColor) {
+float4 GetST7Sample(float4 iUV, float3 iNormal, float3 iVec2Eye, float4 iColor) {
 ENV.AUTO_ST7_SETUP
 }
 #endif
@@ -547,7 +547,7 @@ void main(
 
         #if (PROPERTIES & REFRACT)
             float3 viewDir = normalize(iVec2Eye.xyz);
-            float3 reflection = GetReflection(reflect(viewDir, normal).xy).xyz;
+            float3 reflection = GetReflection(reflect(viewDir, normal).xy, normal, iVec2Eye.xyz, iColor).xyz;
             reflection *= dot(prod, float3(0.299, 0.587, 0.114));
         #else
             float3 reflection = float3(0.0, 0.0, 0.0); // Dummy addition variable.
@@ -753,7 +753,7 @@ void main(
     float3 prod = light.xyz * light.xyz;
 
     #if (PROPERTIES & REFRACT)
-        float3 reflection = GetReflection(reflect(viewVec, normal).xy).xyz;
+        float3 reflection = GetReflection(reflect(viewVec, normal).xy, normal, iVec2Eye.xyz, iColor).xyz;
         reflection *= dot(prod, float3(0.299072, 0.586914, 0.114014));
     #else
         float3 reflection = float3(0.0, 0.0, 0.0); // Dummy addition variable.
@@ -833,7 +833,7 @@ void main(
     #endif
 
     #if (PROPERTIES & ST7)
-        color += (ambcol * GetST7Sample(iUV, iColor).xyz);
+        color += (ambcol * GetST7Sample(iUV, normal, iVec2Eye.xyz, iColor).xyz);
     #endif
 
     color += (factor * fog);
