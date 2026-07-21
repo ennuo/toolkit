@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Stack;
 
 /**
  * Reversible serializer for assets, also handles
@@ -40,9 +42,11 @@ public class Serializer
     private final Revision revision;
     private final byte compressionFlags;
 
-    private final HashMap<Integer, Object> referenceIDs = new HashMap<>();
-    private final HashMap<Object, Integer> referenceObjects = new HashMap<>();
+
+    private final HashMap<Integer, Object> visited = new HashMap<>();
+    private final IdentityHashMap<Object, Integer> referenceObjects = new IdentityHashMap<>();
     private final HashSet<ResourceDescriptor> dependencies = new HashSet<>();
+    private final Stack<Thing> things = new Stack<>();
 
     private int nextReference = 1;
 
@@ -115,7 +119,7 @@ public class Serializer
      */
     public final void pad(int size)
     {
-        if (this.isWriting) this.output.pad(size);
+        if (this.isWriting) this.output.clear(size);
         else this.input.bytes(size);
     }
 
@@ -449,16 +453,28 @@ public class Serializer
      * (De)serializes a 32-bit integer array to/from the stream.
      *
      * @param values Integer array to write
+     * @param signed Whether integer values are signed
+     * @return Integer array (de)serialized
+     */
+    public final int[] intarray(int[] values, boolean signed)
+    {
+        if (this.isWriting)
+        {
+            this.output.intarray(values, signed);
+            return values;
+        }
+        return this.input.intarray(signed);
+    }
+
+    /**
+     * (De)serializes a 32-bit integer array to/from the stream.
+     *
+     * @param values Integer array to write
      * @return Integer array (de)serialized
      */
     public final int[] intarray(int[] values)
     {
-        if (this.isWriting)
-        {
-            this.output.intarray(values);
-            return values;
-        }
-        return this.input.intarray();
+        return intarray(values, false);
     }
 
     /**
@@ -475,6 +491,70 @@ public class Serializer
             return values;
         }
         return this.input.longarray();
+    }
+
+    /**
+     * (De)serializes a GUID array to/from the stream.
+     *
+     * @param values GUID array to write
+     * @return GUID array (de)serialized
+     */
+    public final GUID[] guidarray(GUID[] values)
+    {
+        if (this.isWriting)
+        {
+            this.output.guidarray(values);
+            return values;
+        }
+        return this.input.guidarray();
+    }
+
+    /**
+     * (De)serializes a SHA1 array to/from the stream.
+     *
+     * @param values Hash array to write
+     * @return Hash array (de)serialized
+     */
+    public final SHA1[] hasharray(SHA1[] values)
+    {
+        if (this.isWriting)
+        {
+            this.output.hasharray(values);
+            return values;
+        }
+        return this.input.hasharray();
+    }
+
+    /**
+     * (De)serializes a GUID list to/from the stream.
+     *
+     * @param values GUID list to write
+     * @return GUID list (de)serialized
+     */
+    public final ArrayList<GUID> guidlist(ArrayList<GUID> values)
+    {
+        if (this.isWriting)
+        {
+            this.output.guidlist(values);
+            return values;
+        }
+        return this.input.guidlist();
+    }
+
+    /**
+     * (De)serializes a SHA1 list to/from the stream.
+     *
+     * @param values Hash list to write
+     * @return Hash list (de)serialized
+     */
+    public final ArrayList<SHA1> hashlist(ArrayList<SHA1> values)
+    {
+        if (this.isWriting)
+        {
+            this.output.hashlist(values);
+            return values;
+        }
+        return this.input.hashlist();
     }
 
     /**
@@ -720,6 +800,17 @@ public class Serializer
         return this.array(things, Thing.class, true);
     }
 
+    /**
+     * (De)serializes a list of Thing references to/from the stream
+     *
+     * @param things Things to write
+     * @return Things (de)serialized
+     */
+    public final ArrayList<Thing> thinglist(ArrayList<Thing> things)
+    {
+        return this.arraylist(things, Thing.class, true);
+    }
+
     public final int adventureCreatureReference(int value)
     {
         int subVersion = revision.getSubVersion();
@@ -777,16 +868,16 @@ public class Serializer
      * @param value        Resource to write
      * @param type         Type of resource
      * @param isDescriptor Whether or not to skip resource flags
-     * @param cp           Flag toggle
-     * @param t            Serialize resource type
+     * @param isClassPointer           Flag toggle
+     * @param includeType            Serialize resource type
      * @return Resource (de)serialized
      */
     public final ResourceDescriptor resource(ResourceDescriptor value, ResourceType type,
-                                             boolean isDescriptor, boolean cp, boolean t)
+                                             boolean isDescriptor, boolean isClassPointer, boolean includeType)
     {
         byte NONE = 0, HASH = 1, GUID = 2;
         // is it 0x191 or 0x18c
-        if (this.revision.getVersion() < 0x191 && cp)
+        if (this.revision.getVersion() < 0x191 && isClassPointer)
         {
             HASH = 2;
             GUID = 1;
@@ -811,7 +902,7 @@ public class Serializer
             if ((guidHashFlag & HASH) != 0)
                 sha1 = this.input.sha1();
 
-            if (t) type = ResourceType.fromType(this.input.i32());
+            if (includeType) type = ResourceType.fromType(this.input.i32());
 
             descriptor = new ResourceDescriptor(guid, sha1, type);
             if (!descriptor.isValid()) return null;
@@ -845,10 +936,57 @@ public class Serializer
         }
         else this.i8(NONE);
 
-        if (t)
+        if (includeType)
             this.output.i32(value != null ? value.getType().getValue() : 0);
 
         return value;
+    }
+
+    /**
+     * (De)serializes a resource list to/from the stream.
+     *
+     * @param value Resource list to write
+     * @param type  Type of resource
+     * @return Resource list (de)serialized
+     */
+    public final ArrayList<ResourceDescriptor> resourcelist(ArrayList<ResourceDescriptor> value, ResourceType type)
+    {
+        return this.resourcelist(value, type, false, true, false);
+    }
+
+    /**
+     * (De)serializes a resource to/from the stream.
+     *
+     * @param value        Resource list to write
+     * @param type         Type of resource
+     * @param isDescriptor Whether or not to skip resource flags
+     * @return Resource list (de)serialized
+     */
+    public final ArrayList<ResourceDescriptor>  resourcelist(ArrayList<ResourceDescriptor>  value, ResourceType type,
+                                             boolean isDescriptor)
+    {
+        return this.resourcelist(value, type, isDescriptor, true, false);
+    }
+
+    public ArrayList<ResourceDescriptor> resourcelist(ArrayList<ResourceDescriptor> descriptors, ResourceType type, boolean isDescriptor, boolean isClassPointer, boolean includeType)
+    {
+        if (isWriting)
+        {
+            output.i32(descriptors.size());
+            for (ResourceDescriptor descriptor : descriptors)
+                resource(descriptor, type, isDescriptor, isClassPointer, includeType);
+
+            return descriptors;
+        }
+        else
+        {
+            descriptors = new ArrayList<>();
+            int count = input.i32();
+            for (int i = 0; i < count; ++i)
+                descriptors.add(resource(null, type, isDescriptor, isClassPointer, includeType));
+            
+            return descriptors;
+        }
     }
 
     /**
@@ -871,46 +1009,21 @@ public class Serializer
                 return value;
             }
 
-            long bytes = Arrays.stream(value).max().orElse(0);
-            long min = Arrays.stream(value).min().orElse(0);
+            long bytes = 0;
+            for (long element : value)
+            {
+                if (Long.compareUnsigned(element, bytes) > 0)
+                    bytes = element;
+            }
+
             if (bytes == 0)
             {
                 this.output.i32(0);
                 return value;
             }
 
-            // signed sucks
-            if (min < 0) bytes = 8;
-            else
-            {
-                if (bytes < 0xFFFFFFFFFFFFFFL)
-                {
-                    if (bytes <= 0xFFFFFFFFFFFFL)
-                    {
-                        if (bytes <= 0xFFFFFFFFFFL)
-                        {
-                            if (bytes <= 0xFFFFFFFFL)
-                            {
-                                if (bytes <= 0xFFFFFFL)
-                                {
-                                    if (bytes <= 0xFFFFL)
-                                    {
-                                        if (bytes <= 0xFF) bytes = 1;
-                                        else bytes = 2;
-                                    }
-                                    else bytes = 3;
-                                }
-                                else bytes = 4;
-                            }
-                            else bytes = 5;
-                        }
-                        else bytes = 6;
-                    }
-                    else bytes = 7;
-                }
-                else bytes = 8;
-            }
-
+            bytes = ((64 - Long.numberOfLeadingZeros(bytes)) + 7) / 8;
+            
             this.output.i32(value.length);
             this.output.u8((int) (bytes & 0xFF));
             for (int i = 0; i < bytes; ++i)
@@ -933,15 +1046,27 @@ public class Serializer
 
     /**
      * (De)serializes a vector (uint32_t array) to/from the stream, compressed depending on the
-     * flags.
-     *
+     * flags
      * @param value Vector to (de)serialize
      * @return (De)serialized vector
      */
     public final int[] intvector(int[] value)
     {
+        return intvector(value, false);
+    }
+
+    /**
+     * (De)serializes a vector (uint32_t array) to/from the stream, compressed depending on the
+     * flags.
+     *
+     * @param value Vector to (de)serialize
+     * @param signed Whether integer values are signed
+     * @return (De)serialized vector
+     */
+    public final int[] intvector(int[] value, boolean signed)
+    {
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_VECTORS) == 0)
-            return this.intarray(value);
+            return this.intarray(value, signed);
 
         if (this.isWriting)
         {
@@ -950,33 +1075,32 @@ public class Serializer
                 this.output.i32(0);
                 return value;
             }
+            
+            // Storing in a separate variable because we don't
+            // want to mutate the original array
+            int[] vector = value;
+            if (signed)
+            {
+                vector = new int[value.length];
+                for (int i = 0; i < vector.length; ++i)
+                    vector[i] = ((value[i] & 0x7fffffff)) << 1 ^ ((value[i] >> 0x1f));
+            }
 
-            long bytes = Arrays.stream(value).mapToLong(x -> x & 0xFFFFFFFFL).max().orElse(0);
+            long bytes = Arrays.stream(vector).mapToLong(x -> x & 0xFFFFFFFFL).max().orElse(0);
             if (bytes == 0)
             {
-                this.output.i32(value.length);
+                this.output.i32(vector.length);
                 this.output.i32(0);
                 return value;
             }
 
-            // Get number of bytes max number requires
-            if (bytes < 0xFFFFFFL)
-            {
-                if (bytes <= 0xFFFFL)
-                {
-                    if (bytes <= 0xFF) bytes = 1;
-                    else bytes = 2;
-                }
-                else bytes = 3;
-            }
-            else bytes = 4;
+            bytes = ((64 - Long.numberOfLeadingZeros(bytes)) + 7) / 8;
 
-
-            this.output.i32(value.length);
+            this.output.i32(vector.length);
             this.output.u8((int) (bytes & 0xFF));
             for (int i = 0; i < bytes; ++i)
-                for (int j = 0; j < value.length; ++j)
-                    this.output.u8((value[j] >>> (i * 8)) & 0xFF);
+                for (int j = 0; j < vector.length; ++j)
+                    this.output.u8((vector[j] >>> (i * 8)) & 0xFF);
 
             return value;
         }
@@ -989,6 +1113,12 @@ public class Serializer
             for (int j = 0; j < count; ++j)
                 vector[j] |= (this.input.u8() << (i * 8));
 
+        if (signed)
+        {
+            for (int i = 0; i < vector.length; ++i)
+                vector[i] = (vector[i] >> 1 ^ -(vector[i] & 1));
+        }
+        
         return vector;
     }
 
@@ -1084,12 +1214,13 @@ public class Serializer
                 this.output.i32(0);
                 return null;
             }
+            
             int reference = this.referenceObjects.getOrDefault(value, -1);
             if (reference == -1)
             {
                 int next = this.nextReference++;
                 this.output.i32(next);
-                this.referenceIDs.put(next, value);
+                this.visited.put(next, value);
                 this.referenceObjects.put(value, next);
                 value.serialize(this);
                 return value;
@@ -1099,8 +1230,8 @@ public class Serializer
         }
         int reference = this.input.i32();
         if (reference == 0) return null;
-        if (this.referenceIDs.containsKey(reference))
-            return (T) this.referenceIDs.get(reference);
+        if (this.visited.containsKey(reference))
+            return (T) this.visited.get(reference);
         T struct = null;
         try { struct = clazz.getDeclaredConstructor().newInstance(); }
         catch (Exception ex)
@@ -1108,7 +1239,7 @@ public class Serializer
             throw new SerializationException("Failed to create class instance in " +
                                              "serializer!");
         }
-        this.referenceIDs.put(reference, struct);
+        this.visited.put(reference, struct);
         this.referenceObjects.put(struct, reference);
         struct.serialize(this);
 
@@ -1130,6 +1261,7 @@ public class Serializer
             try { value = clazz.getDeclaredConstructor().newInstance(); }
             catch (Exception ex)
             {
+                ex.printStackTrace();
                 throw new SerializationException("Failed to create class instance in " +
                                                  "serializer!");
             }
@@ -1190,7 +1322,7 @@ public class Serializer
             for (T serializable : values)
             {
                 if (isReference) this.reference(serializable, clazz);
-                else serializable.serialize(this);
+                else this.struct(serializable, clazz);
             }
             return values;
         }
@@ -1230,7 +1362,7 @@ public class Serializer
             for (T serializable : values)
             {
                 if (isReference) this.reference(serializable, clazz);
-                else serializable.serialize(this);
+                else this.struct(serializable, clazz);
             }
             return values;
         }
@@ -1248,9 +1380,25 @@ public class Serializer
         }
         catch (Exception ex)
         {
+            // ex.printStackTrace();
             throw new SerializationException("There was an error (de)serializing an array!");
         }
         return output;
+    }
+
+    public final void push(Thing thing)
+    {
+        things.push(thing);
+    }
+
+    public final void pop()
+    {
+        things.pop();
+    }
+
+    public final Thing getThing()
+    {
+        return things.peek();
     }
 
     /**
@@ -1316,6 +1464,16 @@ public class Serializer
     }
 
     /**
+     * Forcibly adds dependencies from another serializer to this serializer's collection.
+     * @param serializer Serializer instance
+     */
+    public final void addDependencies(Serializer serializer)
+    {
+        for (ResourceDescriptor dependency : serializer.dependencies)
+            this.dependencies.add(dependency);
+    }
+
+    /**
      * Remove all dependencies in collection.
      */
     public final void clearDependencies()
@@ -1324,15 +1482,15 @@ public class Serializer
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getPointer(int index)
+    public <T> T getVisited(int index)
     {
-        return (T) this.referenceIDs.get(index);
+        return (T) this.visited.get(index);
     }
 
-    public void setPointer(int index, Object value)
+    public void setVisited(int id, Object value)
     {
-        this.referenceIDs.put(index, value);
-        this.referenceObjects.put(value, index);
+        this.visited.put(id, value);
+        this.referenceObjects.put(value, id);
     }
 
     public int getNextReference()

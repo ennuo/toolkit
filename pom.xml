@@ -16,6 +16,14 @@
 
         <module>tools/jsoninator</module>
         <module>tools/descriptor</module>
+        <module>tools/meshimporter</module>
+        <module>tools/unlockall</module>
+        <module>tools/themelancholyofingregnation</module>
+		<module>tools/quetzalcoatl</module>
+        <module>tools/asya</module>
+        <module>tools/istanbul</module>
+        <module>tools/spatialocality</module>
+        
         <module>tools/sequencerdump</module>
 
         <module>toolkit</module>

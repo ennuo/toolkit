@@ -1,11 +1,14 @@
 package cwlib.types.swing;
 
+import cwlib.ConfigShared;
+import cwlib.SortMode;
 import cwlib.enums.DatabaseType;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.Nodes;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 import javax.swing.tree.TreeSelectionModel;
@@ -55,6 +58,9 @@ public abstract class FileData
 
     protected boolean hasChanges = false;
 
+    private SortMode lastSortMode = null;
+    private boolean lastFoldersHoisted = ConfigShared.search().hoistFolders;
+
     protected FileData(File file, DatabaseType type)
     {
         this.type = type;
@@ -79,11 +85,12 @@ public abstract class FileData
             if (base == null) this.base = this.file.getParentFile();
             else this.base = base;
         }
+        
         this.model = new FileModel(new FileNode(type.name(), null, null, this));
         this.root = (FileNode) this.model.getRoot();
 
         JTree tree = new JTree();
-
+        
         tree.setRootVisible(false);
         tree.setModel(this.model);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -118,6 +125,19 @@ public abstract class FileData
         throw new UnsupportedOperationException(String.format("Saving is unimplemented for " +
                                                               "database of type %s",
             this.type));
+    }
+
+    public void promptSave()
+    {
+        if (!hasChanges) return;
+
+        int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) has pending changes, do you want to save?", 
+            type,
+            file.getAbsolutePath()
+        ), "Pending changes", JOptionPane.YES_NO_OPTION);
+
+        if (result == JOptionPane.YES_OPTION) 
+            save();
     }
 
     public final boolean save()
@@ -249,5 +269,21 @@ public abstract class FileData
     public void setLastSearch(String query)
     {
         this.query = query;
+    }
+    
+    public boolean isRemote() { return false; }
+
+    public boolean needsResort()
+    {
+        var config = ConfigShared.search();
+        return config.hoistFolders != lastFoldersHoisted || config.sortMode != lastSortMode;
+    }
+
+    public void sortUI()
+    {
+        var config = ConfigShared.search();
+        if (needsResort()) root.sort();
+        lastFoldersHoisted = config.hoistFolders;
+        lastSortMode = config.sortMode;
     }
 }

@@ -89,7 +89,10 @@ public enum SwitchType implements ValueEnum<Integer>
     POWERUP_TWEAKER(81),
     RACE_START(82),
     DECORATION_MOUNT(83),
-    SPRING_SENSOR(84);
+    SPRING_SENSOR(84),
+
+    NETWORK_SAMPLER(85),
+    NETWORK_SENSOR(86);
 
     private final int value;
 

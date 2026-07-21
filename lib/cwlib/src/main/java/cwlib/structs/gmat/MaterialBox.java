@@ -2,6 +2,7 @@ package cwlib.structs.gmat;
 
 import cwlib.enums.BoxType;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.resources.RGfxMaterial;
 import cwlib.util.XmlFormatter;
@@ -23,9 +24,22 @@ public class MaterialBox implements Serializable
     private int[] params = new int[PARAMETER_COUNT];
     public float x, y, w, h;
     public int subType;
+    
+    @GsonRevision(branch = 0x4431)
+    public int textureFlags;
+
     public MaterialParameterAnimation anim = new MaterialParameterAnimation();
     public MaterialParameterAnimation anim2 = new MaterialParameterAnimation();
 
+    public static final int TEXTURE_SAMPLE_SCALE_X = 0;
+    public static final int TEXTURE_SAMPLE_SCALE_Y = 1;
+    public static final int TEXTURE_SAMPLE_OFFSET_X = 2;
+    public static final int TEXTURE_SAMPLE_OFFSET_Y = 3;
+    public static final int TEXTURE_SAMPLE_CHANNEL = 4;
+    public static final int TEXTURE_SAMPLE_INDEX = 5;
+
+    public static final int FRESNEL_EXPONENT = 0;
+    
     /**
      * Creates an output node
      */
@@ -37,12 +51,12 @@ public class MaterialBox implements Serializable
     public MaterialBox(Vector2f scale, Vector2f offset, int channel, int texture)
     {
         this.type = BoxType.TEXTURE_SAMPLE;
-        this.params[0] = Float.floatToIntBits(scale.x);
-        this.params[1] = Float.floatToIntBits(scale.y);
-        this.params[2] = Float.floatToIntBits(offset.x);
-        this.params[3] = Float.floatToIntBits(offset.y);
-        this.params[4] = channel;
-        this.params[5] = texture;
+        this.params[TEXTURE_SAMPLE_SCALE_X] = Float.floatToIntBits(scale.x);
+        this.params[TEXTURE_SAMPLE_SCALE_Y] = Float.floatToIntBits(scale.y);
+        this.params[TEXTURE_SAMPLE_OFFSET_X] = Float.floatToIntBits(offset.x);
+        this.params[TEXTURE_SAMPLE_OFFSET_Y] = Float.floatToIntBits(offset.y);
+        this.params[TEXTURE_SAMPLE_CHANNEL] = channel;
+        this.params[TEXTURE_SAMPLE_INDEX] = texture;
     }
 
     /**
@@ -55,8 +69,8 @@ public class MaterialBox implements Serializable
         this.params[1] = Float.floatToIntBits(transform.y);
         this.params[2] = Float.floatToIntBits(transform.z);
         this.params[3] = Float.floatToIntBits(transform.w);
-        this.params[4] = channel;
-        this.params[5] = texture;
+        this.params[TEXTURE_SAMPLE_CHANNEL] = channel;
+        this.params[TEXTURE_SAMPLE_INDEX] = texture;
     }
 
     /***
@@ -112,6 +126,13 @@ public class MaterialBox implements Serializable
 
         int head = serializer.getRevision().getVersion();
 
+        boolean isVita = serializer.getRevision().isVita();
+        boolean isTextureSampler = type == BoxType.TEXTURE_SAMPLE;
+
+        // If we're writing, adjust the texture sampler parameters to match what Vita expects if applicable.
+        if (isVita && isTextureSampler && serializer.isWriting())
+            params[TEXTURE_SAMPLE_CHANNEL] = (params[TEXTURE_SAMPLE_CHANNEL] << 8) | (textureFlags & 0xff);
+        
         if (!serializer.isWriting()) params = new int[PARAMETER_COUNT];
         if (head < 0x2a4)
         {
@@ -123,6 +144,15 @@ public class MaterialBox implements Serializable
             serializer.i32(PARAMETER_COUNT);
             for (int i = 0; i < PARAMETER_COUNT; ++i)
                 params[i] = serializer.i32(params[i]);
+        }
+        
+        // Convert the texture sampler to a more standard format,
+        // we'll just cache the texture flags in the material so it can
+        // be restored during write.
+        if (isVita && isTextureSampler)
+        {
+            textureFlags = params[TEXTURE_SAMPLE_CHANNEL] & 0xff;
+            params[TEXTURE_SAMPLE_CHANNEL] = (params[TEXTURE_SAMPLE_CHANNEL] >> 8) & 0xff;
         }
 
         x = serializer.f32(x);

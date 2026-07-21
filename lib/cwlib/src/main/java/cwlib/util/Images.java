@@ -78,58 +78,60 @@ public class Images
                                 boolean generateMips)
     {
         // Prefer texconv on Windows platforms
-        if (CwlibConfiguration.IS_WINDOWS && CwlibConfiguration.TEXCONV_EXECUTABLE.exists())
-        {
-            File input = new File("TEXTURE.PNG");
-            File output = new File("TEXTURE.DDS");
+        // if (CwlibConfiguration.IS_WINDOWS && CwlibConfiguration.TEXCONV_EXECUTABLE.exists())
+        // {
+        //     System.out.println("USING TEXCONV!");
+            
+        //     File input = new File("TEXTURE.PNG");
+        //     File output = new File("TEXTURE.DDS");
 
-            String formatType = null;
-            switch (type)
-            {
-                case DXT1:
-                    formatType = "DXT1";
-                    break;
-                case DXT3:
-                    formatType = "DXT3";
-                    break;
-                case DXT5:
-                    formatType = "DXT5";
-                    break;
-                default:
-                    formatType = "DXT5";
-                    break;
-            }
+        //     String formatType = null;
+        //     switch (type)
+        //     {
+        //         case DXT1:
+        //             formatType = "DXT1";
+        //             break;
+        //         case DXT3:
+        //             formatType = "DXT3";
+        //             break;
+        //         case DXT5:
+        //             formatType = "DXT5";
+        //             break;
+        //         default:
+        //             formatType = "DXT5";
+        //             break;
+        //     }
 
-            try { ImageIO.write(image, "png", input); }
-            catch (Exception ex) { return null; }
+        //     try { ImageIO.write(image, "png", input); }
+        //     catch (Exception ex) { return null; }
 
-            ProcessBuilder builder =
-                new ProcessBuilder(CwlibConfiguration.TEXCONV_EXECUTABLE.getAbsolutePath(),
-                    "texconv",
-                    "-f",
-                    formatType,
-                    "-y",
-                    "-nologo",
-                    "-m",
-                    generateMips ? "0" : "1",
-                    input.getAbsolutePath(),
-                    "-o",
-                    new File("./").getAbsolutePath());
+        //     ProcessBuilder builder =
+        //         new ProcessBuilder(CwlibConfiguration.TEXCONV_EXECUTABLE.getAbsolutePath(),
+        //             "texconv",
+        //             "-f",
+        //             formatType,
+        //             "-y",
+        //             "-nologo",
+        //             "-m",
+        //             generateMips ? "0" : "1",
+        //             input.getAbsolutePath(),
+        //             "-o",
+        //             new File("./").getAbsolutePath());
 
-            try { builder.start().waitFor(); }
-            catch (Exception ex) { }
+        //     try { builder.start().waitFor(); }
+        //     catch (Exception ex) { }
 
-            byte[] imageData = null;
-            if (output.exists())
-            {
-                imageData = FileIO.read(output.getAbsolutePath());
-                output.delete();
-            }
+        //     byte[] imageData = null;
+        //     if (output.exists())
+        //     {
+        //         imageData = FileIO.read(output.getAbsolutePath());
+        //         output.delete();
+        //     }
 
-            input.delete();
+        //     input.delete();
 
-            return imageData;
-        }
+        //     return imageData;
+        // }
 
 
         int width = toNearest(image.getWidth());
@@ -156,14 +158,15 @@ public class Images
         byte[] dds = Squish.compressImage(getRGBA(image), width, height, null, type);
 
         int mipCount = 1;
+        var mip = image;
         if (generateMips)
         {
             while (true)
             {
                 width = toNearest(width - 1);
                 height = toNearest(height - 1);
-                image = Scalr.resize(image, Scalr.Method.AUTOMATIC, width, height);
-                dds = Bytes.combine(dds, Squish.compressImage(getRGBA(image), width,
+                mip = Scalr.resize(image, Scalr.Method.ULTRA_QUALITY, width, height);
+                dds = Bytes.combine(dds, Squish.compressImage(getRGBA(mip), width,
                     height, null
                     , type));
                 mipCount += 1;

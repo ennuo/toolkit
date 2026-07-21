@@ -1,5 +1,6 @@
 package cwlib.enums;
 
+import cwlib.io.Resource;
 import cwlib.io.Serializable;
 import cwlib.io.ValueEnum;
 import cwlib.resources.*;
@@ -24,7 +25,7 @@ public enum ResourceType implements ValueEnum<Integer>
     LEVEL("LVL", 9, RLevel.class, "levels/", ".bin"),
     FILENAME(null, 10, "text/", ".txt"), // Could be anything really, but generally will refer to
     // either FSB or BIK
-    SCRIPT("FSH", 11, "scripts/", ".ff"),
+    SCRIPT("FSH", 11, RScript.class, "scripts/", ".ff"),
     SETTINGS_CHARACTER("CHA", 12, "character_settings/", ".cha"),
     FILE_OF_BYTES(null, 13, "raw_data/", ".raw"),
     SETTINGS_SOFT_PHYS("SSP", 14, "softphys_settings/", ".sph"),
@@ -64,7 +65,7 @@ public enum ResourceType implements ValueEnum<Integer>
     PINS("PIN", 47, RPins.class, "pins/", ".pin"),
     INSTRUMENT("INS", 48, RInstrument.class, "instruments/", ".rinst"),
     SAMPLE(null, 49, "samples/", ".smp"),
-    OUTFIT_LIST("OFT", 50, "outfits/", ".oft"),
+    OUTFIT_LIST("OUT", 50, ROutfitList.class, "outfits/", ".oft"),
     PAINT_BRUSH("PBR", 51, "paintbrushes/", ".pbr"),
     THING_RECORDING("REC", 52, "recordings/", ".rec"),
     PAINTING("PTG", 53, "paintings/", ".ptg"),
@@ -75,11 +76,11 @@ public enum ResourceType implements ValueEnum<Integer>
     SKELETON_REGISTRY("SRG", 58, "skeletons/registries/", ".sreg"),
     SKELETON_ANIM_STYLES("SAS", 59, "skeleton/animation_styles/", ".sas"),
     CROSSPLAY_VITA(null, 60, "crossplay_data/", ".cpv"),
-    STREAMING_CHUNK("CHK", 61, "streaming_chunks/", ".chk"),
+    STREAMING_CHUNK("CHK", 61, RStreamingChunk.class, "streaming_chunks/", ".chk"),
     ADVENTURE_SHARED_DATA("ADS", 62, "adventure_data/shared/", ".ads"),
     ADVENTURE_PLAY_PROFILE("ADP", 63, "adventure_data/play_profiles/", ".adp"),
     ANIMATION_MAP("AMP", 64, "animations/maps/", ".amap"),
-    CACHED_COSTUME_DATA("CCD", 65, "cached_costume_data/", ".ccd"),
+    CACHED_COSTUME_DATA("CCD", 65, RCachedCostumeData.class, "cached_costume_data/", ".ccd"),
     DATA_LABELS("DLA", 66, "datalabels/", ".dla"),
     ADVENTURE_MAPS("ADM", 67, "adventure_data/maps/", ".adm"),
 
@@ -92,11 +93,11 @@ public enum ResourceType implements ValueEnum<Integer>
 
     private final String header;
     private final int value;
-    private final Class<? extends Serializable> compressable;
+    private final Class<? extends Resource> compressable;
     private final String folder;
     private final String extension;
 
-    ResourceType(String magic, int value, Class<? extends Serializable> clazz,
+    ResourceType(String magic, int value, Class<? extends Resource> clazz,
                  String folder, String extension)
     {
         this.header = magic;
@@ -125,7 +126,7 @@ public enum ResourceType implements ValueEnum<Integer>
         return this.value;
     }
 
-    public Class<? extends Serializable> getCompressable()
+    public Class<? extends Resource> getCompressable()
     {
         return this.compressable;
     }

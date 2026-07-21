@@ -21,9 +21,7 @@ public class PTrigger implements Serializable
     @GsonRevision(min = 0x2a, lbp3 = true)
     public byte zRangeHundreds;
 
-    @GsonRevision(min = 0x1d5)
     public boolean allZLayers;
-
 
     @GsonRevision(min = 0x19b)
     public float hysteresisMultiplier = 1.0f;
@@ -89,7 +87,7 @@ public class PTrigger implements Serializable
         radiusMultiplier = serializer.f32(radiusMultiplier);
 
         if (version < 0x1d5)
-            serializer.i32(0); // zLayers?
+            serializer.s32(0); // zLayers?
 
         if (subVersion >= 0x2a)
             zRangeHundreds = serializer.i8(zRangeHundreds);

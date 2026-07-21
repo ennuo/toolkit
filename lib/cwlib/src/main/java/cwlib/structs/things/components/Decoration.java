@@ -6,6 +6,7 @@ import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.GUID;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 import org.joml.Matrix4f;
@@ -36,6 +37,12 @@ public class Decoration implements Serializable
     public GUID planGUID;
     @GsonRevision(branch = 0x4431, min = 0x7c)
     public float zBias; // Vita
+
+    public Decoration() {}
+    public Decoration(ResourceDescriptor descriptor)
+    {
+        renderMesh = new PRenderMesh(descriptor);
+    }
 
     @Override
     public void serialize(Serializer serializer)

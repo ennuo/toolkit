@@ -11,6 +11,10 @@ public class InventoryItemFlags
     public static final int HIDDEN_PLAN = 0x20;
     public static final int AUTOSAVED = 0x40;
 
+    public static final int ANIMATED = 0x1;
+    public static final int COLORABLE = 0x2;
+    public static final int LOCKED = 0x4;
+
     /**
      * This item can be emitted.
      */

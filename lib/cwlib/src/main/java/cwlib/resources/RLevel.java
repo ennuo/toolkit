@@ -5,6 +5,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import cwlib.enums.Branch;
 import cwlib.enums.EnemyPart;
@@ -12,13 +14,17 @@ import cwlib.enums.InventoryObjectType;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
+import cwlib.enums.SwitchType;
 import cwlib.enums.TriggerType;
+import cwlib.enums.VisibilityFlags;
 import cwlib.ex.SerializationException;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
+import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
+import cwlib.util.Bytes;
 import cwlib.io.Resource;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.SerializationData;
@@ -44,8 +50,11 @@ import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRef;
+import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PScript;
+import cwlib.structs.things.parts.PSpriteLight;
 import cwlib.structs.things.parts.PSwitch;
+import cwlib.structs.things.parts.PSwitchInput;
 import cwlib.structs.things.parts.PTrigger;
 import cwlib.structs.things.parts.PWorld;
 
@@ -176,6 +185,12 @@ public class RLevel implements Resource
         if (!serializer.isWriting()) onLoadFinished(revision);
     }
 
+    public void fixup(Revision revision)
+    {
+        if (worldThing != null)
+            worldThing.fixup(revision);
+    }
+
     private boolean isValidLevel()
     {
         // Who's serializing a level without a world thing?
@@ -190,36 +205,7 @@ public class RLevel implements Resource
     @Override
     public void onLoadFinished(Revision revision)
     {
-        if (!isValidLevel()) return;
-        int version = revision.getVersion();
-        PWorld world = worldThing.getPart(Part.WORLD);
-
-        // If we're reading a file from after local positions stopped being serialized,
-        // generate them.
-        if (version >= 0x341)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null) continue;
-
-                PPos pos = thing.getPart(Part.POS);
-                if (pos == null) continue;
-
-                if (thing.parent == null)
-                {
-                    pos.localPosition = new Matrix4f(pos.worldPosition);
-                    continue;
-                }
-
-                PPos parent = thing.parent.getPart(Part.POS);
-
-                // This generally shouldn't happen, but make sure to check it anyway
-                if (parent == null) continue;
-
-                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
-                pos.localPosition = inv.mul(pos.worldPosition);
-            }
-        }
+        fixup(revision);
     }
 
     @Override
@@ -228,47 +214,6 @@ public class RLevel implements Resource
         if (!isValidLevel()) return;
         int version = revision.getVersion();
         PWorld world = worldThing.getPart(Part.WORLD);
-
-        // If this is imported from a later version from JSON, the local matrices might not be
-          // correct,
-        // correct any that are identity matrices
-        if (version < 0x341)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null) continue;
-
-                PPos pos = thing.getPart(Part.POS);
-                if (pos == null) continue;
-
-                if ((pos.localPosition.properties() & Matrix4f.PROPERTY_IDENTITY) != 0) continue;
-                if (thing.parent == null)
-                {
-                    pos.localPosition = new Matrix4f(pos.worldPosition);
-                    continue;
-                }
-
-                PPos parent = thing.parent.getPart(Part.POS);
-
-                // This generally shouldn't happen, but make sure to check it anyway
-                if (parent == null) continue;
-
-                Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
-                pos.localPosition = inv.mul(pos.worldPosition);
-            }
-        }
-
-        // Set the parents for emitters
-        if (version < 0x314)
-        {
-            for (Thing thing : world.things)
-            {
-                if (thing == null || !thing.hasPart(Part.EMITTER)) continue;
-                PEmitter emitter = thing.getPart(Part.EMITTER);
-                if (emitter.parentThing == null)
-                    emitter.parentThing = thing.parent;
-            }
-        }
 
         // Don't know the exact revision the scripts were removed, but deploy and below is a good
           // guess,
@@ -298,11 +243,16 @@ public class RLevel implements Resource
                 ResourceType.SCRIPT);
             ResourceDescriptor enemyWardScript = new ResourceDescriptor(43463, ResourceType.SCRIPT);
             ResourceDescriptor soundObjectScript = new ResourceDescriptor(31319, ResourceType.SCRIPT);
+            ResourceDescriptor emitterScript = new ResourceDescriptor(27150, ResourceType.SCRIPT);
+            ResourceDescriptor spriteLightScript = new ResourceDescriptor(46946, ResourceType.SCRIPT);
 
             GUID scoreboardScriptKey = new GUID(11599);
-            GUID noJoinMarkerScriptKey = new GUID(39394);
             GUID gunScriptKey = new GUID(66090);
             GUID speechBubbleScriptKey = new GUID(18420);
+            GUID triggerMusicScriptKey = new GUID(18256);
+
+            GUID emitterMeshKey = new GUID(18299);
+            GUID paintSwitchMeshKey = new GUID(66172);
 
             for (Thing thing : world.things)
             {
@@ -370,6 +320,38 @@ public class RLevel implements Resource
                         script.instance.unsetField("Plan");
                         script.instance.unsetField("PlanIcon");
                     }
+
+                    // LBP3 has a non-divergent BasicIcons resource attached to the script
+                    // for some reason.
+                    if (script.is(switchBaseScript))
+                        script.instance.unsetField("BasicIcons");
+
+                    // LBP music boxes should have all z layers enabled in their trigger range
+                    if (script.is(triggerMusicScriptKey) && thing.hasPart(Part.TRIGGER))
+                        thing.<PTrigger>getPart(Part.TRIGGER).allZLayers = true;
+                }
+
+                // Some switches/logic/etc get their meshes removed if they aren't visible in play mode.
+                if (!thing.hasPart(Part.RENDER_MESH))
+                {
+                    GUID meshKey = null;
+
+                    if (thing.hasPart(Part.EMITTER)) meshKey = emitterMeshKey;
+                    if (thing.hasPart(Part.SWITCH))
+                    {
+                        PSwitch switchBase = thing.getPart(Part.SWITCH);
+                        if (switchBase.type == SwitchType.PAINT)
+                            meshKey = paintSwitchMeshKey;
+                    }
+
+                    // Normally we'd have to account for bones from the mesh file itself,
+                    // but it should mostly be fine since they only have a single root bone.
+                    if (meshKey != null)
+                    {
+                        PRenderMesh mesh = new PRenderMesh(new ResourceDescriptor(meshKey, ResourceType.MESH), new Thing[] { thing });
+                        mesh.visibilityFlags &= ~VisibilityFlags.PLAY_MODE;
+                        thing.setPart(Part.RENDER_MESH, mesh);
+                    }
                 }
 
                 // Fixup creature brains
@@ -403,11 +385,56 @@ public class RLevel implements Resource
                 // Only set the script instances if they don't already exist
                 if (!thing.hasPart(Part.SCRIPT))
                 {
-                    // Sound names got moved to a native field in later versions
-                    if (thing.hasPart(Part.AUDIO_WORLD))
+                    // Old keys have a child object with a trigger, handle that later
+                    if (thing.isNewKey())
+                        thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
+                    
+                    // Generally sprite lights are children of a tweakable mesh object
+                    if (thing.hasPart(Part.SPRITE_LIGHT))
                     {
+                        PSpriteLight light = thing.getPart(Part.SPRITE_LIGHT);
+
+                        // It gets attached to both the child and parent?
+                        thing.setPart(Part.SCRIPT, new PScript(spriteLightScript));
+
+                        // Attach the parent script to the root of the group for more complex setups
+                        // This probably won't mess anything up, right?
+                        Thing root = thing;
+                        if (thing.parent != null)
+                        {
+                            root = thing.parent;
+                            Thing group = thing.groupHead;
+                            if (group != null)
+                            {
+                                while (true)
+                                {
+                                    if (root.parent == null || root.parent.groupHead != group) break;
+                                    root = root.parent;
+                                }
+                            }
+
+                            if (!root.hasPart(Part.SCRIPT))
+                                root.setPart(Part.SCRIPT, new PScript(spriteLightScript));
+                        }
+
+                        // Fixup the light activation
+                        SwitchOutput output = world.getSwitchInput(root);
+                        if (output != null)
+                            light.onDest = output.activation.activation;
+                    }
+                    
+                    else if (thing.hasPart(Part.EMITTER))
+                        thing.setPart(Part.SCRIPT, new PScript(emitterScript));
+                    
+                    // Sound names got moved to a native field in later versions
+                    else if (thing.hasPart(Part.AUDIO_WORLD))
+                    {
+                        // Sounds in LBP1 trigger at all layers
+                        if (thing.hasPart(Part.TRIGGER))
+                            thing.<PTrigger>getPart(Part.TRIGGER).allZLayers = true;
+
                         PAudioWorld sfx = thing.getPart(Part.AUDIO_WORLD);
-                        sfx.triggerBySwitch = hasSwitchInput(thing);
+                        sfx.triggerBySwitch = world.hasSwitchInput(thing);
                         PScript script = new PScript(soundObjectScript);
                         if (sfx.soundNames != null)
                             script.instance.addField("SoundNames", sfx.soundNames);
@@ -449,8 +476,8 @@ public class RLevel implements Resource
                         // Fixup scoreboard, no join posts, and anything with triggers
                     else if (thing.parent != null)
                     {
-                        // Handle level keys
-                        if (thing.parent.isKey() && thing.hasPart(Part.TRIGGER))
+                        // Handle old level keys
+                        if (thing.parent.isOldKey() && thing.hasPart(Part.TRIGGER))
                         {
                             thing.setPart(Part.SCRIPT, new PScript(triggerCollectKeyScript));
                             continue;
@@ -505,29 +532,6 @@ public class RLevel implements Resource
                 world.backdrop.setPart(Part.REF, null);
             }
         }
-    }
-
-    public boolean hasSwitchInput(Thing target)
-    {
-        if (!this.isValidLevel()) return false;
-        PWorld world = worldThing.getPart(Part.WORLD);
-        for (Thing thing : world.things)
-        {
-            if (thing == null || !thing.hasPart(Part.SWITCH)) continue;
-            PSwitch switchBase = thing.getPart(Part.SWITCH);
-            if (switchBase.outputs == null) continue;
-            for (SwitchOutput output : switchBase.outputs)
-            {
-                if (output.targetList == null) continue;
-                for (SwitchTarget switchTarget : output.targetList)
-                {
-                    if (switchTarget.thing == target) 
-                        return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private ArrayList<Thing> getAllReferences(ArrayList<Thing> things, Thing thing)
@@ -633,9 +637,9 @@ public class RLevel implements Resource
     @Override
     public SerializationData build(Revision revision, byte compressionFlags)
     {
-        // 16MB buffer for generation of levels, since the allocated size will get
-        // stuck in a recursive loop until I fix it.
-        Serializer serializer = new Serializer(0x1000000, revision, compressionFlags);
+        // output stream is resizable and get allocated size isnt 
+        // implemented, start with around ~64kbs
+        Serializer serializer = new Serializer(0x10000 , revision, compressionFlags);
         serializer.struct(this, RLevel.class);
         return new SerializationData(
             serializer.getBuffer(),

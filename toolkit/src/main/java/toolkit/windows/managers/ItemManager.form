@@ -255,7 +255,7 @@
                                   <Component id="titleDescPane" alignment="0" max="32767" attributes="0"/>
                                   <Component id="locationTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="catLocPane" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="jPanel1" alignment="1" pref="422" max="32767" attributes="0"/>
+                                  <Component id="jPanel1" alignment="1" pref="441" max="32767" attributes="0"/>
                                   <Component id="categoryTextEntry" alignment="1" max="32767" attributes="0"/>
                                   <Component id="translationKeyTextEntry" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
@@ -460,47 +460,33 @@
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="titleKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <Component id="titleKeyTextField" min="-2" pref="128" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                   <Component id="descKeyLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Component id="descKeySpinner" pref="185" max="32767" attributes="0"/>
+                                  <Component id="descriptionKeyTextField" pref="204" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="titleKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="titleKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="descKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="descKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descriptionKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JSpinner" name="titleKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                            <Property name="toolTipText" type="java.lang.String" value=""/>
-                            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                              <Color id="Default Cursor"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="titleKeyTextField">
                         </Component>
                         <Component class="javax.swing.JLabel" name="descKeyLabel">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Description Key:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="descKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="descriptionKeyTextField">
                         </Component>
                       </SubComponents>
                     </Container>
@@ -524,31 +510,26 @@
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="categoryKeySpinner" min="-2" pref="128" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyTextField" min="-2" pref="128" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                   <Component id="locationKeyLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Component id="locationKeySpinner" max="32767" attributes="0"/>
+                                  <Component id="locationKeyTextField" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                  <Component id="categoryKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="categoryKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="locationKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="locationKeySpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="locationKeyTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JSpinner" name="categoryKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="categoryKeyTextField">
                         </Component>
                         <Component class="javax.swing.JLabel" name="locationKeyLabel">
                           <Properties>
@@ -564,12 +545,7 @@
                             </Property>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JSpinner" name="locationKeySpinner">
-                          <Properties>
-                            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                              <SpinnerModel initial="0" maximum="4294967295" minimum="0" numberType="java.lang.Long" stepSize="1" type="number"/>
-                            </Property>
-                          </Properties>
+                        <Component class="javax.swing.JTextField" name="locationKeyTextField">
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2268,7 +2244,7 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="colorBlueSpinner" min="-2" pref="106" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="colorAlphaSpinner" pref="100" max="32767" attributes="0"/>
+                                      <Component id="colorAlphaSpinner" pref="131" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="dateAddedSpinner" max="32767" attributes="0"/>
                                   <Component id="highlightSoundSpinner" alignment="0" max="32767" attributes="0"/>
@@ -3172,7 +3148,7 @@
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="autosavedCheckbox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="197" max="32767" attributes="0"/>
+                          <EmptySpace pref="228" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -3235,6 +3211,102 @@
                 </Component>
               </SubComponents>
             </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="alearPane">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Alear">
+                <Property name="tabTitle" type="java.lang.String" value="Alear"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="75" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="toyCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Component id="lockedCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Component id="colorableCheckbox" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="subcategoryTextField" pref="424" max="32767" attributes="0"/>
+                              <Component id="loreTextField" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="animatedCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="subcategoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="loreTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="colorableCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="animatedCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="lockedCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="toyCheckbox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="159" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="jLabel1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Subcategory"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="subcategoryTextField">
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel2">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Lore"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="loreTextField">
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="colorableCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Colorable"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="animatedCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Animated"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="lockedCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Locked"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="toyCheckbox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Toy"/>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
       </SubComponents>

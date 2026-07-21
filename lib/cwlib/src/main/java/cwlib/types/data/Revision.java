@@ -1,6 +1,8 @@
 package cwlib.types.data;
 
 import cwlib.enums.Branch;
+import cwlib.enums.CompressionFlags;
+import cwlib.enums.Revisions;
 
 /**
  * Utilities for comparing game revisions.
@@ -13,6 +15,9 @@ public final class Revision
     private final short branchID;
     private final short branchRevision;
 
+    private int customBranchID;
+    private int customBranchRevision;
+
     /**
      * Forms revision with branch data.
      *
@@ -24,6 +29,8 @@ public final class Revision
         this.head = revision;
         this.branchID = (short) (branchDescription >> 0x10);
         this.branchRevision = (short) (branchDescription & 0xFFFF);
+        this.customBranchID = 0;
+        this.customBranchRevision = 1;
     }
 
     /**
@@ -36,6 +43,8 @@ public final class Revision
         this.head = revision;
         this.branchID = 0;
         this.branchRevision = 0;
+        this.customBranchID = 0;
+        this.customBranchRevision = 1;
     }
 
     /**
@@ -50,6 +59,8 @@ public final class Revision
         this.head = revision;
         this.branchID = (short) branchID;
         this.branchRevision = (short) branchRevision;
+        this.customBranchID = 0;
+        this.customBranchRevision = 1;
     }
 
     public boolean isLBP1()
@@ -108,6 +119,31 @@ public final class Revision
     }
 
     /**
+     * Gets the custom revision.
+     * @return Custom revision
+     */
+    public int getCustomVersion()
+    {
+        return this.customBranchRevision;
+    }
+
+    public int getCustomBranchID()
+    {
+        return this.customBranchID;
+    }
+
+    public void setCustomBranchDescription(int branch, int version)
+    {
+        this.customBranchID = branch;
+        this.customBranchRevision = version;
+    }
+
+    public boolean hasExtraData()
+    {
+        return this.customBranchID != 0;
+    }
+
+    /**
      * Gets the LBP3 specific revision of the head revision.
      *
      * @return LBP3 head revision
@@ -142,6 +178,12 @@ public final class Revision
         return this.branchRevision;
     }
 
+    public byte getDefaultCompressionFlags()
+    {
+        if (head >= 0x297 || (head == Branch.LEERDAMMER.getHead() && branchID == Branch.LEERDAMMER.getID()) && branchRevision >= Revisions.LD_RESOURCES)
+            return CompressionFlags.USE_ALL_COMPRESSION;
+        return CompressionFlags.USE_NO_COMPRESSION;
+    }
 
     @Override
     public String toString()

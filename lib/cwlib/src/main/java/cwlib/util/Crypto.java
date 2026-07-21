@@ -152,6 +152,20 @@ public final class Crypto
         return Bytes.fromIntArrayBE(v);
     }
 
+    public static int getHash(byte[] data, int offset, int size)
+    {
+        CRC32 crc = new CRC32();
+        crc.update(data, offset, size);
+        return (int)crc.getValue();
+    }
+
+    public static int getHash(byte[] data)
+    {
+        CRC32 crc = new CRC32();
+        crc.update(data);
+        return (int)crc.getValue();
+    }
+    
     /**
      * Makes a GUID that is loaded from file path
      *

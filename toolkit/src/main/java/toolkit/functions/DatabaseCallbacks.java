@@ -13,8 +13,11 @@ import cwlib.types.mods.Mod;
 import cwlib.types.swing.FileData;
 import cwlib.types.swing.FileModel;
 import cwlib.types.swing.FileNode;
+import cwlib.util.Crypto;
 import cwlib.util.FileIO;
 import cwlib.util.Strings;
+import sync.NetworkFileDB;
+import sync.SyncManager;
 import toolkit.dialogues.EntryDialogue;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
@@ -36,7 +39,7 @@ public class DatabaseCallbacks
             bar.setVisible(true);
             bar.setIndeterminate(true);
 
-            FileDB database = null;
+            FileDB database;
             try { database = new FileDB(file); }
             catch (Exception ex)
             {
@@ -46,22 +49,23 @@ public class DatabaseCallbacks
 
             bar.setVisible(false);
 
+            EventQueue.invokeLater(() -> {
+                int loadedIndex = ResourceSystem.getLoadedDatabase(file);
+                if (loadedIndex != -1)
+                {
+                    ResourceSystem.getDatabases().set(loadedIndex, database);
 
-            int loadedIndex = ResourceSystem.getLoadedDatabase(file);
-            if (loadedIndex != -1)
-            {
-                ResourceSystem.getDatabases().set(loadedIndex, database);
+                    toolkit.fileDataTabs.setSelectedIndex(loadedIndex);
 
-                toolkit.fileDataTabs.setSelectedIndex(loadedIndex);
+                    toolkit.search.setEditable(true);
+                    toolkit.search.setFocusable(true);
+                    toolkit.search.setText("Search...");
+                    toolkit.search.setForeground(Color.GRAY);
+                }
+                else toolkit.addTab(database);
 
-                toolkit.search.setEditable(true);
-                toolkit.search.setFocusable(true);
-                toolkit.search.setText("Search...");
-                toolkit.search.setForeground(Color.GRAY);
-            }
-            else toolkit.addTab(database);
-
-            toolkit.updateWorkspace();
+                toolkit.updateWorkspace();
+            });
         });
     }
 
@@ -198,6 +202,24 @@ public class DatabaseCallbacks
         entry.getSource().setHasChanges();
         Toolkit.INSTANCE.updateWorkspace();
 
+        Toolkit.INSTANCE.setEditorPanel(node);
+    }
+
+    public static void setLocalGUID()
+    {
+        FileNode node = ResourceSystem.getSelected();
+        FileEntry baseEntry = ResourceSystem.getSelected().getEntry();
+        if (!baseEntry.getSource().getType().hasGUIDs()) return;
+        FileDBRow entry = (FileDBRow) baseEntry;
+        if (entry.getGUID() == null) return;
+
+        GUID guid = Crypto.makePathGUID(entry.getPath());
+        if (guid.equals(entry.getGUID())) return;
+        
+        entry.setGUID(guid);
+
+        entry.getSource().setHasChanges();
+        Toolkit.INSTANCE.updateWorkspace();
         Toolkit.INSTANCE.setEditorPanel(node);
     }
 
@@ -359,7 +381,48 @@ public class DatabaseCallbacks
 
         }
 
-        if (Config.instance.addToArchiveOnCopy && ResourceSystem.getArchives().size() > 1)
+        if (destination instanceof NetworkFileDB remote)
+        {
+            var cache = SyncManager.instance.getCache();
+            for (int i = 0; i < nodes.length; ++i)
+            {
+                var node = nodes[i];
+
+                var source = node.getEntry();
+                if (source == null) continue;
+
+                // just to check if we actually copied or not
+                var hash = hashes[i];
+                if (hash == null) continue;
+
+                if (cache.exists(hash)) continue;
+
+                var copy = remote.get((GUID)source.getKey());
+                boolean exists = ResourceSystem.exists(hash);
+                
+                if (hash.equals(SHA1.EMPTY) || !exists)
+                {
+                    var base = source.getSource().getBase();
+                    if (base != null)
+                    {
+                        var file = new File(base, source.getPath());
+                        if (file.exists())
+                        {
+                            byte[] fileData = FileIO.read(file.getAbsolutePath());
+                            copy.setDetails(fileData);
+                            cache.add(fileData);
+                        }
+                    }
+                }
+                else if (exists)
+                {
+                    cache.add(ResourceSystem.extract(hash));
+                }
+            }
+
+            cache.save();
+        }
+        else if (Config.instance.addToArchiveOnCopy && ResourceSystem.getArchives().size() > 1)
         {
             boolean canCopy = false;
             boolean existsInAllArchives = true;

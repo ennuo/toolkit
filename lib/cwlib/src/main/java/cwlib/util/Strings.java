@@ -26,6 +26,13 @@ public final class Strings
         return builder.toString();
     }
 
+    public static int tryGetUnsignedInt(String number)
+    {
+        if (number.toLowerCase().startsWith("0x"))
+            return (int)Long.parseLong(number.substring(2), 16);
+        return (int)Long.parseLong(number);
+    }
+
     /**
      * Parses the string as a long.
      *
@@ -128,6 +135,24 @@ public final class Strings
         return path;
     }
 
+    /**
+     * Gets a filepath without its extension.
+     * @param path Path string
+     * @return Path without extension
+     */
+    public static String getWithoutExtension(String path)
+    {
+        int index = path.lastIndexOf(".");
+        if (index != -1) return path.substring(0, index);
+        return path;
+    }
+    
+    /**
+     * Sets the extension of a path.
+     * @param path Path string
+     * @param extension Extension to set
+     * @return Path with changed extension
+     */
     public static String setExtension(String path, String extension)
     {
         if (extension.startsWith("."))

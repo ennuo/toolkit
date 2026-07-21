@@ -26,7 +26,8 @@ public class PCreature implements Serializable
         @Deprecated
         public Matrix4f baseHandleMatrix;
         public Vector3f prevDir, currDir;
-        public int stateTimer, state;
+        public int stateTimer;
+        public byte state;
         public Thing attachedThing;
         public Vector3f attachedLocalPos, attachedLocalNormal;
         public float attachedLocalAngle, attachedScale;
@@ -41,7 +42,7 @@ public class PCreature implements Serializable
             prevDir = serializer.v3(prevDir);
             currDir = serializer.v3(currDir);
             stateTimer = serializer.i32(stateTimer);
-            state = serializer.i32(state);
+            state = serializer.i8(state);
             attachedThing = serializer.thing(attachedThing);
             attachedLocalPos = serializer.v3(attachedLocalPos);
             attachedLocalNormal = serializer.v3(attachedLocalNormal);

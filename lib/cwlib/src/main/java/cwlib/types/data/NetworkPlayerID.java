@@ -21,6 +21,14 @@ public class NetworkPlayerID implements Serializable
         this.handle = new NetworkOnlineID(psid);
     }
 
+    public void setOpt(String value)
+    {
+        byte[] value_bytes = value.getBytes();
+        opt = new byte[8];
+        System.arraycopy(value_bytes, 0, opt, 0, value_bytes.length);
+        reserved[0] = 1;
+    }
+
     @Override
     public void serialize(Serializer serializer)
     {

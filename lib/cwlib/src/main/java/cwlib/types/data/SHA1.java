@@ -13,6 +13,7 @@ import cwlib.util.Crypto;
 public final class SHA1
 {
     public static final SHA1 EMPTY = new SHA1();
+    public static final int BYTES = 0x14;
 
     private final byte[] hashBytes;
     private final String hashString;
@@ -22,7 +23,7 @@ public final class SHA1
      */
     public SHA1()
     {
-        this.hashBytes = new byte[0x14];
+        this.hashBytes = new byte[SHA1.BYTES];
         this.hashString = Bytes.toHex(this.hashBytes).toLowerCase();
     }
 
@@ -51,7 +52,7 @@ public final class SHA1
     {
         if (hash == null)
             throw new NullPointerException("SHA1 hash cannot be null!");
-        if (hash.length != 0x14)
+        if (hash.length != SHA1.BYTES)
             throw new IllegalArgumentException("SHA1 hash must be 20 bytes in length!");
         this.hashBytes = hash;
         this.hashString = Bytes.toHex(this.hashBytes).toLowerCase();

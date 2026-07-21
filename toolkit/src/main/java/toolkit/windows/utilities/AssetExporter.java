@@ -4,12 +4,17 @@ import cwlib.CwlibConfiguration;
 import cwlib.enums.*;
 import cwlib.io.Resource;
 import cwlib.io.serializer.SerializationData;
+import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.resources.RGfxMaterial;
+import cwlib.resources.RMesh;
 import cwlib.resources.RPlan;
 import cwlib.resources.RTexture;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.gmat.MaterialBox;
+import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.things.Thing;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
@@ -18,11 +23,15 @@ import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
+import cwlib.util.BinaryPrimitives;
 import cwlib.util.Bytes;
+import cwlib.util.Compressor;
 import cwlib.util.DDS;
 import cwlib.util.Resources;
+import cwlib.util.Strings;
 import cwlib.util.gfx.CgAssembler;
 import cwlib.util.gfx.GfxAssembler;
+import scelib.Gxm;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
@@ -58,6 +67,11 @@ public class AssetExporter extends JDialog
         if (CwlibConfiguration.CAN_COMPILE_ORBIS_SHADERS)
         {
             collection.add(MaterialLibrary.LBP_PS4);
+        }
+
+        if (CwlibConfiguration.CAN_COMPILE_PSP2_SHADERS)
+        {
+            collection.add(MaterialLibrary.LBP_VITA);
         }
 
         libraries = collection.toArray(MaterialLibrary[]::new);
@@ -372,7 +386,7 @@ public class AssetExporter extends JDialog
             if (remap != null && resource.getSerializationType() == SerializationType.GTF_SWIZZLED || resource.getSerializationType() == SerializationType.GXT_SWIZZLED)
             {
                 RTexture texture = new RTexture(resource);
-                byte[] textureData = texture.getData();
+                byte[] textureData = texture.getDDSFileData();
                 resource.getTextureInfo().setMethod(SerializationType.COMPRESSED_TEXTURE);
 
                 boolean useGTF = remap != MaterialLibrary.LBP1;
@@ -411,9 +425,37 @@ public class AssetExporter extends JDialog
             {
                 // ps4 has flags that mess up on ps3
                 resource.getTextureInfo().fixupFlags();
-                asset.data =
-                    SerializedResource.compress(new SerializationData(resource.getStream().getBuffer(),
-                        resource.getTextureInfo()));
+                
+                byte[] textureData = resource.getStream().getBuffer();
+                if (remap == MaterialLibrary.LBP_VITA && Gxm.IsReady())
+                {
+                    var info = resource.getTextureInfo();
+
+                    if (!info.isCubemap())
+                    {
+                        textureData = new RTexture(resource).getDDSFileData();
+                        textureData = Gxm.convert(textureData);
+                        info.setMethod(SerializationType.GTF_SWIZZLED);
+
+                        int offset = 0x40;
+                        int maxMipCount = 9;
+                        if (info.getMipCount() > maxMipCount)
+                        {
+                            while (info.mipmap > maxMipCount)
+                            {
+                                offset += info.getFormat().getImageSize(info.width, info.height);
+
+                                info.width >>>= 1;
+                                info.height >>>= 1;
+                                info.mipmap--;
+                            }
+                        }
+
+                        textureData = Arrays.copyOfRange(textureData, offset, textureData.length);
+                    }
+                }
+
+                asset.data = SerializedResource.compress(new SerializationData(textureData, resource.getTextureInfo()));
             }
 
             asset.recursed = true;
@@ -443,14 +485,18 @@ public class AssetExporter extends JDialog
         Revision revision = new Revision(0x272, 0x4c44, 0x13);
         if (remap != MaterialLibrary.LBP1)
             revision = new Revision(0x3f6);
-
+        if (remap == MaterialLibrary.LBP_VITA)
+            revision = new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision());
+    
         byte[] data = null;
 
         if (remap != MaterialLibrary.NONE)
         {
 
             boolean shouldConvert = false;
-            if (remap == MaterialLibrary.LBP2 && (resource.getRevision().isLBP3() || resource.getRevision().isVita()))
+            if (remap == MaterialLibrary.LBP_VITA && (!resource.getRevision().isVita() && (resource.getRevision().isLBP3() || resource.getRevision().getHead() > 0x3e2 || resource.getResourceType() == ResourceType.GFX_MATERIAL)))
+                shouldConvert = true;
+            else if (remap == MaterialLibrary.LBP2 && (resource.getRevision().isLBP3() || resource.getRevision().isVita()))
                 shouldConvert = true;
             else if (remap == MaterialLibrary.LBP1 && !resource.getRevision().isLBP1())
                 shouldConvert = true;
@@ -488,7 +534,7 @@ public class AssetExporter extends JDialog
                 RGfxMaterial gfx = resource.loadResource(RGfxMaterial.class);
 
                 boolean isPS4 = gfx.shaders[0][0x25] == 0x68;
-                if (remap != MaterialLibrary.LBP1 && gfx.shaders.length == 10 && !isPS4)
+                if (remap != MaterialLibrary.LBP1 && gfx.shaders.length == 10 && !isPS4 && !revision.isVita())
                 {
                     data = SerializedResource.compress(gfx.build(revision,
                         CompressionFlags.USE_ALL_COMPRESSION));
@@ -498,28 +544,47 @@ public class AssetExporter extends JDialog
                     if (resource.getRevision().getHead() < Revisions.GFXMATERIAL_ALPHA_MODE)
                     {
                         if (gfx.getBoxConnectedToPort(gfx.getOutputBox(),
-                            BrdfPort.ALPHA_CLIP) != null)
+                            BrdfPort.OPACITY) != null)
                             gfx.flags |= GfxMaterialFlags.ALPHA_CLIP;
                     }
 
                     gfx.flags = gfx.flags & ~(0x10000);
-                    if (remap != MaterialLibrary.LBP1) gfx.shaders = new byte[10][];
-                    else gfx.shaders = new byte[4][];
+                    if (remap == MaterialLibrary.LBP_VITA)
+                    {
+                        int output = gfx.getOutputBox();
+                        if (output != -1)
+                        {
+                            if (gfx.getBoxConnectedToPort(output, BrdfPort.SPECULAR) != null)
+                                gfx.flags |= GfxMaterialFlags.SPECULAR;
+                            if (gfx.getBoxConnectedToPort(output, BrdfPort.BUMP) != null)
+                                gfx.flags |= GfxMaterialFlags.NORMAL_MAP;
 
+                        }
+                        
+                        gfx.shaders = new byte[gfx.getShaderCount(revision)][];
+                        gfx.useVitaShaderSource = true;
+                    }
+                    else if (remap != MaterialLibrary.LBP1) gfx.shaders = new byte[10][];
+                    else gfx.shaders = new byte[4][];
 
                     GameShader shader = GameShader.LBP2;
                     if (remap == MaterialLibrary.LBP1)
                         shader = GameShader.LBP1;
                     else if (remap == MaterialLibrary.LBP_PS4)
                         shader = GameShader.LBP3_PS4;
+                    else if (remap == MaterialLibrary.LBP_VITA)
+                        shader = GameShader.VITA;
 
                     try
                     {
                         CgAssembler.compile(GfxAssembler.generateShaderSource(gfx, -1
                                 , false),
                             gfx, shader);
-                        data = SerializedResource.compress(gfx.build(revision,
-                            CompressionFlags.USE_ALL_COMPRESSION));
+
+                        if (remap == MaterialLibrary.LBP1 && gfx.shouldSaveCustomData())
+                            revision.setCustomBranchDescription(Revisions.ALEAR_BR1, Revisions.ALEAR_BR1_MAX);
+                        
+                        data = SerializedResource.compress(gfx.build(revision, CompressionFlags.USE_ALL_COMPRESSION));
                     }
                     catch (Exception ex)
                     {
@@ -536,6 +601,30 @@ public class AssetExporter extends JDialog
                 {
                     Resource compressable =
                         (Resource) resource.loadResource(resource.getResourceType().getCompressable());
+
+
+                    if (resource.getResourceType() == ResourceType.MESH && resource.getRevision().isLBP3())
+                    {
+                        var mesh = (RMesh)compressable;
+                        for (var primitive : mesh.getPrimitives())
+                        {
+                            int max = Integer.MIN_VALUE;
+                            int min = Integer.MAX_VALUE;
+
+                            for (int i = primitive.firstIndex; i < primitive.firstIndex + primitive.numIndices; ++i)
+                            {
+                                int v = BinaryPrimitives.readInt16BigEndian(mesh.indices, i * 2);
+                                if (v == 0xFFFF) continue;
+                                max = Math.max(max, v);
+                                min = Math.min(min, v);
+                            }
+
+
+                            primitive.minVert = min;
+                            primitive.maxVert = max;
+                        }
+                    }
+
                     data = SerializedResource.compress(compressable.build(revision,
                         CompressionFlags.USE_ALL_COMPRESSION));
                 }
@@ -873,12 +962,8 @@ public class AssetExporter extends JDialog
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_exportButtonActionPerformed
-        String name = this.entry.getName();
-        int extIndex = name.lastIndexOf(".");
-        if (extIndex != -1)
-            name = name.substring(0, extIndex);
-
-        File file = FileChooser.openFile(name + ".mod", "mod", true);
+        String name = Strings.setExtension(this.entry.getName(), "mod");
+        File file = FileChooser.openFile(name, "mod", true);
         if (file == null) return;
 
         this.finalize(file.getAbsolutePath());

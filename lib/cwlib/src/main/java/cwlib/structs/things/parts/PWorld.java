@@ -1,6 +1,7 @@
 package cwlib.structs.things.parts;
 
 import cwlib.enums.Branch;
+import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
@@ -12,6 +13,8 @@ import cwlib.structs.streaming.StreamingManager;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.EggLink;
 import cwlib.structs.things.components.KeyLink;
+import cwlib.structs.things.components.switches.SwitchOutput;
+import cwlib.structs.things.components.switches.SwitchTarget;
 import cwlib.structs.things.components.world.*;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -250,6 +253,57 @@ public class PWorld implements Serializable
             this.currGlobalSettingsBlendFactors[i] = 1.0f;
     }
 
+    public void fixup(Thing worldThing, Revision revision)
+    {
+        int version = revision.getVersion();
+        
+        // Fixup all things in the world
+        for (Thing thing : things)
+        {
+            if (thing == null || thing == worldThing) continue;
+            thing.fixup(revision);
+        }
+        
+        // Fix up any emitters if we're past the revision they got overhauled
+        if (version > 0x2c3)
+        {
+            for (Thing thing : things)
+            {
+                if (thing == null || !thing.hasPart(Part.EMITTER)) continue;
+                PEmitter emitter = thing.getPart(Part.EMITTER);
+                emitter.modScaleActive = hasSwitchInput(thing);
+                if (emitter.lastUpdateFrame == 0)
+                    emitter.lastUpdateFrame = frame;
+            }
+        }
+    }
+
+    public boolean hasSwitchInput(Thing target)
+    {
+        return getSwitchInput(target) != null;
+    }
+
+    public SwitchOutput getSwitchInput(Thing target)
+    {
+        for (Thing thing : things)
+        {
+            if (thing == null || !thing.hasPart(Part.SWITCH)) continue;
+            PSwitch switchBase = thing.getPart(Part.SWITCH);
+            if (switchBase.outputs == null) continue;
+            for (SwitchOutput output : switchBase.outputs)
+            {
+                if (output.targetList == null) continue;
+                for (SwitchTarget switchTarget : output.targetList)
+                {
+                    if (switchTarget.thing == target) 
+                        return output;
+                }
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public void serialize(Serializer serializer)
     {
@@ -432,10 +486,13 @@ public class PWorld implements Serializable
         }
 
         if (0x1a3 < version && version < 0x1d1)
-            throw new SerializationException("CGameCamera serialization unsupported!");
+        {
+            return;
+            //throw new SerializationException("CGameCamera serialization unsupported!");
+        }
 
         if (0x1bd < version && version < 0x213)
-            serializer.i32(0);
+            serializer.i32(0); // SpawnsPerPlayer
 
         if (version >= 0x1c2 && version < 0x36e)
             deathCount = serializer.i32(deathCount);

@@ -12,32 +12,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Change Revision"/>
           </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP1Context">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="LBP1"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP1ContextActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP2Context">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="LBP2"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP2ContextActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="changeResourceRevisionLBP3Context">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="LBP3"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeResourceRevisionLBP3ContextActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="extractGroup">
           <Properties>
@@ -96,6 +70,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editGUIDContextActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="setLocalGUIDContext">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Set to Local GUID"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="setLocalGUIDContextActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -500,10 +482,61 @@
         </MenuItem>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.ButtonGroup" name="metadataButtonGroup">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="metadataButtonGroup.add(LAMSMetadata);&#xa;metadataButtonGroup.add(StringMetadata);"/>
-      </AuxValues>
+    <Container class="javax.swing.JPopupMenu" name="searchContext">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="hoistFoldersMenuItem">
+          <Properties>
+            <Property name="selected" type="boolean" value="true"/>
+            <Property name="text" type="java.lang.String" value="Hoist Folders"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hoistFoldersMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
+        </Component>
+        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="sortByPathMenuItem">
+          <Properties>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="sortModeGroup"/>
+            </Property>
+            <Property name="selected" type="boolean" value="true"/>
+            <Property name="text" type="java.lang.String" value="Path"/>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortByPathMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="sortByGuidMenuItem">
+          <Properties>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="sortModeGroup"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="GUID"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortByGuidMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="sortByDateMenuItem">
+          <Properties>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="sortModeGroup"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Date"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortByDateMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.ButtonGroup" name="sortModeGroup">
     </Component>
     <Menu class="javax.swing.JMenuBar" name="navigation">
       <SubComponents>
@@ -1030,6 +1063,22 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDiffActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="dumpFileList">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Dump file list"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dumpFileListActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="dumpNonSourceFileList">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Dump non-sourced file list"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dumpNonSourceFileListActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator5">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="installProfileMod">
@@ -1041,23 +1090,46 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="installProfileModActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportWorld">
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="syncMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Sync"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="syncConnectMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Export RLevel"/>
-                <Property name="toolTipText" type="java.lang.String" value="Exports the current scene graph as a level"/>
+                <Property name="text" type="java.lang.String" value="Connect"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportWorldActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="syncConnectMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportSceneGraph">
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
+            </MenuItem>
+            <Menu class="javax.swing.JMenu" name="depotsMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Export Scene Graph"/>
-                <Property name="toolTipText" type="java.lang.String" value="Dumps the current scene graph to a file"/>
+                <Property name="text" type="java.lang.String" value="Depots"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportSceneGraphActionPerformed"/>
-              </Events>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="createDepotMenuItem">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Create..."/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createDepotMenuItemActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JPopupMenu$Separator" name="depotSeparator">
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <MenuItem class="javax.swing.JMenuItem" name="crafteroidsMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Crafteroids"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
             </MenuItem>
           </SubComponents>
         </Menu>
@@ -1068,16 +1140,6 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
           </AuxValues>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="open big profile gui"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>
@@ -1256,28 +1318,6 @@
                         </Container>
                       </SubComponents>
                     </Container>
-                    <Container class="javax.swing.JPanel" name="scenePanel">
-                      <Constraints>
-                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Scene">
-                            <Property name="tabTitle" type="java.lang.String" value="Scene"/>
-                          </JTabbedPaneConstraints>
-                        </Constraint>
-                      </Constraints>
-
-                      <Layout>
-                        <DimensionLayout dim="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="850" max="32767" attributes="0"/>
-                          </Group>
-                        </DimensionLayout>
-                        <DimensionLayout dim="1">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="292" max="32767" attributes="0"/>
-                          </Group>
-                        </DimensionLayout>
-                      </Layout>
-                    </Container>
                   </SubComponents>
                 </Container>
               </SubComponents>
@@ -1437,210 +1477,6 @@
                             </Component>
                           </SubComponents>
                         </Container>
-                        <Container class="javax.swing.JPanel" name="itemMetadata">
-                          <Constraints>
-                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                              <JTabbedPaneConstraints tabName="Inspector">
-                                <Property name="tabTitle" type="java.lang.String" value="Inspector"/>
-                              </JTabbedPaneConstraints>
-                            </Constraint>
-                          </Constraints>
-
-                          <Layout>
-                            <DimensionLayout dim="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                                              <Component id="LAMSMetadata" min="-2" pref="80" max="-2" attributes="0"/>
-                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                              <Component id="StringMetadata" min="-2" pref="80" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="descriptionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="iconLabel" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="iconField" min="-2" pref="171" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="titleLabel" min="-2" pref="28" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="titleField" min="-2" pref="166" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="descriptionField" alignment="0" pref="0" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="locationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="categoryLabel" alignment="1" min="-2" pref="52" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="locationField" max="32767" attributes="0"/>
-                                                  <Component id="categoryField" max="32767" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                          <Component id="pageCombo" alignment="0" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="creatorLabel" min="-2" pref="50" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="creatorField" min="-2" pref="144" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="subCombo" alignment="0" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                            <DimensionLayout dim="1">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="iconLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="iconField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="StringMetadata" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="LAMSMetadata" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="titleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="titleField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="descriptionField" min="-2" pref="61" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="locationField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="categoryLabel" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="categoryField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="pageCombo" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="subCombo" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="creatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="creatorField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                          </Layout>
-                          <SubComponents>
-                            <Component class="javax.swing.JRadioButton" name="LAMSMetadata">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="LAMS"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="LAMSMetadataActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JRadioButton" name="StringMetadata">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="String"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="StringMetadataActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="iconLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Icon"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="iconField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="titleLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Title"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="descriptionLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Description"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextArea" name="descriptionField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                                <Property name="columns" type="int" value="20"/>
-                                <Property name="lineWrap" type="boolean" value="true"/>
-                                <Property name="rows" type="int" value="5"/>
-                                <Property name="wrapStyleWord" type="boolean" value="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="titleField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="locationLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Location"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="locationField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="locationFieldActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="categoryLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Category"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="categoryField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JComboBox" name="pageCombo">
-                              <Properties>
-                                <Property name="enabled" type="boolean" value="false"/>
-                              </Properties>
-                              <AuxValues>
-                                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(InventoryObjectType.values())"/>
-                                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-                              </AuxValues>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="creatorLabel">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" value="Creator"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="creatorField">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="subCombo">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                                <Property name="autoscrolls" type="boolean" value="false"/>
-                                <Property name="enabled" type="boolean" value="false"/>
-                              </Properties>
-                            </Component>
-                          </SubComponents>
-                        </Container>
                       </SubComponents>
                     </Container>
                   </SubComponents>
@@ -1666,7 +1502,7 @@
                                           <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="159" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="158" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="cameraPosZ" alignment="0" max="32767" attributes="0"/>
                               </Group>
@@ -1770,62 +1606,82 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JTextField" name="search">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                    <Property name="text" type="java.lang.String" value=" Search is currently disabled."/>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="null"/>
-                    </Property>
-                    <Property name="focusable" type="boolean" value="false"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchActionPerformed"/>
-                  </Events>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
-                  </AuxValues>
+                <Container class="javax.swing.JPanel" name="jPanel1">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
-                      <JSplitPaneConstraints position="left"/>
+                      <JSplitPaneConstraints position="top"/>
                     </Constraint>
                   </Constraints>
-                </Component>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="search" pref="243" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                              <Component id="searchFilterButton" min="-2" pref="32" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="search" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
+                              <Component id="searchFilterButton" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JTextField" name="search">
+                      <Properties>
+                        <Property name="editable" type="boolean" value="false"/>
+                        <Property name="text" type="java.lang.String" value=" Search is currently disabled."/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="null"/>
+                        </Property>
+                        <Property name="focusable" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchActionPerformed"/>
+                      </Events>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="searchFilterButton">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="41" green="3f" id="Panel.background" palette="3" red="3c" type="palette"/>
+                        </Property>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/tweak_sackbot_costume.png"/>
+                        </Property>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="null"/>
+                        </Property>
+                        <Property name="iconTextGap" type="int" value="0"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[30, 30, 30, 30]"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
                 <Container class="javax.swing.JTabbedPane" name="fileDataTabs">
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                   </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
-                      <JSplitPaneConstraints position="right"/>
+                      <JSplitPaneConstraints position="bottom"/>
                     </Constraint>
                   </Constraints>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
                 </Container>
               </SubComponents>
-            </Container>
-            <Container class="javax.swing.JPanel" name="hierachyPanel">
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Hierachy">
-                    <Property name="tabTitle" type="java.lang.String" value="Hierachy"/>
-                  </JTabbedPaneConstraints>
-                </Constraint>
-              </Constraints>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="150" max="32767" attributes="0"/>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="558" max="32767" attributes="0"/>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
             </Container>
           </SubComponents>
         </Container>

@@ -17,6 +17,7 @@ import cwlib.types.data.NetworkPlayerID;
 import cwlib.structs.slot.SlotID;
 import cwlib.structs.things.parts.PMetadata;
 import cwlib.io.Serializable;
+import cwlib.io.gson.GsonResourceType;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
@@ -50,12 +51,16 @@ public class InventoryItemDetails implements Serializable
     @GsonRevision(branch = 0x4c44, min = 0x8)
     public long titleKey, descriptionKey;
 
+    @GsonRevision(alear = true, min = Revisions.ALEAR_INVENTORY_DATA)
+    public long loreKey;
+
     @GsonRevision(min = 0x1ab)
     public UserCreatedDetails userCreatedDetails;
 
     @GsonRevision(min = 0x1b1)
     public CreationHistory creationHistory;
 
+    @GsonResourceType(ResourceType.TEXTURE)
     public ResourceDescriptor icon = new ResourceDescriptor(15525, ResourceType.TEXTURE);
 
     @GsonRevision(min = 0x17b)
@@ -66,6 +71,8 @@ public class InventoryItemDetails implements Serializable
     public short locationIndex = -1, categoryIndex = -1;
     @GsonRevision(min = 0x195)
     public short primaryIndex;
+    @GsonRevision(alear = true, min = Revisions.ALEAR_INVENTORY_DATA)
+    public short subcategoryIndex = -1;
 
     @GsonRevision(min = 0x1c1, max = 0x37c)
     public int lastUsed, numUses;
@@ -88,12 +95,18 @@ public class InventoryItemDetails implements Serializable
     @GsonRevision(min = 0x335)
     public byte flags;
 
+    @GsonRevision(alear = true, min = Revisions.ALEAR_INVENTORY_DATA)
+    public byte alearFlags;
+    
     @GsonRevision(branch = 0x4431, min = 125)
     public boolean makeSizeProportional = true;
 
     @GsonRevision(min = 0x2bb)
     @GsonRevision(branch = 0x4c44, min = 0x8)
     public long location, category;
+
+    @GsonRevision(alear = true, min = Revisions.ALEAR_INVENTORY_DATA)
+    public long subcategory;
 
     @GsonRevision(branch = 0, max = 0x2ba)
     @GsonRevision(branch = 0x4c44, max = 0x7)
@@ -363,6 +376,25 @@ public class InventoryItemDetails implements Serializable
             updateTranslations();
     }
 
+    public void ReplaceAuthors(NetworkPlayerID from, NetworkPlayerID to)
+    {
+        String from_psid = from.toString();
+        String to_psid = to.toString();
+
+        if (creationHistory != null)
+        {
+            var creators = creationHistory.creators;
+            for (int i = 0; i < creators.length; ++i)
+            {
+                if (creators[i].equals(from_psid))
+                    creators[i] = to_psid;
+            }
+        }
+        
+        if (creator != null && creator.equals(from))
+            creator = to;
+    }
+
     @Override
     public int getAllocatedSize()
     {
@@ -380,11 +412,27 @@ public class InventoryItemDetails implements Serializable
         return size;
     }
 
+    public boolean hasAlearData()
+    {
+        return 
+            subcategory != 0 ||
+            loreKey != 0 ||
+            alearFlags != 0;
+    }
+
     public SHA1 generateHashCode(Revision revision)
     {
         // I wonder how slow this is...
         Serializer serializer = new Serializer(this.getAllocatedSize(), revision, (byte) 0);
         serializer.struct(this, InventoryItemDetails.class);
+        if (hasAlearData())
+        {
+            var stream = serializer.getOutput();
+            stream.u32(loreKey);
+            stream.u32(subcategory);
+            stream.u8(alearFlags);
+        }
+        
         return SHA1.fromBuffer(serializer.getBuffer());
     }
 

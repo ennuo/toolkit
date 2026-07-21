@@ -1,17 +1,19 @@
 package cwlib.io.streams;
 
 import cwlib.enums.CompressionFlags;
+import cwlib.ex.SerializationException;
 import cwlib.io.ValueEnum;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
-import cwlib.util.Bytes;
+import cwlib.util.BinaryPrimitives;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -19,35 +21,58 @@ import java.util.Arrays;
  */
 public class MemoryOutputStream
 {
-    private byte[] buffer;
+    private static final float[] IDENTITY = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+    private static final byte[] EMPTY = new byte[] {};
 
-    private int offset = 0;
-    private final int length;
-    private byte compressionFlags;
+    private byte[] _buffer;
+    private int _offset = 0;
+    private int _length = 0;
+    private byte _compressionFlags;
+    private boolean _isLittleEndian = false;
 
-    private boolean isLittleEndian = false;
+    public MemoryOutputStream()
+    {
+        _buffer = EMPTY;
+        _offset = 0;
+        _length = 0;
+    }
+
+    public MemoryOutputStream(byte compressionFlags)
+    {
+        _buffer = EMPTY;
+        _offset = 0;
+        _length = 0;
+    }
 
     /**
      * Creates a memory output stream with specified size.
      *
-     * @param size Size of stream
+     * @param capacity Size of stream
      */
-    public MemoryOutputStream(int size)
+    public MemoryOutputStream(int capacity)
     {
-        this.length = size;
-        this.buffer = new byte[size];
+        _buffer = new byte[capacity];
+        _length = 0;
     }
 
     /**
      * Creates a memory output stream with specified size and compression flags.
      *
-     * @param size             Size of stream
+     * @param capacity             Size of stream
      * @param compressionFlags Flags for compression methods used
      */
-    public MemoryOutputStream(int size, byte compressionFlags)
+    public MemoryOutputStream(int capacity, byte compressionFlags)
     {
-        this(size);
-        this.compressionFlags = compressionFlags;
+        _buffer = new byte[capacity];
+        _compressionFlags = compressionFlags;
+    }
+
+    private void ensureCapacity(int value)
+    {
+        if (_buffer.length >= value) return;
+
+        int capacity = Math.max(value, _buffer.length * 2);
+        _buffer = Arrays.copyOf(_buffer, capacity);
     }
 
     /**
@@ -58,8 +83,10 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream bytes(byte[] value)
     {
-        System.arraycopy(value, 0, this.buffer, this.offset, value.length);
-        this.offset += value.length;
+        if (value == null || value.length == 0) return this;
+        ensureCapacity(_offset + value.length);
+        System.arraycopy(value, 0, _buffer, _offset, value.length);
+        advance(value.length);
         return this;
     }
 
@@ -96,6 +123,7 @@ public class MemoryOutputStream
     public final MemoryOutputStream boolarray(boolean[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Byte.BYTES * values.length));
         this.i32(values.length);
         for (boolean value : values)
             this.bool(value);
@@ -110,7 +138,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream i8(byte value)
     {
-        this.buffer[this.offset++] = value;
+        ensureCapacity(_offset + Byte.BYTES);
+        _buffer[_offset] = value;
+        advance(Byte.BYTES);
         return this;
     }
 
@@ -122,7 +152,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream u8(int value)
     {
-        this.buffer[this.offset++] = (byte) (value & 0xFF);
+        ensureCapacity(_offset + Byte.BYTES);
+        _buffer[_offset] = (byte) (value & 0xFF);
+        advance(Byte.BYTES);
         return this;
     }
 
@@ -134,9 +166,16 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream i16(short value)
     {
-        if (this.isLittleEndian)
-            return this.bytes(Bytes.toBytesLE(value));
-        return this.bytes(Bytes.toBytesBE(value));
+        ensureCapacity(_offset + Short.BYTES);
+
+        if (_isLittleEndian)
+            BinaryPrimitives.writeInt16LittleEndian(_buffer, _offset, value);
+        else
+            BinaryPrimitives.writeInt16BigEndian(_buffer, _offset, value);
+
+        advance(Short.BYTES);
+
+        return this;
     }
 
     /**
@@ -158,25 +197,17 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream u24(int value)
     {
-        value &= 0xFFFFFF;
-        byte[] b;
-        if (this.isLittleEndian)
-        {
-            b = new byte[] {
-                (byte) (value & 0xFF),
-                (byte) (value >>> 8),
-                (byte) (value >>> 16),
-            };
-        }
+        final int BYTES = 3;
+        ensureCapacity(_offset + BYTES);
+
+        if (_isLittleEndian)
+            BinaryPrimitives.writeInt24LittleEndian(_buffer, _offset, value);
         else
-        {
-            b = new byte[] {
-                (byte) (value >>> 16),
-                (byte) (value >>> 8),
-                (byte) (value & 0xFF)
-            };
-        }
-        return this.bytes(b);
+            BinaryPrimitives.writeInt24BigEndian(_buffer, _offset, value);
+
+        advance(BYTES);
+
+        return this;
     }
 
     /**
@@ -189,11 +220,18 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream i32(int value, boolean force32)
     {
-        if (!force32 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
-            return this.uleb128(value & 0xFFFFFFFFL);
-        if (this.isLittleEndian)
-            return this.bytes(Bytes.toBytesLE(value));
-        return this.bytes(Bytes.toBytesBE(value));
+        if (!force32 && ((_compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(Integer.toUnsignedLong(value));
+        
+        ensureCapacity(_offset + Integer.BYTES);
+        if (_isLittleEndian) 
+            BinaryPrimitives.writeInt32LittleEndian(_buffer, _offset, value);
+        else
+            BinaryPrimitives.writeInt32BigEndian(_buffer, _offset, value);
+
+        advance(Integer.BYTES);
+
+        return this;
     }
 
     /**
@@ -205,8 +243,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream s32(int value)
     {
-        if (((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
-            return this.uleb128((long) ((value & 0x7fffffff)) << 1 ^ ((value >> 0x1f)));
+        if (((_compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+            return this.uleb128(Integer.toUnsignedLong(value << 1 ^ (value >> 0x1f)));
+            
         return this.i32(value, true);
     }
 
@@ -220,11 +259,18 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream u32(long value, boolean force32)
     {
-        if (!force32 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+        if (!force32 && ((_compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
             return this.uleb128(value & 0xFFFFFFFFL);
-        if (this.isLittleEndian)
-            return this.bytes(Bytes.toBytesLE((int) (value & 0xFFFFFFFF)));
-        return this.bytes(Bytes.toBytesBE((int) (value & 0xFFFFFFFF)));
+
+        ensureCapacity(_offset + Integer.BYTES);
+        if (_isLittleEndian) 
+            BinaryPrimitives.writeInt32LittleEndian(_buffer, _offset, (int) (value & 0xFFFFFFFF));
+        else
+            BinaryPrimitives.writeInt32BigEndian(_buffer, _offset, (int) (value & 0xFFFFFFFF));
+
+        advance(Integer.BYTES);
+
+        return this;
     }
 
     /**
@@ -237,31 +283,18 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream u64(long value, boolean force64)
     {
-        if (!force64 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+        if (!force64 && ((_compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
             return this.uleb128(value);
-        if (this.isLittleEndian)
-        {
-            return this.bytes(new byte[] {
-                (byte) (value),
-                (byte) (value >>> 8),
-                (byte) (value >>> 16),
-                (byte) (value >>> 24),
-                (byte) (value >>> 32),
-                (byte) (value >>> 40),
-                (byte) (value >>> 48),
-                (byte) (value >>> 56),
-            });
-        }
-        return this.bytes(new byte[] {
-            (byte) (value >>> 56),
-            (byte) (value >>> 48),
-            (byte) (value >>> 40),
-            (byte) (value >>> 32),
-            (byte) (value >>> 24),
-            (byte) (value >>> 16),
-            (byte) (value >>> 8),
-            (byte) (value)
-        });
+
+        ensureCapacity(_offset + Long.BYTES);
+        if (_isLittleEndian) 
+            BinaryPrimitives.writeInt64LittleEndian(_buffer, _offset, value);
+        else
+            BinaryPrimitives.writeInt64BigEndian(_buffer, _offset, value);
+        
+        advance(Long.BYTES);
+
+        return this;
     }
 
     /**
@@ -274,7 +307,7 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream s64(long value, boolean force64)
     {
-        if (!force64 && ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
+        if (!force64 && ((_compressionFlags & CompressionFlags.USE_COMPRESSED_INTEGERS) != 0))
             return this.uleb128(value << 1L ^ (value >> 0x3f));
         return this.u64(value, true);
     }
@@ -331,14 +364,21 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream uleb128(long value)
     {
-        while (true)
+        final int MAX_ULEB128_BYTE_OUTPUT = 5;
+        ensureCapacity(_offset + MAX_ULEB128_BYTE_OUTPUT);
+
+        int bytesWritten = 0;
+        do
         {
             byte b = (byte) (value & 0x7f);
             value >>>= 7;
-            if (value > 0L) b |= 128;
-            this.i8(b);
-            if (value == 0) break;
-        }
+            if (value != 0L) b |= 0x80;
+            _buffer[_offset + (bytesWritten++)] = b;
+        } 
+        while (value != 0);
+
+        advance(bytesWritten);
+
         return this;
     }
 
@@ -351,9 +391,31 @@ public class MemoryOutputStream
     public final MemoryOutputStream shortarray(short[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Short.BYTES * values.length));
         this.i32(values.length);
         for (short value : values)
             this.i16(value);
+        return this;
+    }
+
+    /**
+     * Writes a 32-bit integer array to the stream.
+     *
+     * @param values Integer array to write
+     * @param signed Whether ot not to write signed integers
+     * @return This output stream
+     */
+    public final MemoryOutputStream intarray(int[] values, boolean signed)
+    {
+        if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Integer.BYTES * values.length));
+        this.i32(values.length);
+        for (int value : values)
+        {
+            if (signed) this.s32(value);
+            else this.i32(value);
+        }
+
         return this;
     }
 
@@ -365,11 +427,7 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream intarray(int[] values)
     {
-        if (values == null) return this.i32(0);
-        this.i32(values.length);
-        for (int value : values)
-            this.i32(value);
-        return this;
+        return this.intarray(values, false);
     }
 
     /**
@@ -381,9 +439,74 @@ public class MemoryOutputStream
     public final MemoryOutputStream longarray(long[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Long.BYTES * values.length));
         this.i32(values.length);
         for (long value : values)
             this.u64(value);
+        return this;
+    }
+
+    /**
+     * Writes a GUID array to the stream.
+     * 
+     * @param values GUID array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream guidarray(GUID[] values)
+    {
+        if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (GUID.BYTES * values.length));
+        this.i32(values.length);
+        for (GUID value : values)
+            this.guid(value);
+        return this;
+    }
+
+    /**
+     * Writes a hash array to the stream.
+     * 
+     * @param values Hash array to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream hasharray(SHA1[] values)
+    {
+        if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (SHA1.BYTES * values.length));
+        this.i32(values.length);
+        for (SHA1 value : values)
+            this.sha1(value);
+        return this;
+    }
+
+    /**
+     * Writes a GUID list to the stream.
+     * 
+     * @param values GUID list to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream guidlist(ArrayList<GUID> values)
+    {
+        if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (GUID.BYTES * values.size()));
+        this.i32(values.size());
+        for (GUID value : values)
+            this.guid(value);
+        return this;
+    }
+
+    /**
+     * Writes a hash list to the stream.
+     * 
+     * @param values Hash list to write
+     * @return This output stream
+     */
+    public final MemoryOutputStream hashlist(ArrayList<SHA1> values)
+    {
+        if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (SHA1.BYTES * values.size()));
+        this.i32(values.size());
+        for (SHA1 value : values)
+            this.sha1(value);
         return this;
     }
 
@@ -439,6 +562,7 @@ public class MemoryOutputStream
     public final MemoryOutputStream floatarray(float[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Float.BYTES * values.length));
         this.i32(values.length);
         for (float value : values)
             this.f32(value);
@@ -453,7 +577,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream v2(Vector2f value)
     {
-        if (value == null) value = new Vector2f().zero();
+        if (value == null)
+            return clear(8);
+
         this.f32(value.x);
         this.f32(value.y);
         return this;
@@ -467,7 +593,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream v3(Vector3f value)
     {
-        if (value == null) value = new Vector3f().zero();
+        if (value == null)
+            return clear(12);
+
         this.f32(value.x);
         this.f32(value.y);
         this.f32(value.z);
@@ -496,7 +624,9 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream v3(Vector4f value)
     {
-        if (value == null) value = new Vector4f().zero();
+        if (value == null)
+            return clear(12);
+
         this.f32(value.x);
         this.f32(value.y);
         this.f32(value.z);
@@ -511,11 +641,14 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream v4(Vector4f value)
     {
-        if (value == null) value = new Vector4f().zero();
+        if (value == null)
+            return clear(16);
+        
         this.f32(value.x);
         this.f32(value.y);
         this.f32(value.z);
         this.f32(value.w);
+
         return this;
     }
 
@@ -528,6 +661,7 @@ public class MemoryOutputStream
     public final MemoryOutputStream vectorarray(Vector4f[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (values.length * (Float.BYTES * 4)));
         this.i32(values.length);
         for (Vector4f value : values)
             this.v4(value);
@@ -544,17 +678,15 @@ public class MemoryOutputStream
     {
         if (value == null) value = new Matrix4f().identity();
 
-        float[] identity = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-
         float[] values = new float[16];
         value.get(values);
 
         int flags = 0xFFFF;
-        if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)
+        if ((_compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)
         {
             flags = 0;
             for (int i = 0; i < 16; ++i)
-                if (values[i] != identity[i])
+                if (values[i] != IDENTITY[i])
                     flags |= (1 << i);
             this.i16((short) flags);
         }
@@ -580,7 +712,7 @@ public class MemoryOutputStream
         if (data.length > size)
             data = Arrays.copyOf(data, size);
         this.bytes(data);
-        this.pad(size - data.length);
+        this.clear(size - data.length);
         return this;
     }
 
@@ -599,7 +731,7 @@ public class MemoryOutputStream
         if (string.length > size)
             string = Arrays.copyOf(string, size);
         this.bytes(string);
-        this.pad(size - string.length);
+        this.clear(size - string.length);
         return this;
     }
 
@@ -639,7 +771,7 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream sha1(SHA1 value)
     {
-        if (value == null) return this.pad(0x14);
+        if (value == null) return this.clear(0x14);
         return this.bytes(value.getHash());
     }
 
@@ -721,6 +853,7 @@ public class MemoryOutputStream
     public final <T extends Enum<T> & ValueEnum<Byte>> MemoryOutputStream enumarray(T[] values)
     {
         if (values == null) return this.i32(0);
+        ensureCapacity(_offset + Integer.BYTES + (Byte.BYTES * values.length));
         this.i32(values.length);
         for (T value : values)
             this.enum8(value);
@@ -733,9 +866,12 @@ public class MemoryOutputStream
      * @param size Number of bytes to write
      * @return This output stream
      */
-    public final MemoryOutputStream pad(int size)
+    public final MemoryOutputStream clear(int size)
     {
-        this.offset += size;
+        ensureCapacity(_offset + size);
+        if (_offset < _length)
+            Arrays.fill(_buffer, _offset, _offset + size, (byte)0);
+        advance(size);
         return this;
     }
 
@@ -746,10 +882,16 @@ public class MemoryOutputStream
      */
     public final MemoryOutputStream shrink()
     {
-        this.buffer = Arrays.copyOfRange(this.buffer, 0, this.offset);
+        _buffer = Arrays.copyOfRange(_buffer, 0, _length);
         return this;
     }
 
+    public byte[] flush()
+    {
+        shrink();
+        return _buffer;
+    }
+    
     /**
      * Seeks to position relative to seek mode.
      *
@@ -760,33 +902,12 @@ public class MemoryOutputStream
     {
         if (mode == null)
             throw new NullPointerException("SeekMode cannot be null!");
-        if (offset < 0) throw new IllegalArgumentException("Can't seek to negative offsets.");
+        
         switch (mode)
         {
-            case Begin:
-            {
-                if (offset > this.length)
-                    throw new IllegalArgumentException("Can't seek past stream length.");
-                this.offset = offset;
-                break;
-            }
-            case Relative:
-            {
-                int newOffset = this.offset + offset;
-                if (newOffset > this.length || newOffset < 0)
-                    throw new IllegalArgumentException("Can't seek outside bounds of " +
-                                                       "stream.");
-                this.offset = newOffset;
-                break;
-            }
-            case End:
-            {
-                if (offset < 0 || this.length - offset < 0)
-                    throw new IllegalArgumentException("Can't seek outside bounds of " +
-                                                       "stream.");
-                this.offset = this.length - offset;
-                break;
-            }
+            case Begin: _offset = offset; break;
+            case Relative: _offset += offset; break;
+            case End: _offset = _length + offset; break;
         }
     }
 
@@ -800,33 +921,57 @@ public class MemoryOutputStream
         this.seek(offset, SeekMode.Relative);
     }
 
+    public final void align(int a)
+    {
+        if ((_offset % a) != 0)
+            clear(a - (_offset % a));
+    }
+
+    private final void advance(int offset)
+    {
+        _offset += offset;
+        if (_offset > _length)
+            _length = _offset;
+    }
+
+    public final void setLength(int length)
+    {
+        ensureCapacity(length);
+        _length = length;
+    }
+
     public final byte[] getBuffer()
     {
-        return this.buffer;
+        return _buffer;
     }
 
     public final int getOffset()
     {
-        return this.offset;
+        return _offset;
     }
 
     public final int getLength()
     {
-        return this.length;
+        return _length;
+    }
+
+    public final int getCapacity()
+    {
+        return _buffer.length;
     }
 
     public final byte getCompressionFlags()
     {
-        return this.compressionFlags;
+        return _compressionFlags;
     }
 
     public final boolean isLittleEndian()
     {
-        return this.isLittleEndian;
+        return _isLittleEndian;
     }
 
     public final void setLittleEndian(boolean value)
     {
-        this.isLittleEndian = value;
+        _isLittleEndian = value;
     }
 }

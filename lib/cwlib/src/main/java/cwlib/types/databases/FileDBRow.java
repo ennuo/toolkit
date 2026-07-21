@@ -2,6 +2,7 @@ package cwlib.types.databases;
 
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
+import cwlib.util.Crypto;
 
 public final class FileDBRow extends FileEntry
 {
@@ -9,6 +10,11 @@ public final class FileDBRow extends FileEntry
      * Timestamp for when the resource was last modified.
      */
     private long date;
+
+    /**
+     * Cached GUID for the local variant of this path.
+     */
+    private GUID cachedLocalGuid;
 
     /**
      * Creates a FileDBRow using default parameters for FileDB.
@@ -37,6 +43,8 @@ public final class FileDBRow extends FileEntry
         this.path = path;
         this.date = date;
         this.key = guid;
+
+        cachedLocalGuid = Crypto.makePathGUID(path);
     }
 
     public FileDB getFileDB()
@@ -54,9 +62,20 @@ public final class FileDBRow extends FileEntry
         return (GUID) this.key;
     }
 
+    public GUID getLocalGUID()
+    {
+        return this.cachedLocalGuid;
+    }
+
     public void setDate(long date)
     {
         this.date = date;
+    }
+
+    @Override public void setPath(String path)
+    {
+        super.setPath(path);
+        cachedLocalGuid = Crypto.makePathGUID(path);
     }
 
     /**
@@ -69,7 +88,8 @@ public final class FileDBRow extends FileEntry
         if (newGUID == null || this.source == null) return;
         if (newGUID.equals(this.key)) return;
         FileDB database = this.getFileDB();
-        if (database.get(newGUID) != null)
+        var existing = database.get(newGUID);
+        if (existing != null && existing != this)
             throw new IllegalArgumentException("GUID already exists in database!");
         database.onGUIDChange(this.getGUID(), newGUID);
         this.key = newGUID;

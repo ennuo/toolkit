@@ -1,7 +1,6 @@
 package cwlib.types.data;
 
 import com.google.gson.annotations.JsonAdapter;
-import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.Resource;
 import cwlib.io.gson.WrappedResourceSerializer;
@@ -33,11 +32,6 @@ public class WrappedResource
 
     public byte[] build()
     {
-        int version = this.revision.getVersion();
-        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
-        if (version >= 0x297 || (version == 0x272 && (this.revision.getBranchID() == 0x4c44) && ((this.revision.getBranchRevision() & 0xffff) > 1)))
-            compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
-        return SerializedResource.compress(((Resource) this.resource).build(this.revision,
-            compressionFlags));
+        return SerializedResource.compress(((Resource) this.resource).build(revision, revision.getDefaultCompressionFlags()));
     }
 }

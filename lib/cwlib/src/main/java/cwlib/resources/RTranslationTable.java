@@ -219,10 +219,7 @@ public class RTranslationTable
     public void patch(RTranslationTable patch)
     {
         for (long key : patch.lookup.keySet())
-        {
-            if (lookup.containsKey(key)) continue;
             lookup.put(key, patch.lookup.get(key));
-        }
     }
 
     /**

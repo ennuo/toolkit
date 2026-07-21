@@ -3,6 +3,7 @@ package cwlib.resources;
 import java.util.ArrayList;
 
 import cwlib.enums.ResourceType;
+import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.io.Resource;
 import cwlib.io.Serializable;
@@ -37,8 +38,7 @@ public class RSyncedProfile implements Resource
             return BASE_ALLOCATION_SIZE;
         }
     }
-
-
+    
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public int timePlayed;
@@ -98,7 +98,7 @@ public class RSyncedProfile implements Resource
         {
             creatureToPodAs = serializer.adventureCreatureReference(creatureToSpawnAs);
             podAsAlternateForm = serializer.bool(podAsAlternateForm);
-        }
+        }     
     }
 
     @Override

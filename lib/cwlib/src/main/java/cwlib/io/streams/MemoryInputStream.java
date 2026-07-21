@@ -13,6 +13,7 @@ import org.joml.Vector4f;
 
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -331,16 +332,16 @@ public class MemoryInputStream
      */
     public final long uleb128()
     {
-        long result = 0, i = 0;
+        long result = 0, shift = 0;
         while (true)
         {
-            long b = this.u8() & 0xFFL;
-            result |= (b & 0x7fL) << 7L * i;
-            if ((b & 0x80L) == 0L)
-                break;
-            ++i;
+            byte b = this.i8();
+            result |= (b & 0x7fL) << shift;
+            if ((b & 0x80L) == 0) break;
+            shift += 7;
         }
-        return result >>> 0;
+
+        return result;
     }
 
     /**
@@ -360,15 +361,29 @@ public class MemoryInputStream
     /**
      * Reads a 32-bit integer array from the stream.
      *
+     * @param signed Whether ot not to read signed integers
      * @return Integer array read from the stream
      */
-    public final int[] intarray()
+    public final int[] intarray(boolean signed)
     {
         int count = this.i32();
         int[] elements = new int[count];
         for (int i = 0; i < count; ++i)
-            elements[i] = this.i32();
+        {
+            if (signed) elements[i] = this.s32();
+            else elements[i] = this.i32();
+        }
         return elements;
+    }
+    
+    /**
+     * Reads a 32-bit integer array from the stream.
+     *
+     * @return Integer array read from the stream
+     */
+    public final int[] intarray()
+    {
+        return intarray(false);
     }
 
     /**
@@ -382,6 +397,62 @@ public class MemoryInputStream
         long[] elements = new long[count];
         for (int i = 0; i < count; ++i)
             elements[i] = this.u64();
+        return elements;
+    }
+
+    /**
+     * Reads a GUID array from the stream.
+     * 
+     * @return GUID array read from the stream
+     */
+    public final GUID[] guidarray()
+    {
+        int count = this.i32();
+        GUID[] elements = new GUID[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.guid();
+        return elements;
+    }
+
+    /**
+     * Reads a SHA1 array from the stream.
+     * 
+     * @return SHA1 array read from the stream
+     */
+    public final SHA1[] hasharray()
+    {
+        int count = this.i32();
+        SHA1[] elements = new SHA1[count];
+        for (int i = 0; i < count; ++i)
+            elements[i] = this.sha1();
+        return elements;
+    }
+
+    /**
+     * Reads a GUID list from the stream.
+     * 
+     * @return GUID list read from the stream
+     */
+    public final ArrayList<GUID> guidlist()
+    {
+        int count = this.i32();
+        ArrayList<GUID> elements = new ArrayList<>(count);
+        for (int i = 0; i < count; ++i)
+            elements.add(this.guid());
+        return elements;
+    }
+    
+    /**
+     * Reads a SHA1 list from the stream.
+     * 
+     * @return SHA1 list read from the stream
+     */
+    public final ArrayList<SHA1> hashlist()
+    {
+        int count = this.i32();
+        ArrayList<SHA1> elements = new ArrayList<>(count);
+        for (int i = 0; i < count; ++i)
+            elements.add(this.sha1());
         return elements;
     }
 
@@ -491,7 +562,7 @@ public class MemoryInputStream
      */
     public Matrix4f m44()
     {
-        final float[] matrix = new float[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+        final float[] matrix = new float[] { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 
         int flags = 0xFFFF;
         if ((this.compressionFlags & CompressionFlags.USE_COMPRESSED_MATRICES) != 0)
@@ -722,6 +793,11 @@ public class MemoryInputStream
     public final byte getCompressionFlags()
     {
         return this.compressionFlags;
+    }
+
+    public final void setCompressionFlags(byte flags)
+    {
+        this.compressionFlags = flags;
     }
 
     public void setLittleEndian(boolean value)

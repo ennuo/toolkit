@@ -3,6 +3,8 @@ package toolkit.functions;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.archives.Fart;
 import cwlib.types.swing.FileData;
+import sync.NetworkFileDB;
+import sync.SyncManager;
 import toolkit.utilities.FileChooser;
 import toolkit.windows.Toolkit;
 
@@ -16,7 +18,7 @@ public class FileCallbacks
         FileData database = ResourceSystem.getSelectedDatabase();
         if (database == null && ResourceSystem.getArchives().size() == 0) return;
         System.out.println("Saving workspace...");
-        if (database != null)
+        if (database != null && !database.isRemote())
         {
             if (database.hasChanges())
             {
@@ -37,6 +39,12 @@ public class FileCallbacks
             }
             else System.out.println("FileArchive has no pending changes, skipping save.");
         }
+    
+
+        if (database != null && database.isRemote())
+        {
+            database.promptSave();
+        }
 
         Toolkit.INSTANCE.updateWorkspace();
     }
@@ -56,18 +64,9 @@ public class FileCallbacks
         int index = Toolkit.INSTANCE.fileDataTabs.getSelectedIndex();
 
         FileData database = ResourceSystem.getSelectedDatabase();
-        if (database.hasChanges())
-        {
-            int result = JOptionPane.showConfirmDialog(null, String.format("Your %s (%s) " +
-                                                                           "has " +
-                                                                           "pending " +
-                                                                           "changes, do you" +
-                                                                           " want to save?"
-                    , database.getType(),
-                    database.getFile().getAbsolutePath()), "Pending changes",
-                JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) database.save(database.getFile());
-        }
+        database.promptSave();
+        if (database instanceof NetworkFileDB remote)
+            SyncManager.instance.clear(remote.getDepot().Id);
 
         ResourceSystem.getDatabases().remove(index);
         Toolkit.INSTANCE.fileDataTabs.removeTabAt(index);

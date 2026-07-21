@@ -13,6 +13,8 @@ public @interface GsonRevision
     int max() default -1;
 
     int branch() default -1;
-
+    
     boolean lbp3() default false;
+
+    boolean alear() default false;
 }

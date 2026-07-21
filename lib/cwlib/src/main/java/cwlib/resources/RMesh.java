@@ -1,10 +1,22 @@
 package cwlib.resources;
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
+import javax.management.RuntimeErrorException;
+
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.FMatrix4;
+import org.ejml.data.FMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.CommonOps_FDRM;
+
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -18,7 +30,10 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.enums.SerializationType;
 import cwlib.enums.SkeletonType;
+import cwlib.external.nvtristrip.PrimitiveGroup;
+import cwlib.external.nvtristrip.TriStrip;
 import cwlib.io.Resource;
+import cwlib.io.exports.MeshExporter;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
@@ -31,13 +46,16 @@ import cwlib.structs.mesh.ImplicitEllipsoid;
 import cwlib.structs.mesh.ImplicitPlane;
 import cwlib.structs.mesh.Morph;
 import cwlib.structs.mesh.Primitive;
+import cwlib.structs.mesh.SoftbodyCluster;
 import cwlib.structs.mesh.SoftbodyClusterData;
 import cwlib.structs.mesh.SoftbodySpring;
 import cwlib.structs.mesh.SoftbodyVertEquivalence;
 import cwlib.structs.mesh.Submesh;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import cwlib.util.BinaryPrimitives;
 import cwlib.util.Bytes;
+import cwlib.util.FileIO;
 
 /**
  * Resource that stores skinned meshes.
@@ -66,7 +84,7 @@ public class RMesh implements Resource
     /**
      * The number of edge indices his mesh has.
      */
-    private int numEdgeIndices;
+    public int numEdgeIndices;
 
     /**
      * The number of triangles this mesh has.
@@ -112,7 +130,7 @@ public class RMesh implements Resource
     /**
      * Face indices buffer.
      */
-    private byte[] indices;
+    public byte[] indices;
 
     /**
      * Triangle adjacency buffer used for
@@ -159,7 +177,7 @@ public class RMesh implements Resource
     /**
      * Vertices that are equivalent, but only separate for texturing reasons.
      */
-    private SoftbodyVertEquivalence[] softbodyEquivs;
+    private ArrayList<SoftbodyVertEquivalence> softbodyEquivs = new ArrayList<>();
 
     /**
      * Mass of each vertex, used for softbody physics.
@@ -229,7 +247,7 @@ public class RMesh implements Resource
      * Which character this mesh is for.
      */
     private SkeletonType skeletonType = SkeletonType.SACKBOY;
-
+    
     /* Creates an empty mesh, used for serialization. */
     public RMesh() { }
 
@@ -421,7 +439,7 @@ public class RMesh implements Resource
         this.softbodyCluster = serializer.struct(this.softbodyCluster,
             SoftbodyClusterData.class);
         this.softbodySprings = serializer.array(this.softbodySprings, SoftbodySpring.class);
-        this.softbodyEquivs = serializer.array(this.softbodyEquivs,
+        this.softbodyEquivs = serializer.arraylist(this.softbodyEquivs,
             SoftbodyVertEquivalence.class);
 
         // Don't write mass field if there's no softbody data on the this.
@@ -474,9 +492,10 @@ public class RMesh implements Resource
         }
         else if (!serializer.isWriting())
         {
-            this.vertexColors = new int[this.numVerts];
-            for (int i = 0; i < this.numVerts; ++i)
-                this.vertexColors[i] = 0xFFFFFFFF;
+            this.vertexColors = new int[0];
+            // this.vertexColors = new int[this.numVerts];
+            // for (int i = 0; i < this.numVerts; ++i)
+            //     this.vertexColors[i] = 0xFFFFFFFF;
         }
 
         if (subVersion >= Revisions.MESH_SKELETON_TYPE)
@@ -509,7 +528,7 @@ public class RMesh implements Resource
         if (this.softbodySprings != null)
             size += (this.softbodySprings.length * SoftbodySpring.BASE_ALLOCATION_SIZE);
         if (this.softbodyEquivs != null)
-            size += (this.softbodyEquivs.length * SoftbodyVertEquivalence.BASE_ALLOCATION_SIZE);
+            size += (this.softbodyEquivs.size() * SoftbodyVertEquivalence.BASE_ALLOCATION_SIZE);
         if (this.mass != null) size += (this.mass.length * 4);
         if (this.implicitEllipsoids != null)
             size += (this.implicitEllipsoids.length * ImplicitEllipsoid.BASE_ALLOCATION_SIZE);
@@ -736,7 +755,7 @@ public class RMesh implements Resource
         return this.softbodySprings;
     }
 
-    public SoftbodyVertEquivalence[] getSoftbodyEquivs()
+    public ArrayList<SoftbodyVertEquivalence> getSoftbodyEquivs()
     {
         return this.softbodyEquivs;
     }
@@ -958,7 +977,7 @@ public class RMesh implements Resource
         this.softbodySprings = springs;
     }
 
-    public void setSoftbodyEquivs(SoftbodyVertEquivalence[] equivs)
+    public void setSoftbodyEquivs(ArrayList<SoftbodyVertEquivalence> equivs)
     {
         this.softbodyEquivs = equivs;
     }
@@ -1109,6 +1128,11 @@ public class RMesh implements Resource
         }
 
         return primitives;
+    }
+
+    public int getClusterIndex(int vertex)
+    {
+        return (int)this.getVertexStream()[(vertex * 0x10) + 0xc] / 2;
     }
 
     /**
@@ -1331,7 +1355,7 @@ public class RMesh implements Resource
         Vector4f[] tangents = new Vector4f[count];
         for (int i = 0; i < count; ++i)
         {
-            stream.seek((start * 0x10) + (i * 0x10) + 0x8, SeekMode.Begin);
+            stream.seek((start * 0x10) + (i * 0x10) + 0xc, SeekMode.Begin);
             Vector3f tangent = Bytes.unpackNormal24(stream.u24());
             tangents[i] = new Vector4f(tangent, 1.0f);
         }
@@ -1365,7 +1389,7 @@ public class RMesh implements Resource
         Vector3f[] normals = new Vector3f[count];
         for (int i = 0; i < count; ++i)
         {
-            stream.seek((start * 0x10) + (i * 0x10) + 0xC, SeekMode.Begin);
+            stream.seek((start * 0x10) + (i * 0x10) + 0x8, SeekMode.Begin);
             normals[i] = Bytes.unpackNormal24(stream.u24());
         }
         return normals;
@@ -1535,19 +1559,17 @@ public class RMesh implements Resource
     /**
      * Calculates a triangle list from a given range in the index buffer.
      *
-     * @param start First face to include in list
-     * @param count Number of faces from start
      * @return Mesh's triangle list
      */
-    public int[] getSpringyTriangles(int start, int count)
+    public int[] getSpringyTriangles()
     {
         if (this.indices == null)
             throw new IllegalStateException("Can't get triangles from mesh without index " +
                                             "buffer!");
 
-        int[] faces = new int[count];
+        int[] faces = new int[this.springyTriIndices.length];
         short[] stream = this.springyTriIndices;
-        for (int i = start; i < count; ++i)
+        for (int i = 0; i < faces.length; ++i)
             faces[i] = stream[i] & 0xffff;
 
         if (!this.springTrisStripped) return faces;
@@ -1647,32 +1669,31 @@ public class RMesh implements Resource
 
     public void fixupSkinForExport()
     {
-        Vector4f[] weights = getWeights();
-        int[] modulo = new int[] { 0x3, 0x7, 0xb, 0xf };
-        for (int i = 0; i < numVerts; ++i)
-        {
-            byte[] stream = getSkinningStream();
-            for (int j = 0; j < 4; ++j)
-            {
-                if (weights[i].get(j) == 0.0f)
-                    stream[(i * 0x10) + modulo[j]] = 0;
-            }
+        // Vector4f[] weights = getWeights();
+        // int[] modulo = new int[] { 0x3, 0x7, 0xb, 0xf };
+        // for (int i = 0; i < numVerts; ++i)
+        // {
+        //     byte[] stream = getSkinningStream();
+        //     for (int j = 0; j < 4; ++j)
+        //     {
+        //         if (weights[i].get(j) == 0.0f)
+        //             stream[(i * 0x10) + modulo[j]] = 0;
+        //     }
 
-            for (int j = 0; j < 4; ++j)
-            {
-                int joint = ((int) stream[(i * 0x10) + modulo[j]]) - 1;
-                if (joint == -1) joint = 0;
-                stream[(i * 0x10) + modulo[j]] = (byte) (joint);
-            }
-        }
+        //     for (int j = 0; j < 4; ++j)
+        //     {
+        //         int joint = ((int) stream[(i * 0x10) + modulo[j]]) - 1;
+        //         if (joint == -1) joint = 0;
+        //         stream[(i * 0x10) + modulo[j]] = (byte) (joint);
+        //     }
+        // }
 
         for (Bone bone : bones)
         {
-            Matrix4f inverse = bone.invSkinPoseMatrix;
-            inverse.m03(0.0f);
-            inverse.m13(0.0f);
-            inverse.m23(0.0f);
-            inverse.m33(1.0f);
+            bone.skinPoseMatrix.normalize3x3();
+            bone.skinPoseMatrix.setTranslation(bone.skinPoseMatrix.getTranslation(new Vector3f()).mul(MeshExporter.WORLD_SCALE));
+            MeshExporter.YUP.mul(bone.skinPoseMatrix, bone.skinPoseMatrix);
+            bone.invSkinPoseMatrix = bone.skinPoseMatrix.invert(new Matrix4f());
         }
     }
 
@@ -1710,6 +1731,756 @@ public class RMesh implements Resource
         return meshes.toArray(Submesh[]::new);
     }
 
+    private int getSoftbodyVertex(int vertex)
+    {
+        for (SoftbodyVertEquivalence equiv : softbodyEquivs)
+        {
+            if (vertex >= equiv.first && vertex <= equiv.first + equiv.count)
+                return equiv.first;
+        }
+
+        return vertex;
+    }
+
+    private static class QuadCandidate
+    {
+        int TriangleIndex;
+        int AdjacentTriangleIndex;
+        Quad quad;
+        public float Error = 0.0f;
+
+        public QuadCandidate(int ti, int ati, int v0, int v1, int v2, int v3)
+        {
+            TriangleIndex = ti;
+            AdjacentTriangleIndex = ati;
+            quad = new Quad(v0, v1, v2, v3);
+        }
+    }
+
+    private static class EdgeCandidate
+    {
+        public Triangle A, B;
+        public Edge Edge;
+        public Quad Quad;
+        public float Error;
+    }
+
+    public static Vector3f TriangleNormal(Vector3f v1, Vector3f v2, Vector3f v3)
+    {
+        Vector3f n1 = v1.sub(v2, new Vector3f());
+        Vector3f n2 = v2.sub(v3, new Vector3f());
+        Vector3f n = n1.cross(n2, new Vector3f());
+
+        if (v1.dot(v2) <= 1.0e035f)
+            return n.zero();
+        
+        return n.normalize();
+    }
+
+    public static float TriangleArea(Vector3f v1, Vector3f v2, Vector3f v3)
+    {
+        Vector3f n1 = v1.sub(v2, new Vector3f());
+        Vector3f n2 = v2.sub(v3, new Vector3f());
+        Vector3f n = n1.cross(n2, new Vector3f());
+        return n.length() * 0.5f;
+    }
+
+    public static float AngleNormalized(Vector3f v1, Vector3f v2)
+    {
+        return v1.angle(v2);
+    }
+
+    public static float CalculateQuadError(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3)
+    {
+        final float FLT_EPSILON = 1.192092896e-07f;
+        float error = 0.0f;
+        
+        // stolen from blender
+        // normal difference
+        {
+            Vector3f n1, n2;
+            n1 = TriangleNormal(v0, v1, v2);
+            n2 = TriangleNormal(v0, v2, v3);
+
+            float aAngle = n1.equals(n2, FLT_EPSILON) ? 0.0f : AngleNormalized(n1, n2);
+
+            n1 = TriangleNormal(v1, v2, v3);
+            n2 = TriangleNormal(v3, v0, v1);
+            float bAngle = n1.equals(n2, FLT_EPSILON) ? 0.0f : AngleNormalized(n1, n2);
+
+            float diff = (aAngle + bAngle) / (float)(Math.PI * 2.0);
+            assert diff >= 0.0f;
+
+            error += diff;
+        }
+
+        // co linearity
+        {
+            Vector3f[] edges = new Vector3f[]
+            {
+                v0.sub(v1, new Vector3f()).normalize(),
+                v1.sub(v2, new Vector3f()).normalize(),
+                v2.sub(v3, new Vector3f()).normalize(),
+                v3.sub(v0, new Vector3f()).normalize()
+            };
+
+            float diff =
+                (float)((Math.abs(AngleNormalized(edges[0], edges[1]) - (Math.PI / 2.0)) +
+                Math.abs(AngleNormalized(edges[1], edges[2]) - (Math.PI / 2.0)) +
+                Math.abs(AngleNormalized(edges[2], edges[3]) - (Math.PI / 2.0)) +
+                Math.abs(AngleNormalized(edges[3], edges[0]) - (Math.PI / 2.0))) / (Math.PI * 2.0));
+
+            assert(diff >= 0.0f);
+
+            error += diff;
+        }
+
+        // concavity
+        {
+            float aArea = TriangleArea(v0, v1, v2) + TriangleArea(v0, v2, v3);
+            float bArea = TriangleArea(v1, v2, v3) + TriangleArea(v3, v0, v1);
+            
+            float min = Math.min(aArea, bArea);
+            float max = Math.max(aArea, bArea);
+
+            float diff = max != 0.0f ? (1.0f - (min / max)) : 1.0f;
+            assert(diff >= 0.0f);
+
+
+            error += diff;
+        }
+
+        return error;
+    }
+
+    public void applyMorphDestructive(String name)
+    {
+        if (morphCount == 0) return;
+
+        for (int i = 0; i < morphCount; ++i)
+        {
+            if (!morphNames[i].equals(name)) continue;
+
+            var morph = getMorphs()[i];
+            var vertices = getVertices();
+
+
+            var stream0 = streams[STREAM_POS_BONEINDICES];
+            var stream1 = streams[STREAM_BONEWEIGHTS_NORM_TANGENT_SMOOTH_NORM];
+
+            for (int j = 0; j < vertices.length; ++j)
+            {
+                var v = vertices[j];
+                v = v.add(morph.offsets[j]);
+
+                BinaryPrimitives.writeSingleBigEndian(stream0, (j * 0x10) + 0x0, v.x);
+                BinaryPrimitives.writeSingleBigEndian(stream0, (j * 0x10) + 0x4, v.y);
+                BinaryPrimitives.writeSingleBigEndian(stream0, (j * 0x10) + 0x8, v.z);
+
+                int n = Bytes.packNormal24(morph.normals[j]);
+
+                stream1[(j * 0x10) + 0x4] = (byte)(n >>> 16);
+                stream1[(j * 0x10) + 0x5] = (byte)(n >>> 8);
+                stream1[(j * 0x10) + 0x6] = (byte)(n & 0xff);
+            }
+        }
+
+        streams = new byte[][]
+        {
+            streams[0],
+            streams[1]
+        };
+
+        streamCount = 2;
+
+        morphCount = 0;
+        mirrorMorphs = new short[] {};
+        morphNames = new String[MAX_MORPHS];
+    }
+
+    // appends another mesh onto this mesh,
+    // assumes same bones i dont give a fuck right now
+    public void add(RMesh mesh)
+    {
+        if (attributeCount != mesh.attributeCount)
+        {
+            if (mesh.attributeCount > attributeCount)
+                throw new RuntimeException("fuck");
+
+            // pad out the fucking attribute buffer man
+            var output = new MemoryOutputStream(attributeCount * mesh.numVerts * 0x8);
+            var uvs = new Vector2f[attributeCount][];
+            for (int i = 0; i < attributeCount; ++i)
+                uvs[i] = mesh.getUVs(i % mesh.attributeCount);
+
+            for (int i = 0; i < mesh.numVerts; ++i)
+            for (int j = 0; j < uvs.length; ++j)
+                output.v2(uvs[j][i]);
+
+            mesh.attributes = output.getBuffer();
+        }
+
+        // lazy concat, merge it on
+        primitives.addAll(mesh.primitives);
+        for (var primitive : mesh.primitives)
+        {
+            primitive.firstIndex += numIndices;
+            primitive.minVert += numVerts;
+            primitive.maxVert += numVerts;
+        }
+
+        streams[0] = Bytes.combine(streams[0], mesh.streams[0]);
+        streams[1] = Bytes.combine(streams[1], mesh.streams[1]);
+        attributes = Bytes.combine(attributes, mesh.attributes);
+
+        var output = new MemoryOutputStream((numIndices + mesh.numIndices) * 2);
+        System.arraycopy(indices, 0, output.getBuffer(), 0, numIndices * 2);
+        output.seek(numIndices * 2, SeekMode.Begin);
+        for (int j = 0; j < mesh.numIndices; ++j)
+        {
+            int f = ((mesh.indices[(j * 2) + 0] & 0xFF) << 8) |
+                    ((mesh.indices[(j * 2) + 1] & 0xFF));
+            
+            if (f != 65535)
+                f += numVerts;
+            
+            output.u16(f);
+        }
+
+        indices = output.getBuffer();
+
+        numVerts += mesh.numVerts;
+        numIndices += mesh.numIndices;
+        numTris += mesh.numTris;
+        numEdgeIndices = 0;
+    }
+
+    public void removeAllClusterData()
+    {
+        softPhysSettings = null;
+        softbodyCluster = new SoftbodyClusterData();
+        softbodyEquivs.clear();
+        softbodySprings = new SoftbodySpring[] {};
+
+        for (int i = 0; i < streams[0].length; i += 0x10)
+        {
+            streams[0][i + 0xc] = 0x00;
+            streams[0][i + 0xd] = 0x00;
+            streams[0][i + 0xe] = 0x00;
+            streams[0][i + 0xf] = (byte)0xFF;
+        }
+
+        springyTriIndices = new short[] {};
+        implicitEllipsoids = new ImplicitEllipsoid[] {};
+        insideImplicitEllipsoids = new ImplicitEllipsoid[] {};
+        implicitPlanes = new ImplicitPlane[] {};
+        mass = new float[] {};
+        softbodyEquivs.clear();
+        clusterImplicitEllipsoids = new Matrix4f[] {};
+    }
+
+
+    public void generateSprings(ArrayList<SoftbodySpring> springs)
+    {
+        // Dissolve any springs that are stiff
+        float[] weights = getSoftbodyWeights(0, numVerts);
+        for (int i = 0; i < springs.size(); ++i)
+        {
+            var spring = springs.get(i);
+            if (weights[spring.A] == 1.0f && weights[spring.B] == 1.0f)
+                springs.remove(i--);
+        }
+
+        softbodySprings = springs.toArray(SoftbodySpring[]::new);
+
+        var vertexSet = new HashSet<Integer>(softbodySprings.length * 2);
+        for (var spring : softbodySprings)
+        {
+            vertexSet.add(spring.A & 0xffff);
+            vertexSet.add(spring.B & 0xffff);
+        }
+
+        int[] triangles = getTriangles();
+        springyTriIndices = new short[triangles.length];
+        int springyTriSize = 0;
+
+        for (int i = 0; i < triangles.length; i += 3)
+        {
+            int a = triangles[i + 0];
+            int b = triangles[i + 1];
+            int c = triangles[i + 2];
+
+            // if (vertexSet.contains(a) && vertexSet.contains(b) && vertexSet.contains(c))
+            {
+                springyTriIndices[springyTriSize++] = (short)a;
+                springyTriIndices[springyTriSize++] = (short)b;
+                springyTriIndices[springyTriSize++] = (short)c;
+            }
+        }
+
+        springyTriIndices = Arrays.copyOf(springyTriIndices, springyTriSize);
+        springTrisStripped = false;
+
+        minSpringVert = Integer.MAX_VALUE;
+        maxSpringVert = Integer.MIN_VALUE;
+        for (int i = 0; i < springyTriIndices.length; ++i)
+        {
+            int face = springyTriIndices[i] & 0xffff;
+
+            if (minSpringVert > face) minSpringVert = face;
+            if (maxSpringVert < face) maxSpringVert = face;
+        }
+
+        minUnalignedSpringVert = minSpringVert;
+
+        // The minimum spring vertex has to be aligned to
+        // an 8 byte boundary.
+        while ((minSpringVert % 8) != 0)
+            minSpringVert--;
+
+        // Adjust springs into local space
+        for (var spring : softbodySprings)
+        {
+            spring.A -= minSpringVert;
+            spring.B -= minSpringVert;
+        }
+
+        // dissolve any springs that are functionally duplicate
+        var set = new HashSet<SoftbodySpring>(Arrays.asList(softbodySprings));
+        softbodySprings = new ArrayList<>(set).toArray(SoftbodySpring[]::new);
+    }
+
+    public void generateClusters(String[] clusterNames)
+    {
+        if (clusterNames == null || clusterNames.length == 0) return;
+        
+        softbodyCluster = new SoftbodyClusterData();
+
+        var basis = new SoftbodyCluster();
+        var clusters = softbodyCluster.getClusters();
+
+        clusters.add(basis);
+        for (var name : clusterNames)
+            clusters.add(new SoftbodyCluster(name));
+
+
+        int[] vertsPerCluster = new int[clusters.size()];
+        float[] massPerCluster = new float[clusters.size()];
+        int[] vertexToCluster = new int[numVerts];
+        var vertices = getVertices();
+        
+        // First pass to gather the center of mass of each cluster
+        for (int i = 0; i < vertices.length; ++i)
+        {
+            int clusterIndex = getClusterIndex(i);
+            vertexToCluster[i] = clusterIndex;
+            var cluster = clusters.get(clusterIndex);
+
+            vertsPerCluster[clusterIndex]++;
+            cluster.TEMP3_BECAUSE_IM_LAZY.add(vertices[i]);
+        }
+
+        
+        for (int i = 0; i < clusters.size(); ++i)
+        {
+            var cluster = clusters.get(i);
+            float count = vertsPerCluster[i];
+            if (count != 0)
+                cluster.setRestCenterOfMass(new Vector4f(cluster.TEMP3_BECAUSE_IM_LAZY.div(count), 0.0f));
+        }
+
+        mass = new float[numVerts];
+
+        // Second pass to gather the mass of each vertex relative
+        // to the center of their clusters
+        for (int i = 0; i < vertices.length; ++i)
+        {
+            int clusterIndex = vertexToCluster[i];
+            var com = clusters.get(clusterIndex).getRestCenterOfMass();
+            
+            float d = 1.0f / vertices[i].distance(com.x, com.y, com.z);
+            
+            mass[i] = d;
+            massPerCluster[clusterIndex] += d;
+        }
+
+        for (int i = 0; i < vertices.length; ++i)
+            mass[i] /= massPerCluster[vertexToCluster[i]];
+
+        basis.setRestCenterOfMass(clusters.get(1).getRestCenterOfMass());
+        
+        for (int c = 0; c < clusters.size(); ++c)
+        {
+            var cluster = clusters.get(c);
+            var com3 = cluster.getRestCenterOfMass3();
+            Matrix3f aqq = new Matrix3f().zero();
+            
+            if (vertsPerCluster[c] == 0) continue;
+
+            
+            for (int i = 0; i < vertices.length; ++i)
+            {
+                if (vertexToCluster[i] != c) continue;
+
+
+                float w = mass[i];
+                var q = vertices[i].sub(com3, new Vector3f());
+
+                float qx = q.x;
+                float qy = q.y;
+                float qz = q.z;
+
+
+                aqq.add(new Matrix3f(
+                    w * qx * qx,
+                    w * qy * qx,
+                    w * qz * qx,
+                    w * qx * qy,
+                    w * qy * qy,
+                    w * qz * qy,
+                    w * qx * qz,
+                    w * qy * qz,
+                    w * qz * qz
+                ));
+            }
+
+            
+
+            aqq = aqq.invert();
+
+            cluster.setRestDyadicSum(new Matrix4f().identity().set3x3(aqq));
+
+            if (cluster == basis) continue;
+
+            FMatrixRMaj mat = new FMatrixRMaj(9, 9);
+            mat.zero();
+
+            for (int i = 0; i < vertices.length; ++i)
+            {
+                if (vertexToCluster[i] != c) continue;
+                
+                float w = mass[i];
+                var q = vertices[i].sub(com3, new Vector3f());
+
+                float qx = q.x;
+                float qy = q.y;
+                float qz = q.z;
+
+                FMatrixRMaj t9x1 = new FMatrixRMaj(9, 1, true, new float[] {
+                    qx, qy, qz,
+                    qx * qx, qy * qy, qz * qz,
+                    qx * qy, qy * qz, qz * qx
+                });
+
+                FMatrixRMaj trans = CommonOps_FDRM.transpose(t9x1, new FMatrixRMaj());
+
+                var mat0 = CommonOps_FDRM.mult(t9x1, trans, new FMatrixRMaj());
+            
+                for (int j = 0; j < 81; ++j)
+                    mat.data[j] += mat0.data[j] * w;
+            }
+            CommonOps_FDRM.invert(mat);
+
+            
+
+            for (int col = 0; col < 9; ++col)
+            for (int row = 0; row < 9; ++row)
+                cluster.getRestQuadraticDyadicSum()[col * 9 + row] = mat.get(row, col);
+        }
+    }
+
+    public void generateEquivs()
+    {
+        Vector3f[] vertices = getVertices();
+
+        // Generate vertex equivalences that are in the range
+        // of our softbody spring indices.
+        softbodyEquivs.clear();
+        int start = 0, count = 1;
+        for (int i = 1; i < vertices.length; ++i)
+        {
+            if (vertices[i].equals(vertices[i - 1]))
+            {
+                count++;
+            }
+            else
+            {
+                if (count != 1)
+                    softbodyEquivs.add(new SoftbodyVertEquivalence(start, count));
+                
+                start = i;
+                count = 1;
+            }
+        }
+
+        if (count != 1)
+            softbodyEquivs.add(new SoftbodyVertEquivalence(start, count));
+    }
+
+    public void generateEdges()
+    {
+        int[] triangles = getTriangles();
+
+        HashSet<Edge> edges = new HashSet<>(triangles.length / 2);
+        for (int i = 0; i < triangles.length; i += 3)
+        {
+            int f0 = triangles[i];
+            int f1 = triangles[i + 1];
+            int f2 = triangles[i + 2];
+
+            if (f0 != f1) edges.add(new Edge(f0, f1));
+            if (f1 != f2) edges.add(new Edge(f1, f2));
+            if (f2 != f0) edges.add(new Edge(f2, f0));
+        }
+
+        numEdgeIndices = edges.size() * 2;
+        byte[] buffer = new byte[numIndices * 2 + edges.size() * 4];
+        System.arraycopy(indices, 0, buffer, 0, numIndices * 2);
+        int offset = numIndices * 2;
+        for (Edge edge : edges)
+        {
+            buffer[offset++] = (byte)(edge.A >>> 8);
+            buffer[offset++] = (byte)(edge.A & 0xFF);
+            buffer[offset++] = (byte)(edge.B >>> 8);
+            buffer[offset++] = (byte)(edge.B & 0xFF);
+        }
+
+        indices = buffer;
+    }
+
+    public void strip()
+    {
+        if (primitiveType != CellGcmPrimitive.TRIANGLE_STRIP)
+        {
+            MemoryOutputStream stream = new MemoryOutputStream(((numVerts - 2) + numVerts) * 4 + (numVerts * 4));
+
+            numTris = 0;
+            for (Primitive primitive : primitives)
+            {
+                int[] triangles = getTriangles(primitive);
+                numTris += triangles.length / 3;
+                PrimitiveGroup[] groups = new TriStrip().generateStrips(triangles);
+
+                primitive.numIndices = 0;
+                primitive.firstIndex = stream.getOffset() / 0x2;
+                for (PrimitiveGroup group : groups)
+                {
+                    for (int i = 0; i < group.numIndices; ++i)
+                        stream.u16(group.indices[i]);
+                    stream.u16(0xFFFF);
+                    primitive.numIndices += group.numIndices + 1;
+                }
+            }
+
+            numEdgeIndices = 0;
+            numIndices = stream.getOffset() / 0x2;
+            primitiveType = CellGcmPrimitive.TRIANGLE_STRIP;
+            indices = stream.shrink().getBuffer();
+            generateEdges();
+        }
+
+        if (!springTrisStripped && springyTriIndices != null && springyTriIndices.length != 0)
+        {
+            PrimitiveGroup[] groups = new TriStrip().generateStrips(getSpringyTriangles());
+            int size = 0;
+            
+            for (PrimitiveGroup group : groups)
+                size += group.numIndices + 1;
+            size -= 1;
+
+            springyTriIndices = new short[size];
+            int i = 0;
+            for (PrimitiveGroup group : groups)
+            {
+                for (int j = 0; j < group.numIndices; ++j)
+                    springyTriIndices[i++] = (short)group.indices[j];
+                if (i != size)
+                    springyTriIndices[i++] = -1;
+            }
+
+            springTrisStripped = true;
+        }
+
+    }
+
+    public static final class Edge
+    {
+        public final int A;
+        public final int B;
+
+        public Edge(int a, int b)
+        {
+            if (a < b)
+            {
+                A = a;
+                B = b;
+            }
+            else
+            {
+                A = b;
+                B = a;
+            }
+        }
+
+        @Override public boolean equals(Object other)
+        {
+            if (other == this) return true;
+            if (!(other instanceof Edge edge)) return false;
+            return edge.A == A && edge.B == B;
+        }
+
+        @Override public int hashCode()
+        {
+            int result = (int) (A ^ (A >>> 32));
+            result = 31 * result + B;
+            return result;
+        }
+    }
+
+    public static final class Quad
+    {
+        public final int v0, v1, v2, v3;
+
+        public Quad(int a, int b, int c, int d)
+        {
+            v0 = a;
+            v1 = b;
+            v2 = c;
+            v3 = d;
+        }
+        
+        @Override public int hashCode()
+        {
+            int result = (int) (this.v0 ^ (this.v0 >>> 32));
+            result = 31 * result + v1;
+            result = 31 * result + v2;
+            result = 31 * result + v3;
+            return result;
+        }
+
+        @Override public boolean equals(Object other)
+        {
+            if (!(other instanceof Quad quad)) return false;
+            return quad.v0 == v0 && quad.v1 == v1 && quad.v2 == v2 && quad.v3 == v3;
+        }
+
+        @Override public String toString()
+        {
+            return String.format("<%d, %d, %d, %d>", v0, v1, v2, v3);
+        }
+    }
+
+
+    public static final class Triangle 
+    {
+        public int A, B, C;
+
+        public Triangle(int a, int b, int c)
+        {
+            A = a;
+            B = b;
+            C = c;
+        }
+
+        @Override public int hashCode()
+        {
+            int result = (int) (this.A ^ (this.A >>> 32));
+            result = 31 * result + B;
+            result = 31 * result + C;
+            return result;
+        }
+
+        @Override public boolean equals(Object other)
+        {
+            if (!(other instanceof Triangle tri)) return false;
+            
+            return tri.A == A && tri.B == B && tri.C == C;
+        }
+
+        @Override public String toString()
+        {
+            return String.format("<%d, %d, %d>", A, B, C);
+        }
+    }
+
+    public void calculateSmoothNormals()
+    {
+        Vector3f[] vertices = getVertices();
+        HashMap<Vector3f, Vector3f> normalCache = new HashMap<>();
+        for (int i = 0; i < vertices.length; ++i)
+            normalCache.put(vertices[i], new Vector3f().zero());
+        
+        ArrayList<Vector3f> sharedVertices = new ArrayList<>(vertices.length);
+        HashSet<Triangle> sharedTriangles = new HashSet<>();
+
+        int[] triangles = getTriangles();
+        for (int i = 0; i < triangles.length; ++i)
+        {
+            Vector3f vertex = vertices[triangles[i]];
+
+            int index = sharedVertices.indexOf(vertex);
+            if (index != -1)
+            {
+                triangles[i] = index;
+                continue;
+            }
+
+            index = sharedVertices.size();
+            triangles[i] = index;
+            sharedVertices.add(vertex);
+        }
+
+        for (int i = 0; i < triangles.length; i += 3)
+        {
+            int a = triangles[i + 0];
+            int b = triangles[i + 1];
+            int c = triangles[i + 2];
+
+            if (a == b || a == c || b == c) continue;
+
+            sharedTriangles.add(new Triangle(a, b, c));
+        }
+        
+        // System.out.printf("Reduced triangle count from %d to %d\n", triangles.length / 3, sharedTriangles.size());
+        // System.out.printf("Reduced vertex count from %d to %d\n", vertices.length, sharedVertices.size());
+
+        final boolean areaWeighting = false;
+        for (Triangle triangle : sharedTriangles)
+        {
+            Vector3f a = sharedVertices.get(triangle.A);
+            Vector3f b = sharedVertices.get(triangle.B);
+            Vector3f c = sharedVertices.get(triangle.C);
+
+            Vector3f n = b.sub(a, new Vector3f()).cross(c.sub(a, new Vector3f()));
+            if (!areaWeighting) n.normalize();
+
+            float aAngle = b.sub(a, new Vector3f()).angle(c.sub(a, new Vector3f()));
+            float bAngle = c.sub(b, new Vector3f()).angle(a.sub(b, new Vector3f()));
+            float cAngle = a.sub(c, new Vector3f()).angle(b.sub(c, new Vector3f()));
+
+            // System.out.printf("<%f, %f, %f>\n", aAngle, bAngle, cAngle);
+
+            normalCache.get(a).add(n.mul(aAngle, new Vector3f()));
+            normalCache.get(b).add(n.mul(bAngle, new Vector3f()));
+            normalCache.get(c).add(n.mul(cAngle, new Vector3f()));
+        }
+
+        Vector3f[] normals = getNormals();
+        for (int i = 0; i < vertices.length; ++i)
+        {
+            Vector3f normal = normalCache.get(vertices[i]).normalize();
+            if (normal.length() == 0.0f) normal = normals[i];
+            
+            int n = Bytes.packNormal24(normal);
+            int offset = (i * 0x10) + 0x8;
+            byte[] stream = streams[RMesh.STREAM_BONEWEIGHTS_NORM_TANGENT_SMOOTH_NORM];
+            
+            stream[offset + 0] = (byte)(n >>> 16);
+            stream[offset + 1] = (byte)(n >>> 8);
+            stream[offset + 2] = (byte)(n & 0xff);
+        }
+    }
+
     /**
      * Recalculates the bounding boxes for each bone in this model.
      *
@@ -1718,86 +2489,108 @@ public class RMesh implements Resource
     public void calculateBoundBoxes(boolean setOBB)
     {
         Vector3f[] vertices = this.getVertices();
-        Vector4f[] weights = this.getWeights();
         byte[][] joints = this.getJoints();
 
-        HashMap<Bone, Vector3f> minVert = new HashMap<>();
-        HashMap<Bone, Vector3f> maxVert = new HashMap<>();
+        HashMap<Bone, Vector4f> minVert = new HashMap<>();
+        HashMap<Bone, Vector4f> maxVert = new HashMap<>();
 
         for (Bone bone : this.bones)
         {
-            minVert.put(bone, new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-                Float.POSITIVE_INFINITY));
-            maxVert.put(bone, new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
-                Float.NEGATIVE_INFINITY));
+            minVert.put(bone, new Vector4f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, 1.0f));
+            maxVert.put(bone, new Vector4f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, 1.0f));
         }
 
         for (int i = 0; i < vertices.length; ++i)
         {
             Vector3f v = vertices[i];
-            Vector4f weightCache = weights[i];
             byte[] jointCache = joints[i];
-
             for (int j = 0; j < 4; ++j)
             {
-                if (weightCache.get(j) == 0.0f) continue;
-                Vector3f max = maxVert.get(this.bones[jointCache[j]]);
-                Vector3f min = minVert.get(this.bones[jointCache[j]]);
+                Vector4f local = new Vector4f(v, 1.0f).mul(this.bones[jointCache[j]].invSkinPoseMatrix);
+                Vector4f max = maxVert.get(this.bones[jointCache[j]]);
+                Vector4f min = minVert.get(this.bones[jointCache[j]]);
 
-
-                if (v.x > max.x) max.x = v.x;
-                if (v.y > max.y) max.y = v.y;
-                if (v.z > max.z) max.z = v.z;
-
-                if (v.x < min.x) min.x = v.x;
-                if (v.y < min.y) min.y = v.y;
-                if (v.z < min.z) min.z = v.z;
+                max = max.max(local);
+                min = min.min(local);
             }
         }
 
-        int index = 0;
-        for (Bone bone : this.bones)
+        for (int i = 0; i < this.bones.length; ++i)
         {
-            Vector4f max = new Vector4f(maxVert.get(bone), 1.0f);
-            Vector4f min = new Vector4f(minVert.get(bone), 1.0f);
+            Bone bone = this.bones[i];
+            CullBone culler = this.cullBones[i];
 
-            if (min.x == Float.POSITIVE_INFINITY) min = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
-            else min.mul(bone.invSkinPoseMatrix);
+            Vector4f max = maxVert.get(bone);
+            Vector4f min = minVert.get(bone);
 
-
-            if (max.x == Float.NEGATIVE_INFINITY) max = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
-            else max.mul(bone.invSkinPoseMatrix);
-
-            for (int c = 0; c < 3; ++c)
+            if (min.x == Float.POSITIVE_INFINITY || max.x == Float.NEGATIVE_INFINITY)
             {
-                if (min.get(c) > max.get(c))
-                {
-                    float u = min.get(c);
-                    float l = max.get(c);
-                    min.setComponent(c, l);
-                    max.setComponent(c, u);
-                }
+                bone.boundBoxMin = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+                bone.boundBoxMax = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+                bone.boundSphere = new Vector4f().zero();
+
+                culler.boundBoxMin = bone.boundBoxMin;
+                culler.boundBoxMax = bone.boundBoxMax;
+                culler.invSkinPoseMatrix = bone.invSkinPoseMatrix;
+
+                continue;
             }
 
-            bone.boundBoxMax = max;
             bone.boundBoxMin = min;
+            bone.boundBoxMax = max;
             if (setOBB)
             {
-                bone.obbMax = bone.boundBoxMax;
                 bone.obbMin = bone.boundBoxMin;
+                bone.obbMax = bone.boundBoxMax;
             }
+            
+            Vector4f sphere = max.add(min, new Vector4f()).div(2.0f);
+            sphere.w = Math.abs((max.sub(min, new Vector4f()).length() + 0.001f) / 2.0f);
+            bone.boundSphere = sphere;
 
-            Vector4f center = max.add(min, new Vector4f()).div(2.0f);
-            float minDist = Math.abs(center.distance(min));
-            float maxDist = Math.abs(center.distance(max));
-            center.w = (minDist > maxDist) ? minDist : maxDist;
-            bone.boundSphere = new Vector4f(center);
-
-            CullBone culler = this.cullBones[index++];
-            culler.boundBoxMax = bone.boundBoxMax;
             culler.boundBoxMin = bone.boundBoxMin;
+            culler.boundBoxMax = bone.boundBoxMax;
             culler.invSkinPoseMatrix = bone.invSkinPoseMatrix;
         }
+
+        if (springyTriIndices != null && springyTriIndices.length != 0)
+        {
+            Vector4f min = new Vector4f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, 1.0f);
+            Vector4f max = new Vector4f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, 1.0f);
+
+
+
+            int[] indices = getSpringyTriangles();
+            for (int i = 0; i < indices.length; ++ i)
+            {
+                Vector4f local = new Vector4f(vertices[indices[i]], 1.0f);
+                max = max.max(local);
+                min = min.min(local);
+            }
+
+            Vector4f dist = max.absolute().max(min.absolute());
+            softbodyContainingBoundBoxMax = new Vector4f(dist.x, dist.y, dist.z, 1.0f);
+            softbodyContainingBoundBoxMin = new Vector4f(-dist.x, -dist.y, -dist.z, 1.0f);
+        }
+
+        {
+            Vector4f min = new Vector4f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, 1.0f);
+            Vector4f max = new Vector4f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, 1.0f);
+
+            
+            for (var vertex : vertices)
+            {
+                Vector4f local = new Vector4f(vertex, 1.0f);
+                max = max.max(local);
+                min = min.min(local);
+            }
+            
+            Vector4f dist = max.absolute().max(min.absolute());
+            softbodyContainingBoundBoxMax = new Vector4f(dist.x, dist.y, dist.z, 1.0f);
+            softbodyContainingBoundBoxMin = new Vector4f(-dist.x, -dist.y, -dist.z, 1.0f);
+        }
+
+
     }
 
 

@@ -1,10 +1,15 @@
 package cwlib.structs.things;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
+import cwlib.enums.CompressionFlags;
 import cwlib.enums.GameplayPartType;
 import cwlib.enums.Part;
 import cwlib.enums.PartHistory;
@@ -13,11 +18,19 @@ import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
+import cwlib.io.streams.MemoryInputStream;
+import cwlib.io.streams.MemoryOutputStream;
 import cwlib.singleton.ResourceSystem;
+import cwlib.structs.things.parts.PEmitter;
 import cwlib.structs.things.parts.PGameplayData;
 import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PJoint;
+import cwlib.structs.things.parts.PMaterialOverride;
+import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
+import cwlib.structs.things.parts.PScriptName;
+import cwlib.structs.things.parts.PShape;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
@@ -63,6 +76,10 @@ public class Thing implements Serializable
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
+        serializer.push(this);
+        onStartSave(serializer);
+
+
         int maxPartsRevision = PartHistory.STREAMING_HINT;
         if (version <= 0x3e2)
             maxPartsRevision = PartHistory.CONTROLINATOR;
@@ -71,7 +88,7 @@ public class Thing implements Serializable
         if (version <= 0x2c3)
             maxPartsRevision = PartHistory.MATERIAL_TWEAK;
         if (version <= 0x272)
-            maxPartsRevision = PartHistory.GROUP;
+            maxPartsRevision = PartHistory.PHYSICS_TWEAK;
 
         // Test serialization marker.
         if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH))
@@ -200,7 +217,7 @@ public class Thing implements Serializable
         // I have no idea why they did this
         if (version == 0x13c) partsRevision += 7;
 
-        Part[] partsToSerialize = Part.fromFlags(revision.getHead(), flags, partsRevision);
+        Part[] partsToSerialize = Part.fromFlags(revision, flags, partsRevision);
         serializer.log(Arrays.toString(partsToSerialize));
 
         for (Part part : partsToSerialize)
@@ -214,10 +231,185 @@ public class Thing implements Serializable
             serializer.log(part.name() + " [END]");
         }
 
-        // if (subVersion >= 0x83 && subVersion < 0x8b)
-        // serializer.u8(0);
-
         serializer.log("THING " + Bytes.toHex(UID) + " [END]");
+
+        onFinishSave(serializer);
+        serializer.pop();
+    }
+
+    public boolean hasCustomData(Revision revision)
+    {
+        if (!revision.hasExtraData()) return false;
+        switch (revision.getCustomBranchID())
+        {
+            case Revisions.ALEAR_BR1:
+            {
+                if (hasPart(Part.MATERIAL_OVERRIDE))
+                    return true;
+                
+                return false;
+            }
+
+            default: return false;
+        }
+    }
+
+    public void onStartSave(Serializer serializer)
+    {
+        PScriptName partScriptName = getPart(Part.SCRIPT_NAME);
+        if (partScriptName != null)
+        {
+            int nameLength = partScriptName.getLength();
+            int dataLength = partScriptName.getCapacity();
+            if (nameLength != dataLength)
+                partScriptName.setData(Arrays.copyOf(partScriptName.getData(), nameLength));
+        }
+
+        Revision revision = serializer.getRevision();
+        if (!serializer.isWriting() || !hasCustomData(revision)) return;
+
+        final int HEADER_MAGIC = 0x414C5344;
+        final int PACKET_SIZE = 16384;
+        final byte COMPRESSION_FLAGS = CompressionFlags.USE_COMPRESSED_INTEGERS;
+
+        if (partScriptName == null)
+        {
+            partScriptName = new PScriptName();
+            setPart(Part.SCRIPT_NAME, partScriptName);
+        }
+
+        String scriptVariableName = partScriptName.getName();
+
+        var stream = new MemoryOutputStream(PACKET_SIZE, COMPRESSION_FLAGS);
+        stream.bytes(scriptVariableName.getBytes(StandardCharsets.US_ASCII));
+        stream.u8(0); // Null terminator for the string
+
+        stream.u32(HEADER_MAGIC, true);
+        stream.u32(revision.getCustomBranchID(), true);
+        stream.u32(revision.getCustomVersion(), true);
+        stream.u32(COMPRESSION_FLAGS, true);
+
+        switch (revision.getCustomBranchID())
+        {
+            case Revisions.ALEAR_BR1:
+            {
+                final int DATA_MATERIAL_OVERRIDE = 0x4d544f56;
+                final int DATA_MICROCHIP = 0x4d434850;
+                final int DATA_GENERATED_MESH = 0x4746584D;
+                final int DATA_SWITCH = 0x4c4f4743;
+                final int DATA_YELLOW_HEAD = 0x594c4844;
+                final int DATA_SHAPE = 0x4c414e44;
+
+                {
+                    PMaterialOverride part = getPart(Part.MATERIAL_OVERRIDE);
+                    if (part != null)
+                    {
+                        stream.i32(DATA_MATERIAL_OVERRIDE, true);
+                        new Serializer(stream, new Revision(Revisions.LBP2_MAX | Revisions.LBP3_MAX << 16))
+                            .struct(part, PMaterialOverride.class);                        
+                    }
+                }
+
+                break;
+            }
+        }
+
+        partScriptName.setData(stream.shrink().getBuffer());
+    }
+
+    public void onFinishSave(Serializer serializer)
+    {
+        final int HEADER_MAGIC = 0x414C5344;
+        final int DATA_MATERIAL_OVERRIDE = 0x4d544f56;
+        final int DATA_MICROCHIP = 0x4d434850;
+        final int DATA_GENERATED_MESH = 0x4746584D;
+        final int DATA_SWITCH = 0x4c4f4743;
+        final int DATA_YELLOW_HEAD = 0x594c4844;
+        final int DATA_SHAPE = 0x4c414e44;
+
+        if (serializer.isWriting())
+        {
+            PScriptName part = getPart(Part.SCRIPT_NAME);
+            if (part != null)
+            {
+                int nameLength = part.getLength();
+                int dataLength = part.getCapacity();
+                if (nameLength == 0)
+                    setPart(Part.SCRIPT_NAME, null);
+                else if (nameLength != dataLength)
+                    part.setData(Arrays.copyOf(part.getData(), nameLength));
+            }
+
+            return;
+        }
+
+        byte[] rawData = null;
+        {
+            PScriptName part = getPart(Part.SCRIPT_NAME);
+            if (part == null) return;
+
+            int nameLength = part.getLength();
+            int dataLength = part.getCapacity();
+
+            if (nameLength + 17 < dataLength)
+                rawData = Arrays.copyOfRange(part.getData(), nameLength + 1, dataLength);
+            
+            if (nameLength == 0)
+                setPart(Part.SCRIPT_NAME, null);
+        }
+
+        if (rawData == null) return;
+        MemoryInputStream stream = new MemoryInputStream(rawData);
+
+        if (stream.i32() != HEADER_MAGIC) return;
+        final int branch = stream.i32();
+        final int version = stream.i32();
+        final int flags = stream.i32();
+
+        stream.setCompressionFlags((byte)flags);
+
+        while (stream.getLength() - stream.getOffset() >= 4)
+        {
+            int chunk = stream.i32(true);
+            System.out.printf("chunk : %08x\n", chunk);
+            switch (chunk)
+            {
+                case DATA_MATERIAL_OVERRIDE:
+                {
+                    PMaterialOverride part = 
+                    new Serializer(stream, new Revision(Revisions.LBP2_MAX | Revisions.LBP3_MAX << 16))
+                        .struct(null, PMaterialOverride.class);
+                    setPart(Part.MATERIAL_OVERRIDE, part);
+                    break;
+                }
+            }
+
+        }
+    }
+
+    public void fixup(Revision revision)
+    {
+        PWorld world;
+        PPos pos;
+        PEmitter emitter;
+
+        if ((world = getPart(Part.WORLD)) != null) world.fixup(this, revision);
+        if ((pos = getPart(Part.POS)) != null) pos.fixup(this, revision);
+        if ((emitter = getPart(Part.EMITTER)) != null) emitter.fixup(this, revision);
+    }
+
+    public Vector4f getBestGameplayPos()
+    {
+        if (!hasPart(Part.POS)) return new Vector4f().zero();
+
+        Matrix4f matrix = this.<PPos>getPart(Part.POS).worldPosition;
+        if (hasPart(Part.SHAPE))
+        {
+            Matrix4f posCom = this.<PShape>getPart(Part.SHAPE).COM;
+            return posCom.getColumn(3, new Vector4f()).mul(matrix);
+        }
+
+        return matrix.getColumn(3, new Vector4f());
     }
 
     public boolean isEnemyWard()
@@ -243,6 +435,34 @@ public class Thing implements Serializable
         return false;
     }
 
+    public boolean isNewKey()
+    {
+        if (!isKey()) return false;
+        GUID newKeyMeshGuid = new GUID(44679);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return newKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+        
+        return false;
+    }
+
+    public boolean isOldKey()
+    {
+        if (!isKey()) return false;
+        GUID oldKeyMeshGuid = new GUID(3763);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
     public boolean isKey()
     {
         PGameplayData data = getPart(Part.GAMEPLAY_DATA);
@@ -252,7 +472,8 @@ public class Thing implements Serializable
         if (data.keyLink != null) return true;
 
         GUID keyPlanGuid = new GUID(31738);
-        GUID keyMeshGuid = new GUID(3763);
+        GUID oldKeyMeshGuid = new GUID(3763);
+        GUID newKeyMeshGuid = new GUID(44679);
 
         if (keyPlanGuid.equals(planGUID)) return true;
         if (hasPart(Part.GROUP))
@@ -267,7 +488,7 @@ public class Thing implements Serializable
         {
             PRenderMesh mesh = getPart(Part.RENDER_MESH);
             if (mesh.mesh != null && mesh.mesh.isGUID())
-                return keyMeshGuid.equals(mesh.mesh.getGUID());
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID()) || newKeyMeshGuid.equals(mesh.mesh.getGUID());
         }
 
         return false;

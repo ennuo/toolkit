@@ -14,11 +14,34 @@ public class SoftbodySpring implements Serializable
 
     public SoftbodySpring(int a, int b, float restLengthSq)
     {
-        this.A = (short) a;
-        this.B = (short) b;
+        if (a < b)
+        {
+            this.A = (short)a;
+            this.B = (short)b;
+        }
+        else
+        {
+            this.A = (short)b;
+            this.B = (short)a;
+        }
+
         this.restLengthSq = restLengthSq;
     }
 
+    @Override public int hashCode()
+    {
+        int result = (int) (this.A ^ (this.A >>> 32));
+        result = 31 * result + B;
+        return result;
+    }
+
+    @Override public boolean equals(Object other)
+    {
+        if (!(other instanceof SoftbodySpring spring)) return false;
+        if (other == this) return true;
+        return spring.A == A && spring.B == B;
+    }
+    
     @Override
     public void serialize(Serializer serializer)
     {

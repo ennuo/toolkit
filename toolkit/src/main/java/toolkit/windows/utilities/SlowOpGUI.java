@@ -30,8 +30,8 @@ public class SlowOpGUI extends javax.swing.JDialog
             }
         });
     }
-
-    public static void performSlowOperation(Frame parent, String title, String message, int max,
+    
+    public static boolean performSlowOperation(Frame parent, String title, String message, int max,
                                             SlowOp operation)
     {
         SlowOpGUI gui = new SlowOpGUI(parent, operation);
@@ -66,11 +66,15 @@ public class SlowOpGUI extends javax.swing.JDialog
             String error = gui.error != null ? gui.error : "An error occurred during the " +
                                                            "operation!";
             JOptionPane.showMessageDialog(parent, error, title, JOptionPane.ERROR_MESSAGE);
+
+            return false;
         }
         else
         {
             JOptionPane.showMessageDialog(parent, "Success!", title,
                 JOptionPane.INFORMATION_MESSAGE);
+
+            return true;
         }
     }
 

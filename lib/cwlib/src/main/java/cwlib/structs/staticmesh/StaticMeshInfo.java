@@ -1,9 +1,12 @@
 package cwlib.structs.staticmesh;
 
 import cwlib.enums.ResourceType;
+import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
+
+import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
@@ -11,29 +14,47 @@ public class StaticMeshInfo implements Serializable
 {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
-    public static class UnknownStruct implements Serializable
+    public static class StaticMeshTreeNode implements Serializable
     {
         public static final int BASE_ALLOCATION_SIZE = 0x20;
 
-        public Vector3f min, max;
-        public short structIndexA, structIndexB, firstPrimitive, numPrimitives;
+        /**
+         * The 3D coordinate of the minimal point of the bound box containing this primitive group.
+         */
+        public Vector3f min;
+
+        /**
+         * The 3D coordinate of the maximal point of the bound box containing this primitive group.
+         */
+        public Vector3f max;
+
+        /**
+         * The index of the first child of this tree node, if any.
+         */
+        public short firstChild = -1;
+
+        /**
+         * The index of the next sibling of this tree node, if any.
+         */
+        public short nextSibling = -1;
+        
+
+        /**
+         * The index of the first mesh primitive referenced by this group, if any.
+         */
+        public short firstPrimitive;
+
+        /**
+         * The number of primitive contained in this group.
+         */
+        public short numPrimitives;
 
         @Override
         public void serialize(Serializer serializer)
         {
             min = serializer.v3(min);
-            structIndexA = serializer.i16(structIndexA);
-            structIndexB = serializer.i16(structIndexB);
-
-            // If structIndexA/structIndexB is -1
-            // then firstPrimitive and numPrimitives is set
-
-            // If structIndexA/structIndexB is set
-            // then firstPrimitive and numPrimitives is 0
-
-            // Does -1 indicate an instance of a submesh
-            // and otherwise a group of submeshes?
-
+            firstChild = serializer.i16(firstChild);
+            nextSibling = serializer.i16(nextSibling);
             max = serializer.v3(max);
             firstPrimitive = serializer.i16(firstPrimitive);
             numPrimitives = serializer.i16(numPrimitives);
@@ -42,15 +63,35 @@ public class StaticMeshInfo implements Serializable
         @Override
         public int getAllocatedSize()
         {
-            return UnknownStruct.BASE_ALLOCATION_SIZE;
+            return StaticMeshTreeNode.BASE_ALLOCATION_SIZE;
         }
     }
 
     public ResourceDescriptor lightmap, risemap, fallmap;
-    public int primitiveCount, unknownStructCount, indexBufferSize, vertexStreamSize;
 
-    public StaticPrimitive[] primitives;
-    public UnknownStruct[] unknown;
+    public int indexBufferSize, vertexStreamSize;
+
+    /**
+     * All render primitives contained in this background.
+     */
+    public ArrayList<StaticPrimitive> primitives = new ArrayList<>();
+    
+    /**
+     * Bound box volumes containing primitives in a tree hierachy.
+     * Used for streaming in/out the parts of the background.
+     * 
+     * If there's only a single primitive, root node should just be the bound box
+     * of the entire model and point to the primitive
+     * 
+     * If there are multiple primitives, the root node should be a group node encompassing
+     * every model in the background and point to the children groups.
+     */
+    public ArrayList<StaticMeshTreeNode> nodes = new ArrayList<>();
+
+    public StaticMeshInfo()
+    {
+        nodes.add(new StaticMeshTreeNode());
+    }
 
     @Override
     public void serialize(Serializer serializer)
@@ -59,13 +100,22 @@ public class StaticMeshInfo implements Serializable
         risemap = serializer.resource(risemap, ResourceType.TEXTURE);
         fallmap = serializer.resource(fallmap, ResourceType.TEXTURE);
 
-        primitiveCount = serializer.i32(primitiveCount);
-        unknownStructCount = serializer.i32(unknownStructCount);
+
+        int primitiveCount = serializer.i32(primitives.size());
+        int nodeCount = serializer.i32(nodes.size());
+
         indexBufferSize = serializer.i32(indexBufferSize);
         vertexStreamSize = serializer.i32(vertexStreamSize);
 
-        primitives = serializer.array(primitives, StaticPrimitive.class);
-        unknown = serializer.array(unknown, UnknownStruct.class);
+        // 0x4c
+        // 0x0f
+        // @ 0x2c
+
+        primitives = serializer.arraylist(primitives, StaticPrimitive.class);
+        nodes = serializer.arraylist(nodes, StaticMeshTreeNode.class);
+
+        if (primitiveCount != primitives.size()) throw new SerializationException("Primitive count mismatch!");
+        if (nodeCount != nodes.size()) throw new SerializationException("Node count mismatch!");
 
         serializer.i32(0x48454c50); // "HELP", no idea, used as a marker?
     }
@@ -75,9 +125,9 @@ public class StaticMeshInfo implements Serializable
     {
         int size = StaticMeshInfo.BASE_ALLOCATION_SIZE;
         if (this.primitives != null)
-            size += (this.primitives.length * StaticPrimitive.BASE_ALLOCATION_SIZE);
-        if (this.unknown != null)
-            size += (this.unknown.length * UnknownStruct.BASE_ALLOCATION_SIZE);
+            size += (this.primitives.size() * StaticPrimitive.BASE_ALLOCATION_SIZE);
+        if (this.nodes != null)
+            size += (this.nodes.size() * StaticMeshTreeNode.BASE_ALLOCATION_SIZE);
         return size;
     }
 }

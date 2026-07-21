@@ -46,6 +46,12 @@ public class CwlibConfiguration
     public static File SCE_PSSL_EXECUTABLE =
         new File(JAR_DIRECTORY, "sce/orbis-wave-psslc.exe");
 
+    /**
+     * Path to PSV shader compiler executable, you'll have to
+     * get this from a PS Vita SDK yourself.
+     */
+    public static File SCE_PSP2_CGC_EXECUTABLE =
+        new File(JAR_DIRECTORY, "sce/psp2cgc.exe");
 
     /**
      * Whether Toolkit can compile PS3 shaders, requires
@@ -60,10 +66,26 @@ public class CwlibConfiguration
     public static boolean CAN_COMPILE_ORBIS_SHADERS = false;
 
     /**
+     * Whether Toolkit can compile PS Vita shaders, require
+     * SCE_PSP2_CGC_EXECUTABLE to be set.
+     */
+    public static boolean CAN_COMPILE_PSP2_SHADERS = false;
+
+    /**
+     * Whether or not we're able to compile at least one shader source.
+     */
+    public static boolean CAN_COMPILE_ANY_SHADER_SOURCE = false;
+
+    /**
      * Whether Toolkit is running on Windows
      */
     public static boolean IS_WINDOWS =
         System.getProperty("os.name").toLowerCase().contains("win");
+
+    /**
+     * Folder contained source shaders for named materials, used as an override for the shader compiler.
+     */
+    public static File SHADER_SOURCE_DIRECTORY = new File("E:/art");
 
     static
     {
@@ -71,5 +93,9 @@ public class CwlibConfiguration
             CAN_COMPILE_ORBIS_SHADERS = SCE_PSSL_EXECUTABLE.exists();
         if (SCE_CGC_EXECUTABLE != null)
             CAN_COMPILE_CELL_SHADERS = SCE_CGC_EXECUTABLE.exists();
+        if (SCE_PSP2_CGC_EXECUTABLE != null)
+            CAN_COMPILE_PSP2_SHADERS = SCE_PSP2_CGC_EXECUTABLE.exists();
+        
+        CAN_COMPILE_ANY_SHADER_SOURCE = CAN_COMPILE_CELL_SHADERS || CAN_COMPILE_ORBIS_SHADERS || CAN_COMPILE_PSP2_SHADERS;
     }
 }

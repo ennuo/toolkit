@@ -1,13 +1,17 @@
 package cwlib.io.gson;
 
 import com.google.gson.*;
+
+import cwlib.ConfigShared;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
 import cwlib.types.data.WrappedResource;
+import cwlib.util.Bytes;
 import cwlib.util.GsonUtils;
 
 import java.lang.reflect.Type;
@@ -19,7 +23,10 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
     {
         @GsonRevision(lbp3 = true, min = 204)
         public boolean isUsedForStreaming;
+        
         public Thing[] things;
+        public byte[] thingData;
+
         @GsonRevision(min = 407)
         public InventoryItemDetails inventoryData;
     }
@@ -49,9 +56,25 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         }
 
         Revision revision = new Revision(head, branchID, branchRevision);
-        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
-        if (head >= 0x297 || (head == 0x272 && (branchID == 0x4c44) && ((branchRevision & 0xffff) > 1)))
-            compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
+        byte compressionFlags = revision.getDefaultCompressionFlags();
+        
+        if (object.has("alear") && !object.get("alear").isJsonNull())
+        {
+            JsonObject branch = object.get("alear").getAsJsonObject();
+
+            int customVersion = 1;
+            int customBranch = 0;
+
+            if (branch.has("id") && !branch.get("id").isJsonNull())
+            {
+                String text = branch.get("id").getAsString();
+                customBranch = Bytes.toMagic(text);
+            }
+
+            if (branch.has("revision")) customVersion = branch.get("revision").getAsInt();
+
+            revision.setCustomBranchDescription(customBranch, customVersion);
+        }
 
         resource.revision = revision;
         GsonUtils.REVISION = revision;
@@ -62,14 +85,30 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         if (resource.type.equals(ResourceType.PLAN))
         {
             PlanWrapper wrapper = jdc.deserialize(object.get("resource"), PlanWrapper.class);
+
             RPlan plan = new RPlan();
 
             plan.revision = resource.revision;
             plan.compressionFlags = compressionFlags;
             plan.inventoryData = wrapper.inventoryData;
             plan.isUsedForStreaming = wrapper.isUsedForStreaming;
-            plan.setThings(wrapper.things);
 
+            if (wrapper.thingData != null)
+            {
+                plan.thingData = wrapper.thingData;
+            }
+            else
+            {
+                // Fixup any fields that may have been lost during serialization.
+                for (Thing thing : wrapper.things)
+                {
+                    if (thing != null) 
+                        thing.fixup(revision);
+                }
+
+                plan.setThings(wrapper.things);
+            }
+            
             resource.resource = plan;
 
             return resource;
@@ -78,6 +117,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         resource.resource = jdc.deserialize(object.get("resource"),
             resourceType.getCompressable());
 
+        // Make sure to run fixup on the level to restore any fields
+        // that may have been lost during serialization.
+        if (resource.type.equals(ResourceType.LEVEL) && resource.resource != null)
+        {
+            RLevel level = (RLevel)resource.resource;
+            level.fixup(revision);
+        }
+        
         return resource;
     }
 
@@ -99,6 +146,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
             object.add("branch", branch);
         }
 
+        if (resource.revision.hasExtraData())
+        {
+            JsonObject branch = new JsonObject();
+            branch.add("id", new JsonPrimitive(Bytes.toMagic(resource.revision.getCustomBranchID())));
+            branch.add("revision", new JsonPrimitive(resource.revision.getCustomVersion()));
+            object.add("alear", branch);
+        }
+        
         object.add("type", jsc.serialize(resource.type));
 
         if (resource.type.equals(ResourceType.PLAN))
@@ -106,7 +161,10 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
             PlanWrapper wrapper = new PlanWrapper();
             RPlan plan = (RPlan) resource.resource;
             wrapper.isUsedForStreaming = plan.isUsedForStreaming;
-            wrapper.things = plan.getThings();
+            if (ConfigShared.export().exportThingData)
+                wrapper.thingData = plan.thingData;
+            else
+                wrapper.things = plan.getThings();
             wrapper.inventoryData = plan.inventoryData;
             object.add("resource", jsc.serialize(wrapper));
         }

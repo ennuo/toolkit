@@ -28,7 +28,7 @@ public class PCostume implements Serializable
     public Primitive[] primitives;
 
     @GsonRevision(lbp3 = true, min = 0xdb)
-    public byte creatureFilter;
+    public int creatureFilter; // why did i have this as a byte? double check later
 
     public CostumePiece[] costumePieces;
 
@@ -81,7 +81,7 @@ public class PCostume implements Serializable
         primitives = serializer.array(primitives, Primitive.class);
 
         if (subVersion >= 0xdb)
-            creatureFilter = serializer.i8(creatureFilter);
+            creatureFilter = serializer.i32(creatureFilter);
 
         costumePieces = serializer.array(costumePieces, CostumePiece.class);
 

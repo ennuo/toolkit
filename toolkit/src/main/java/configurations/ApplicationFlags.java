@@ -18,9 +18,4 @@ public class ApplicationFlags
      * 3D is only supported on Windows (and maybe Linux)
      */
     public static boolean CAN_USE_3D = CwlibConfiguration.IS_WINDOWS;
-
-    /**
-     * Whether or not Alear server operations are allowed.
-     */
-    public static boolean ALEAR_INTEGRATION = false;
 }

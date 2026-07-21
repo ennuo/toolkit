@@ -5,10 +5,13 @@ import com.github.weisj.darklaf.theme.DarculaTheme;
 import cwlib.CwlibConfiguration;
 import cwlib.enums.*;
 import cwlib.resources.RGfxMaterial;
+import cwlib.singleton.ResourceSystem;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import cwlib.types.databases.FileEntry;
 import cwlib.util.FileIO;
+import cwlib.util.Strings;
 import cwlib.util.gfx.CgAssembler;
 import cwlib.util.gfx.GfxAssembler;
 import executables.gfx.dialogues.ErrorDialogue;
@@ -55,7 +58,7 @@ public class GfxGUI extends javax.swing.JFrame
     private final DefaultListModel textureModel = new DefaultListModel();
 
     private String brdf;
-
+    private FileEntry _entry = null;
     public GfxGUI()
     {
         this.initComponents();
@@ -70,14 +73,24 @@ public class GfxGUI extends javax.swing.JFrame
             JOptionPane.showMessageDialog(this, "This program is only functional on Windows!",
                 "Error", JOptionPane.WARNING_MESSAGE);
 
-        if (!CwlibConfiguration.CAN_COMPILE_CELL_SHADERS)
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC " +
-                                                              "compiler! " +
-                                                              "This program will not " +
-                                                              "function! (Expected location" +
-                                                              " is %s)",
-                    CwlibConfiguration.SCE_CGC_EXECUTABLE.getAbsolutePath()), "Error",
-                JOptionPane.WARNING_MESSAGE);
+        if (!CwlibConfiguration.CAN_COMPILE_ANY_SHADER_SOURCE)
+            JOptionPane.showMessageDialog(this, "Unable to find any compilers, this program will not function!", "Error", JOptionPane.WARNING_MESSAGE);
+    }
+
+    public static void edit(FileEntry entry)
+    {
+        if (entry == null || entry.getInfo() == null) return;
+        var info = entry.getInfo();
+        if (info.getType() != ResourceType.GFX_MATERIAL) return;
+
+        RGfxMaterial material = info.getResource();
+        if (material == null) return;
+
+        var gui = new GfxGUI();
+        gui._entry = entry;
+        gui.gameComboBox.setSelectedItem(GameShader.fromMaterial(material, info.getRevision()));
+        gui.set(Strings.getWithoutExtension(entry.getName()), material);
+        gui.setVisible(true);
     }
 
     private void reset()
@@ -120,14 +133,55 @@ public class GfxGUI extends javax.swing.JFrame
         this.alphaModeCombo.setSelectedIndex(this.gmat.alphaMode & 0xff);
     }
 
+    private void saveShaderTemplate()
+    {
+        File dest = FileChooser.openFile(brdfShaderPathLabel.getText(), "cg", true);
+        if (dest != null)
+            FileIO.write(this.brdf.getBytes(), dest.getAbsolutePath());
+    }
+
+    private void set(String name, RGfxMaterial gmat)
+    {
+        this.reset();
+
+        this.gmat = gmat;
+
+        this.textureModel.clear();
+        for (int i = 0; i < 8; ++i)
+        {
+            TextureEntry entry = new TextureEntry(i, this.gmat.textures[i]);
+            entry.wrapS = this.gmat.wrapS[i];
+            entry.wrapT = this.gmat.wrapT[i];
+            this.textureModel.addElement(entry);
+        }
+
+        try
+        {
+            this.brdf = GfxAssembler.generateShaderSource(this.gmat, -1, true);
+
+            this.brdfShaderPathLabel.setText(name + ".cg");
+
+            if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(),
+                BrdfPort.OPACITY) != null)
+                this.gmat.flags |= GfxMaterialFlags.ALPHA_CLIP;
+        }
+        catch (Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "Invalid shader graph configuration! Can't " +
+                                                "generate shader.", "Error",
+                JOptionPane.WARNING_MESSAGE);
+            this.brdf = null;
+        }
+
+        this.update();
+    }
+
     private void load()
     {
         File file = FileChooser.openFile("generatedmesh.gmat", "gmat", false);
         if (file == null || !file.exists()) return;
 
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        if (index != -1) name = name.substring(0, index);
+        String name = Strings.getWithoutExtension(file.getName());
 
         SerializedResource resource = null;
         try { resource = new SerializedResource(file.getAbsolutePath()); }
@@ -159,51 +213,19 @@ public class GfxGUI extends javax.swing.JFrame
             return;
         }
 
-        this.reset();
+        set(name, gmat);
+        gameComboBox.setSelectedItem(GameShader.fromMaterial(gmat, resource.getRevision()));
 
-        this.gmat = gmat;
-
-        this.textureModel.clear();
-        for (int i = 0; i < 8; ++i)
+        if (JOptionPane.showConfirmDialog(this, "Do you want to save generated shader?",
+            "Shader Dump", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
         {
-            TextureEntry entry = new TextureEntry(i, this.gmat.textures[i]);
-            entry.wrapS = this.gmat.wrapS[i];
-            entry.wrapT = this.gmat.wrapT[i];
-            this.textureModel.addElement(entry);
+            saveShaderTemplate();
         }
-
-        try
-        {
-            this.brdf = GfxAssembler.generateShaderSource(this.gmat, -1, true);
-
-            this.brdfShaderPathLabel.setText(name + ".cg");
-
-            if (JOptionPane.showConfirmDialog(this, "Do you want to save generated shader?",
-                "Shader Dump", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
-            {
-                File dest = FileChooser.openFile(name + ".cg", "cg", true);
-                if (dest != null)
-                    FileIO.write(this.brdf.getBytes(), dest.getAbsolutePath());
-            }
-
-            if (this.gmat.getBoxConnectedToPort(this.gmat.getOutputBox(),
-                BrdfPort.ALPHA_CLIP) != null)
-                this.gmat.flags |= GfxMaterialFlags.ALPHA_CLIP;
-        }
-        catch (Exception ex)
-        {
-            JOptionPane.showMessageDialog(this, "Invalid shader graph configuration! Can't " +
-                                                "generate shader.", "Error",
-                JOptionPane.WARNING_MESSAGE);
-            this.brdf = null;
-        }
-
-        this.update();
+        
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         gmatFlagsContainer = new javax.swing.JPanel();
         gmatFlagsLabel = new javax.swing.JLabel();
@@ -241,7 +263,7 @@ public class GfxGUI extends javax.swing.JFrame
         shaderLabel = new javax.swing.JLabel();
         brdfShaderPathLabel = new javax.swing.JLabel();
         gameLabel = new javax.swing.JLabel();
-        gameComboBox = new javax.swing.JComboBox<>();
+        gameComboBox = new javax.swing.JComboBox(GameShader.COMPILABLE);
         compileButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -253,6 +275,7 @@ public class GfxGUI extends javax.swing.JFrame
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         importMenuItem = new javax.swing.JMenuItem();
+        exportMenuItem = new javax.swing.JMenuItem();
         resetMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -280,10 +303,8 @@ public class GfxGUI extends javax.swing.JFrame
         maxPriorityCheckbox.setMaximumSize(new java.awt.Dimension(140, 20));
         maxPriorityCheckbox.setMinimumSize(new java.awt.Dimension(140, 20));
         maxPriorityCheckbox.setPreferredSize(new java.awt.Dimension(140, 20));
-        maxPriorityCheckbox.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        maxPriorityCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 maxPriorityCheckboxActionPerformed(evt);
             }
         });
@@ -319,121 +340,58 @@ public class GfxGUI extends javax.swing.JFrame
         alphaClipCheckbox.setMinimumSize(new java.awt.Dimension(140, 20));
         alphaClipCheckbox.setPreferredSize(new java.awt.Dimension(140, 20));
 
-        javax.swing.GroupLayout gmatFlagsContainerLayout =
-            new javax.swing.GroupLayout(gmatFlagsContainer);
+        javax.swing.GroupLayout gmatFlagsContainerLayout = new javax.swing.GroupLayout(gmatFlagsContainer);
         gmatFlagsContainer.setLayout(gmatFlagsContainerLayout);
         gmatFlagsContainerLayout.setHorizontalGroup(
             gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(gmatFlagsLabel)
-                        .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
-                            .addComponent(receiveShadowCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(maxPriorityCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(wireCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                90,
-                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
-                            .addComponent(receiveSunCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(squishyCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(furryCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
-                            .addComponent(receiveSpritelightCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(noInstanceTextureCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(twoSidedCheckbox,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(alphaClipCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-                        Short.MAX_VALUE))
+            .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(gmatFlagsLabel)
+                    .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
+                        .addComponent(receiveShadowCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(maxPriorityCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(wireCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
+                        .addComponent(receiveSunCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(squishyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(furryCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
+                        .addComponent(receiveSpritelightCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(noInstanceTextureCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(twoSidedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(alphaClipCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gmatFlagsContainerLayout.setVerticalGroup(
             gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(gmatFlagsLabel)
-                    .addGap(5, 5, 5)
-                    .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(receiveShadowCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(maxPriorityCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(wireCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(5, 5, 5)
-                    .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(receiveSunCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(squishyCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(furryCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(5, 5, 5)
-                    .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(receiveSpritelightCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(noInstanceTextureCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(twoSidedCheckbox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(5, 5, 5)
-                    .addComponent(alphaClipCheckbox,
-                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-                        Short.MAX_VALUE))
+            .addGroup(gmatFlagsContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(gmatFlagsLabel)
+                .addGap(5, 5, 5)
+                .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(receiveShadowCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(maxPriorityCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(wireCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
+                .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(receiveSunCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(squishyCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(furryCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
+                .addGroup(gmatFlagsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(receiveSpritelightCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(noInstanceTextureCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(twoSidedCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
+                .addComponent(alphaClipCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         propertiesLabel.setText("Properties:");
@@ -443,8 +401,7 @@ public class GfxGUI extends javax.swing.JFrame
         jLabel4.setMinimumSize(new java.awt.Dimension(90, 16));
         jLabel4.setPreferredSize(new java.awt.Dimension(90, 16));
 
-        alphaTestLevelSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null,
-            1.0f));
+        alphaTestLevelSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
         jLabel5.setText("Alpha Layer:");
         jLabel5.setMaximumSize(new java.awt.Dimension(90, 16));
@@ -477,173 +434,97 @@ public class GfxGUI extends javax.swing.JFrame
         jLabel9.setMinimumSize(new java.awt.Dimension(90, 16));
         jLabel9.setPreferredSize(new java.awt.Dimension(90, 16));
 
-        reflectionBlurSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null,
-            1.0f));
+        reflectionBlurSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
         jLabel10.setText("Refractive Index:");
         jLabel10.setMaximumSize(new java.awt.Dimension(90, 16));
         jLabel10.setMinimumSize(new java.awt.Dimension(90, 16));
         jLabel10.setPreferredSize(new java.awt.Dimension(90, 16));
 
-        refractiveIndexSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null,
-            1.0f));
+        refractiveIndexSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, null, null, 1.0f));
 
         jLabel11.setText("Alpha Mode:");
 
-        alphaModeCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DISABLE",
-            "ALPHA_BLEND", "ADDITIVE", "ADDITIVE_NO_ALPHA", "PREMULTIPLIED_ALPHA" }));
+        alphaModeCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DISABLE", "ALPHA_BLEND", "ADDITIVE", "ADDITIVE_NO_ALPHA", "PREMULTIPLIED_ALPHA" }));
         alphaModeCombo.setEnabled(false);
 
-        javax.swing.GroupLayout propertiesContainerLayout =
-            new javax.swing.GroupLayout(propertiesContainer);
+        javax.swing.GroupLayout propertiesContainerLayout = new javax.swing.GroupLayout(propertiesContainer);
         propertiesContainer.setLayout(propertiesContainerLayout);
         propertiesContainerLayout.setHorizontalGroup(
             propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(propertiesContainerLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(propertiesContainerLayout.createSequentialGroup()
-                            .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel4,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(propertiesLabel)
-                                .addComponent(jLabel5,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel6,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel7,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel8,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel9,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel10,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                    javax.swing.GroupLayout.DEFAULT_SIZE,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(5, 5, 5)
-                            .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(refractiveIndexSpinner)
-                                .addComponent(alphaTestLevelSpinner)
-                                .addComponent(alphaLayerSpinner)
-                                .addComponent(shadowCastComboBox, 0,
-                                    127,
-                                    Short.MAX_VALUE)
-                                .addComponent(bumpLevelSpinner)
-                                .addComponent(cosinePowerSpinner)
-                                .addComponent(reflectionBlurSpinner)))
-                        .addGroup(propertiesContainerLayout.createSequentialGroup()
-                            .addComponent(jLabel11)
-                            .addGap(27, 27, 27)
-                            .addComponent(alphaModeCombo, 0, 1,
-                                Short.MAX_VALUE)))
-                    .addContainerGap())
+            .addGroup(propertiesContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(propertiesContainerLayout.createSequentialGroup()
+                        .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(propertiesLabel)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(5, 5, 5)
+                        .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(refractiveIndexSpinner)
+                            .addComponent(alphaTestLevelSpinner)
+                            .addComponent(alphaLayerSpinner)
+                            .addComponent(shadowCastComboBox, 0, 127, Short.MAX_VALUE)
+                            .addComponent(bumpLevelSpinner)
+                            .addComponent(cosinePowerSpinner)
+                            .addComponent(reflectionBlurSpinner)))
+                    .addGroup(propertiesContainerLayout.createSequentialGroup()
+                        .addComponent(jLabel11)
+                        .addGap(27, 27, 27)
+                        .addComponent(alphaModeCombo, 0, 1, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         propertiesContainerLayout.setVerticalGroup(
             propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(propertiesContainerLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(propertiesLabel)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel4,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(alphaTestLevelSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel5,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(alphaLayerSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel6,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(shadowCastComboBox,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel7,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(bumpLevelSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel8,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(cosinePowerSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel9,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(reflectionBlurSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel10,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(refractiveIndexSpinner,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel11)
-                        .addComponent(alphaModeCombo,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-                        Short.MAX_VALUE))
+            .addGroup(propertiesContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(propertiesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(alphaTestLevelSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(alphaLayerSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(shadowCastComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bumpLevelSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cosinePowerSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(reflectionBlurSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(refractiveIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(propertiesContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(alphaModeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel2.setText("Shaders:");
 
         openBRDFButton.setText("Open");
-        openBRDFButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openBRDFButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openBRDFButtonActionPerformed(evt);
             }
         });
@@ -658,13 +539,9 @@ public class GfxGUI extends javax.swing.JFrame
 
         gameLabel.setText("Game:");
 
-        gameComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "LBP1",
-            "LBP2 " +
-            "Pre-Alpha", "LBP2/3", "LBP3 PS4" }));
-        gameComboBox.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        gameComboBox.setToolTipText("");
+        gameComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 gameComboBoxActionPerformed(evt);
             }
         });
@@ -673,65 +550,50 @@ public class GfxGUI extends javax.swing.JFrame
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel2Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(gameComboBox, 0,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            Short.MAX_VALUE)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(openBRDFButton)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(shaderLabel,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(brdfShaderPathLabel))
-                                .addComponent(jLabel2)
-                                .addComponent(gameLabel))
-                            .addGap(0, 0, Short.MAX_VALUE)))
-                    .addContainerGap())
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(gameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(openBRDFButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(shaderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(brdfShaderPathLabel))
+                            .addComponent(jLabel2)
+                            .addComponent(gameLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel2Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jLabel2)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(openBRDFButton)
-                        .addComponent(shaderLabel,
-                            javax.swing.GroupLayout.PREFERRED_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(brdfShaderPathLabel))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(gameLabel)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(gameComboBox,
-                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(17, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(openBRDFButton)
+                    .addComponent(shaderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(brdfShaderPathLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gameLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         compileButton.setText("Compile");
-        compileButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        compileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 compileButtonActionPerformed(evt);
             }
         });
 
         closeButton.setText("Close");
-        closeButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });
@@ -744,10 +606,8 @@ public class GfxGUI extends javax.swing.JFrame
         jScrollPane1.setViewportView(textureList);
 
         editTextureButton.setText("Edit");
-        editTextureButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editTextureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editTextureButtonActionPerformed(evt);
             }
         });
@@ -756,49 +616,49 @@ public class GfxGUI extends javax.swing.JFrame
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane1,
-                            javax.swing.GroupLayout.PREFERRED_SIZE, 0,
-                            Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel12)
-                            .addGap(0, 0, Short.MAX_VALUE))
-                        .addComponent(editTextureButton,
-                            javax.swing.GroupLayout.DEFAULT_SIZE, 161,
-                            Short.MAX_VALUE))
-                    .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(editTextureButton, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jLabel12)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jScrollPane1)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(editTextureButton)
-                    .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel12)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(editTextureButton)
+                .addContainerGap())
         );
 
         fileMenu.setText("File");
 
         importMenuItem.setText("Import");
-        importMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(importMenuItem);
 
+        exportMenuItem.setText("Export");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportMenuItem);
+
         resetMenuItem.setText("Reset");
-        resetMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetMenuItemActionPerformed(evt);
             }
         });
@@ -812,67 +672,43 @@ public class GfxGUI extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(gmatFlagsContainer,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                Short.MAX_VALUE)
-                            .addComponent(jPanel2,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                Short.MAX_VALUE))
-                        .addComponent(jLabel3))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(0, 0, Short.MAX_VALUE)
-                            .addComponent(compileButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(closeButton))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(propertiesContainer,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jPanel1,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                Short.MAX_VALUE)))
-                    .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(gmatFlagsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(compileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(propertiesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(gmatFlagsContainer,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(5, 5, 5)
-                            .addComponent(jPanel2,
-                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jPanel1,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            Short.MAX_VALUE)
-                        .addComponent(propertiesContainer,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            javax.swing.GroupLayout.DEFAULT_SIZE,
-                            Short.MAX_VALUE))
-                    .addGap(5, 5, 5)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(compileButton)
-                        .addComponent(closeButton)
-                        .addComponent(jLabel3))
-                    .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(gmatFlagsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(propertiesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(5, 5, 5)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(compileButton)
+                    .addComponent(closeButton)
+                    .addComponent(jLabel3))
+                .addContainerGap())
         );
 
         pack();
@@ -909,7 +745,9 @@ public class GfxGUI extends javax.swing.JFrame
         shader = shader.replace("ENV.COSINE_POWER", String.format(Locale.ROOT, "%f",
             this.gmat.cosinePower * 22.0f));
         shader = shader.replace("ENV.BUMP_LEVEL", String.format(Locale.ROOT, "%f",
-            this.gmat.bumpLevel));
+            this.gmat.bumpLevel * 2.0f));
+        
+        shader = shader.replace("ENV.FRESNEL_POWER", String.format(Locale.ROOT, "%f", gmat.getFresnelPower()));
 
         shader = shader.replace("ENV.REFLECTION_BLUR", String.format(Locale.ROOT, "%f",
             this.gmat.reflectionBlur - 1.0f));
@@ -946,14 +784,6 @@ public class GfxGUI extends javax.swing.JFrame
             return;
         }
 
-        if (!CwlibConfiguration.CAN_COMPILE_CELL_SHADERS)
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-CGC " +
-                                                              "compiler! " +
-                                                              "Cannot compile! (Expected " +
-                                                              "location is %s)",
-                    CwlibConfiguration.SCE_CGC_EXECUTABLE.getAbsolutePath()), "Error",
-                JOptionPane.WARNING_MESSAGE);
-
         if (this.brdf == null)
         {
             JOptionPane.showMessageDialog(this, "BRDF shader is missing! Can't compile!",
@@ -962,21 +792,7 @@ public class GfxGUI extends javax.swing.JFrame
             return;
         }
 
-        boolean isLBP2 = this.gameComboBox.getSelectedIndex() > 0;
-        boolean isPreAlpha = this.gameComboBox.getSelectedIndex() == 1;
-        boolean isPS4 = this.gameComboBox.getSelectedIndex() == 3;
-
-        if (isPS4 && !CwlibConfiguration.CAN_COMPILE_ORBIS_SHADERS)
-        {
-            JOptionPane.showMessageDialog(this, String.format("Unable to find SCE-PSSL " +
-                                                              "compiler! " +
-                                                              "Cannot compile! (Expected " +
-                                                              "location is %s)",
-                    CwlibConfiguration.SCE_PSSL_EXECUTABLE.getAbsolutePath()),
-                "Error",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        GameShader target = (GameShader)gameComboBox.getSelectedItem();
 
         int flags = 0;
         if (this.receiveShadowCheckbox.isSelected()) flags |= GfxMaterialFlags.RECEIVE_SHADOWS;
@@ -990,10 +806,12 @@ public class GfxGUI extends javax.swing.JFrame
         if (this.wireCheckbox.isSelected()) flags |= GfxMaterialFlags.WIRE;
         if (this.furryCheckbox.isSelected()) flags |= GfxMaterialFlags.FURRY;
         if (this.twoSidedCheckbox.isSelected()) flags |= GfxMaterialFlags.TWO_SIDED;
-        if (isLBP2)
+        if (target.hasAlphaMode())
         {
             if (this.alphaClipCheckbox.isSelected()) flags |= GfxMaterialFlags.ALPHA_CLIP;
         }
+
+        if (target == GameShader.VITA) flags |= 0x10000;
 
         this.gmat.flags = flags;
 
@@ -1004,15 +822,14 @@ public class GfxGUI extends javax.swing.JFrame
         this.gmat.cosinePower = (float) this.cosinePowerSpinner.getValue();
         this.gmat.reflectionBlur = (float) this.reflectionBlurSpinner.getValue();
         this.gmat.refractiveIndex = (float) this.refractiveIndexSpinner.getValue();
-        if (isLBP2)
+        if (target.hasAlphaMode())
             this.gmat.alphaMode = (byte) this.alphaModeCombo.getSelectedIndex();
 
 
-        this.gmat.shaders = new byte[isLBP2 ? ((isPreAlpha) ? 4 : 10) : 4][];
+        this.gmat.shaders = new byte[target.getShaderCount()][];
         try
         {
-            CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat,
-                GameShader.values()[this.gameComboBox.getSelectedIndex()]);
+            CgAssembler.compile(this.fixupEnvVar(this.brdf), this.gmat, target);
         }
         catch (Exception ex)
         {
@@ -1032,14 +849,20 @@ public class GfxGUI extends javax.swing.JFrame
             gmat.wrapT[i] = entry.wrapT;
         }
 
-        Revision revision;
+        Revision revision = target.getRevision();
+        byte compressionFlags = revision.getDefaultCompressionFlags();
+        if (target == GameShader.LBP1 && gmat.shouldSaveCustomData())
+            revision.setCustomBranchDescription(Revisions.ALEAR_BR1, Revisions.ALEAR_BR1_MAX);
 
-        if (isPreAlpha) revision = new Revision(0x332);
-        else if (isLBP2) revision = new Revision(0x393);
-        else revision = new Revision(0x272, 0x4c44, 0x0013);
+        byte[] resource = SerializedResource.compress(gmat.build(revision, compressionFlags));
 
-        byte[] resource = SerializedResource.compress(gmat.build(revision,
-            CompressionFlags.USE_ALL_COMPRESSION));
+        if (_entry != null)
+        {
+            ResourceSystem.replace(_entry, resource);
+            dispose();
+            return;
+        }
+
         File file = FileChooser.openFile("export.gmat", "gmat", true);
         if (file == null) return;
         if (FileIO.write(resource, file.getAbsolutePath()))
@@ -1072,11 +895,14 @@ public class GfxGUI extends javax.swing.JFrame
 
     private void gameComboBoxActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_gameComboBoxActionPerformed
-        int index = this.gameComboBox.getSelectedIndex();
-        boolean isLBP2 = index > 0;
-        this.alphaClipCheckbox.setEnabled(isLBP2);
-        this.alphaModeCombo.setEnabled(isLBP2);
+        GameShader target = (GameShader)gameComboBox.getSelectedItem();
+        this.alphaClipCheckbox.setEnabled(target.hasAlphaMode());
+        this.alphaModeCombo.setEnabled(target.hasAlphaMode());
     }//GEN-LAST:event_gameComboBoxActionPerformed
+
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+        saveShaderTemplate();
+    }//GEN-LAST:event_exportMenuItemActionPerformed
 
     public static void main(String[] args)
     {
@@ -1101,6 +927,7 @@ public class GfxGUI extends javax.swing.JFrame
     private javax.swing.JButton compileButton;
     private javax.swing.JSpinner cosinePowerSpinner;
     private javax.swing.JButton editTextureButton;
+    private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JCheckBox furryCheckbox;
     private javax.swing.JComboBox<String> gameComboBox;

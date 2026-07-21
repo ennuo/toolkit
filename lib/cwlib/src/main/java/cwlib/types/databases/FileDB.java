@@ -35,7 +35,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
     private static final long MIN_SAFE_GUID = 0x00180000;
 
     private int revision;
-    protected ArrayList<FileDBRow> entries;
+    public ArrayList<FileDBRow> entries;
 
     protected HashMap<GUID, FileDBRow> lookup;
 
@@ -139,7 +139,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
 
             /* 	In LittleBigPlanet Vita, some versions of the databases don't store any filenames,
                 only the extensions, so we'll use the hash of the resource in place of a name. */
-            if (path.startsWith("."))
+            if (!path.contains("/") && path.startsWith("."))
             {
                 path = String.format("data/%s%s%s",
                     FileDB.getFolderFromExtension(path), sha1, path);
@@ -210,6 +210,16 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
     {
         if (this.lookup.containsKey(guid))
             return this.lookup.get(guid);
+
+        if (guid.isLocal())
+        {
+            for (var row : entries)
+            {
+                if (row.getLocalGUID().equals(guid))
+                    return row;
+            }
+        }
+        
         return null;
     }
 
@@ -399,6 +409,12 @@ public class FileDB extends FileData implements Iterable<FileDBRow>
     public int getEntryCount()
     {
         return this.entries.size();
+    }
+
+    public void sort()
+    {
+        entries.sort((l, r) -> Long.compareUnsigned(l.getGUID().getValue(),
+            r.getGUID().getValue()));
     }
 
     /**

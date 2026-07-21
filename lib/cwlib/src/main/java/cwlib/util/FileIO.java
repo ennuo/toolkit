@@ -14,7 +14,6 @@ public class FileIO
 {
     public static String getResourceFileAsString(String fileName)
     {
-        ResourceSystem.println("FileIO", "Reading " + fileName + " from class path");
         try (InputStream is = FileIO.class.getResourceAsStream(fileName))
         {
             if (is == null) return null;
@@ -77,6 +76,8 @@ public class FileIO
     {
         try
         {
+            ResourceSystem.println("FileIO", "Reading file at " + path);
+
             byte[] data = Files.readAllBytes(path);
             return new String(data, StandardCharsets.UTF_8);
         }

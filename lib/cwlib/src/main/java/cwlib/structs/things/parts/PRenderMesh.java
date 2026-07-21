@@ -22,12 +22,9 @@ import cwlib.util.Colors;
 public class PRenderMesh implements Serializable
 {
     public static final int BASE_ALLOCATION_SIZE = 0x80;
-    public static final HashMap<ResourceDescriptor, RAnimation> ANIMATIONS = new HashMap<>();
-    public static final HashSet<ResourceDescriptor> DISABLED_ANIMATIONS = new HashSet<>();
-
+    
     public ResourceDescriptor mesh;
     public Thing[] boneThings = new Thing[0];
-    public transient Matrix4f[] boneModels = new Matrix4f[0];
     public ResourceDescriptor anim;
     public float animPos = 0.0f, animSpeed = 1.0f;
     public boolean animLoop = true;
@@ -114,19 +111,19 @@ public class PRenderMesh implements Serializable
         castShadows = serializer.enum8(castShadows);
         RTTEnable = serializer.bool(RTTEnable);
 
-        if (version > 0x2e2)
-            visibilityFlags = serializer.i8(visibilityFlags);
-        else
+        if (version < 0x2e3)
         {
-            if (serializer.isWriting())
-                serializer.getOutput().bool((visibilityFlags & VisibilityFlags.PLAY_MODE) != 0);
-            else
+            // I'm fairly sure that while this is technically "play mode visibility" in LBP2 onward,
+            // in LBP1, it's visibility in general.
+            boolean isVisible = serializer.bool(visibilityFlags != VisibilityFlags.NONE);
+            if (!serializer.isWriting())
             {
                 visibilityFlags = VisibilityFlags.EDIT_MODE;
-                if (serializer.getInput().bool())
+                if (isVisible)
                     visibilityFlags |= VisibilityFlags.PLAY_MODE;
             }
         }
+        else visibilityFlags = serializer.i8(visibilityFlags);
 
         poppetRenderScale = serializer.f32(poppetRenderScale);
 

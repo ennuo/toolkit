@@ -27,4 +27,11 @@ public class Swing
         item.addActionListener(event);
         return item;
     }
+
+    public static JMenu createMenu(String name, JComponent parent)
+    {
+        JMenu menu = new JMenu(name);
+        parent.add(menu);
+        return menu;
+    }
 }

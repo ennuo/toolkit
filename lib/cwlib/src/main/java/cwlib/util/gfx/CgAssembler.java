@@ -5,6 +5,7 @@ import cwlib.enums.GfxMaterialFlags;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.resources.RGfxMaterial;
 import cwlib.util.Bytes;
+import scelib.Gxm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,6 +98,12 @@ public class CgAssembler
 
     public static final int ORBIS = (1 << 15);
 
+    public static final int BLEND = (1 << 25);
+    public static final int LIGHT1 = (1 << 26);
+    public static final int LIGHT2 = (1 << 27);
+    public static final int LAYER_TEST = (1 << 28);
+    public static final int FRESNEL = (1 << 29);
+
     public static final int[] LBP2_FLAGS = {
         BAKED_AO | BAKED_SHADOWS,
         SPRITELIGHT | DYNAMIC_SHADOWS | DYNAMIC_AO | DECALS,
@@ -119,10 +126,57 @@ public class CgAssembler
         LEGACY | WATER_TWEAKS
     };
 
-    public static byte[] compileShaderVariant(String source, int gmatFlags, int index,
+    public static final int[] LBPV_BLEND_FLAGS = {
+        BLEND,
+        BLEND | DECALS,
+        BLEND | LIGHT1,
+        BLEND | LIGHT1 | DECALS,
+        BLEND | LIGHT1 | LIGHT2,
+        BLEND | LIGHT1 | LIGHT2 | DECALS,
+
+        LAYER_TEST | BLEND,
+        LAYER_TEST | BLEND | DECALS,
+        LAYER_TEST | BLEND | LIGHT1,
+        LAYER_TEST | BLEND | LIGHT1 | DECALS,
+        LAYER_TEST | BLEND | LIGHT1 | LIGHT2,
+        LAYER_TEST | BLEND | LIGHT1 | LIGHT2 | DECALS,
+    };
+
+    public static final int[] LBPV_FLAGS = {
+        NO_FLAGS,
+        DECALS,
+        LIGHT1,
+        LIGHT1 | DECALS,
+        LIGHT1 | LIGHT2,
+        LIGHT1 | LIGHT2 | DECALS,
+
+        BLEND,
+        BLEND | DECALS,
+        BLEND | LIGHT1,
+        BLEND | LIGHT1 | DECALS,
+        BLEND | LIGHT1 | LIGHT2,
+        BLEND | LIGHT1 | LIGHT2 | DECALS,
+
+        LAYER_TEST | NO_FLAGS,
+        LAYER_TEST | DECALS,
+        LAYER_TEST | LIGHT1,
+        LAYER_TEST | LIGHT1 | DECALS,
+        LAYER_TEST | LIGHT1 | LIGHT2,
+        LAYER_TEST | LIGHT1 | LIGHT2 | DECALS,
+
+        LAYER_TEST | BLEND,
+        LAYER_TEST | BLEND | DECALS,
+        LAYER_TEST | BLEND | LIGHT1,
+        LAYER_TEST | BLEND | LIGHT1 | DECALS,
+        LAYER_TEST | BLEND | LIGHT1 | LIGHT2,
+        LAYER_TEST | BLEND | LIGHT1 | LIGHT2 | DECALS,
+    };
+
+    public static byte[] compileShaderVariant(String source, RGfxMaterial m, int index,
                                               GameShader shader)
     {
-        int flags = (shader == GameShader.LBP1) ? LBP1_FLAGS[index] : LBP2_FLAGS[index];
+        int gmatFlags = m.flags;
+        int flags = (shader == GameShader.LBP1 || shader == GameShader.LBP_STUPID_BUILD) ? LBP1_FLAGS[index] : shader == GameShader.VITA ? (m.alphaMode == 0 ? LBPV_FLAGS[index] : LBPV_BLEND_FLAGS[index]) : LBP2_FLAGS[index];
         if (shader == GameShader.LBP3_PS4) flags |= ORBIS;
         if (shader == GameShader.LBP2_PRE_ALPHA)
             flags |= WATER_TWEAKS;
@@ -133,9 +187,13 @@ public class CgAssembler
             flags |= (1 << 23);
         if ((gmatFlags & GfxMaterialFlags.RECEIVE_SPRITELIGHTS) != 0)
             flags |= (1 << 24);
+        if ((gmatFlags & 0x4000) != 0)
+            flags |= (1 << 29);
 
         source = source.replace("ENV.COMPILE_FLAGS", "" + flags);
 
+        if (shader == GameShader.VITA && Gxm.IsReady())
+            return Gxm.compile(source);
         return GfxAssembler.getShader(source, shader);
     }
 
@@ -144,7 +202,7 @@ public class CgAssembler
         HashSet<Long> pool = new HashSet<>();
         for (int i = 0; i < gmat.shaders.length; ++i)
         {
-            gmat.shaders[i] = compileShaderVariant(template, gmat.flags, i, shader);
+            gmat.shaders[i] = compileShaderVariant(template, gmat, i, shader);
             if (shader == GameShader.LBP2)
             {
                 long[] code = getBytecode(gmat.shaders[i]);

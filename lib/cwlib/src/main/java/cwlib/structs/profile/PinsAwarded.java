@@ -39,7 +39,7 @@ public class PinsAwarded implements Serializable
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
-
+        
         if (version >= Revisions.PROFILE_PINS)
         {
             pinAwards = serializer.arraylist(pinAwards, PinAward.class);

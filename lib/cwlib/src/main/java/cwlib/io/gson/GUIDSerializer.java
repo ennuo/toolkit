@@ -11,7 +11,7 @@ public class GUIDSerializer implements JsonSerializer<GUID>, JsonDeserializer<GU
     public GUID deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
     throws JsonParseException
     {
-        return new GUID(je.getAsInt());
+        return new GUID(je.getAsLong());
     }
 
     @Override

@@ -7,10 +7,13 @@ import cwlib.resources.RAnimation.AnimationType;
 import cwlib.singleton.ResourceSystem;
 import cwlib.structs.animation.AnimBone;
 import cwlib.structs.gmat.MaterialBox;
+import cwlib.structs.gmat.MaterialParameterAnimation;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.mesh.Morph;
+import cwlib.structs.mesh.SoftbodySpring;
 import cwlib.structs.staticmesh.StaticPrimitive;
+import cwlib.structs.staticmesh.StaticMeshInfo.StaticMeshTreeNode;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileEntry;
@@ -30,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.Math;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -40,6 +44,22 @@ import java.util.logging.Logger;
 
 public class MeshExporter
 {
+    // public static Matrix4f YUP = new Matrix4f(
+    //     new Vector4f(1.0f, 0.0f, 0.0f, 0.0f),
+    //     new Vector4f(0.0f, 0.0f, -1.0f, 0.0f),
+    //     new Vector4f(0.0f, 1.0f, 0.0f, 0.0f),
+    //     new Vector4f(0.0f, 0.0f, 0.0f, 1.0f)
+    // );
+    // public static Matrix3f YUP3 = YUP.get3x3(new Matrix3f());
+    // public static float WORLD_SCALE = 1.0f / 75.0f;
+
+
+    public static Matrix4f YUP = new Matrix4f().identity();
+    public static Matrix3f YUP3 = new Matrix3f().identity();
+    public static float WORLD_SCALE = 1.0f;
+    
+    // treat world scale as 1/10
+
     public static class OBJ
     {
         public static void export(String path, RMesh mesh)
@@ -47,28 +67,133 @@ public class MeshExporter
             export(path, mesh, 0);
         }
 
+        public static void exportcluster(String path, RMesh mesh, int cluster_index)
+        {
+            
+
+            int numVerts = mesh.getNumVerts();
+            StringBuilder builder =
+                new StringBuilder((numVerts * 82) + (numVerts * 42) + (mesh.getNumIndices() * 40));
+            
+            Vector3f[] vertices = mesh.getVertices();
+
+            float[] weights = mesh.getSoftbodyWeights(0, numVerts);
+
+            for (int i = 0; i < vertices.length; ++i)
+            {
+                if (mesh.getClusterIndex(i) != cluster_index) continue;
+
+                Vector3f vertex = vertices[i];
+                float weight = weights[i];
+                builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + String.format(" # weight = %f\n", weight));
+            }
+
+            int[] indices = mesh.getTriangles();
+            for (int i = 0; i < indices.length; ++i)
+                indices[i] += 1;
+
+            // for (int i = 0; i < indices.length; i += 3)
+            // {
+            //     int f0 = indices[i];
+            //     int f1 = indices[i + 1];
+            //     int f2 = indices[i + 2];
+
+            //     int c0 = mesh.getClusterIndex(f0 - 1);
+            //     int c1 = mesh.getClusterIndex(f1 - 1);
+            //     int c2 = mesh.getClusterIndex(f2 - 1);
+
+            //     if (c0 != cluster_index || c1 != cluster_index || c2 != cluster_index) continue;
+
+            //     builder.append("f ");
+            //     builder.append(f0 + " ");
+            //     builder.append(f1 + " ");
+            //     builder.append(f2 + "\n");
+            // }
+            
+            FileIO.write(builder.toString().getBytes(), path);
+        }
+
+
+        public static void exportsprings(String path, RMesh mesh)
+        {
+            int numVerts = mesh.getNumVerts();
+            StringBuilder builder =
+                new StringBuilder((numVerts * 82) + (numVerts * 42) + (mesh.getNumIndices() * 40));
+            
+            Vector3f[] vertices = mesh.getVertices();
+
+            float[] weights = mesh.getSoftbodyWeights(0, numVerts);
+
+            Vector3f[] normals = mesh.getNormals();
+
+            for (int i = mesh.getMinSpringVert(); i <= mesh.getMaxSpringVert(); ++i)
+            {
+                Vector3f vertex = vertices[i];
+                float weight = weights[i];
+                builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + String.format(" # weight = %f\n", weight));
+            }
+
+            int[] indices = mesh.getSpringyTriangles();
+            // NOTE(Aidan): Wavefront OBJ has 1-based indices.
+            for (int i = 0; i < indices.length; ++i)
+                indices[i] += 1 - mesh.getMinSpringVert();
+
+            for (SoftbodySpring spring : mesh.getSoftbodySprings())
+            {
+                builder.append("l " + ((int)spring.A + 1) + " " + ((int)spring.B + 1) + "\n");
+            }
+
+            for (int i = 0; i < indices.length; i += 3)
+            {
+                // builder.append("f ");
+                // builder.append(indices[i] + " ");
+                // builder.append(indices[i + 1] + " ");
+                // builder.append(indices[i + 2] + "\n");
+            }
+            
+            FileIO.write(builder.toString().getBytes(), path);
+        }
+
         public static void export(String path, RMesh mesh, int channel)
         {
             int numVerts = mesh.getNumVerts();
             StringBuilder builder =
                 new StringBuilder((numVerts * 82) + (numVerts * 42) + (mesh.getNumIndices() * 40));
-            for (Vector3f vertex : mesh.getVertices())
+            
+            Vector3f[] vertices = mesh.getVertices();
+            Vector3f[] normals = mesh.getNormals();
+
+            for (Vector3f vertex : vertices)
                 builder.append("v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
-            for (Vector3f vertex : mesh.getNormals())
+
+            for (Vector3f vertex : normals)
                 builder.append("vn " + vertex.x + " " + vertex.y + " " + vertex.z + '\n');
+
             for (Vector2f vertex : mesh.getUVs(channel))
                 builder.append("vt " + vertex.x + " " + (1.0f - vertex.y) + '\n');
-            int[] indices = mesh.getTriangles();
-            // NOTE(Aidan): Wavefront OBJ has 1-based indices.
-            for (int i = 0; i < indices.length; ++i)
-                indices[i] += 1;
-            for (int i = 0; i < indices.length; i += 3)
+
+            for (var primitive : mesh.getPrimitives())
             {
-                builder.append("f ");
-                builder.append(indices[i] + "/" + indices[i] + "/" + indices[i] + " ");
-                builder.append(indices[i + 1] + "/" + indices[i + 1] + "/" + indices[i + 1] + " ");
-                builder.append(indices[i + 2] + "/" + indices[i + 2] + "/" + indices[i + 2] + '\n');
+                int[] indices = mesh.getTriangles(primitive);
+                // NOTE(Aidan): Wavefront OBJ has 1-based indices.
+                for (int i = 0; i < indices.length; ++i)
+                    indices[i] += 1;
+                
+                for (int i = 0; i < indices.length; i += 3)
+                {
+                    int f0 = indices[i + 0];
+                    int f1 = indices[i + 1];
+                    int f2 = indices[i + 2];
+
+                    builder.append("f ");
+                    builder.append(f0 + "/" + f0 + "/" + f0 + " ");
+                    builder.append(f1 + "/" + f1 + "/" + f1 + " ");
+                    builder.append(f2 + "/" + f2 + "/" + f2 + '\n');
+                }
             }
+
+            // int[] indices = mesh.getTriangles();
+
             FileIO.write(builder.toString().getBytes(), path);
         }
     }
@@ -82,6 +207,103 @@ public class MeshExporter
         HashMap<String, Integer> materials = new HashMap<String, Integer>();
         HashMap<String, Integer> textures = new HashMap<String, Integer>();
         int accessorCount = 0;
+
+
+        public static GLB FromMaterialAnimation(RGfxMaterial material) throws Exception
+        {
+            MaterialParameterAnimation anim = material.parameterAnimations[0];
+
+            GLB glb = new GLB();
+            byte[] data = glb.getBufferForAnimationTest(material);
+            Buffer buffer = new Buffer();
+            buffer.setByteLength(data.length);
+            glb.gltf.addBuffers(buffer);
+            glb.buffer = data;
+
+            glb.setAsset("IKAROS//CRAFTWORLD", "2.0");
+
+            glb.createMaterial("cosmos_pixels", material);
+
+
+            int time = glb.createAccessor("TIME", 5126, "SCALAR", 0, (anim.keys.length - 1));
+            Animation glAnim = new Animation();
+            glAnim.setName(anim.getName());
+
+            AnimationChannel channel = new AnimationChannel();
+
+
+            AnimationChannelTarget target = new AnimationChannelTarget();
+            // target.setPath("pointer");
+
+            Field field = target.getClass().getDeclaredField("path");
+            field.setAccessible(true);
+            field.set(target, "pointer");
+
+            
+
+            target.addExtensions("KHR_animation_pointer", new KHRAnimationPointer(
+                "/materials/0/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/offset"
+            ));
+            
+
+            channel.setTarget(target);
+            channel.setSampler(0);
+
+            AnimationSampler sampler = new AnimationSampler();
+            sampler.setInput(time);
+            sampler.setInterpolation("LINEAR");
+            sampler.setOutput(glb.createAccessor("SCALE", 5126, "VEC2", 0, (anim.keys.length - 1)));
+
+            glAnim.addChannels(channel);
+            glAnim.addSamplers(sampler);
+
+            glb.gltf.addExtensionsUsed("KHR_animation_pointer");
+            glb.gltf.addExtensionsUsed("KHR_texture_transform");
+
+            glb.gltf.addAnimations(glAnim);
+
+            glb.gltf.setScene(0);
+
+            Scene scene = new Scene();
+            scene.setName("Scene");
+            glb.gltf.addScenes(scene);
+
+            glb.gltf.addNodes(new Node());
+            scene.addNodes(0);
+
+
+            glb.gltf.getNodes().get(0).setMesh(0);
+
+
+            Mesh glMesh = new Mesh();
+            MeshPrimitive glPrimitive = new MeshPrimitive();
+
+            glPrimitive.setIndices(glb.createAccessor("INDICES", 5123, "SCALAR", 0,
+                        glb.gltf.getBufferViews().get(glb.getBufferView("INDICES")).getByteLength() / 2));
+
+            glPrimitive.addAttributes("POSITION",
+                glb.createAccessor(
+                    "VERTICES",
+                    5126,
+                    "VEC3",
+                    0,
+                    3)
+            );
+
+            glPrimitive.setMaterial(0);
+
+
+            
+
+            glMesh.addPrimitives(glPrimitive);
+
+            glb.gltf.addMeshes(glMesh);
+
+
+
+
+            return glb;
+        }
 
         public static GLB FromAnimation(RAnimation animation, RMesh mesh)
         {
@@ -287,9 +509,9 @@ public class MeshExporter
             glb.setAsset("CRAFTWORLD", "2.0");
 
             Mesh glMesh = new Mesh();
-            for (int i = 0; i < mesh.getMeshInfo().primitives.length; ++i)
+            for (int i = 0; i < mesh.getMeshInfo().primitives.size(); ++i)
             {
-                StaticPrimitive primitive = mesh.getMeshInfo().primitives[i];
+                StaticPrimitive primitive = mesh.getMeshInfo().primitives.get(i);
                 MeshPrimitive glPrimitive = new MeshPrimitive();
                 glPrimitive.addAttributes("POSITION",
                     glb.createAccessor(
@@ -387,7 +609,7 @@ public class MeshExporter
         {
             GLB glb = new GLB();
 
-
+            mesh.fixupSkinForExport();
             byte[] dataBuffer = glb.getBufferFromMesh(mesh);
             Buffer buffer = new Buffer();
             buffer.setByteLength(dataBuffer.length);
@@ -429,6 +651,24 @@ public class MeshExporter
                             5126,
                             "VEC3",
                             primitive.getMinVert() * 0xC,
+                            primitive.getMaxVert() - primitive.getMinVert() + 1)
+                    );
+
+                    glPrimitive.addAttributes("SMOOTH_NORMAL",
+                        glb.createAccessor(
+                            "SMOOTH_NORMAL",
+                            5126,
+                            "VEC3",
+                            primitive.getMinVert() * 0xC,
+                            primitive.getMaxVert() - primitive.getMinVert() + 1)
+                    );
+
+                    glPrimitive.addAttributes("TANGENT",
+                        glb.createAccessor(
+                            "TANGENT",
+                            5126,
+                            "VEC4",
+                            primitive.getMinVert() * 0x10,
                             primitive.getMaxVert() - primitive.getMinVert() + 1)
                     );
 
@@ -488,7 +728,7 @@ public class MeshExporter
                         )
                     );
 
-                    glPrimitive.addAttributes("COLOR_0",
+                    glPrimitive.addAttributes("_VERTEX_MASS",
                         glb.createAccessor(
                             "COLOR",
                             5123,
@@ -683,6 +923,14 @@ public class MeshExporter
                 }
             }
             catch (Exception ex) { return null; }
+        }
+
+        public static class KHRAnimationPointer 
+        {
+            public KHRAnimationPointer() { pointer = ""; }
+            public KHRAnimationPointer(String pointer) { this.pointer = pointer; }
+
+            public String pointer;
         }
 
         public static class KHRTextureTransform
@@ -1000,6 +1248,58 @@ public class MeshExporter
             return -1;
         }
 
+        private byte[] getBufferForAnimationTest(RGfxMaterial material)
+        {
+            float timestep = 1.0f / 30.0f;
+            MaterialParameterAnimation anim = material.parameterAnimations[0];
+
+            MemoryOutputStream output = new MemoryOutputStream((anim.keys.length - 1) * 0x10 * 0x4 + 0x5000);
+            output.setLittleEndian(true);
+
+            float step = 0.0f;
+            for (int i = 0; i < (anim.keys.length - 1); ++i, step += timestep)
+                output.f32(step);
+
+            createBufferView("TIME", 0, output.getOffset());
+
+            int scaleStart = output.getOffset();
+            for (Vector4f key : anim.keys)
+            {
+                output.f32(key.z);
+                output.f32(key.w);
+            }
+            
+            createBufferView("SCALE", scaleStart, output.getOffset() - scaleStart);
+
+            int offsetStart = output.getOffset();
+            for (Vector4f key : anim.keys)
+            {
+                output.f32(key.x);
+                output.f32(key.y);
+            }
+
+            createBufferView("OFFSET", offsetStart, output.getOffset() - offsetStart);
+
+            int vertexStart = output.getOffset();
+            output.v3(new Vector3f(0.0f, 0.0f, 0.0f));
+            output.v3(new Vector3f(1.0f, 0.0f, 0.0f));
+            output.v3(new Vector3f(0.0f, 0.0f, 1.0f));
+
+            createBufferView("VERTICES", vertexStart, output.getOffset() - vertexStart);
+
+
+            int indexStart = output.getOffset();
+            
+            output.u16(0);
+            output.u16(1);
+            output.u16(2);
+
+            createBufferView("INDICES", indexStart, output.getOffset() - indexStart);
+
+
+            return output.shrink().getBuffer();
+        }
+
         private byte[] getBufferFromAnimation(RAnimation animation)
         {
             float timestep = 1.0f / ((float) animation.getFPS());
@@ -1088,13 +1388,33 @@ public class MeshExporter
 
             output.shrink();
             return output.getBuffer();
-
         }
 
         private byte[] getBufferFromMesh(RStaticMesh mesh)
         {
-            MemoryOutputStream output =
-                new MemoryOutputStream(mesh.getNumVerts() * 0x80 + ((mesh.getNumVerts() - 1) * 0x8));
+            int dataSize = mesh.getNumVerts() * 0x28;
+            ArrayList<StaticPrimitive> primitives = mesh.getMeshInfo().primitives;
+
+            HashMap<Integer, int[]> triangleCache = new HashMap<>();
+            HashMap<Integer, Integer> triangleOffsetCache = new HashMap<>();
+
+            int[][] triangleLists = new int[primitives.size()][];
+            for (int i = 0; i < primitives.size(); ++i)
+            {
+                StaticPrimitive primitive = primitives.get(i);
+
+                int hash = primitive.getBufferHash();
+                int[] triangles = triangleCache.get(hash);
+                if (triangles == null)
+                {
+                    triangles = mesh.getTriangles(primitive.indexStart, primitive.numIndices, primitive.type);
+                    dataSize += triangles.length * 0x2;
+                }
+
+                triangleLists[i] = triangles;
+            }
+
+            MemoryOutputStream output = new MemoryOutputStream(dataSize);
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices())
@@ -1126,32 +1446,43 @@ public class MeshExporter
                 output.f32(uv.y);
             }
             createBufferView("TEXCOORD_1", uvStart, output.getOffset() - uvStart);
-            StaticPrimitive[] primitives = mesh.getMeshInfo().primitives;
-            for (int i = 0; i < primitives.length; ++i)
+
+            for (int i = 0; i < primitives.size(); ++i)
             {
-                StaticPrimitive primitive = primitives[i];
-                int primitiveStart = output.getOffset();
-                int[] triangles = mesh.getTriangles(primitive.indexStart,
-                    primitive.numIndices,
-                    primitive.type);
+                StaticPrimitive primitive = primitives.get(i);
+                int[] triangles = triangleLists[i];
+                int hash = primitive.getBufferHash();
                 primitive.numVerts = getMax(triangles) + 1;
-                for (int triangle : triangles)
-                    output.u16((short) triangle);
-                createBufferView("INDICES_" + i, primitiveStart,
-                    output.getOffset() - primitiveStart);
+
+                int primitiveStart;
+                if (triangleOffsetCache.containsKey(hash))
+                {
+                    primitiveStart = triangleOffsetCache.get(hash);
+                }
+                else
+                {
+                    primitiveStart = output.getOffset();
+                    triangleOffsetCache.put(hash, primitiveStart);
+                    for (int triangle : triangles)
+                        output.u16(triangle);
+                }
+
+                createBufferView("INDICES_" + i, primitiveStart, triangles.length * 2);
             }
-            output.shrink();
+
             return output.getBuffer();
         }
 
         private byte[] getBufferFromMesh(RMesh mesh)
         {
             MemoryOutputStream output =
-                new MemoryOutputStream((mesh.getNumVerts() * 0x50) + ((mesh.getNumVerts() - 1) * 8) + (mesh.getAttributeCount() * mesh.getNumVerts() * 8) + (mesh.getMorphCount() * mesh.getNumVerts() * 0x18) + (mesh.getBones().length * 0x40));
+                new MemoryOutputStream((mesh.getNumVerts() * 0x70) + ((mesh.getNumVerts() - 1) * 8) + (mesh.getAttributeCount() * mesh.getNumVerts() * 8) + (mesh.getMorphCount() * mesh.getNumVerts() * 0x18) + (mesh.getBones().length * 0x40));
             output.setLittleEndian(true);
 
             for (Vector3f vertex : mesh.getVertices())
             {
+                vertex = vertex.mul(YUP3).mul(WORLD_SCALE);
+
                 output.f32(vertex.x);
                 output.f32(vertex.y);
                 output.f32(vertex.z);
@@ -1168,10 +1499,10 @@ public class MeshExporter
                         = subMeshes[i][j];
                     int[] triangles = mesh.getTriangles(primitive);
 
-                    primitive.setMinMax(
-                        getMin(triangles),
-                        getMax(triangles)
-                    );
+                    // primitive.setMinMax(
+                    //     getMin(triangles),
+                    //     getMax(triangles)
+                    // );
 
                     for (int triangle : triangles)
                         output.u16((short) (triangle - primitive.getMinVert()));
@@ -1184,11 +1515,40 @@ public class MeshExporter
             Vector3f[] normals = mesh.getNormals();
             for (Vector3f normal : normals)
             {
+                normal = normal.mul(YUP3);
+
                 output.f32(normal.x);
                 output.f32(normal.y);
                 output.f32(normal.z);
             }
             createBufferView("NORMAL", normalStart, output.getOffset() - normalStart);
+
+            int smoothNormalStart = output.getOffset();
+            Vector3f[] smoothNormals = mesh.getSmoothNormals();
+            for (Vector3f normal : smoothNormals)
+            {
+                normal = normal.mul(YUP3);
+
+                output.f32(normal.x);
+                output.f32(normal.y);
+                output.f32(normal.z);
+            }
+            createBufferView("SMOOTH_NORMAL", smoothNormalStart, output.getOffset() - smoothNormalStart);
+
+            int tangentStart = output.getOffset();
+            Vector4f[] tangents = mesh.getTangents();
+            for (Vector4f tangent : tangents)
+            {
+                tangent = tangent.mul(YUP);
+
+                output.f32(tangent.x);
+                output.f32(tangent.y);
+                output.f32(tangent.z);
+                output.f32(tangent.w);
+            }
+
+            createBufferView("TANGENT", tangentStart, output.getOffset() - tangentStart);
+
             for (int i = 0; i < mesh.getAttributeCount(); ++i)
             {
                 int uvStart = output.getOffset();
@@ -1209,6 +1569,8 @@ public class MeshExporter
                     Morph morph = morphs[i];
                     for (Vector3f vertex : morph.getOffsets())
                     {
+                        vertex = vertex.mul(YUP3).mul(WORLD_SCALE);
+
                         output.f32(vertex.x);
                         output.f32(vertex.y);
                         output.f32(vertex.z);
@@ -1223,7 +1585,7 @@ public class MeshExporter
                     Morph morph = morphs[i];
                     for (int j = 0; j < mesh.getNumVerts(); ++j)
                     {
-                        Vector3f vertex = morph.getNormals()[j];
+                        Vector3f vertex = morph.getNormals()[j].mul(YUP3);
                         output.f32(vertex.x - normals[j].x);
                         output.f32(vertex.y - normals[j].y);
                         output.f32(vertex.z - normals[j].z);
@@ -1234,8 +1596,7 @@ public class MeshExporter
                 }
             }
 
-            if (output.getOffset() % 0x40 != 0)
-                output.seek((0x40 - (output.getOffset() % 0x40)));
+            output.align(0x40);
             int matrixStart = output.getOffset();
             for (int i = 0; i < mesh.getBones().length; ++i)
             {
@@ -1317,5 +1678,42 @@ public class MeshExporter
                 Logger.getLogger(MeshExporter.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public static void main(String[] args) {
+
+        RStaticMesh mesh = new RStaticMesh(new SerializedResource("C:/Users/Aidan/Desktop/env_muppet_background_02_squish.smh"));
+
+        StringBuilder builder = new StringBuilder(128000 * 12);
+        int index = 0;
+
+        for (Vector3f vertex : mesh.getVertices())
+        {
+            vertex.div(30.0f);
+            builder.append(String.format("v %f %f %f\n", vertex.x, vertex.y, vertex.z));
+        }
+
+        builder.append('\n');
+
+        for (StaticMeshTreeNode node : mesh.getMeshInfo().nodes)
+        {
+            if (node.numPrimitives <= 0) continue;
+            builder.append(String.format("o obj.%3d\n", index++));
+
+            for (int i = node.firstPrimitive; i < node.firstPrimitive + node.numPrimitives; ++i)
+            {
+                StaticPrimitive primitive = mesh.getMeshInfo().primitives.get(i);
+                int[] triangles = mesh.getTriangles(primitive.indexStart, primitive.numIndices, primitive.type);
+                for (int j = 0; j < triangles.length; ++j) triangles[j] += primitive.vertexStart + 1;
+                for (int j = 0; j < triangles.length; j += 3)
+                {
+                    builder.append(String.format("f %d %d %d\n", triangles[j], triangles[j + 1], triangles[j + 2]));
+                }
+            }
+        }
+
+        FileIO.write(builder.toString().getBytes(), "C:/Users/Aidan/Desktop/test.obj");
+
+
     }
 }
