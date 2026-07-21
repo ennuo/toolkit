@@ -26,6 +26,13 @@ public final class Strings
         return builder.toString();
     }
 
+    public static int tryGetUnsignedInt(String number)
+    {
+        if (number.toLowerCase().startsWith("0x"))
+            return (int)Long.parseLong(number.substring(2), 16);
+        return (int)Long.parseLong(number);
+    }
+
     /**
      * Parses the string as a long.
      *

@@ -1,34 +1,23 @@
 package cwlib.types.swing;
 
-import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalField;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
-import javax.swing.RowFilter.ComparisonType;
 
-import cwlib.CwlibConfiguration;
+import cwlib.enums.CostumePieceCategory;
 import cwlib.enums.InventoryObjectType;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RPlan;
 import cwlib.resources.RTranslationTable;
-import cwlib.resources.RCachedCostumeData.CachedCostumeData;
 import cwlib.singleton.ResourceSystem;
 import cwlib.types.SerializedResource;
 import cwlib.types.data.GUID;
@@ -199,11 +188,24 @@ public class SearchParameters
             _type = type;
             switch (type)
             {
+                case SubType:
+                {
+                    try
+                    {
+                        _key = Strings.tryGetUnsignedInt(query);
+                    }
+                    catch (NumberFormatException ex)
+                    {
+                        _key = CostumePieceCategory.valueOf(query.toUpperCase()).getFlag();
+                    }
+
+                    break;
+                }
                 case Type:
                 {
                     try
                     {
-                        _key = Integer.parseInt(query);
+                        _key = Strings.tryGetUnsignedInt(query);
                     }
                     catch (NumberFormatException ex)
                     {
@@ -217,7 +219,7 @@ public class SearchParameters
                 {
                     try
                     {
-                        _key = Integer.parseInt(query);
+                        _key = Strings.tryGetUnsignedInt(query);
                     }
                     catch (NumberFormatException ex)
                     {

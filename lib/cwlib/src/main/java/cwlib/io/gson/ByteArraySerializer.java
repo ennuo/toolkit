@@ -22,8 +22,8 @@ public class ByteArraySerializer implements JsonSerializer<byte[]>, JsonDeserial
         var arr = je.getAsJsonArray();
         byte[] bytes = new byte[arr.size()];
         for (int i = 0; i < arr.size(); ++i)
-            bytes[i] = arr.getAsByte();
-
+            bytes[i] = arr.get(i).getAsByte();
+        
         return bytes;
     }
 

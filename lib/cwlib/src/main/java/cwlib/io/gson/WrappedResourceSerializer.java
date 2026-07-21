@@ -56,10 +56,8 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         }
 
         Revision revision = new Revision(head, branchID, branchRevision);
-        byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
-        if (head >= 0x297 || (head == 0x272 && (branchID == 0x4c44) && ((branchRevision & 0xffff) > 1)))
-            compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
-
+        byte compressionFlags = revision.getDefaultCompressionFlags();
+        
         if (object.has("alear") && !object.get("alear").isJsonNull())
         {
             JsonObject branch = object.get("alear").getAsJsonObject();
