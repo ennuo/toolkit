@@ -5,9 +5,9 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ cwlib ]
+    branches: [ main ]
   pull_request:
-    branches: [ cwlib ]
+    branches: [ main ]
 
 jobs:
   build:
