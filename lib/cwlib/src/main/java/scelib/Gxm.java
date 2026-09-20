@@ -14,7 +14,7 @@ public final class Gxm
         if (!loaded)
         {
             var root = new File(CwlibConfiguration.JAR_DIRECTORY, "/sce/");
-            final String[] files = new String[] { "psp2cgc.dll", "gxt_conversion.dll", "SceLib.dll" };
+            final String[] files = new String[] { "psp2cgc.dll", "gxt_conversion.dll", "SceLib.Gxm.dll" };
 
             int err = 0;
             for (var dll : files)
@@ -39,6 +39,11 @@ public final class Gxm
         return ready;
     }
 
+    static
+    {
+        Gxm.LoadLibraries();
+    }
+    
     protected Gxm()
     {
         throw new UnsupportedOperationException();
